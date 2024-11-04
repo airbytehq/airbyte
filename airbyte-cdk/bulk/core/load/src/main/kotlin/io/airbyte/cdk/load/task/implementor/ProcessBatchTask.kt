@@ -8,13 +8,13 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorTask
-import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessBatchTask : StreamTask, ImplementorTask
+interface ProcessBatchTask : StreamLevel, ImplementorScope
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
 class DefaultProcessBatchTask(

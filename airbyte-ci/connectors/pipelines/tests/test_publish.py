@@ -421,19 +421,20 @@ async def test_run_connector_python_registry_publish_pipeline(
 
 class TestPushConnectorImageToRegistry:
     @pytest.mark.parametrize(
-        "is_pre_release, is_release_candidate, should_publish_latest",
+        "is_pre_release, version, should_publish_latest",
         [
-            (False, False, True),
-            (True, False, False),
-            (False, True, False),
-            (True, True, False),
+            (False, "1.0.0", True),
+            (True, "1.1.0-dev", False),
+            (False, "1.1.0-rc.1", False),
+            (True, "1.1.0-rc.1", False),
         ],
     )
-    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, is_release_candidate, should_publish_latest):
+    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, version, should_publish_latest):
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
         publish_context.docker_repository = "airbyte/source-pokeapi"
         publish_context.pre_release = is_pre_release
-        publish_context.connector.metadata = {"releases": {"isReleaseCandidate": is_release_candidate}}
+        publish_context.connector.version = version
+        publish_context.connector.metadata = {"dockerImageTag": version}
         step = publish_pipeline.PushConnectorImageToRegistry(publish_context)
         amd_built_container = mocker.Mock(publish=mocker.AsyncMock())
         arm_built_container = mocker.Mock(publish=mocker.AsyncMock())

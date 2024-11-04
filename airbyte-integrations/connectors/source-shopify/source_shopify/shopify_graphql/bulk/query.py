@@ -80,17 +80,7 @@ class ShopifyBulkTemplates:
 @dataclass
 class ShopifyBulkQuery:
     config: Mapping[str, Any]
-    parent_stream_name: Optional[str] = None
-    parent_stream_cursor: Optional[str] = None
-
-    @property
-    def has_parent_stream(self) -> bool:
-        return True if self.parent_stream_name and self.parent_stream_cursor else False
-
-    @property
-    def parent_cursor_key(self) -> Optional[str]:
-        if self.has_parent_stream:
-            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
+    parent_stream_cursor_alias: Optional[str] = None
 
     @property
     def shop_id(self) -> int:
@@ -143,37 +133,11 @@ class ShopifyBulkQuery:
         """
         return ["__typename", "id"]
 
-    def _inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
-        if self.has_parent_stream:
+    def inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
+        if self.parent_stream_cursor_alias:
             # inject parent cursor key as alias to the `updatedAt` parent cursor field
-            nodes.insert(index, Field(name="updatedAt", alias=self.parent_cursor_key))
-
+            nodes.insert(index, Field(name=key, alias=self.parent_stream_cursor_alias))
         return nodes
-
-    def _add_parent_record_state(self, record: MutableMapping[str, Any], items: List[dict], to_rfc3339: bool = False) -> List[dict]:
-        """
-        Adds a parent cursor value to each item in the list.
-
-        This method iterates over a list of dictionaries and adds a new key-value pair to each dictionary.
-        The key is the value of `self.query_name`, and the value is another dictionary with a single key "updated_at"
-        and the provided `parent_cursor_value`.
-
-        Args:
-            items (List[dict]): A list of dictionaries to which the parent cursor value will be added.
-            parent_cursor_value (str): The value to be set for the "updated_at" key in the nested dictionary.
-
-        Returns:
-            List[dict]: The modified list of dictionaries with the added parent cursor values.
-        """
-
-        if self.has_parent_stream:
-            parent_cursor_value: Optional[str] = record.get(self.parent_cursor_key, None)
-            parent_state = self.tools._datetime_str_to_rfc3339(parent_cursor_value) if to_rfc3339 and parent_cursor_value else None
-
-            for item in items:
-                item[self.parent_stream_name] = {self.parent_stream_cursor: parent_state}
-
-        return items
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -339,7 +303,7 @@ class Metafield(ShopifyBulkQuery):
         elif isinstance(self.type.value, str):
             nodes = [*nodes, metafield_node]
 
-        nodes = self._inject_parent_cursor_field(nodes)
+        nodes = self.inject_parent_cursor_field(nodes)
 
         return nodes
 
@@ -372,9 +336,6 @@ class Metafield(ShopifyBulkQuery):
         else:
             metafields = record_components.get("Metafield", [])
             if len(metafields) > 0:
-                if self.has_parent_stream:
-                    # add parent state to each metafield
-                    metafields = self._add_parent_record_state(record, metafields, to_rfc3339=True)
                 yield from self._process_components(metafields)
 
 
@@ -637,7 +598,7 @@ class MetafieldProductImage(Metafield):
         media_node = self.get_edge_node("media", media_fields)
 
         fields: List[Field] = ["__typename", "id", media_node]
-        fields = self._inject_parent_cursor_field(fields)
+        fields = self.inject_parent_cursor_field(fields)
 
         return fields
 
@@ -2422,7 +2383,7 @@ class ProductImage(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> List[Field]:
-        return self._inject_parent_cursor_field(self.nodes)
+        return self.inject_parent_cursor_field(self.nodes)
 
     def _process_component(self, entity: List[dict]) -> List[dict]:
         for item in entity:
@@ -2499,8 +2460,6 @@ class ProductImage(ShopifyBulkQuery):
 
             # add the product_id to each `Image`
             record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
-            # add the product cursor to each `Image`
-            record["images"] = self._add_parent_record_state(record, record.get("images", []), to_rfc3339=True)
             record["images"] = self._merge_with_media(record_components)
             record.pop("record_components")
 

@@ -124,11 +124,11 @@ def with_integration_base_java_and_normalization(context: ConnectorContext, buil
         .with_workdir("airbyte_normalization")
         .with_exec(sh_dash_c(["mv * .."]))
         .with_workdir("/airbyte")
-        .with_exec(["rm", "-rf", "airbyte_normalization"])
+        .with_exec(["rm", "-rf", "airbyte_normalization"], use_entrypoint=True)
         .with_workdir("/airbyte/normalization_code")
-        .with_exec(["pip3", "install", "."])
+        .with_exec(["pip3", "install", "."], use_entrypoint=True)
         .with_workdir("/airbyte/normalization_code/dbt-template/")
-        .with_exec(["dbt", "deps"])
+        .with_exec(["dbt", "deps"], use_entrypoint=True)
         .with_workdir("/airbyte")
         .with_file(
             "run_with_normalization.sh",

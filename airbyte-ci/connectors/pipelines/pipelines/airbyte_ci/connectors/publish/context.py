@@ -55,6 +55,7 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_secret_key: Optional[Secret] = None,
         use_local_cdk: bool = False,
         python_registry_token: Optional[Secret] = None,
+        ci_github_access_token: Optional[Secret] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -94,6 +95,7 @@ class PublishConnectorContext(ConnectorContext):
             docker_hub_password=docker_hub_password,
             s3_build_cache_access_key_id=s3_build_cache_access_key_id,
             s3_build_cache_secret_key=s3_build_cache_secret_key,
+            ci_github_access_token=ci_github_access_token,
         )
 
         # Reassigning current class required instance attribute

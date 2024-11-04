@@ -26,7 +26,8 @@ data:
       enabled: true
   releaseStage: alpha
   releases:
-    isReleaseCandidate: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
         message:
