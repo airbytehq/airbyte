@@ -19,7 +19,9 @@ data:
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
-  maxSecondsBetweenMessages: 5400
+  # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
+  # We've added one minute on top of the three hours because of the waiting time before we poll the report status
+  maxSecondsBetweenMessages: 10860
   name: Amazon Ads
   remoteRegistries:
     pypi:
