@@ -168,7 +168,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
-        field_name: "created_min"
+        field_name: "created_at_min"
         inject_into: request_parameter
 
   # FULL-REFRESH STREAMS
