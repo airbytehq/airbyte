@@ -10,7 +10,12 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-abstract class S3V2WriteTest(path: String) :
+abstract class S3V2WriteTest(
+    path: String,
+    stringifySchemalessObjects: Boolean,
+    promoteUnionToObject: Boolean,
+    preserveUndeclaredFields: Boolean,
+) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
         S3V2Specification::class.java,
@@ -19,6 +24,9 @@ abstract class S3V2WriteTest(path: String) :
         NoopExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
+        stringifySchemalessObjects = stringifySchemalessObjects,
+        promoteUnionToObject = promoteUnionToObject,
+        preserveUndeclaredFields = preserveUndeclaredFields,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -36,7 +44,6 @@ abstract class S3V2WriteTest(path: String) :
         super.testMidSyncCheckpointingStreamState()
     }
 
-    @Disabled("append mode doesn't yet work")
     @Test
     override fun testAppend() {
         super.testAppend()
@@ -47,21 +54,138 @@ abstract class S3V2WriteTest(path: String) :
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
     }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
 }
 
-class S3V2WriteTestJsonUncompressed : S3V2WriteTest(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH)
+class S3V2WriteTestJsonUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
 
-class S3V2WriteTestJsonGzip : S3V2WriteTest(S3V2TestUtils.JSON_GZIP_CONFIG_PATH)
+class S3V2WriteTestJsonStaging :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
 
-class S3V2WriteTestCsvUncompressed : S3V2WriteTest(S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH)
+class S3V2WriteTestJsonGzip :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
 
-class S3V2WriteTestCsvGzip : S3V2WriteTest(S3V2TestUtils.CSV_GZIP_CONFIG_PATH)
+class S3V2WriteTestCsvUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
 
-class S3V2WriteTestAvroUncompressed : S3V2WriteTest(S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH)
+class S3V2WriteTestCsvGzip :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+    )
 
-class S3V2WriteTestAvroBzip2 : S3V2WriteTest(S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH)
+class S3V2WriteTestAvroUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+    ) {
+    @Disabled("Not yet working")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+}
+
+class S3V2WriteTestAvroBzip2 :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+    ) {
+    @Disabled("Not yet working")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+}
 
 class S3V2WriteTestParquetUncompressed :
-    S3V2WriteTest(S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH)
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = true,
+        preserveUndeclaredFields = false,
+    ) {
+    @Disabled("Not yet working")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 
-class S3V2WriteTestParquetSnappy : S3V2WriteTest(S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH)
+    @Disabled("Not yet working")
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+}
+
+class S3V2WriteTestParquetSnappy :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = true,
+        preserveUndeclaredFields = false,
+    ) {
+    @Disabled("Not yet working")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+}

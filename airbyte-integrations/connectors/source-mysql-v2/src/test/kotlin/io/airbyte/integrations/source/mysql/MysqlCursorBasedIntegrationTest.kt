@@ -73,6 +73,23 @@ class MysqlCursorBasedIntegrationTest {
         assertEquals(recordMessageFromRun1.size, 1)
     }
 
+    @Test
+    fun testWithFullRefresh() {
+        val fullRefreshCatalog =
+            getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog).run()
+        val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
+        assertEquals(recordMessageFromRun1.size, 2)
+        val lastStateMessageFromRun1 = run1.states().last()
+
+        val run2: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
+                .run()
+        val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
+        assertEquals(recordMessageFromRun2.size, 0)
+    }
+
     companion object {
         val log = KotlinLogging.logger {}
         val dbContainer: MySQLContainer<*> = MysqlContainerFactory.shared(imageName = "mysql:8.0")
