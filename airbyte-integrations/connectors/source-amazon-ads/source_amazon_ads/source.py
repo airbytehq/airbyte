@@ -14,15 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .spec import SourceAmazonAdsSpec
-from .streams import (
-    AttributionReportPerformanceAdgroup,
-    AttributionReportPerformanceCampaign,
-    AttributionReportPerformanceCreative,
-    AttributionReportProducts,
-    Profiles,
-    SponsoredBrandsV3ReportStream,
-    SponsoredDisplayReportStream,
-)
+from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -92,10 +84,6 @@ class SourceAmazonAds(YamlDeclarativeSource):
         non_profile_stream_classes = [
             SponsoredDisplayReportStream,
             SponsoredBrandsV3ReportStream,
-            AttributionReportPerformanceAdgroup,
-            AttributionReportPerformanceCampaign,
-            AttributionReportPerformanceCreative,
-            AttributionReportProducts,
         ]
         return super().streams(config=config) + [
             *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],

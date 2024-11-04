@@ -1,4 +1,4 @@
-version: 5.17.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -33,11 +33,11 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: >-
-      {% set URL_MAPPING = {
+      {%- set URL_MAPPING = {
           "NA": "https://advertising-api.amazon.com/",
           "EU": "https://advertising-api-eu.amazon.com/",
           "FE": "https://advertising-api-fe.amazon.com/"
-      } %}
+      } -%}
       {{ URL_MAPPING[config["region"]] }}
     authenticator: "#/definitions/oauth_authenticator"
     request_headers:
@@ -95,8 +95,8 @@ definitions:
             field_path: []
           record_filter:
             condition: >-
-              {% set requested_profiles = config.get("profiles", []) %}
-              {% set requested_marketplace_ids = config.get("marketplace_ids", []) %}
+              {%- set requested_profiles = config.get("profiles", []) -%}
+              {%- set requested_marketplace_ids = config.get("marketplace_ids", []) -%}
               {{ record["profileId"] in requested_profiles or record["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids if requested_profiles or requested_marketplace_ids else False }}
         paginator:
           type: NoPagination
@@ -810,6 +810,308 @@ definitions:
             field_path: [""]
         paginator:
           type: NoPagination
+
+    attribution_report_products:
+      type: DeclarativeStream
+      name: attribution_report_products
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [400]
+                action: IGNORE
+                error_message: "This profileID is not authorized to use Amazon Attribution"
+          path: /attribution/report
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            reportType: "PRODUCTS"
+            metrics: |
+              {{
+                ','.join([
+                'attributedDetailPageViewsClicks14d',
+                'attributedAddToCartClicks14d',
+                'attributedPurchases14d',
+                'unitsSold14d',
+                'attributedSales14d',
+                'brandHaloDetailPageViewsClicks14d',
+                'brandHaloAttributedAddToCartClicks14d',
+                'brandHaloAttributedPurchases14d',
+                'brandHaloUnitsSold14d',
+                'brandHaloAttributedSales14d',
+                'attributedNewToBrandPurchases14d',
+                'attributedNewToBrandUnitsSold14d',
+                'attributedNewToBrandSales14d',
+                'brandHaloNewToBrandPurchases14d',
+                'brandHaloNewToBrandUnitsSold14d',
+                'brandHaloNewToBrandSales14d',
+                ])
+              }}
+            startDate: >-
+              {%- set _start_date = config.get("start_date") -%}
+              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+            endDate: >-
+              "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+              extra_fields:
+                - ["timezone"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["reports"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursorId
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 300
+            cursor_value: "{{ response.cursorId }}"
+
+    attribution_report_performance_adgroup:
+      type: DeclarativeStream
+      name: attribution_report_performance_adgroup
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [400]
+                action: IGNORE
+                error_message: "This profileID is not authorized to use Amazon Attribution"
+          path: /attribution/report
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            reportType: "PERFORMANCE"
+            groupBy: "ADGROUP"
+            metrics: |
+              {{
+                ','.join([
+                'Click-throughs',
+                'attributedDetailPageViewsClicks14d',
+                'attributedAddToCartClicks14d',
+                'attributedPurchases14d',
+                'unitsSold14d',
+                'attributedSales14d',
+                'attributedTotalDetailPageViewsClicks14d',
+                'attributedTotalAddToCartClicks14d',
+                'attributedTotalPurchases14d',
+                'totalUnitsSold14d',
+                'totalAttributedSales14d',
+                'brb_bonus_amount'
+                ])
+              }}
+            startDate: >-
+              {%- set _start_date = config.get("start_date") -%}
+              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+            endDate: >-
+              "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+              extra_fields:
+                - ["timezone"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["reports"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursorId
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 300
+            cursor_value: "{{ response.cursorId }}"
+
+    attribution_report_performance_campaign:
+      type: DeclarativeStream
+      name: attribution_report_performance_campaign
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [400]
+                action: IGNORE
+                error_message: "This profileID is not authorized to use Amazon Attribution"
+          path: /attribution/report
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            reportType: "PERFORMANCE"
+            groupBy: "CAMPAIGN"
+            metrics: |
+              {{
+                ','.join([
+                'Click-throughs',
+                'attributedDetailPageViewsClicks14d',
+                'attributedAddToCartClicks14d',
+                'attributedPurchases14d',
+                'unitsSold14d',
+                'attributedSales14d',
+                'attributedTotalDetailPageViewsClicks14d',
+                'attributedTotalAddToCartClicks14d',
+                'attributedTotalPurchases14d',
+                'totalUnitsSold14d',
+                'totalAttributedSales14d',
+                'brb_bonus_amount'
+                ])
+              }}
+            startDate: >-
+              {%- set _start_date = config.get("start_date") -%}
+              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+            endDate: >-
+              "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+              extra_fields:
+                - ["timezone"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["reports"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursorId
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 300
+            cursor_value: "{{ response.cursorId }}"
+
+    attribution_report_performance_creative:
+      type: DeclarativeStream
+      name: attribution_report_performance_creative
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [400]
+                action: IGNORE
+                error_message: "This profileID is not authorized to use Amazon Attribution"
+          path: /attribution/report
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            reportType: "PERFORMANCE"
+            groupBy: "CREATIVE"
+            metrics: |
+              {{
+                ','.join([
+                'Click-throughs',
+                'attributedDetailPageViewsClicks14d',
+                'attributedAddToCartClicks14d',
+                'attributedPurchases14d',
+                'unitsSold14d',
+                'attributedSales14d',
+                'attributedTotalDetailPageViewsClicks14d',
+                'attributedTotalAddToCartClicks14d',
+                'attributedTotalPurchases14d',
+                'totalUnitsSold14d',
+                'totalAttributedSales14d',
+                ])
+              }}
+            startDate: >-
+              {%- set _start_date = config.get("start_date") -%}
+              {%- set start_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              {%- set end_date = today_with_timezone(stream_slice.extra_fields["timezone"]) -%}
+              "{{ start_date.strftime("%Y%m%d") if not config.get("start_date") else max(format_datetime(config['start_date'], "%Y%m%d"), (end_date - duration("P90D")).strftime("%Y%m%d")) | string }}"
+            endDate: >-
+              "{{ format_datetime(today_with_timezone(stream_slice.extra_fields['timezone']).strftime('%Y%m%d'), '%Y%m%d', '%Y%m%d') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+              extra_fields:
+                - ["timezone"]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["reports"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursorId
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: count
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 300
+            cursor_value: "{{ response.cursorId }}"
 
 streams:
   - $ref: "#/definitions/streams/profiles"
