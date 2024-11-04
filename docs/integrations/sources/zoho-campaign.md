@@ -9,7 +9,6 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 | `client_secret_2` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
 | `domain` | `string` | Domain.  |  |
-| `campaign_recipients_data_action` | `string` | Campaign Recipients Data Action.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
