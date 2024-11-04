@@ -522,6 +522,7 @@ class IncrementalStripeStream(StripeStream):
     ) -> Iterable[StreamData]:
         yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
+
 class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     """
     Docs: https://stripe.com/docs/api/setup_attempts/list
