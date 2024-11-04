@@ -2,7 +2,9 @@
 
 ## Upgrading to 1.0.0
 
-Now, subdoimain is a required property in the spec, The base url is now being updated to use subdomain as per the [official update](https://developer.zendesk.com/api-reference/live-chat/introduction/) from zendesk chat documentation
+The Live Chat API [changed its URL structure](https://developer.zendesk.com/api-reference/live-chat/introduction/) to use the Zendesk subdomain.
+The `subdomain` field of the connector configuration is now required. 
+You can find your Zendesk subdomain by following instructions [here](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain).
 
 ### For Airbyte Open Source: Update the local connector image
 
