@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-dropbox-sign
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
   connectorSubtype: api
   connectorType: source
   definitionId: da9cccd2-7319-44ea-b6cf-ddc08f13e959
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-dropbox-sign
   githubIssueLabel: source-dropbox-sign
   icon: icon.svg
