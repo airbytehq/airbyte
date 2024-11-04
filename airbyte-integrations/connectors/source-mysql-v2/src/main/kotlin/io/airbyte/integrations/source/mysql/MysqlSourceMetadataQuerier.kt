@@ -1,6 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
@@ -10,10 +12,13 @@ import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.sql.Statement
 
 private val log = KotlinLogging.logger {}
@@ -23,11 +28,70 @@ class MysqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
 
-    override fun fields(
-        streamName: String,
-        streamNamespace: String?,
-    ): List<Field> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+    override fun extraChecks() {
+        base.extraChecks()
+        if (base.config.global) {
+            // Extra checks for CDC
+            var cdcVariableCheckQueries: List<Pair<String, String>> =
+                listOf(
+                    Pair("show variables where Variable_name = 'log_bin'", "ON"),
+                    Pair("show variables where Variable_name = 'binlog_format'", "ROW"),
+                    Pair("show variables where Variable_name = 'binlog_row_image'", "FULL"),
+                    Pair("show variables where Variable_name = 'gtid_mode'", "ON"),
+                )
+
+            cdcVariableCheckQueries.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
+
+            // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
+            // it should be SHOW BINARY LOG STATUS. We will run both - if both have been failed we
+            // will throw exception.
+            try {
+                base.conn.createStatement().use { stmt: Statement ->
+                    stmt.execute("SHOW MASTER STATUS")
+                }
+            } catch (e: SQLException) {
+                try {
+                    base.conn.createStatement().use { stmt: Statement ->
+                        stmt.execute("SHOW BINARY LOG STATUS")
+                    }
+                } catch (ex: SQLException) {
+                    throw ConfigErrorException(
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                    )
+                }
+            }
+        }
+    }
+
+    private fun runVariableCheckSql(sql: String, expectedValue: String, conn: Connection) {
+        try {
+            conn.createStatement().use { stmt: Statement ->
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    if (!rs.next()) {
+                        throw ConfigErrorException("Could not query the variable $sql")
+                    }
+                    val resultValue: String = rs.getString("Value")
+                    if (!resultValue.equals(expectedValue, ignoreCase = true)) {
+                        throw ConfigErrorException(
+                            String.format(
+                                "The variable should be set to \"%s\", but it is \"%s\"",
+                                expectedValue,
+                                resultValue,
+                            ),
+                        )
+                    }
+                    if (rs.next()) {
+                        throw ConfigErrorException("Could not query the variable $sql")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            throw ConfigErrorException("Check query failed with: ${e.message}")
+        }
+    }
+
+    override fun fields(streamID: StreamIdentifier): List<Field> {
+        val table: TableName = findTableName(streamID) ?: return listOf()
         if (table !in base.memoizedColumnMetadata) return listOf()
         return base.memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
@@ -36,17 +100,17 @@ class MysqlSourceMetadataQuerier(
 
     override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
 
-    override fun streamNames(streamNamespace: String?): List<String> =
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
         base.memoizedTableNames
             .filter { (it.schema ?: it.catalog) == streamNamespace }
-            .map { it.name }
+            .map { StreamDescriptor().withName(it.name).withNamespace(streamNamespace) }
+            .map(StreamIdentifier::from)
 
     fun findTableName(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): TableName? =
         base.memoizedTableNames.find {
-            it.name == streamName && (it.schema ?: it.catalog) == streamNamespace
+            it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
@@ -73,7 +137,13 @@ class MysqlSourceMetadataQuerier(
             }
             log.info { "Discovered all primary keys in ${schemas.size} Mysql schema(s)." }
             return@lazy results
-                .groupBy { findTableName(it.tableName, "public") }
+                .groupBy {
+                    findTableName(
+                        StreamIdentifier.from(
+                            StreamDescriptor().withName(it.tableName).withNamespace(it.tableSchema),
+                        ),
+                    )
+                }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
                     val pkRows: List<AllPrimaryKeysRow> =
@@ -99,10 +169,9 @@ class MysqlSourceMetadataQuerier(
     }
 
     override fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 

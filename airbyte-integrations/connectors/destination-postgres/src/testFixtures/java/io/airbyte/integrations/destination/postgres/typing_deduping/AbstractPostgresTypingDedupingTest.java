@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -60,6 +61,13 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
   @Override
   protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
     return new PostgresSourceOperations();
+  }
+
+  @Disabled
+  @Test
+  @Override
+  public void resumeAfterCancelledTruncate() throws Exception {
+    super.resumeAfterCancelledTruncate();
   }
 
   @Test

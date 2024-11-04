@@ -19,10 +19,10 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import Pag
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
-from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
-A_STREAM_SLICE = {"stream slice": "slice value"}
+A_STREAM_SLICE = StreamSlice(cursor_slice={"stream slice": "slice value"}, partition={})
 A_STREAM_STATE = {"stream state": "state value"}
 
 primary_key = "pk"
@@ -370,7 +370,7 @@ def test_simple_retriever_resumable_full_refresh_cursor_reset_skip_completed_str
 
 
 @pytest.mark.parametrize(
-    "test_name, paginator_mapping, stream_slicer_mapping, expected_mapping",
+    "test_name, paginator_mapping, request_options_provider_mapping, expected_mapping",
     [
         ("test_empty_headers", {}, {}, {}),
         ("test_header_from_pagination_and_slicer", {"offset": 1000}, {"key": "value"}, {"key": "value", "offset": 1000}),
@@ -378,17 +378,17 @@ def test_simple_retriever_resumable_full_refresh_cursor_reset_skip_completed_str
         ("test_duplicate_header_slicer_paginator", {"k": "v"}, {"k": "slice_value"}, None),
     ],
 )
-def test_get_request_options_from_pagination(test_name, paginator_mapping, stream_slicer_mapping, expected_mapping):
+def test_get_request_options_from_pagination(test_name, paginator_mapping, request_options_provider_mapping, expected_mapping):
     # This test does not test request headers because they must be strings
     paginator = MagicMock()
     paginator.get_request_params.return_value = paginator_mapping
     paginator.get_request_body_data.return_value = paginator_mapping
     paginator.get_request_body_json.return_value = paginator_mapping
 
-    stream_slicer = MagicMock()
-    stream_slicer.get_request_params.return_value = stream_slicer_mapping
-    stream_slicer.get_request_body_data.return_value = stream_slicer_mapping
-    stream_slicer.get_request_body_json.return_value = stream_slicer_mapping
+    request_options_provider = MagicMock()
+    request_options_provider.get_request_params.return_value = request_options_provider_mapping
+    request_options_provider.get_request_body_data.return_value = request_options_provider_mapping
+    request_options_provider.get_request_body_json.return_value = request_options_provider_mapping
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
@@ -397,7 +397,7 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
         requester=MagicMock(),
         record_selector=record_selector,
         paginator=paginator,
-        stream_slicer=stream_slicer,
+        request_option_provider=request_options_provider,
         parameters={},
         config={},
     )
@@ -532,7 +532,7 @@ def test_ignore_stream_slicer_parameters_on_paginated_requests(
 
 
 @pytest.mark.parametrize(
-    "test_name, slicer_body_data, paginator_body_data, expected_body_data",
+    "test_name, request_options_provider_body_data, paginator_body_data, expected_body_data",
     [
         ("test_only_slicer_mapping", {"key": "value"}, {}, {"key": "value"}),
         ("test_only_slicer_string", "key=value", {}, "key=value"),
@@ -541,13 +541,15 @@ def test_ignore_stream_slicer_parameters_on_paginated_requests(
         ("test_slicer_string_and_paginator", "key=value", {"offset": 1000}, None),
     ],
 )
-def test_request_body_data(test_name, slicer_body_data, paginator_body_data, expected_body_data):
+def test_request_body_data(test_name, request_options_provider_body_data, paginator_body_data, expected_body_data):
     paginator = MagicMock()
     paginator.get_request_body_data.return_value = paginator_body_data
     requester = MagicMock(use_cache=False)
 
-    stream_slicer = MagicMock()
-    stream_slicer.get_request_body_data.return_value = slicer_body_data
+    # stream_slicer = MagicMock()
+    # stream_slicer.get_request_body_data.return_value = request_options_provider_body_data
+    request_option_provider = MagicMock()
+    request_option_provider.get_request_body_data.return_value = request_options_provider_body_data
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
@@ -556,7 +558,7 @@ def test_request_body_data(test_name, slicer_body_data, paginator_body_data, exp
         requester=requester,
         record_selector=record_selector,
         paginator=paginator,
-        stream_slicer=stream_slicer,
+        request_option_provider=request_option_provider,
         parameters={},
         config={},
     )
@@ -630,8 +632,8 @@ def test_limit_stream_slices():
     ],
 )
 def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name, first_greater_than_second):
-    first_record = Record({"first": 1}, {})
-    second_record = Record({"second": 2}, {})
+    first_record = Record({"first": 1}, StreamSlice(cursor_slice={}, partition={}))
+    second_record = Record({"second": 2}, StreamSlice(cursor_slice={}, partition={}))
     records = [first_record, second_record]
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
@@ -651,7 +653,7 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
         parameters={},
         config={},
     )
-    stream_slice = {"repository": "airbyte"}
+    stream_slice = StreamSlice(cursor_slice={}, partition={"repository": "airbyte"})
 
     def retriever_read_pages(_, __, ___):
         return retriever._parse_records(response=MagicMock(), stream_state={}, stream_slice=stream_slice, records_schema={})
@@ -683,7 +685,7 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
         parameters={},
         config={},
     )
-    stream_slice = {"repository": "airbyte"}
+    stream_slice = StreamSlice(cursor_slice={}, partition={"repository": "airbyte"})
 
     def retriever_read_pages(_, __, ___):
         return retriever._parse_records(response=MagicMock(), stream_state={}, stream_slice=stream_slice, records_schema={})
@@ -754,7 +756,7 @@ def test_emit_log_request_response_messages(mocker):
         config={},
     )
 
-    retriever._fetch_next_page(stream_state={}, stream_slice={})
+    retriever._fetch_next_page(stream_state={}, stream_slice=StreamSlice(cursor_slice={}, partition={}))
 
     assert requester.send_request.call_args_list[0][1]["log_formatter"] is not None
     assert requester.send_request.call_args_list[0][1]["log_formatter"](response) == format_http_message_mock.return_value

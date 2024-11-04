@@ -4,9 +4,10 @@
 
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamIdentifier
+
 data class DiscoveredStream(
-    val name: String,
-    val namespace: String?,
+    val id: StreamIdentifier,
     val columns: List<Field>,
     val primaryKeyColumnIDs: List<List<String>>,
 )

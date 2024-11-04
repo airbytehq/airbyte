@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.3.2
+  dockerImageTag: 2.4.0
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres

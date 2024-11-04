@@ -2,18 +2,21 @@
 import logging
 import uuid
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
+from airbyte_cdk import AirbyteMessage
 from airbyte_cdk.logger import lazy_log
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, Type
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor, RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.response_to_file_extractor import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
 
@@ -24,11 +27,14 @@ LOGGER = logging.getLogger("airbyte")
 class AsyncHttpJobRepository(AsyncJobRepository):
     creation_requester: Requester
     polling_requester: Requester
-    download_requester: Requester
+    download_retriever: SimpleRetriever
+    abort_requester: Optional[Requester]
+    delete_requester: Optional[Requester]
     status_extractor: DpathExtractor
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
 
+    job_timeout: Optional[timedelta] = None
     record_extractor: RecordExtractor = field(init=False, repr=False, default_factory=lambda: ResponseToFileExtractor())
 
     def __post_init__(self) -> None:
@@ -118,7 +124,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         job_id: str = str(uuid.uuid4())
         self._create_job_response_by_id[job_id] = response
 
-        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
+        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice, timeout=self.job_timeout)
 
     def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         """
@@ -135,15 +141,14 @@ class AsyncHttpJobRepository(AsyncJobRepository):
             None
         """
         for job in jobs:
-            stream_slice = StreamSlice(
-                partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]},
-                cursor_slice={},
-            )
+            stream_slice = self._get_create_job_stream_slice(job)
             polling_response: requests.Response = self._get_validated_polling_response(stream_slice)
             job_status: AsyncJobStatus = self._get_validated_job_status(polling_response)
 
             if job_status != job.status():
                 lazy_log(LOGGER, logging.DEBUG, lambda: f"Status of job {job.api_job_id()} changed from {job.status()} to {job_status}")
+            else:
+                lazy_log(LOGGER, logging.DEBUG, lambda: f"Status of job {job.api_job_id()} is still {job.status()}")
 
             job.update_status(job_status)
             if job_status == AsyncJobStatus.COMPLETED:
@@ -163,15 +168,39 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):
             stream_slice: StreamSlice = StreamSlice(partition={"url": url}, cursor_slice={})
-            # FIXME salesforce will require pagination here
-            response = self.download_requester.send_request(stream_slice=stream_slice)
-            if response:
-                yield from self.record_extractor.extract_records(response)
+            for message in self.download_retriever.read_records({}, stream_slice):
+                if isinstance(message, Record):
+                    yield message.data
+                elif isinstance(message, AirbyteMessage):
+                    if message.type == Type.RECORD:
+                        yield message.record.data  # type: ignore  # message.record won't be None here as the message is a record
+                elif isinstance(message, (dict, Mapping)):
+                    yield message
+                else:
+                    raise TypeError(f"Unknown type `{type(message)}` for message")
 
         yield from []
 
+    def abort(self, job: AsyncJob) -> None:
+        if not self.abort_requester:
+            return
+
+        self.abort_requester.send_request(stream_slice=self._get_create_job_stream_slice(job))
+
+    def delete(self, job: AsyncJob) -> None:
+        if not self.delete_requester:
+            return
+
+        self.delete_requester.send_request(stream_slice=self._get_create_job_stream_slice(job))
         self._clean_up_job(job.api_job_id())
 
     def _clean_up_job(self, job_id: str) -> None:
         del self._create_job_response_by_id[job_id]
         del self._polling_job_response_by_id[job_id]
+
+    def _get_create_job_stream_slice(self, job: AsyncJob) -> StreamSlice:
+        stream_slice = StreamSlice(
+            partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]},
+            cursor_slice={},
+        )
+        return stream_slice

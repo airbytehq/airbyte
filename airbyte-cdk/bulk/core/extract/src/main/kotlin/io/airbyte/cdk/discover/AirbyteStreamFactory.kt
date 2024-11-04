@@ -17,10 +17,10 @@ interface AirbyteStreamFactory {
 
         fun createAirbyteStream(discoveredStream: DiscoveredStream): AirbyteStream =
             CatalogHelpers.createAirbyteStream(
-                discoveredStream.name,
-                discoveredStream.namespace,
+                discoveredStream.id.name,
+                discoveredStream.id.namespace,
                 discoveredStream.columns.map {
-                    AirbyteField.of(it.id, it.type.airbyteType.asJsonSchemaType())
+                    AirbyteField.of(it.id, it.type.airbyteSchemaType.asJsonSchemaType())
                 },
             )
     }

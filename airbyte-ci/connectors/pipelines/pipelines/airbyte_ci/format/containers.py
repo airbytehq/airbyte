@@ -53,7 +53,7 @@ def build_container(
 
     # Install any dependencies of the formatter
     if install_commands:
-        container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
+        container = container.with_exec(sh_dash_c(install_commands))
 
     # Mount the relevant parts of the repository: the code to format and the formatting config
     # Exclude the default ignore list to keep things as small as possible.
@@ -109,6 +109,7 @@ def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory,
     return build_container(
         dagger_client,
         base_image=NODE_IMAGE,
+        warmup_dir=warmup_directory(dagger_client, Formatter.JS),
         dir_to_format=js_code,
         install_commands=[f"npm install -g npm@10.1.0 prettier@{prettier_version}"],
         cache_volume=dagger_client.cache_volume(cache_keys.get_prettier_cache_key(prettier_version)),

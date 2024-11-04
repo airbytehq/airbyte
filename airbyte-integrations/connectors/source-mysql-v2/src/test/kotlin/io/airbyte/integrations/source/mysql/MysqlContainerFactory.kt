@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.testcontainers.containers.Container
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
@@ -21,6 +22,12 @@ object MysqlContainerFactory {
     data object WithNetwork : MysqlContainerModifier {
         override fun modify(container: MySQLContainer<*>) {
             container.withNetwork(Network.newNetwork())
+        }
+    }
+
+    data object WithCdcOff : MysqlContainerModifier {
+        override fun modify(container: MySQLContainer<*>) {
+            container.withCommand("--skip-log-bin")
         }
     }
 
@@ -43,15 +50,48 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationJsonObject =
-        MysqlSourceConfigurationJsonObject().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username
             password = mySQLContainer.password
             jdbcUrlParams = ""
-            schemas = listOf("test")
+            database = "test"
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
+            setMethodValue(UserDefinedCursor)
         }
+
+    @JvmStatic
+    fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
+            host = mySQLContainer.host
+            port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
+            username = mySQLContainer.username
+            password = mySQLContainer.password
+            jdbcUrlParams = ""
+            database = "test"
+            checkpointTargetIntervalSeconds = 60
+            concurrency = 1
+            setMethodValue(CdcCursor())
+        }
+
+    fun MySQLContainer<*>.execAsRoot(sql: String) {
+        val cleanSql: String = sql.trim().removeSuffix(";") + ";"
+        log.info { "Executing SQL as root: $cleanSql" }
+        val result: Container.ExecResult =
+            execInContainer("mysql", "-u", "root", "-ptest", "-e", cleanSql)
+        for (line in (result.stdout ?: "").lines()) {
+            log.info { "STDOUT: $line" }
+        }
+        for (line in (result.stderr ?: "").lines()) {
+            log.info { "STDOUT: $line" }
+        }
+        if (result.exitCode == 0) {
+            return
+        }
+        log.error { "Exit code ${result.exitCode}" }
+        throw RuntimeException("Failed to execute query $cleanSql")
+    }
 }

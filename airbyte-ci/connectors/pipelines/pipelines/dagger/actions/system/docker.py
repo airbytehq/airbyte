@@ -106,10 +106,7 @@ def docker_login(
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username)
             .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password)
-            .with_exec(
-                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]),
-                skip_entrypoint=True,
-            )
+            .with_exec(sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]))
         )
     else:
         return dockerd_container
@@ -136,7 +133,7 @@ def with_global_dockerd_service(
         # Ping the registry mirror host to make sure it's reachable through VPN
         # We set a cache buster here to guarantee the curl command is always executed.
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
-            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"]
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
@@ -149,7 +146,9 @@ def with_global_dockerd_service(
             dockerd_container, docker_hub_username.as_dagger_secret(dagger_client), docker_hub_password.as_dagger_secret(dagger_client)
         )
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"],
+        insecure_root_capabilities=True,
+        use_entrypoint=True,
     ).as_service()
 
 
@@ -205,12 +204,12 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
-    image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name], use_entrypoint=True).stdout()
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag])
-    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag]).stdout())[0].get("Id")
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag], use_entrypoint=True)
+    image_sha = json.loads(await docker_cli.with_exec(["docker", "inspect", image_tag], use_entrypoint=True).stdout())[0].get("Id")
     return image_sha
 
 
@@ -231,12 +230,9 @@ def with_crane(
             base_container.with_secret_variable(
                 "DOCKER_HUB_USERNAME", context.docker_hub_username.as_dagger_secret(context.dagger_client)
             ).with_secret_variable("DOCKER_HUB_PASSWORD", context.docker_hub_password.as_dagger_secret(context.dagger_client))
-            # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
-            .with_exec(
-                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True
-            )
+            .with_exec(sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]))
         )
 
     return base_container

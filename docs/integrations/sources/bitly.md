@@ -31,8 +31,9 @@ Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings â
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-01 | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.2 | 2024-10-28 | [47516](https://github.com/airbytehq/airbyte/pull/47516) | Update dependencies |
+| 0.0.1 | 2024-09-01 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

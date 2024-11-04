@@ -1,83 +1,95 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg.container;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.HTTP_PREFIX;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_STORAGE_TYPE_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ACCESS_KEY_ID_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_BUCKET_REGION_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ENDPOINT_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_SECRET_KEY_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WAREHOUSE_URI_CONFIG_KEY;
+import static java.util.Map.entry;
+import static java.util.Map.ofEntries;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.json.Jsons;
 import java.time.Duration;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
-/**
- * @author Leibniz on 2022/11/3.
- */
 public class MinioContainer extends GenericContainer<MinioContainer> {
 
-  public static final String DEFAULT_ACCESS_KEY = "DEFAULT_ACCESS_KEY";
-  public static final String DEFAULT_SECRET_KEY = "DEFAULT_SECRET_KEY";
+  private static final Logger LOGGER = LoggerFactory.getLogger(MinioContainer.class);
+  private static final Credentials DEFAULT_CREDENTIALS = new Credentials("admin", "password", "us-east-1");
+  private static final String DEFAULT_IMAGE_NAME = "minio/minio:RELEASE.2024-09-09T16-59-28Z.fips";
+  private static final String HEALTH_ENDPOINT = "/minio/health/ready";
+  private static final String DEFAULT_DOMAIN_NAME = "minio";
+  private static final String DEFAULT_DATA_DIRECTORY = "/data";
+  private static final Integer DEFAULT_PORT = 9000;
 
-  public static final int MINIO_PORT = 9000;
-  private static final String DEFAULT_IMAGE = "minio/minio";
-  private static final String DEFAULT_TAG = "edge";
-
-  private static final String MINIO_ACCESS_KEY = "MINIO_ACCESS_KEY";
-  private static final String MINIO_SECRET_KEY = "MINIO_SECRET_KEY";
-
-  private static final String DEFAULT_STORAGE_DIRECTORY = "/data";
-  public static final String HEALTH_ENDPOINT = "/minio/health/ready";
+  public record Credentials(String accessKey, String secretKey, String region) {}
 
   public MinioContainer() {
-    this(DEFAULT_IMAGE + ":" + DEFAULT_TAG, null, null);
+    this(DEFAULT_CREDENTIALS);
   }
 
-  public MinioContainer(CredentialsProvider credentials) {
-    this(DEFAULT_IMAGE + ":" + DEFAULT_TAG, credentials, null);
+  public MinioContainer(Credentials credentials) {
+    super(DockerImageName.parse(DEFAULT_IMAGE_NAME));
+
+    super.withEnv("MINIO_ROOT_USER", credentials.accessKey)
+        .withEnv("MINIO_ROOT_PASSWORD", credentials.secretKey)
+        .withEnv("MINIO_DOMAIN", DEFAULT_DOMAIN_NAME)
+        .withExposedPorts(DEFAULT_PORT)
+        .withCommand("server", DEFAULT_DATA_DIRECTORY)
+        .waitingFor(new HttpWaitStrategy()
+            .forPort(DEFAULT_PORT)
+            .forPath(HEALTH_ENDPOINT)
+            .withStartupTimeout(Duration.ofMinutes(2)));
   }
 
-  public MinioContainer(String image, CredentialsProvider credentials, Integer bindPort) {
-    super(image == null ? DEFAULT_IMAGE + ":" + DEFAULT_TAG : image);
-    addExposedPort(MINIO_PORT);
-    if (credentials != null) {
-      withEnv(MINIO_ACCESS_KEY, credentials.getAccessKey());
-      withEnv(MINIO_SECRET_KEY, credentials.getSecretKey());
-    }
-    withCommand("server", DEFAULT_STORAGE_DIRECTORY);
-    setWaitStrategy(new HttpWaitStrategy()
-        .forPort(MINIO_PORT)
-        .forPath(HEALTH_ENDPOINT)
-        .withStartupTimeout(Duration.ofMinutes(2)));
-    if (bindPort != null) {
-      setPortBindings(List.of(bindPort + ":" + MINIO_PORT));
-    }
+  public JsonNode getConfig(String warehouseUri) {
+    final String s3Endpoint = String.format("%s%s:%s", HTTP_PREFIX, this.getHost(),
+        this.getMappedPort(DEFAULT_PORT));
+    LOGGER.info("Configure S3 endpoint to {}", s3Endpoint);
+    return Jsons.jsonNode(ofEntries(
+        entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(S3_ACCESS_KEY_ID_CONFIG_KEY, "admin"),
+        entry(S3_SECRET_KEY_CONFIG_KEY, "password"),
+        entry(S3_WAREHOUSE_URI_CONFIG_KEY, warehouseUri),
+        entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
+        entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)));
   }
 
-  public String getHostAddress() {
-    return getContainerIpAddress() + ":" + getMappedPort(MINIO_PORT);
+  public JsonNode getConfigWithResolvedHostPort(String warehouseUri) {
+    final String s3Endpoint = String.format("%s%s:%s", HTTP_PREFIX, HostPortResolver.resolveHost(this),
+        HostPortResolver.resolvePort(this));
+    LOGGER.info("Configure S3 endpoint to {}", s3Endpoint);
+    return Jsons.jsonNode(ofEntries(
+        entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(S3_ACCESS_KEY_ID_CONFIG_KEY, "admin"),
+        entry(S3_SECRET_KEY_CONFIG_KEY, "password"),
+        entry(S3_WAREHOUSE_URI_CONFIG_KEY, warehouseUri),
+        entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
+        entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)));
   }
 
-  public int getPort() {
-    return getMappedPort(MINIO_PORT);
-  }
-
-  public static class CredentialsProvider {
-
-    private final String accessKey;
-    private final String secretKey;
-
-    public CredentialsProvider(String accessKey, String secretKey) {
-      this.accessKey = accessKey;
-      this.secretKey = secretKey;
-    }
-
-    public String getAccessKey() {
-      return accessKey;
-    }
-
-    public String getSecretKey() {
-      return secretKey;
-    }
-
+  public JsonNode getWrongConfig(String warehouseUri) {
+    final String s3Endpoint = String.format("%s%s:%s", HTTP_PREFIX, HostPortResolver.resolveHost(this),
+        HostPortResolver.resolvePort(this));
+    return Jsons.jsonNode(ofEntries(
+        entry(ICEBERG_STORAGE_TYPE_CONFIG_KEY, "S3"),
+        entry(S3_ACCESS_KEY_ID_CONFIG_KEY, "badaccesskey"),
+        entry(S3_SECRET_KEY_CONFIG_KEY, "badsecretkey"),
+        entry(S3_WAREHOUSE_URI_CONFIG_KEY, warehouseUri),
+        entry(S3_BUCKET_REGION_CONFIG_KEY, "us-east-1"),
+        entry(S3_ENDPOINT_CONFIG_KEY, s3Endpoint)));
   }
 
 }

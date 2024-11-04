@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -1857,20 +1856,5 @@ abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
         private var dataSource: DataSource =
             SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
         private var database: JdbcDatabase = SnowflakeDatabaseUtils.getDatabase(dataSource)
-
-        @JvmStatic
-        @BeforeAll
-        fun setupSnowflake(): Unit {
-            dataSource =
-                SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-            database = SnowflakeDatabaseUtils.getDatabase(dataSource)
-        }
-
-        @JvmStatic
-        @AfterAll
-        @Throws(Exception::class)
-        fun teardownSnowflake(): Unit {
-            DataSourceFactory.close(dataSource)
-        }
     }
 }

@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
-    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
     implementation 'hu.webarticum:tree-printer:3.2.1'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))

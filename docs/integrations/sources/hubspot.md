@@ -336,6 +336,12 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.25 | 2024-10-29 | [47028](https://github.com/airbytehq/airbyte/pull/47028) | Update dependencies |
+| 4.2.24 | 2024-10-12 | [46827](https://github.com/airbytehq/airbyte/pull/46827) | Update dependencies |
+| 4.2.23 | 2024-10-05 | [46494](https://github.com/airbytehq/airbyte/pull/46494) | Update dependencies |
+| 4.2.22 | 2024-09-28 | [46160](https://github.com/airbytehq/airbyte/pull/46160) | Update dependencies |
+| 4.2.21 | 2024-09-23 | [42688](https://github.com/airbytehq/airbyte/pull/44899) | Fix incremental search to use primary key as placeholder instead of lastModifiedDate |
+| 4.2.20 | 2024-09-21 | [45753](https://github.com/airbytehq/airbyte/pull/45753) | Update dependencies |
 | 4.2.19 | 2024-09-14 | [45018](https://github.com/airbytehq/airbyte/pull/45018) | Update dependencies |
 | 4.2.18 | 2024-08-24 | [43762](https://github.com/airbytehq/airbyte/pull/43762) | Update dependencies |
 | 4.2.17 | 2024-08-21 | [44538](https://github.com/airbytehq/airbyte/pull/44538) | Fix issue with CRM search streams when they have no `associations` |

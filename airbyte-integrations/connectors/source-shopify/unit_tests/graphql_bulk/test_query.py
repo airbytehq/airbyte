@@ -12,6 +12,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
 )
+from source_shopify.streams.streams import Customers, Products
 
 
 def test_query_status() -> None:
@@ -123,13 +124,14 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
 
 
 @pytest.mark.parametrize(
-    "query_class, filter_field, start, end, expected",
+    "query_class, filter_field, start, end, parent_stream_class, expected",
     [
         (
             MetafieldCustomer,
             "updated_at",
             "2023-01-01",
             "2023-01-02",
+            Customers,
             Operation(
                 type="",
                 queries=[
@@ -139,7 +141,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),    
                         ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename', 'id', Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
+                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename', 'id', Field(name="updatedAt", alias="customers_updated_at"), Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])]
                     )
                 ]
             ),
@@ -149,6 +151,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
             "updated_at",
             "2023-01-01",
             "2023-01-02",
+            Products,
             Operation(
                 type="",
                 queries=[
@@ -167,6 +170,10 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                                         fields=[
                                             "__typename",
                                             "id",
+                                            Field(
+                                                name="updatedAt",
+                                                alias="products_updated_at",
+                                            ),
                                             Field(
                                                 name="media",
                                                 fields=[
@@ -227,6 +234,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
             "updated_at",
             "2023-01-01",
             "2023-01-02",
+            None,
             Operation(
                 type="",
                 queries=[
@@ -298,6 +306,12 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
         "InventoryLevel query",
     ]
 )
-def test_bulk_query(basic_config, query_class, filter_field, start, end, expected) -> None:
-    stream = query_class(basic_config)
-    assert stream.get(filter_field, start, end) == expected.render()
+def test_bulk_query(auth_config, query_class, filter_field, start, end, parent_stream_class, expected) -> None:
+    if parent_stream_class:
+        parent_stream = parent_stream_class(auth_config)
+        parent_stream_cursor_alias = f"{parent_stream.name}_{parent_stream.cursor_field}"
+        stream_query = query_class(auth_config, parent_stream_cursor_alias)
+    else:
+        stream_query = query_class(auth_config)
+
+    assert stream_query.get(filter_field, start, end) == expected.render()

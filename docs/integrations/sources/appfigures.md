@@ -37,8 +37,9 @@ Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more det
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|--|----------------|
-| 0.0.1 | 2024-09-08 |[45332](https://github.com/airbytehq/airbyte/pull/45332)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | -- | ---------------- |
+| 0.0.2 | 2024-10-29 | [47661](https://github.com/airbytehq/airbyte/pull/47661) | Update dependencies |
+| 0.0.1 | 2024-09-08 | [45332](https://github.com/airbytehq/airbyte/pull/45332) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

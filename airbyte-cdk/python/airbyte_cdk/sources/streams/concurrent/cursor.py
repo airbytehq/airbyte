@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import functools
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple
@@ -86,6 +87,13 @@ class Cursor(ABC):
         """
         raise NotImplementedError()
 
+    def generate_slices(self) -> Iterable[Tuple[Any, Any]]:
+        """
+        Default placeholder implementation of generate_slices.
+        Subclasses can override this method to provide actual behavior.
+        """
+        yield from ()
+
 
 class FinalStateCursor(Cursor):
     """Cursor that is used to guarantee at least one state message is emitted for a concurrent stream."""
@@ -143,6 +151,7 @@ class ConcurrentCursor(Cursor):
         end_provider: Callable[[], CursorValueType],
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
+        cursor_granularity: Optional[GapType] = None,
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -151,18 +160,27 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
-        self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._slice_boundary_fields = slice_boundary_fields
         self._start = start
         self._end_provider = end_provider
-        self._most_recent_record: Optional[Record] = None
-        self._has_closed_at_least_one_slice = False
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
         self._lookback_window = lookback_window
         self._slice_range = slice_range
+        self._most_recent_cursor_value_per_partition: MutableMapping[Partition, Any] = {}
+        self._has_closed_at_least_one_slice = False
+        self._cursor_granularity = cursor_granularity
 
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
+
+    @property
+    def cursor_field(self) -> CursorField:
+        return self._cursor_field
+
+    @property
+    def slice_boundary_fields(self) -> Optional[Tuple[str, str]]:
+        return self._slice_boundary_fields
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
@@ -170,14 +188,11 @@ class ConcurrentCursor(Cursor):
         return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
-        if self._slice_boundary_fields:
-            # Given that slicing is done using the cursor field, we don't need to observe the record as we assume slices will describe what
-            # has been emitted. Assuming there is a chance that records might not be yet populated for the most recent slice, use a lookback
-            # window
-            return
+        most_recent_cursor_value = self._most_recent_cursor_value_per_partition.get(record.partition)
+        cursor_value = self._extract_cursor_value(record)
 
-        if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
-            self._most_recent_record = record
+        if most_recent_cursor_value is None or most_recent_cursor_value < cursor_value:
+            self._most_recent_cursor_value_per_partition[record.partition] = cursor_value
 
     def _extract_cursor_value(self, record: Record) -> Any:
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
@@ -191,6 +206,8 @@ class ConcurrentCursor(Cursor):
         self._has_closed_at_least_one_slice = True
 
     def _add_slice_to_state(self, partition: Partition) -> None:
+        most_recent_cursor_value = self._most_recent_cursor_value_per_partition.get(partition)
+
         if self._slice_boundary_fields:
             if "slices" not in self.state:
                 raise RuntimeError(
@@ -198,11 +215,16 @@ class ConcurrentCursor(Cursor):
                 )
             self.state["slices"].append(
                 {
-                    "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
-                    "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
+                    self._connector_state_converter.START_KEY: self._extract_from_slice(
+                        partition, self._slice_boundary_fields[self._START_BOUNDARY]
+                    ),
+                    self._connector_state_converter.END_KEY: self._extract_from_slice(
+                        partition, self._slice_boundary_fields[self._END_BOUNDARY]
+                    ),
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
-        elif self._most_recent_record:
+        elif most_recent_cursor_value:
             if self._has_closed_at_least_one_slice:
                 # If we track state value using records cursor field, we can only do that if there is one partition. This is because we save
                 # the state every time we close a partition. We assume that if there are multiple slices, they need to be providing
@@ -222,7 +244,8 @@ class ConcurrentCursor(Cursor):
             self.state["slices"].append(
                 {
                     self._connector_state_converter.START_KEY: self.start,
-                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record),
+                    self._connector_state_converter.END_KEY: most_recent_cursor_value,
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
 
@@ -269,22 +292,36 @@ class ConcurrentCursor(Cursor):
         self._merge_partitions()
 
         if self._start is not None and self._is_start_before_first_slice():
-            yield from self._split_per_slice_range(self._start, self.state["slices"][0][self._connector_state_converter.START_KEY])
+            yield from self._split_per_slice_range(
+                self._start,
+                self.state["slices"][0][self._connector_state_converter.START_KEY],
+                False,
+            )
 
         if len(self.state["slices"]) == 1:
             yield from self._split_per_slice_range(
                 self._calculate_lower_boundary_of_last_slice(self.state["slices"][0][self._connector_state_converter.END_KEY]),
                 self._end_provider(),
+                True,
             )
         elif len(self.state["slices"]) > 1:
             for i in range(len(self.state["slices"]) - 1):
-                yield from self._split_per_slice_range(
-                    self.state["slices"][i][self._connector_state_converter.END_KEY],
-                    self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
-                )
+                if self._cursor_granularity:
+                    yield from self._split_per_slice_range(
+                        self.state["slices"][i][self._connector_state_converter.END_KEY] + self._cursor_granularity,
+                        self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
+                        False,
+                    )
+                else:
+                    yield from self._split_per_slice_range(
+                        self.state["slices"][i][self._connector_state_converter.END_KEY],
+                        self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
+                        False,
+                    )
             yield from self._split_per_slice_range(
                 self._calculate_lower_boundary_of_last_slice(self.state["slices"][-1][self._connector_state_converter.END_KEY]),
                 self._end_provider(),
+                True,
             )
         else:
             raise ValueError("Expected at least one slice")
@@ -297,7 +334,9 @@ class ConcurrentCursor(Cursor):
             return lower_boundary - self._lookback_window
         return lower_boundary
 
-    def _split_per_slice_range(self, lower: CursorValueType, upper: CursorValueType) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
+    def _split_per_slice_range(
+        self, lower: CursorValueType, upper: CursorValueType, upper_is_end: bool
+    ) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
         if lower >= upper:
             return
 
@@ -306,13 +345,20 @@ class ConcurrentCursor(Cursor):
 
         lower = max(lower, self._start) if self._start else lower
         if not self._slice_range or lower + self._slice_range >= upper:
-            yield lower, upper
+            if self._cursor_granularity and not upper_is_end:
+                yield lower, upper - self._cursor_granularity
+            else:
+                yield lower, upper
         else:
             stop_processing = False
             current_lower_boundary = lower
             while not stop_processing:
                 current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
-                yield current_lower_boundary, current_upper_boundary
+                has_reached_upper_boundary = current_upper_boundary >= upper
+                if self._cursor_granularity and (not upper_is_end or not has_reached_upper_boundary):
+                    yield current_lower_boundary, current_upper_boundary - self._cursor_granularity
+                else:
+                    yield current_lower_boundary, current_upper_boundary
                 current_lower_boundary = current_upper_boundary
                 if current_upper_boundary >= upper:
                     stop_processing = True

@@ -7,12 +7,14 @@ from datetime import date
 from typing import Any, Dict, List, Optional
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
+from typing_extensions import Literal
 
 
 class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0, description="The percentage of users that should receive the new version initially."
     )
@@ -42,6 +44,7 @@ class VersionBreakingChange(BaseModel):
 
     upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
     message: str = Field(..., description="Descriptive message detailing the breaking change.")
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -68,9 +71,8 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
     rolloutConfiguration: Optional[RolloutConfiguration] = None
-    breakingChanges: ConnectorBreakingChanges
+    breakingChanges: Optional[ConnectorBreakingChanges] = None
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",

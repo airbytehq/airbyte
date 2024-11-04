@@ -147,7 +147,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         return self._legacy_stream.get_files()
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
-        yield from self._legacy_stream.read_records_from_slice(stream_slice)
+        yield from self._legacy_stream.read_records_from_slice(stream_slice)  # type: ignore[misc] # Only Mapping[str, Any] is expected for legacy streams, not AirbyteMessage
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()
@@ -228,10 +228,10 @@ class FileBasedStreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    yield Record(data_to_return, self.stream_name())
-                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD:
+                    yield Record(data_to_return, self)
+                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record is not None:
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
-                    yield Record(record_data.record.data, self.stream_name())
+                    yield Record(record_data.record.data, self)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:

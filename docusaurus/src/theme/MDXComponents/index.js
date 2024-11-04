@@ -8,8 +8,11 @@ import { ProductInformation } from "@site/src/components/ProductInformation";
 import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
 import MDXComponents from "@theme-original/MDXComponents";
+import { CardWithIcon } from "../../components/Card/Card";
 import { Details } from "../../components/Details";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
+import { Grid } from "../../components/Grid/Grid";
+import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 
 export default {
   // Re-use the default mapping
@@ -24,4 +27,7 @@ export default {
   ProductInformation,
   Details,
   EntityRelationshipDiagram,
+  CardWithIcon,
+  Grid,
+  YoutubeEmbed,
 };

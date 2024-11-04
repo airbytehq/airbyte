@@ -4,10 +4,14 @@
 
 
 import logging
+import os
 from copy import deepcopy
 from typing import Any, Mapping
+from unittest.mock import ANY
 
-from airbyte_cdk import ConfiguredAirbyteCatalog, Status
+import pytest
+from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
 from source_sftp_bulk import SourceSFTPBulk
 
@@ -21,14 +25,17 @@ def test_check_invalid_private_key_config(configured_catalog: ConfiguredAirbyteC
             "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----",
         }
     }
-    outcome = SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
-    assert outcome.status == Status.FAILED
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
+
+    assert exc_info.value.failure_type.value == FailureType.config_error.value
 
 
 def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]):
     invalid_config = config | {"credentials": {"auth_type": "password", "password": "wrongpass"}}
-    outcome = SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
-    assert outcome.status == Status.FAILED
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        SourceSFTPBulk(catalog=configured_catalog, config=invalid_config, state=None).check(logger, invalid_config)
+    assert exc_info.value.failure_type.value == FailureType.config_error.value
 
 
 def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCatalog, config_private_key: Mapping[str, Any]):
@@ -85,3 +92,14 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_with_wrong_glob_pattern, state=None)
     output = read(source=source, config=config_with_wrong_glob_pattern, catalog=configured_catalog)
     assert len(output.records) == 0
+
+def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
+    output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
+    expected_file_data = {'bytes': 37, 'file_relative_path': 'files/csv/test_1.csv', 'file_url': '/tmp/airbyte-file-transfer/files/csv/test_1.csv', 'modified': ANY, 'source_file_url': '/files/csv/test_1.csv'}
+    assert len(output.records) == 1
+    assert list(map(lambda record: record.record.file, output.records)) == [expected_file_data]
+
+    # Additional assertion to check if the file exists at the file_url path
+    file_path = expected_file_data['file_url']
+    assert os.path.exists(file_path), f"File not found at path: {file_path}"
