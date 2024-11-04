@@ -16,8 +16,7 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_version` | `string` | API Version. Specify the API version to use. This is required for certain API calls. Example: &#39;2024-09-01&#39;. |  |
-| `secret_api_key` | `string` | Secret API Key. Secret API key to use for authenticating with the Revolut Merchant API. Find it in your Revolut Business account under APIs &gt; Merchant API. |  |
+| `secret_api_key` | `string` | Secret API Key. Secret API key to use for authenticating with the Revolut Merchant API. Find it in your Revolut Business account under APIs > Merchant API. |  |
 | `start_date` | `string` | Start date.  |  |
 | `environment` | `string` | environment. The base url of your environment. Either sandbox or production |  |
 
