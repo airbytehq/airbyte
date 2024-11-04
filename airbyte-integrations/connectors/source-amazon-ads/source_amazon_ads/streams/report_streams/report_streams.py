@@ -250,7 +250,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             session = self._report_download_session if is_download_report else self._session
             response = session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise TooManyRequests()
+            raise TooManyRequests("429: Too many requests during report creation. Please try again later...")
         return response
 
     def get_date_range(self, start_date: Date, timezone: str) -> Iterable[str]:
