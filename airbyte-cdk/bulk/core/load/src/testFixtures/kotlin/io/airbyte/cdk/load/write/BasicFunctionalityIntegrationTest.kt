@@ -50,6 +50,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
@@ -77,6 +78,16 @@ abstract class BasicFunctionalityIntegrationTest(
     val stringifySchemalessObjects: Boolean,
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
+    /**
+     * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
+     * example:
+     * * A destination which writes new data to a temporary directory, and moves those files to the
+     * "real" directory at the end of the sync if and only if it received a COMPLETE status, would
+     * set this parameter to `false`.
+     * * A destination which writes new data directly into the real directory throughout the sync,
+     * would set this parameter to `true`.
+     */
+    val commitDataIncrementally: Boolean,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -570,6 +581,191 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
+        )
+    }
+
+    /**
+     * Test behavior in a failed truncate refresh. Sync 1 just populates two records with ID 1 and
+     * 2. The test then runs two more syncs:
+     * 1. Sync 2 emits ID 1, and then fails the sync (i.e. no COMPLETE stream status). We expect the
+     * first sync's records to still exist in the destination. The new record may be visible to the
+     * data dumper, depending on the [commitDataIncrementally] parameter.
+     * 2. Sync 3 emits ID 2, and then ends the sync normally (i.e. COMPLETE stream status). After
+     * this sync, the data from the first sync should be deleted, and the data from both the second
+     * and third syncs should be visible to the data dumper.
+     */
+    @Test
+    open fun testInterruptedTruncateWithPriorData() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        // Run a normal sync with nonempty data
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
+        runSync(
+            configContents,
+            stream1,
+            listOf(
+                makeInputRecord(1, "2024-01-23T01:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+            ),
+            stream1,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after initial sync - this indicates a bug in basic connector behavior",
+        )
+
+        val stream2 =
+            stream1.copy(
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status. This should not delete any existing data.
+        // There's a race condition between the end of stream killing the connector,
+        // and the connector starting to process the record.
+        // So we run this in a loop until the connector acks the state message.
+        while (true) {
+            val e =
+                assertThrows<DestinationUncleanExitException> {
+                    runSync(
+                        configContents,
+                        stream2,
+                        listOf(
+                            makeInputRecord(1, "2024-01-23T02:00Z", 200),
+                            StreamCheckpoint(
+                                randomizedNamespace,
+                                "test_stream",
+                                "{}",
+                                sourceRecordCount = 1,
+                            )
+                        ),
+                        streamStatus = null,
+                    )
+                }
+            if (e.stateMessages.isNotEmpty()) {
+                break
+            }
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                if (commitDataIncrementally) {
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a third sync, this time with a successful status.
+        // This should delete the first sync's data, and retain the second+third syncs' data.
+        runSync(
+            configContents,
+            stream2,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
         )
     }
 
