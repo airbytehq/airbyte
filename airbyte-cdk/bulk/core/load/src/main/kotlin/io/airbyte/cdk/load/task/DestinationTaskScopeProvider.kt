@@ -42,7 +42,7 @@ interface InternalScope : ScopedTask
 
 interface ImplementorScope : ScopedTask
 
-interface InputScope: ScopedTask
+interface InputScope : ScopedTask
 
 @Singleton
 @Secondary

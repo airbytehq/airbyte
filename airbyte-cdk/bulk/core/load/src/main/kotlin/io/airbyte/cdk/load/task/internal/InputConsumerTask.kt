@@ -30,7 +30,6 @@ import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.InputScope
-import io.airbyte.cdk.load.task.InternalScope
 import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
