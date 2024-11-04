@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordOrFile
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
@@ -82,7 +83,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
+        records: Iterator<DestinationRecordOrFile>,
         totalSizeBytes: Long
     ): Batch {
         val partNumber = partNumber.getAndIncrement()
