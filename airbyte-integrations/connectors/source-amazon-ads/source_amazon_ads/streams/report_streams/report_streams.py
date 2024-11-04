@@ -264,7 +264,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         today = pendulum.today(tz=profile["timezone"]).date()
         start_date = stream_state.get(str(profile["profileId"]), {}).get(self.cursor_field)
         if start_date:
-            start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            start_date = pendulum.parse(start_date).date()
             # Taking date from state if it's not older than 60 days
             return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
