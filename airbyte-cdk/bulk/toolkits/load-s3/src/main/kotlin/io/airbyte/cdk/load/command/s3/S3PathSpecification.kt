@@ -50,13 +50,12 @@ interface S3PathSpecification {
     @get:JsonSchemaInject(json = """{"examples":["data_sync/test"]}""")
     val s3BucketPath: String
 
-    //    @get:JsonSchemaTitle("Use a Staging Directory")
-    //    @get:JsonPropertyDescription(
-    //        "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If
-    // this is not set, airbyte will maintain sync integrity by adding metadata to each object."
-    //    )
-    //    @get:JsonProperty("use_staging_directory", defaultValue = "false")
-    //    val useStagingDirectory: Boolean
+    @get:JsonSchemaTitle("Use a Staging Directory")
+    @get:JsonPropertyDescription(
+        "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object."
+    )
+    @get:JsonProperty("use_staging_directory", defaultValue = "false")
+    val useStagingDirectory: Boolean?
 
     @get:JsonSchemaTitle("S3 Staging Prefix")
     @get:JsonPropertyDescription(
@@ -72,6 +71,6 @@ interface S3PathSpecification {
             stagingPrefix = s3StagingPrefix,
             pathSuffixPattern = s3PathFormat,
             fileNamePattern = fileNamePattern,
-            usesStagingDirectory = true
+            usesStagingDirectory = useStagingDirectory ?: false
         )
 }
