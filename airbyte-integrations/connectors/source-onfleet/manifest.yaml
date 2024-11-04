@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 5.16.0
 
 type: DeclarativeSource
 
@@ -135,6 +135,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tasks"
+    containers:
+      type: DeclarativeStream
+      name: containers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/containers/workers/{{ stream_slice.worker_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: worker_id
+              stream:
+                $ref: "#/definitions/streams/workers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/containers"
   base_requester:
     type: HttpRequester
     url_base: https://onfleet.com
@@ -149,6 +177,7 @@ streams:
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/hubs"
   - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/containers"
 
 spec:
   type: Spec
@@ -165,19 +194,19 @@ spec:
           API key to use for authenticating requests. You can create and manage
           your API keys in the API section of the Onfleet dashboard.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       password:
         type: string
         description: >-
           Placeholder for basic HTTP auth password - should be set to empty
           string
         name: password
+        order: 1
         title: Placeholder Password
         default: x
         airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -187,6 +216,7 @@ metadata:
     teams: false
     hubs: false
     tasks: false
+    containers: true
   testedStreams:
     workers:
       streamHash: 4e4085588a0a68d16ff464a0f06756f90ba1579c
@@ -217,7 +247,14 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tasks:
+      hasRecords: true
       streamHash: e95fcb0a6846523fa0bd74c3aa979463ff7705f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    containers:
+      streamHash: 2621785beff7dd4b16bc99cd0d2da1087166191c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -333,6 +370,7 @@ schemas:
   administrators:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -386,7 +424,6 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   teams:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -395,6 +432,7 @@ schemas:
   hubs:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       address:
         type:
@@ -453,10 +491,10 @@ schemas:
             - "null"
     required:
       - id
-    additionalProperties: true
   tasks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -754,4 +792,36 @@ schemas:
           - "null"
     required:
       - id
+  containers:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      organization:
+        type:
+          - string
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      timeCreated:
+        type:
+          - number
+          - "null"
+      timeLastModified:
+        type:
+          - number
+          - "null"
+      worker:
+        type:
+          - string
+          - "null"
+    required:
+      - id
