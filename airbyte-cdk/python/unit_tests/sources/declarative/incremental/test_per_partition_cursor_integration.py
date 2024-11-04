@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import (
@@ -202,12 +203,14 @@ def test_given_record_for_partition_when_read_then_update_state():
         )
 
     assert stream_instance.state == {
+        "state": {},
+        "use_global_cursor": False,
         "states": [
             {
                 "partition": {"partition_field": "1"},
                 "cursor": {CURSOR_FIELD: "2022-01-15"},
             }
-        ]
+        ],
     }
 
 
@@ -282,7 +285,14 @@ def test_substream_without_input_state():
         ]
 
 
-def test_partition_limitation():
+def test_partition_limitation(caplog):
+    """
+    Test that when the number of partitions exceeds the maximum allowed limit in PerPartitionCursor,
+    the oldest partitions are dropped, and the state is updated accordingly.
+
+    In this test, we set the maximum number of partitions to 2 and provide 3 partitions.
+    We verify that the state only retains information for the two most recent partitions.
+    """
     source = ManifestDeclarativeSource(
         source_config=ManifestBuilder()
         .with_list_partition_router("Rates", "partition_field", ["1", "2", "3"])
@@ -351,14 +361,24 @@ def test_partition_limitation():
     ]
     logger = MagicMock()
 
-    # with patch.object(PerPartitionCursor, "stream_slices", return_value=partition_slices):
-    with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
-        with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 2):
-            output = list(source.read(logger, {}, catalog, initial_state))
+    # Use caplog to capture logs
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
+            with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 2):
+                output = list(source.read(logger, {}, catalog, initial_state))
 
-    # assert output_data == expected_records
+    # Check if the warning was logged
+    logged_messages = [record.message for record in caplog.records if record.levelname == "WARNING"]
+    warning_message = (
+        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"1"}. Over limit: 1.'
+    )
+    assert warning_message in logged_messages
+
     final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
     assert final_state[-1] == {
+        "lookback_window": 1,
+        "state": {"cursor_field": "2022-02-17"},
+        "use_global_cursor": False,
         "states": [
             {
                 "partition": {"partition_field": "2"},
@@ -368,5 +388,184 @@ def test_partition_limitation():
                 "partition": {"partition_field": "3"},
                 "cursor": {CURSOR_FIELD: "2022-02-17"},
             },
-        ]
+        ],
+    }
+
+
+def test_perpartition_with_fallback(caplog):
+    """
+    Test that when the number of partitions exceeds the limit in PerPartitionCursor,
+    the cursor falls back to using the global cursor for state management.
+
+    This test also checks that the appropriate warning logs are emitted when the partition limit is exceeded.
+    """
+    source = ManifestDeclarativeSource(
+        source_config=ManifestBuilder()
+        .with_list_partition_router("Rates", "partition_field", ["1", "2", "3", "4", "5", "6"])
+        .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .build()
+    )
+
+    partition_slices = [StreamSlice(partition={"partition_field": str(i)}, cursor_slice={}) for i in range(1, 7)]
+
+    records_list = [
+        [
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, partition_slices[0]),
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[0]),
+        ],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-15"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[1])],
+        [],
+        [],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-17"}, partition_slices[2])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-17"}, partition_slices[3])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-19"}, partition_slices[3])],
+        [],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-18"}, partition_slices[4])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-13"}, partition_slices[3])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-18"}, partition_slices[3])],
+    ]
+
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="Rates", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    catalog = ConfiguredAirbyteCatalog(streams=[configured_stream])
+
+    initial_state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="Rates", namespace=None),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {
+                                "partition": {"partition_field": "1"},
+                                "cursor": {CURSOR_FIELD: "2022-01-01"},
+                            },
+                            {
+                                "partition": {"partition_field": "2"},
+                                "cursor": {CURSOR_FIELD: "2022-01-02"},
+                            },
+                            {
+                                "partition": {"partition_field": "3"},
+                                "cursor": {CURSOR_FIELD: "2022-01-03"},
+                            },
+                        ]
+                    }
+                ),
+            ),
+        )
+    ]
+    logger = MagicMock()
+
+    # Use caplog to capture logs
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
+            with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 2):
+                output = list(source.read(logger, {}, catalog, initial_state))
+
+    # Check if the warnings were logged
+    expected_warning_messages = [
+        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"1"}. Over limit: 1.',
+        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"2"}. Over limit: 2.',
+        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"3"}. Over limit: 3.',
+    ]
+
+    logged_messages = [record.message for record in caplog.records if record.levelname == "WARNING"]
+
+    for expected_message in expected_warning_messages:
+        assert expected_message in logged_messages
+
+    # Proceed with existing assertions
+    final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
+    assert final_state[-1] == {"use_global_cursor": True, "state": {"cursor_field": "2022-02-19"}, "lookback_window": 1}
+
+
+def test_per_partition_cursor_within_limit(caplog):
+    """
+    Test that the PerPartitionCursor correctly updates the state for each partition
+    when the number of partitions is within the allowed limit.
+
+    This test also checks that no warning logs are emitted when the partition limit is not exceeded.
+    """
+    source = ManifestDeclarativeSource(
+        source_config=ManifestBuilder()
+        .with_list_partition_router("Rates", "partition_field", ["1", "2", "3"])
+        .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-03-31",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .build()
+    )
+
+    partition_slices = [StreamSlice(partition={"partition_field": str(i)}, cursor_slice={}) for i in range(1, 4)]
+
+    records_list = [
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-20"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-03-25"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[1])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-18"}, partition_slices[1])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-03-28"}, partition_slices[1])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-17"}, partition_slices[2])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-19"}, partition_slices[2])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-03-29"}, partition_slices[2])],
+    ]
+
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="Rates", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    catalog = ConfiguredAirbyteCatalog(streams=[configured_stream])
+
+    initial_state = {}
+    logger = MagicMock()
+
+    # Use caplog to capture logs
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
+            with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 5):
+                output = list(source.read(logger, {}, catalog, initial_state))
+
+    # Since the partition limit is not exceeded, we expect no warnings
+    logged_warnings = [record.message for record in caplog.records if record.levelname == "WARNING"]
+    assert len(logged_warnings) == 0
+
+    # Proceed with existing assertions
+    final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
+    assert final_state[-1] == {
+        "lookback_window": 1,
+        "state": {"cursor_field": "2022-03-29"},
+        "use_global_cursor": False,
+        "states": [
+            {
+                "partition": {"partition_field": "1"},
+                "cursor": {CURSOR_FIELD: "2022-03-25"},
+            },
+            {
+                "partition": {"partition_field": "2"},
+                "cursor": {CURSOR_FIELD: "2022-03-28"},
+            },
+            {
+                "partition": {"partition_field": "3"},
+                "cursor": {CURSOR_FIELD: "2022-03-29"},
+            },
+        ],
     }
