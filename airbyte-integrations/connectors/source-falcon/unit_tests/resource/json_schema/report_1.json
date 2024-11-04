@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "Eligibility_Rules": {
+      "items": {
+        "properties": {
+          "ID": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "Stock_Plan": {
+      "type": ["string", "null"]
+    },
+    "Target__": {
+      "type": ["number", "null"]
+    },
+    "data": {
+      "type": ["object", "null"]
+    }
+  },
+  "type": "object"
+}

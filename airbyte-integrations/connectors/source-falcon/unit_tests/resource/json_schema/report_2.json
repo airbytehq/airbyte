@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "Job_Family_Group_for_Job_Family": {
+      "items": {
+        "properties": {
+          "ID": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "Job_Family_Groups_for_Job_Profile_group": {
+      "items": {
+        "properties": {
+          "Job_Family_Group_Ref_ID": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "Job_Family_Ref_ID": {
+      "type": ["string", "null"]
+    },
+    "Job_Profile": {
+      "type": ["string", "null"]
+    },
+    "Job_Profile_Ref_ID": {
+      "type": ["string", "null"]
+    },
+    "Management_Level": {
+      "type": ["string", "null"]
+    },
+    "PLN_ESI_Job_Profile_Job_Family": {
+      "type": ["string", "null"]
+    },
+    "data": {
+      "type": ["object", "null"]
+    }
+  },
+  "type": "object"
+}

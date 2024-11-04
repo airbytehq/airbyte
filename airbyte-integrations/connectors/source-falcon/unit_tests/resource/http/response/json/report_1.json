@@ -1,0 +1,19 @@
+{
+  "Report_Entry": [
+    {
+      "Eligibility_Rules": "Rule 1",
+      "Target__": "0",
+      "Stock_Plan": "Stock - Stock Plan 1"
+    },
+    {
+      "Eligibility_Rules": "Rule 2",
+      "Target__": "0",
+      "Stock_Plan": "Stock - Stock Plan 2"
+    },
+    {
+      "Eligibility_Rules": "Rule 3",
+      "Target__": "0",
+      "Stock_Plan": "Stock - Stock Plan 3"
+    }
+  ]
+}

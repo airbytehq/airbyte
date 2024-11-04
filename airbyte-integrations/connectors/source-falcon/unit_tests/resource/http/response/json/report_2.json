@@ -1,0 +1,43 @@
+{
+  "Report_Entry": [
+    {
+      "Job_Family_Ref_ID": "Job 1",
+      "Management_Level": "Level 1",
+      "Job_Profile_Ref_ID": "Profile 1",
+      "Job_Profile": "Profile 1",
+      "Job_Family_Group_for_Job_Family": "Family 1",
+      "PLN_ESI_Job_Profile_Job_Family": "Profile 1",
+      "Job_Family_Groups_for_Job_Profile_group": [
+        {
+          "Job_Family_Group_Ref_ID": "Family 1"
+        }
+      ]
+    },
+    {
+      "Job_Family_Ref_ID": "Job 2",
+      "Management_Level": "Level 2",
+      "Job_Profile_Ref_ID": "Profile 2",
+      "Job_Profile": "Profile 2",
+      "Job_Family_Group_for_Job_Family": "Family 2",
+      "PLN_ESI_Job_Profile_Job_Family": "Profile 2",
+      "Job_Family_Groups_for_Job_Profile_group": [
+        {
+          "Job_Family_Group_Ref_ID": "Family 2"
+        }
+      ]
+    },
+    {
+      "Job_Family_Ref_ID": "Job 3",
+      "Management_Level": "Level 3",
+      "Job_Profile_Ref_ID": "Profile 3",
+      "Job_Profile": "Profile 3",
+      "Job_Family_Group_for_Job_Family": "Family 3",
+      "PLN_ESI_Job_Profile_Job_Family": "Profile 3",
+      "Job_Family_Groups_for_Job_Profile_group": [
+        {
+          "Job_Family_Group_Ref_ID": "Family 3"
+        }
+      ]
+    }
+  ]
+}

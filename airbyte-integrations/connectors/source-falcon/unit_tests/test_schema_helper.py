@@ -45,7 +45,7 @@ from source_falcon.schema_helper import ReportXMLSchemaHelper
     ],
 )
 def test_get_properties(xml_file, expected_output):
-    with open(str(pathlib.Path(__file__).parent / "resources/xml" / xml_file), "r") as f:
+    with open(str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file), "r") as f:
         xml_tree = ElementTree.fromstring(f.read())
 
     with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value=xml_tree):
@@ -104,7 +104,7 @@ def test_xml_schema_url(config, report_id, expected_output):
     ],
 )
 def test_fields_transform_string_array(xml_file, expected_output):
-    with open(str(pathlib.Path(__file__).parent / "resources/xml" / xml_file), "r") as f:
+    with open(str(pathlib.Path(__file__).parent / "resource/http/response/xml" / xml_file), "r") as f:
         xml_tree = ElementTree.fromstring(f.read())
 
     with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value=xml_tree):
