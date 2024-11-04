@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "https://*.revolut.com"
   registryOverrides:
     oss:
       enabled: true
