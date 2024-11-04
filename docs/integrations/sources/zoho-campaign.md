@@ -14,18 +14,17 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| campaigns | campaign_key | No pagination | ✅ |  ❌  |
-| subscribers | contact_email | No pagination | ✅ |  ❌  |
+| recent_campaigns | campaign_key | DefaultPaginator | ✅ |  ❌  |
+| campaign_recipients | contactid, sent_time | DefaultPaginator | ✅ |  ❌  |
+| campaign_details | campaign_name | No pagination | ✅ |  ❌  |
+| campaign_reports | campaign_name | No pagination | ✅ |  ❌  |
+| recent_sent_campaigns | campaign_key | DefaultPaginator | ✅ |  ❌  |
+| mailing_lists | listunino | DefaultPaginator | ✅ |  ❌  |
+| subscribers | contact_email |  DefaultPaginator | ✅ |  ❌  |
 | lists | listkey | No pagination | ✅ |  ❌  |
-| campaignrecipients | contactid | No pagination | ✅ |  ❌  |
-| campaignreports | campaign_name | No pagination | ✅ |  ❌  |
-| recentcampaigns | campaign_key | No pagination | ✅ |  ❌  |
-| recentsentcampaigns | campaign_key | No pagination | ✅ |  ❌  |
-| mailinglists | listunino | No pagination | ✅ |  ❌  |
-| totalcontacts |  | No pagination | ✅ |  ❌  |
+| total_contacts |  | No pagination | ✅ |  ❌  |
 | topics | topicId | No pagination | ✅ |  ❌  |
-| campaigndetails | campaign_name | No pagination | ✅ |  ❌  |
-| alltags |  | No pagination | ✅ |  ❌  |
+| all_tags |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
