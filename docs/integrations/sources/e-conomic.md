@@ -29,7 +29,7 @@ The Airbyte connector for e-conomic enables seamless integration with the e-cono
 | suppliers | supplierNumber | DefaultPaginator | ✅ |  ❌  |
 | units | unitNumber | DefaultPaginator | ✅ |  ❌  |
 | vat_accounts | vatCode | DefaultPaginator | ✅ |  ❌  |
-| vat-types | vatTypeNumber | DefaultPaginator | ✅ |  ❌  |
+| vat_types | vatTypeNumber | DefaultPaginator | ✅ |  ❌  |
 | vat_zones | vatZoneNumber | DefaultPaginator | ✅ |  ❌  |
 | sent_quotes | quoteNumber | DefaultPaginator | ✅ |  ❌  |
 | archived_quotes | quoteNumber | DefaultPaginator | ✅ |  ❌  |
