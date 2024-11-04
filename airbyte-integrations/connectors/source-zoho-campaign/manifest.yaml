@@ -1,4 +1,4 @@
-version: 5.12.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -87,6 +87,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - list_of_details
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: fromindex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: range
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -112,7 +125,6 @@ definitions:
           path: /getcampaignrecipientsdata
           http_method: POST
           request_parameters:
-            action: "{{ config['campaign_recipients_data_action'] }}"
             resfmt: JSON
             campaignkey: "{{ stream_partition.campaign }}"
           error_handler:
@@ -142,13 +154,30 @@ definitions:
             type: OffsetIncrement
             page_size: 100
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: campaign_key
-              partition_field: campaign
-              stream:
-                $ref: "#/definitions/streams/recent_campaigns"
+          - type: ListPartitionRouter
+            values:
+              - sentcontacts
+              - sentleads
+              - openedleads
+              - optoutleads
+              - spamleads
+              - unopenedleads
+              - clickedleads
+              - senthardbounce
+              - sentsoftbounce
+              - unsentleads
+            cursor_field: action
+            request_option:
+              type: RequestOption
+              inject_into: request_parameter
+              field_name: action
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: campaign_key
+                partition_field: campaign
+                stream:
+                  $ref: "#/definitions/streams/recent_campaigns"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -434,7 +463,6 @@ spec:
       - client_secret_2
       - client_refresh_token
       - data_center
-      - campaign_recipients_data_action
     properties:
       client_id_2:
         type: string
@@ -462,10 +490,6 @@ spec:
           - .com.cn
         order: 3
         title: Data Center
-      campaign_recipients_data_action:
-        type: string
-        order: 4
-        title: Campaign Recipients Data Action
     additionalProperties: true
 
 metadata:
@@ -489,14 +513,14 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     subscribers:
-      streamHash: 9e463d475745a00fc3cae235e50e6277e9d94b3e
+      streamHash: d3396ae328d2f89c19cd5e43ff992471f53dd2d0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaign_recipients:
-      streamHash: a681decd5ad64d3ccb6c8db6490d9bb86259c9b3
+      streamHash: 76b350a63b309d97e64422702c1819f81ac05f24
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
