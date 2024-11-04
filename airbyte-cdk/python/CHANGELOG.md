@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.1.1
+fix streams discover
+
 ## 6.1.0
 Add option to File Transfer for File-Bases sources
 
