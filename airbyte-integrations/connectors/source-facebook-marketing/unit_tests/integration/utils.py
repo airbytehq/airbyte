@@ -6,9 +6,9 @@
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from facebook_business.api import _top_level_param_json_encode
 from source_facebook_marketing import SourceFacebookMarketing
 

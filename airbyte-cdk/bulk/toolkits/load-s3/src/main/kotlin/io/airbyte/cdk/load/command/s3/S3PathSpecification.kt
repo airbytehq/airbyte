@@ -10,6 +10,15 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 
+/**
+ * Mix-in to provide S3 path configuration fields as properties.
+ *
+ * NOTE: For legacy reasons, this is unnecessarily s3-specific. Future cloud storage solutions
+ * should create a single generic version of this in the `object-storage` toolkit and use that.
+ *
+ * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
+ * interface.
+ */
 interface S3PathSpecification {
     @get:JsonSchemaTitle("S3 Path Format")
     @get:JsonPropertyDescription(
@@ -41,9 +50,16 @@ interface S3PathSpecification {
     @get:JsonSchemaInject(json = """{"examples":["data_sync/test"]}""")
     val s3BucketPath: String
 
+    @get:JsonSchemaTitle("Use a Staging Directory")
+    @get:JsonPropertyDescription(
+        "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object."
+    )
+    @get:JsonProperty("use_staging_directory", defaultValue = "false")
+    val useStagingDirectory: Boolean?
+
     @get:JsonSchemaTitle("S3 Staging Prefix")
     @get:JsonPropertyDescription(
-        "Path to use when staging data in the bucket directory. Documentation TBD."
+        "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files."
     )
     @get:JsonProperty("s3_staging_prefix", defaultValue = "{s3_bucket_path}/__airbyte_tmp")
     @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"]}""")
@@ -54,6 +70,7 @@ interface S3PathSpecification {
             prefix = s3BucketPath,
             stagingPrefix = s3StagingPrefix,
             pathSuffixPattern = s3PathFormat,
-            fileNamePattern = fileNamePattern
+            fileNamePattern = fileNamePattern,
+            usesStagingDirectory = useStagingDirectory ?: false
         )
 }

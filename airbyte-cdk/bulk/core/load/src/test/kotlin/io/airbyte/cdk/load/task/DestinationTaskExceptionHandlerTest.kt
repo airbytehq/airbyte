@@ -125,7 +125,6 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
                 (stream, exception, kill) ->
                 stream to Pair(exception, kill)
             }
-        println(streamResults)
         catalog.streams.forEach { stream ->
             Assertions.assertTrue(streamResults[stream]!!.first is RuntimeException)
             Assertions.assertTrue(streamResults[stream]!!.second)
@@ -232,8 +231,10 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     }
 
     @Test
-    fun testHandleSyncFailed(scopeProvider: MockScopeProvider) = runTest {
+    fun testHandleSyncFailed() = runTest {
+        val wasHandled = Channel<Boolean>(Channel.UNLIMITED)
+        exceptionHandler.setCallback { wasHandled.send(true) }
         exceptionHandler.handleSyncFailed()
-        Assertions.assertTrue(scopeProvider.didKill)
+        Assertions.assertTrue(wasHandled.receive())
     }
 }

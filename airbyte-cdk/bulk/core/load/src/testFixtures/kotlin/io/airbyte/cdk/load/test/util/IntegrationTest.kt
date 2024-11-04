@@ -9,21 +9,18 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationStreamComplete
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import kotlin.test.fail
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
@@ -36,13 +33,6 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import uk.org.webcompere.systemstubs.jupiter.SystemStub
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
 
-@MicronautTest(
-    // Manually add metadata.yaml as a property source so that we can use its
-    // values as injectable properties.
-    // This is _infinitely_ easier than trying to wire up
-    // MetadataYamlPropertySource to be available at test time.
-    propertySources = ["classpath:metadata.yaml"]
-)
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.
@@ -70,7 +60,7 @@ abstract class IntegrationTest(
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
-    @Inject lateinit var destinationProcessFactory: DestinationProcessFactory
+    val destinationProcessFactory = DestinationProcessFactory.get()
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
@@ -104,13 +94,13 @@ abstract class IntegrationTest(
     }
 
     fun dumpAndDiffRecords(
+        config: ConfigurationSpecification,
         canonicalExpectedRecords: List<OutputRecord>,
-        streamName: String,
-        streamNamespace: String?,
+        stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
     ) {
-        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(streamName, streamNamespace)
+        val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
             canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
 
@@ -119,17 +109,21 @@ abstract class IntegrationTest(
                 cursor?.let { nameMapper.mapFieldName(it) },
             )
             .diffRecords(expectedRecords, actualRecords)
-            ?.let(::fail)
+            ?.let {
+                fail(
+                    "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
+                )
+            }
     }
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        config: ConfigurationSpecification,
+        configContents: String,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> =
-        runSync(config, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -138,7 +132,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        config: ConfigurationSpecification,
+        configContents: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -146,36 +140,21 @@ abstract class IntegrationTest(
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
-                config,
+                configContents,
                 catalog.asProtocolObject(),
             )
-        return runBlocking {
-            val destinationCompletion = async { destination.run() }
+        return runBlocking(Dispatchers.IO) {
+            launch { destination.run() }
             messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        AirbyteMessage()
-                            .withType(AirbyteMessage.Type.TRACE)
-                            .withTrace(
-                                AirbyteTraceMessage()
-                                    .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                    .withEmittedAt(System.currentTimeMillis().toDouble())
-                                    .withStreamStatus(
-                                        AirbyteStreamStatusTraceMessage()
-                                            .withStreamDescriptor(
-                                                StreamDescriptor()
-                                                    .withName(it.descriptor.name)
-                                                    .withNamespace(it.descriptor.namespace),
-                                            )
-                                            .withStatus(streamStatus),
-                                    ),
-                            ),
+                        DestinationStreamComplete(it.descriptor, System.currentTimeMillis())
+                            .asProtocolMessage()
                     )
                 }
             }
             destination.shutdown()
-            destinationCompletion.await()
             destination.readMessages()
         }
     }

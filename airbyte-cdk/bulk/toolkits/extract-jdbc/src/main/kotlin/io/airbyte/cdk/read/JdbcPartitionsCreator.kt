@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
@@ -26,7 +25,6 @@ sealed class JdbcPartitionsCreator<
     val stream: Stream = streamState.stream
     val sharedState: A = streamState.sharedState
     val configuration: JdbcSourceConfiguration = sharedState.configuration
-    val outputConsumer: OutputConsumer = sharedState.outputConsumer
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
 
     private val acquiredResources = AtomicReference<AcquiredResources>()

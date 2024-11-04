@@ -38,6 +38,7 @@ def config():
         "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
+        "enable_experimental_streams": True,
     }
 
 
