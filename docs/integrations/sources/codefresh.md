@@ -36,6 +36,7 @@ It provides streams like agents, builds, audit, analytics etc.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-11-04 | [48183](https://github.com/airbytehq/airbyte/pull/48183) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47574](https://github.com/airbytehq/airbyte/pull/47574) | Update dependencies |
 | 0.0.1 | 2024-10-21 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
