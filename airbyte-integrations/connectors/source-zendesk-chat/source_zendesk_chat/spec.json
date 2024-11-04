@@ -18,7 +18,7 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "The unique subdomain of your Zendesk account. <a href=\"https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain\">See the Zendesk docs to find your subdomain</a>",
+        "description": "The unique subdomain of your Zendesk account (without https://). <a href=\"https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain\">See the Zendesk docs to find your subdomain</a>",
         "pattern": "^(?!https://)",
         "examples": ["myzendeskchat"],
         "default": ""
