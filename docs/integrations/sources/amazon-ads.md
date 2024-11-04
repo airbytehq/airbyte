@@ -153,6 +153,8 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 6.1.1   | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams                                                                                |
+| 6.1.0   | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5                                                                                                  |
 | 6.0.0   | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3                                          |
 | 5.0.20  | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies                                                                                             |
 | 5.0.19  | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies                                                                                             |

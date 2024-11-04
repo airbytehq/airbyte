@@ -28,6 +28,7 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
      */
     suspend fun <V : OutputStream> streamingUpload(
         key: String,
+        metadata: Map<String, String> = emptyMap(),
         streamProcessor: StreamProcessor<V>? = null,
         block: suspend (OutputStream) -> Unit
     ): T
