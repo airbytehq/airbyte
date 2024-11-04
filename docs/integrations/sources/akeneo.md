@@ -5,7 +5,7 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `your_host` | `string` | Your Host.  |  |
+| `host` | `string` | Host.  |  |
 | `api_username` | `string` | API Username.  |  |
 | `password` | `string` | password.  |  |
 | `client_id` | `string` | Client ID.  |  |
@@ -19,12 +19,12 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 | families | code | DefaultPaginator | ✅ |  ❌  |
 | family_variants | code | DefaultPaginator | ✅ |  ❌  |
 | attributes | code | DefaultPaginator | ✅ |  ❌  |
-| attribute-groups | code | DefaultPaginator | ✅ |  ❌  |
-| association-types | code | DefaultPaginator | ✅ |  ❌  |
+| attribute_groups | code | DefaultPaginator | ✅ |  ❌  |
+| association_types | code | DefaultPaginator | ✅ |  ❌  |
 | channels | code | DefaultPaginator | ✅ |  ❌  |
 | locales |  | DefaultPaginator | ✅ |  ❌  |
 | currencies | code | DefaultPaginator | ✅ |  ❌  |
-| measure-families | code | DefaultPaginator | ✅ |  ❌  |
+| measure_families | code | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
