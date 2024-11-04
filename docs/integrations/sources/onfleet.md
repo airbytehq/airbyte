@@ -22,6 +22,8 @@ You can find more information about the API here https://docs.onfleet.com/refere
 | teams | id | No pagination | ✅ |  ❌  |
 | hubs | id | No pagination | ✅ |  ❌  |
 | tasks | id | DefaultPaginator | ✅ |  ❌  |
+| containers | id | No pagination | ✅ |  ❌  |
+
 
 ## Changelog
 
