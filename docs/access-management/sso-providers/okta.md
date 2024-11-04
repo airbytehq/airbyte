@@ -63,6 +63,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
     * **Client ID**
     * **Client Secret**
+    * **Email Domain** (users signing in from this domain will be required to sign in via SSO)
 
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">

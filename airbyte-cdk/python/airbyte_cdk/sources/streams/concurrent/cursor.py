@@ -160,7 +160,7 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
-        self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
+        self._slice_boundary_fields = slice_boundary_fields
         self._start = start
         self._end_provider = end_provider
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
@@ -173,6 +173,14 @@ class ConcurrentCursor(Cursor):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
+
+    @property
+    def cursor_field(self) -> CursorField:
+        return self._cursor_field
+
+    @property
+    def slice_boundary_fields(self) -> Optional[Tuple[str, str]]:
+        return self._slice_boundary_fields
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
@@ -213,7 +221,7 @@ class ConcurrentCursor(Cursor):
                     self._connector_state_converter.END_KEY: self._extract_from_slice(
                         partition, self._slice_boundary_fields[self._END_BOUNDARY]
                     ),
-                    "most_recent_cursor_value": most_recent_cursor_value,
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
         elif most_recent_cursor_value:
@@ -237,7 +245,7 @@ class ConcurrentCursor(Cursor):
                 {
                     self._connector_state_converter.START_KEY: self.start,
                     self._connector_state_converter.END_KEY: most_recent_cursor_value,
-                    "most_recent_cursor_value": most_recent_cursor_value,
+                    self._connector_state_converter.MOST_RECENT_RECORD_KEY: most_recent_cursor_value,
                 }
             )
 
@@ -284,22 +292,36 @@ class ConcurrentCursor(Cursor):
         self._merge_partitions()
 
         if self._start is not None and self._is_start_before_first_slice():
-            yield from self._split_per_slice_range(self._start, self.state["slices"][0][self._connector_state_converter.START_KEY])
+            yield from self._split_per_slice_range(
+                self._start,
+                self.state["slices"][0][self._connector_state_converter.START_KEY],
+                False,
+            )
 
         if len(self.state["slices"]) == 1:
             yield from self._split_per_slice_range(
                 self._calculate_lower_boundary_of_last_slice(self.state["slices"][0][self._connector_state_converter.END_KEY]),
                 self._end_provider(),
+                True,
             )
         elif len(self.state["slices"]) > 1:
             for i in range(len(self.state["slices"]) - 1):
-                yield from self._split_per_slice_range(
-                    self.state["slices"][i][self._connector_state_converter.END_KEY],
-                    self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
-                )
+                if self._cursor_granularity:
+                    yield from self._split_per_slice_range(
+                        self.state["slices"][i][self._connector_state_converter.END_KEY] + self._cursor_granularity,
+                        self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
+                        False,
+                    )
+                else:
+                    yield from self._split_per_slice_range(
+                        self.state["slices"][i][self._connector_state_converter.END_KEY],
+                        self.state["slices"][i + 1][self._connector_state_converter.START_KEY],
+                        False,
+                    )
             yield from self._split_per_slice_range(
                 self._calculate_lower_boundary_of_last_slice(self.state["slices"][-1][self._connector_state_converter.END_KEY]),
                 self._end_provider(),
+                True,
             )
         else:
             raise ValueError("Expected at least one slice")
@@ -312,7 +334,9 @@ class ConcurrentCursor(Cursor):
             return lower_boundary - self._lookback_window
         return lower_boundary
 
-    def _split_per_slice_range(self, lower: CursorValueType, upper: CursorValueType) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
+    def _split_per_slice_range(
+        self, lower: CursorValueType, upper: CursorValueType, upper_is_end: bool
+    ) -> Iterable[Tuple[CursorValueType, CursorValueType]]:
         if lower >= upper:
             return
 
@@ -321,13 +345,17 @@ class ConcurrentCursor(Cursor):
 
         lower = max(lower, self._start) if self._start else lower
         if not self._slice_range or lower + self._slice_range >= upper:
-            yield lower, upper
+            if self._cursor_granularity and not upper_is_end:
+                yield lower, upper - self._cursor_granularity
+            else:
+                yield lower, upper
         else:
             stop_processing = False
             current_lower_boundary = lower
             while not stop_processing:
                 current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
-                if self._cursor_granularity:
+                has_reached_upper_boundary = current_upper_boundary >= upper
+                if self._cursor_granularity and (not upper_is_end or not has_reached_upper_boundary):
                     yield current_lower_boundary, current_upper_boundary - self._cursor_granularity
                 else:
                     yield current_lower_boundary, current_upper_boundary

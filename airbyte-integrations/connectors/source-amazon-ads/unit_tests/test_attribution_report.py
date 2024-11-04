@@ -12,7 +12,6 @@ from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
-from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.streams import AttributionReportProducts
 
 from .utils import read_full_refresh
@@ -130,8 +129,8 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
 def test_attribution_report_slices(config):
 
     profiles = [
-        Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(id="1", type="seller", marketplaceStringId="")),
-        Profile(profileId=2, timezone="America/Los_Angeles", accountInfo=AccountInfo(id="1", type="seller", marketplaceStringId="")),
+        dict(profileId=1, timezone="America/Los_Angeles", accountInfo=dict(id="1", type="seller", marketplaceStringId="")),
+        dict(profileId=2, timezone="America/Los_Angeles", accountInfo=dict(id="1", type="seller", marketplaceStringId="")),
     ]
 
     stream = AttributionReportProducts(config, profiles=profiles)

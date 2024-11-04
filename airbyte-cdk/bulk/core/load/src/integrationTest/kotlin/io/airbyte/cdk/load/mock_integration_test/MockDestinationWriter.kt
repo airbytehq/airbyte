@@ -4,11 +4,14 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -31,6 +34,32 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val state = Batch.State.PERSISTED
     }
 
+    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+        if (streamFailure == null) {
+            when (val importType = stream.importType) {
+                is Append -> {
+                    MockDestinationBackend.commitFrom(
+                        getFilename(stream.descriptor, staging = true),
+                        getFilename(stream.descriptor)
+                    )
+                }
+                is Dedupe -> {
+                    MockDestinationBackend.commitAndDedupeFrom(
+                        getFilename(stream.descriptor, staging = true),
+                        getFilename(stream.descriptor),
+                        importType.primaryKey,
+                        importType.cursor,
+                    )
+                }
+                else -> throw IllegalArgumentException("Unsupported import type $importType")
+            }
+            MockDestinationBackend.deleteOldRecords(
+                getFilename(stream.descriptor),
+                stream.minimumGenerationId
+            )
+        }
+    }
+
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
         totalSizeBytes: Long
@@ -42,17 +71,21 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         return when (batch) {
             is LocalBatch -> {
                 batch.records.forEach {
-                    MockDestinationBackend.insert(
-                        getFilename(it.stream),
+                    val filename = getFilename(it.stream, staging = true)
+                    val record =
                         OutputRecord(
                             UUID.randomUUID(),
                             Instant.ofEpochMilli(it.emittedAtMs),
                             Instant.ofEpochMilli(System.currentTimeMillis()),
                             stream.generationId,
                             it.data as ObjectValue,
-                            OutputRecord.Meta(changes = it.meta?.changes, syncId = stream.syncId),
+                            OutputRecord.Meta(
+                                changes = it.meta?.changes ?: mutableListOf(),
+                                syncId = stream.syncId
+                            ),
                         )
-                    )
+                    // blind insert into the staging area. We'll dedupe on commit.
+                    MockDestinationBackend.insert(filename, record)
                 }
                 PersistedBatch(batch.records)
             }
@@ -62,8 +95,13 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     companion object {
-        fun getFilename(stream: DestinationStream.Descriptor) =
-            getFilename(stream.namespace, stream.name)
-        fun getFilename(namespace: String?, name: String) = "(${namespace},${name})"
+        fun getFilename(stream: DestinationStream.Descriptor, staging: Boolean = false) =
+            getFilename(stream.namespace, stream.name, staging)
+        fun getFilename(namespace: String?, name: String, staging: Boolean = false) =
+            if (staging) {
+                "(${namespace},${name},staging)"
+            } else {
+                "(${namespace},${name})"
+            }
     }
 }
