@@ -13,8 +13,6 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullType
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
@@ -49,7 +47,6 @@ class AirbyteValueToJsonTest {
                                 "city" to StringValue("San Francisco")
                             )
                         ),
-                    "null_field" to NullValue,
                     "nullable_union" to IntegerValue(42),
                     "nonnullable_union" to StringValue("hello"),
                     "combined_null" to StringValue("hello"),
@@ -81,12 +78,8 @@ class AirbyteValueToJsonTest {
                             ),
                             false
                         ),
-                    "null_field" to FieldType(NullType, false),
-                    "nullable_union" to
-                        FieldType(UnionType(listOf(StringType, IntegerType, NullType)), false),
                     "nonnullable_union" to
                         FieldType(UnionType(listOf(StringType, IntegerType)), true),
-                    "combined_null" to FieldType(UnionType(listOf(StringType, NullType)), false),
                     "combined_denormalized" to
                         FieldType(
                             ObjectType(linkedMapOf("name" to FieldType(StringType, true))),

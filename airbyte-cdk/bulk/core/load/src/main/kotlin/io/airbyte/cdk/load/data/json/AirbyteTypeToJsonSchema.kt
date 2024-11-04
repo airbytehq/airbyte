@@ -16,7 +16,6 @@ class AirbyteTypeToJsonSchema {
 
     fun convert(airbyteType: AirbyteType): JsonNode {
         return when (airbyteType) {
-            is NullType -> ofType("null")
             is StringType -> ofType("string")
             is BooleanType -> ofType("boolean")
             is IntegerType -> ofType("integer")
@@ -25,13 +24,13 @@ class AirbyteTypeToJsonSchema {
                 JsonNodeFactory.instance
                     .objectNode()
                     .put("type", "array")
-                    .set("items", fromFieldType(airbyteType.items))
+                    .set("items", convert(airbyteType.items.type))
             is ArrayTypeWithoutSchema -> ofType("array")
             is ObjectType -> {
                 val objNode = ofType("object")
                 val properties = objNode.putObject("properties")
                 airbyteType.properties.forEach { (name, field) ->
-                    properties.replace(name, fromFieldType(field))
+                    properties.replace(name, convert(field.type))
                 }
                 objNode
             }
@@ -66,15 +65,5 @@ class AirbyteTypeToJsonSchema {
             }
             is UnknownType -> throw IllegalArgumentException("Unknown type: $airbyteType")
         }
-    }
-
-    private fun fromFieldType(field: FieldType): JsonNode {
-        if (field.nullable) {
-            if (field.type is UnionType) {
-                return convert(UnionType(options = field.type.options + NullType))
-            }
-            return convert(UnionType(options = listOf(field.type, NullType)))
-        }
-        return convert(field.type)
     }
 }
