@@ -82,8 +82,6 @@ T : ScopedTask {
                         "Task $innerTask run after sync has succeeded. This should not happen."
                     )
                 }
-                log.info { "Sync task $innerTask skipped because sync has already failed." }
-                return
             }
 
             try {
@@ -118,8 +116,6 @@ T : ScopedTask {
                         "Task $innerTask run after its stream ${stream.descriptor} has succeeded. This should not happen."
                     )
                 }
-                log.info { "Stream task $innerTask skipped because stream has already failed." }
-                return
             }
 
             try {

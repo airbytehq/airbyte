@@ -42,6 +42,8 @@ interface InternalScope : ScopedTask
 
 interface ImplementorScope : ScopedTask
 
+interface InputScope: ScopedTask
+
 @Singleton
 @Secondary
 class DestinationTaskScopeProvider(config: DestinationConfiguration) :
@@ -69,11 +71,14 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
                 .asCoroutineDispatcher()
         )
 
+    private val inputScope = ControlScope("input", Job(), Dispatchers.IO)
+
     override suspend fun launch(task: WrappedTask<ScopedTask>) {
         val scope =
             when (task.innerTask) {
                 is InternalScope -> internalScope
                 is ImplementorScope -> implementorScope
+                is InputScope -> inputScope
             }
         scope.scope.launch {
             var nJobs = scope.runningJobs.incrementAndGet()
@@ -115,6 +120,8 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
 
     override suspend fun kill() {
         log.info { "Killing task scopes" }
+        // Stop accepting input
+        inputScope.job.cancel()
 
         // Give the implementor tasks a chance to fail gracefully
         withTimeoutOrNull(timeoutMs) {
