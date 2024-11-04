@@ -51,6 +51,8 @@ definitions:
     Message:
       type: DeclarativeStream
       name: Message
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -98,6 +100,8 @@ definitions:
     Server:
       type: DeclarativeStream
       name: Server
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -195,7 +199,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Message:
-      streamHash: c3a82b882f0952b501dca9c2c958b56b3541d3a7
+      streamHash: 93b218f2e2e296b6295cdf111fc00dcbe0f2b6ab
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -209,7 +213,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Server:
-      streamHash: 273ad3468a86ad7c1b33fb85f3933a3d63a12d63
+      streamHash: b1a01dc85e28ecb489f56c5d3c112ef11853e5e7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -437,9 +441,7 @@ schemas:
               - array
               - "null"
       id:
-        type:
-          - string
-          - "null"
+        type: string
       received:
         type:
           - string
@@ -486,6 +488,8 @@ schemas:
               type:
                 - string
                 - "null"
+    required:
+      - id
   Servers:
     type: object
     $schema: http://json-schema.org/schema#
@@ -545,9 +549,7 @@ schemas:
             - string
             - "null"
       id:
-        type:
-          - string
-          - "null"
+        type: string
       messages:
         type:
           - number
@@ -560,6 +562,8 @@ schemas:
         type:
           - array
           - "null"
+    required:
+      - id
   Transactions:
     type: object
     $schema: http://json-schema.org/schema#

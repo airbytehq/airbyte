@@ -14,9 +14,9 @@ Docs : https://mailosaur.com/docs
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Messages | id | No pagination | ✅ |  ❌  |
-| Message |  | No pagination | ✅ |  ❌  |
+| Message | id | No pagination | ✅ |  ❌  |
 | Servers | id | No pagination | ✅ |  ❌  |
-| Server |  | No pagination | ✅ |  ❌  |
+| Server | id | No pagination | ✅ |  ❌  |
 | Transactions | timestamp | No pagination | ✅ |  ❌  |
 
 ## Changelog
