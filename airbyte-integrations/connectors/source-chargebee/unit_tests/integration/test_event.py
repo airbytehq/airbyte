@@ -35,17 +35,22 @@ _CURSOR_FIELD = "occurred_at"
 _NO_STATE = {}
 _NOW = datetime.now(timezone.utc)
 
+
 def _a_request() -> ChargebeeRequestBuilder:
     return ChargebeeRequestBuilder.event_endpoint(_SITE, _SITE_API_KEY)
+
 
 def _config() -> ConfigBuilder:
     return ConfigBuilder().with_site(_SITE).with_site_api_key(_SITE_API_KEY).with_product_catalog(_PRODUCT_CATALOG)
 
+
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
-def _source() -> SourceChargebee:
-    return SourceChargebee()
+
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> SourceChargebee:
+    return SourceChargebee(catalog=catalog, config=config, state=state)
+
 
 def _a_record() -> RecordBuilder:
     return create_record_builder(
@@ -55,12 +60,14 @@ def _a_record() -> RecordBuilder:
         record_cursor_path=NestedPath([_STREAM_NAME, _CURSOR_FIELD])
     )
 
+
 def _a_response() -> HttpResponseBuilder:
     return create_response_builder(
         find_template(_STREAM_NAME, __file__),
         FieldPath("list"),
         pagination_strategy=ChargebeePaginationStrategy()
     )
+
 
 def _read(
     config_builder: ConfigBuilder,
@@ -70,7 +77,9 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(), config, catalog, state, expecting_exception)
+    source = _source(catalog=catalog, config=config, state=state)
+    return read(source, config, catalog, state, expecting_exception)
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):

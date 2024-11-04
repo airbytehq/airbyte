@@ -34,7 +34,7 @@ class S3V2Specification :
     override val s3Endpoint: String? = null
     override val s3PathFormat: String? = null
     override val fileNamePattern: String? = null
-    // override val useStagingDirectory: Boolean = false
+    override val useStagingDirectory: Boolean? = null
     override val s3StagingPrefix: String? = null
 }
 
