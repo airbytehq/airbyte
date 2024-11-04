@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "campaigns.zoho."
+      - "https://campaigns.zoho.*/api/"
   registryOverrides:
     oss:
       enabled: true
