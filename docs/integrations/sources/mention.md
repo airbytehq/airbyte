@@ -33,6 +33,7 @@ Docs: https://dev.mention.com/current/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2024-11-04 | [48258](https://github.com/airbytehq/airbyte/pull/48258) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47841](https://github.com/airbytehq/airbyte/pull/47841) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47538](https://github.com/airbytehq/airbyte/pull/47538) | Update dependencies |
 | 0.0.1 | 2024-10-23 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |

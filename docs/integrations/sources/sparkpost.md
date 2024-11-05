@@ -27,6 +27,7 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPostâ
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2024-11-04 | [48315](https://github.com/airbytehq/airbyte/pull/48315) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47815](https://github.com/airbytehq/airbyte/pull/47815) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47612](https://github.com/airbytehq/airbyte/pull/47612) | Update dependencies |
 | 0.0.1 | 2024-10-22 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |

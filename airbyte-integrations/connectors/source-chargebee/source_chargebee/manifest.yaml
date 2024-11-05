@@ -21,7 +21,7 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - error_message_contains: "This API operation is not enabled for this site"
+            - predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
               action: IGNORE
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
