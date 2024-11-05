@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -162,9 +162,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/invoices"
-    recurring invoices:
+    recurring_invoices:
       type: DeclarativeStream
-      name: recurring invoices
+      name: recurring_invoices
       primary_key:
         - recurring_invoice_id
       retriever:
@@ -198,10 +198,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/recurring invoices"
-    customer payments:
+          $ref: "#/schemas/recurring_invoices"
+    customer_payments:
       type: DeclarativeStream
-      name: customer payments
+      name: customer_payments
       primary_key:
         - payment_id
       retriever:
@@ -235,7 +235,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/customer payments"
+          $ref: "#/schemas/customer_payments"
     credit notes:
       type: DeclarativeStream
       name: credit notes
@@ -349,7 +349,7 @@ definitions:
           $ref: "#/schemas/taxes"
   base_requester:
     type: HttpRequester
-    url_base: https://www.zohoapis.in/invoice/v3/
+    url_base: https://www.zohoapis.{{ config['region'] }}/invoice/v3/
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
@@ -364,8 +364,8 @@ streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/invoices"
-  - $ref: "#/definitions/streams/recurring invoices"
-  - $ref: "#/definitions/streams/customer payments"
+  - $ref: "#/definitions/streams/recurring_invoices"
+  - $ref: "#/definitions/streams/customer_payments"
   - $ref: "#/definitions/streams/credit notes"
   - $ref: "#/definitions/streams/expenses"
   - $ref: "#/definitions/streams/taxes"
@@ -379,6 +379,7 @@ spec:
       - client_id
       - client_secret
       - client_refresh_token
+      - region
     properties:
       client_id:
         type: string
@@ -398,8 +399,21 @@ spec:
       organisation_id:
         type: string
         description: TO be provided if a user belongs to multiple organisations
-        title: Organisation ID
         order: 3
+        title: Organisation ID
+      region:
+        type: string
+        title: Region
+        enum:
+          - com
+          - eu
+          - in
+          - com.cn
+          - com.au
+          - jp
+          - sa
+          - ca
+        order: 4
     additionalProperties: true
 
 metadata:
@@ -408,70 +422,70 @@ metadata:
     users: true
     contacts: true
     invoices: true
-    recurring invoices: true
-    customer payments: true
+    recurring_invoices: true
+    customer_payments: true
     credit notes: true
     expenses: true
     taxes: true
   testedStreams:
     items:
-      streamHash: ff4c743fa44aa0abc58f8d8d2397e560fab59bee
+      streamHash: a65954f8043f07ea8589b364354d6d0f9166b0e9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: ddd73f3f1387548963c0b8b58a2f53c42f1be7fa
+      streamHash: 4a03f27b9cd29e5b11c3b809bdff33d9cb2764f3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 6974fcc46043ae3da88c1f31ad7cc981f8ac4509
+      streamHash: ad3d400b01f443bac91c9f4c60f344bcf899d40b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     invoices:
-      streamHash: f3990eb55125ca496ae8d6c32d12ebc247fea235
+      streamHash: 6c39d086dd2af0f6a250063f4b30b38f249faab6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    recurring invoices:
-      streamHash: 62d1710ce4641e3a87e5f4af68b850e2fc9f6b80
+    recurring_invoices:
+      streamHash: 161c18fa912d802149545380c660433f53ae29d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    customer payments:
-      streamHash: dd7327521f3543f975ed55d31b4ed13f31e8c7bc
+    customer_payments:
+      streamHash: 6a3305ae522c1f170ec9c4fbc7fb62e17e8c8909
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     credit notes:
-      streamHash: fcba7493d6c10c7495e3bcb61e80b4d0423149a4
+      streamHash: 1e65c40a1df8f87546d4d1c6729fe0750e0bd551
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     expenses:
-      streamHash: 7a232df24217a5b22763c063ba49e2e3402df7e1
+      streamHash: 5428251be3d15e59163f09293c6c08fa1c6b9d7a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     taxes:
-      streamHash: 57a161b511b7024d0c51337c90113028ad58d6d3
+      streamHash: ace223285fc2be6876fd01fe26e3ed307f6a00ef
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1172,7 +1186,7 @@ schemas:
           - "null"
     required:
       - invoice_id
-  recurring invoices:
+  recurring_invoices:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1253,7 +1267,7 @@ schemas:
           - "null"
     required:
       - recurring_invoice_id
-  customer payments:
+  customer_payments:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true

@@ -11,6 +11,7 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
 | `organisation_id` | `string` | Organisation ID. TO be provided if a user belongs to multiple organisations |  |
+| `region` | `string` | Region.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -19,8 +20,8 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | users |  | DefaultPaginator | ✅ |  ❌  |
 | contacts | contact_id | DefaultPaginator | ✅ |  ❌  |
 | invoices | invoice_id | DefaultPaginator | ✅ |  ❌  |
-| recurring invoices | recurring_invoice_id | DefaultPaginator | ✅ |  ❌  |
-| customer payments | payment_id | DefaultPaginator | ✅ |  ❌  |
+| recurring_invoices | recurring_invoice_id | DefaultPaginator | ✅ |  ❌  |
+| customer_payments | payment_id | DefaultPaginator | ✅ |  ❌  |
 | credit notes | creditnote_id | DefaultPaginator | ✅ |  ❌  |
 | expenses | expense_id | DefaultPaginator | ✅ |  ❌  |
 | taxes | tax_id | DefaultPaginator | ✅ |  ❌  |
@@ -32,6 +33,6 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-27 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-05 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
