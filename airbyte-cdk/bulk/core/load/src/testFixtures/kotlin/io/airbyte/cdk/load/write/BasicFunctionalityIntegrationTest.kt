@@ -11,20 +11,31 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecord.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -39,7 +50,12 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,6 +68,23 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+
+sealed interface AllTypesBehavior
+
+data class StronglyTyped(
+    /**
+     * Whether the destination can cast any value to string. E.g. given a StringType column, if a
+     * record contains `{"the_column": {"foo": "bar"}}`, does the connector treat this as a type
+     * error, or does it persist a serialized JSON string?
+     */
+    val convertAllValuesToString: Boolean = true,
+    /** Whether top-level fields are represented as float64, or as fixed-point values */
+    val topLevelFloatLosesPrecision: Boolean = true,
+    /** Whether floats nested inside objects/arrays are represented as float64. */
+    val nestedFloatLosesPrecision: Boolean = true,
+) : AllTypesBehavior
+
+data object Untyped : AllTypesBehavior
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
@@ -89,6 +122,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * would set this parameter to `true`.
      */
     val commitDataIncrementally: Boolean,
+    val allTypesBehavior: AllTypesBehavior,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -115,7 +149,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         emittedAtMs = 1234,
                         changes =
                             mutableListOf(
-                                DestinationRecord.Change(
+                                Change(
                                     field = "foo",
                                     change = AirbyteRecordMessageMetaChange.Change.NULLED,
                                     reason =
@@ -171,7 +205,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                     OutputRecord.Meta(
                                         changes =
                                             mutableListOf(
-                                                DestinationRecord.Change(
+                                                Change(
                                                     field = "foo",
                                                     change =
                                                         AirbyteRecordMessageMetaChange.Change
@@ -1436,7 +1470,321 @@ abstract class BasicFunctionalityIntegrationTest(
         assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
     }
 
-    // TODO basic allTypes() test
+    /** A basic test that we handle all supported data types in a reasonable way. */
+    // Depending on how future connector development goes - we might need to do something similar to
+    // BaseSqlGeneratorIntegrationTest, where we split out tests for connectors that do/don't
+    // support safe_cast. (or, we move fully to in-connector typing, and we stop worrying about
+    // per-destination safe_cast support).
+    @Test
+    open fun testAllTypes() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "struct" to
+                            FieldType(
+                                ObjectType(linkedMapOf("foo" to numberType)),
+                                nullable = false
+                            ),
+                        "struct_schemaless" to
+                            FieldType(ObjectTypeWithEmptySchema, nullable = false),
+                        "struct_empty" to FieldType(ObjectTypeWithEmptySchema, nullable = false),
+                        "array" to FieldType(ArrayType(numberType), nullable = false),
+                        "array_schemaless" to FieldType(ArrayTypeWithoutSchema, nullable = false),
+                        "string" to FieldType(StringType, nullable = false),
+                        "number" to FieldType(NumberType, nullable = false),
+                        "boolean" to FieldType(BooleanType, nullable = false),
+                        "timestamp_with_timezone" to
+                            FieldType(TimestampTypeWithTimezone, nullable = false),
+                        "timestamp_without_timezone" to
+                            FieldType(TimestampTypeWithoutTimezone, nullable = false),
+                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = false),
+                        "time_without_timezone" to
+                            FieldType(TimeTypeWithoutTimezone, nullable = false),
+                        "date" to FieldType(DateType, nullable = false),
+                        "unknown" to FieldType(UnknownType("test"), nullable = false),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(data: String) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                data,
+                emittedAtMs = 100,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                // A record with valid values for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 1,
+                          "struct": {"foo": 1.0},
+                          "struct_schemaless": {"foo": 1.0},
+                          "struct_empty": {"foo": 1.0},
+                          "array": [1.0],
+                          "array_schemaless": [1.0],
+                          "string": "foo",
+                          "number": 42.1,
+                          "integer": 42,
+                          "boolean": true,
+                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_without_timezone": "2023-01-23T12:34:56",
+                          "time_with_timezone": "12:34:56Z",
+                          "time_without_timezone": "12:34:56",
+                          "date": "2023-01-23",
+                          "unknown": {}
+                        }
+                    """.trimIndent()
+                ),
+                // A record with null for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 2,
+                          "struct": null,
+                          "struct_schemaless": null,
+                          "struct_empty": null,
+                          "array": null,
+                          "array_schemaless": null,
+                          "string": null,
+                          "number": null,
+                          "integer": null,
+                          "boolean": null,
+                          "timestamp_with_timezone": null,
+                          "timestamp_without_timezone": null,
+                          "time_with_timezone": null,
+                          "time_without_timezone": null,
+                          "date": null,
+                          "unknown": null
+                        }
+                    """.trimIndent()
+                ),
+                // A record with all fields unset
+                makeRecord("""{"id": 3}"""),
+                // A record that verifies floating-point behavior.
+                // 67.174118 cannot be represented as a standard float64
+                // (it turns into 67.17411800000001).
+                makeRecord(
+                    """
+                        {
+                          "id": 4,
+                          "struct": {"foo": 67.174118},
+                          "struct_schemaless": {"foo": 67.174118},
+                          "struct_empty": {"foo": 67.174118},
+                          "array": [67.174118],
+                          "array_schemaless": [67.174118],
+                          "number": 67.174118
+                        }
+                    """.trimIndent(),
+                ),
+                // A record with invalid values for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 5,
+                          "struct": "foo",
+                          "struct_schemaless": "foo",
+                          "struct_empty": "foo",
+                          "array": "foo",
+                          "array_schemaless": "foo",
+                          "string": {},
+                          "number": "foo",
+                          "integer": "foo",
+                          "boolean": "foo",
+                          "timestamp_with_timezone": "foo",
+                          "timestamp_without_timezone": "foo",
+                          "time_with_timezone": "foo",
+                          "time_without_timezone": "foo",
+                          "date": "foo"
+                        }
+                    """.trimIndent()
+                ),
+            ),
+        )
+
+        val nestedFloat: BigDecimal
+        val topLevelFloat: BigDecimal
+        val badValuesData: Map<String, Any?>
+        val badValuesChanges: MutableList<Change>
+        when (allTypesBehavior) {
+            is StronglyTyped -> {
+                nestedFloat =
+                    if (allTypesBehavior.nestedFloatLosesPrecision) {
+                        BigDecimal("67.17411800000001")
+                    } else {
+                        BigDecimal("67.174118")
+                    }
+                topLevelFloat =
+                    if (allTypesBehavior.topLevelFloatLosesPrecision) {
+                        BigDecimal("67.17411800000001")
+                    } else {
+                        BigDecimal("67.174118")
+                    }
+                badValuesData =
+                    mapOf(
+                        "id" to 5,
+                        "struct" to null,
+                        "struct_schemaless" to null,
+                        "struct_empty" to null,
+                        "array" to null,
+                        "array_schemaless" to null,
+                        "string" to
+                            if (allTypesBehavior.convertAllValuesToString) {
+                                "{}"
+                            } else {
+                                null
+                            },
+                        "number" to null,
+                        "integer" to null,
+                        "boolean" to null,
+                        "timestamp_with_timezone" to null,
+                        "timestamp_without_timezone" to null,
+                        "time_with_timezone" to null,
+                        "time_without_timezone" to null,
+                        "date" to null,
+                    )
+                badValuesChanges =
+                    (stream.schema as ObjectType)
+                        .properties
+                        .keys
+                        .map { key ->
+                            Change(
+                                key,
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            )
+                        }
+                        .filter {
+                            !allTypesBehavior.convertAllValuesToString || it.field != "string"
+                        }
+                        .toMutableList()
+            }
+            Untyped -> {
+                nestedFloat = BigDecimal("67.174118")
+                topLevelFloat = BigDecimal("67.174118")
+                badValuesData =
+                    mapOf(
+                        "id" to 5,
+                        "struct" to "foo",
+                        "struct_schemaless" to "foo",
+                        "struct_empty" to "foo",
+                        "array" to "foo",
+                        "array_schemaless" to "foo",
+                        "string" to StringValue("{}"),
+                        "number" to "foo",
+                        "integer" to "foo",
+                        "boolean" to "foo",
+                        // TODO this probably indicates that we should
+                        // 1. actually parse time types
+                        // 2. and just rely on the fallback to JsonToAirbyteValue.fromJson to return
+                        //    a StringValue
+                        "timestamp_with_timezone" to TimestampValue("foo"),
+                        "timestamp_without_timezone" to TimestampValue("foo"),
+                        "time_with_timezone" to TimeValue("foo"),
+                        "time_without_timezone" to TimeValue("foo"),
+                        "date" to DateValue("foo"),
+                    )
+                badValuesChanges = mutableListOf()
+            }
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "struct" to mapOf("foo" to 1.0),
+                            "struct_schemaless" to mapOf("foo" to 1.0),
+                            "struct_empty" to mapOf("foo" to 1.0),
+                            "array" to listOf(1.0),
+                            "array_schemaless" to listOf(1.0),
+                            "string" to "foo",
+                            "number" to 42.1,
+                            "integer" to 42,
+                            "boolean" to true,
+                            "timestamp_with_timezone" to
+                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                            "timestamp_without_timezone" to
+                                LocalDateTime.parse("2023-01-23T12:34:56"),
+                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_without_timezone" to LocalTime.parse("12:34:56"),
+                            "date" to LocalDate.parse("2023-01-23"),
+                            "unknown" to mapOf<String, Any?>(),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "struct" to null,
+                            "struct_schemaless" to null,
+                            "struct_empty" to null,
+                            "array" to null,
+                            "array_schemaless" to null,
+                            "string" to null,
+                            "number" to null,
+                            "integer" to null,
+                            "boolean" to null,
+                            "timestamp_with_timezone" to null,
+                            "timestamp_without_timezone" to null,
+                            "time_with_timezone" to null,
+                            "time_without_timezone" to null,
+                            "date" to null,
+                            "unknown" to null,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = mapOf("id" to 3),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 4,
+                            "struct" to mapOf("foo" to nestedFloat),
+                            "struct_schemaless" to mapOf("foo" to nestedFloat),
+                            "struct_empty" to mapOf("foo" to nestedFloat),
+                            "array" to listOf(nestedFloat),
+                            "array_schemaless" to listOf(nestedFloat),
+                            "number" to topLevelFloat,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = badValuesData,
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = badValuesChanges),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
 
     /**
      * Some types (object/array) are expected to contain other types. Verify that we handle them
@@ -1858,6 +2206,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     companion object {
         private val intType = FieldType(IntegerType, nullable = true)
+        private val numberType = FieldType(NumberType, nullable = true)
         private val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
