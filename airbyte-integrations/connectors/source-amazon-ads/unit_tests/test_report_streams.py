@@ -13,7 +13,6 @@ import pendulum
 import pytest
 import requests_mock
 import responses
-
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
