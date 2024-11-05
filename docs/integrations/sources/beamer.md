@@ -20,6 +20,7 @@ Beamer NPS source
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.4 | 2024-11-05 | [48354](https://github.com/airbytehq/airbyte/pull/48354) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.2 | 2024-11-05 | [48335](https://github.com/airbytehq/airbyte/pull/48335) | Update dependencies |
 | 0.0.1 | 2024-09-17 | | Initial release by [@caydenm](https://github.com/caydenm) via Connector Builder |
 

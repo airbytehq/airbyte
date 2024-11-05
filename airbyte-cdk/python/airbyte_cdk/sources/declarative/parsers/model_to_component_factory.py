@@ -172,7 +172,7 @@ from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformatio
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
-    CustomOutputFormatConcurrentStreamStateConverter,
+    CustomFormatConcurrentStreamStateConverter,
     DateTimeStreamStateConverter,
     EpochValueConcurrentStreamStateConverter,
 )
@@ -532,8 +532,9 @@ class ModelToComponentFactory:
         if datetime_format == self.EPOCH_DATETIME_FORMAT:
             connector_state_converter = EpochValueConcurrentStreamStateConverter(is_sequential_state=True)
         else:
-            connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(
+            connector_state_converter = CustomFormatConcurrentStreamStateConverter(
                 datetime_format=datetime_format,
+                input_datetime_formats=datetime_based_cursor_model.cursor_datetime_formats,
                 is_sequential_state=True,
                 cursor_granularity=cursor_granularity,
                 # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
