@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -34,49 +34,11 @@ check:
 
 definitions:
   streams:
-    tasks:
-      type: DeclarativeStream
-      name: tasks
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/my/tasks
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - Id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/tasks"
-    employees:
-      type: DeclarativeStream
-      name: employees
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/supervise/employee
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - Id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/employees"
     locations:
       type: DeclarativeStream
       name: locations
+      primary_key:
+        - Id
       retriever:
         type: SimpleRetriever
         requester:
@@ -88,55 +50,37 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - Id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/locations"
-    news_feed:
+    employees:
       type: DeclarativeStream
-      name: news_feed
+      name: employees
+      primary_key:
+        - Id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v1/my/memo
+          path: /api/v1/supervise/employee
           http_method: GET
+          request_body_json:
+            max: 1
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - Id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/news_feed"
-    timesheets:
-      type: DeclarativeStream
-      name: timesheets
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v1/my/timesheets
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - Id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/timesheets"
+          $ref: "#/schemas/employees"
     award_lists:
       type: DeclarativeStream
       name: award_lists
+      primary_key:
+        - AwardCode
       retriever:
         type: SimpleRetriever
         requester:
@@ -148,8 +92,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - AwardCode
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -157,6 +99,8 @@ definitions:
     departments:
       type: DeclarativeStream
       name: departments
+      primary_key:
+        - Id
       retriever:
         type: SimpleRetriever
         requester:
@@ -168,12 +112,170 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - Id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/departments"
+    timesheets:
+      type: DeclarativeStream
+      name: timesheets
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/my/timesheets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timesheets"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/my/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    news_feed:
+      type: DeclarativeStream
+      name: news_feed
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/my/memo
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/news_feed"
+    addresses:
+      type: DeclarativeStream
+      name: addresses
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/Address
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/addresses"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/Category
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/Comment
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    company_periods:
+      type: DeclarativeStream
+      name: company_periods
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/CompanyPeriod
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_periods"
+    employee_agreements:
+      type: DeclarativeStream
+      name: employee_agreements
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/EmployeeAgreement
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee_agreements"
   base_requester:
     type: HttpRequester
     url_base: "{{ config[\"base_url\"] }}"
@@ -189,6 +291,11 @@ streams:
   - $ref: "#/definitions/streams/timesheets"
   - $ref: "#/definitions/streams/tasks"
   - $ref: "#/definitions/streams/news_feed"
+  - $ref: "#/definitions/streams/addresses"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/company_periods"
+  - $ref: "#/definitions/streams/employee_agreements"
 
 spec:
   type: Spec
@@ -199,35 +306,33 @@ spec:
       - base_url
       - api_key
     properties:
-      api_key:
-        type: string
-        order: 1
-        title: API Key
-        airbyte_secret: true
       base_url:
         type: string
         description: The base url for your deputy account to make API requests
         order: 0
         title: Base URL
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
     additionalProperties: true
 
 metadata:
-  assist: {}
+  autoImportSchema:
+    locations: true
+    employees: true
+    award_lists: true
+    departments: true
+    timesheets: true
+    tasks: true
+    news_feed: true
+    addresses: true
+    categories: true
+    comments: true
+    company_periods: true
+    employee_agreements: true
   testedStreams:
-    tasks:
-      hasRecords: true
-      streamHash: 1a07fa7312a790952e191b42d6536f50bbcbc83d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    employees:
-      hasRecords: true
-      streamHash: 26e6570851e4946bd08c692af48451a58c719fad
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     locations:
       hasRecords: true
       streamHash: b36f59510c29852826ce956d16d2f72d4bd3bd2e
@@ -235,16 +340,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    news_feed:
+    employees:
       hasRecords: true
-      streamHash: 8c36fe3f13fcbbe0e4a29d847bf2240722e0de70
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    timesheets:
-      hasRecords: true
-      streamHash: 47e657645eb4db6fa9df72613af7e6d6c381d5ca
+      streamHash: 7a7c2909cbbd0443d5465c2575bac45cbd6e669a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -263,32 +361,1232 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    tasks: true
-    employees: true
-    locations: true
-    news_feed: true
-    timesheets: true
-    award_lists: true
-    departments: true
+    timesheets:
+      streamHash: 9fb385d3bd75b9e488326143df36cde35822fd47
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      hasRecords: true
+      streamHash: 1a07fa7312a790952e191b42d6536f50bbcbc83d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    news_feed:
+      hasRecords: true
+      streamHash: 8c36fe3f13fcbbe0e4a29d847bf2240722e0de70
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    addresses:
+      streamHash: 649a48479802de0ec534864451ff11133a342f6e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 8868489ef8e3fe57a9fa39c246b6bd5039665919
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    comments:
+      streamHash: 9d23f04869592fd2677fbc0831ba4e9459a00e4e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    company_periods:
+      streamHash: 3a77170b7f6f6874d5a9a5c0e3b3b58f6d549a0a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    employee_agreements:
+      streamHash: 0b0f62833706ce6891347513c900b9e9830556d4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
-  tasks:
+  locations:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - Id
+    additionalProperties: true
     properties:
+      Active:
+        type:
+          - boolean
+          - "null"
+      Address:
+        type:
+          - number
+          - "null"
+      BusinessNumber:
+        type:
+          - string
+          - "null"
+      Code:
+        type:
+          - string
+          - "null"
+      CompanyName:
+        type:
+          - string
+          - "null"
+      Contact:
+        type:
+          - number
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
       Id:
         type: number
+      IsPayrollEntity:
+        type:
+          - boolean
+          - "null"
+      IsWorkplace:
+        type:
+          - boolean
+          - "null"
+      Modified:
+        type:
+          - string
+          - "null"
+      ParentCompany:
+        type:
+          - number
+          - "null"
+      PayrollExportCode:
+        type:
+          - string
+          - "null"
+      TradingName:
+        type:
+          - string
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          AddressObject:
+            type:
+              - object
+              - "null"
+            properties:
+              Country:
+                type:
+                  - number
+                  - "null"
+              Created:
+                type:
+                  - string
+                  - "null"
+              Creator:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Modified:
+                type:
+                  - string
+                  - "null"
+              Print:
+                type:
+                  - string
+                  - "null"
+              State:
+                type:
+                  - string
+                  - "null"
+              Street1:
+                type:
+                  - string
+                  - "null"
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          CustomData:
+            type:
+              - object
+              - "null"
+            properties: {}
+          Geo:
+            type:
+              - object
+              - "null"
+            properties:
+              Created:
+                type:
+                  - string
+                  - "null"
+              Creator:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Latitude:
+                type:
+                  - number
+                  - "null"
+              Longitude:
+                type:
+                  - number
+                  - "null"
+              Modified:
+                type:
+                  - string
+                  - "null"
+              Orm:
+                type:
+                  - string
+                  - "null"
+              RecId:
+                type:
+                  - number
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Active:
+        type:
+          - boolean
+          - "null"
+      AllowAppraisal:
+        type:
+          - boolean
+          - "null"
+      AllowLogin:
+        type:
+          - boolean
+          - "null"
+      AnalyticsID:
+        type:
+          - string
+          - "null"
+      CanAskToShowPin:
+        type:
+          - boolean
+          - "null"
+      Company:
+        type:
+          - number
+          - "null"
+      Contact:
+        type:
+          - number
+          - "null"
+      Contract:
+        anyOf:
+          - type: string
+          - type: object
+            properties:
+              Award:
+                type: "null"
+              AwardStartDate:
+                type: "null"
+              BasePayRule:
+                type: number
+              Code:
+                type: "null"
+              CountryId:
+                type: "null"
+              Created:
+                type: string
+              Creator:
+                type: number
+              Description:
+                type: "null"
+              EmploymentBasis:
+                type: number
+              EmploymentCategory:
+                type: number
+              EmploymentCondition:
+                type: "null"
+              EmploymentStatus:
+                type: number
+              EmploymentSubType:
+                type: "null"
+              EndDate:
+                type: "null"
+              File:
+                type: "null"
+              Id:
+                type: number
+              LeaveRuleArray:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    BasePayRule:
+                      type: number
+                    ContractId:
+                      type: number
+                    Created:
+                      type: string
+                    Creator:
+                      type: number
+                    Id:
+                      type: number
+                    LeaveRuleId:
+                      type: number
+                    LoadingPayRule1:
+                      type: "null"
+                    LoadingPayRule2:
+                      type: "null"
+                    LoadingPayRule3:
+                      type: "null"
+                    Modified:
+                      type: string
+                    _DPMetaData:
+                      type: object
+                      properties:
+                        CreatorInfo:
+                          type: object
+                          properties:
+                            DisplayName:
+                              type: string
+                            Id:
+                              type: number
+                            Photo:
+                              type: string
+                        System:
+                          type: string
+              MigrateTo:
+                type: "null"
+              Modified:
+                type: string
+              Name:
+                type: string
+              PayRuleArray:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    AdvancedCalculation:
+                      type: "null"
+                    AnnualSalary:
+                      type: "null"
+                    Comment:
+                      type: "null"
+                    Config:
+                      type: "null"
+                    CrId:
+                      type: "null"
+                    Created:
+                      type: string
+                    Creator:
+                      type: number
+                    CtId:
+                      type: "null"
+                    DexmlScript:
+                      type: "null"
+                    DexmlScriptParam:
+                      type: "null"
+                    HourlyRate:
+                      type: number
+                    Id:
+                      type: number
+                    IsExported:
+                      type: boolean
+                    IsMultiplier:
+                      type: boolean
+                    MaximumShiftLength:
+                      type: "null"
+                    MaximumType:
+                      type: number
+                    MaximumValue:
+                      type: "null"
+                    MinimumShiftLength:
+                      type: "null"
+                    MinimumType:
+                      type: number
+                    MinimumValue:
+                      type: "null"
+                    Modified:
+                      type: string
+                    MultiplierBaseRate:
+                      type: "null"
+                    MultiplierValue:
+                      type: "null"
+                    PayPortionRule:
+                      type: number
+                    PayTitle:
+                      type: string
+                    PayrollCategory:
+                      type: string
+                    PeriodType:
+                      type: "null"
+                    RateTag:
+                      type: "null"
+                    RateType:
+                      type: "null"
+                    RecommendWith:
+                      type: number
+                    RemunerationBy:
+                      type: number
+                    RemunerationType:
+                      type: number
+                    Schedule:
+                      type: number
+                    UnitValue:
+                      type: "null"
+                    _DPMetaData:
+                      type: object
+                      properties:
+                        CreatorInfo:
+                          type: object
+                        System:
+                          type: string
+              PeriodType:
+                type: number
+              PpId:
+                type: "null"
+              StartDate:
+                type: "null"
+              StressProfile:
+                type: "null"
+              StrictLeaveApproval:
+                type: "null"
+              ThirdPartySync:
+                type: string
+              _DPMetaData:
+                type: object
+                properties:
+                  CreatorInfo:
+                    type: object
+                  System:
+                    type: string
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      DisplayName:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - string
+          - "null"
+      EmployeeHourlyRate:
+        type:
+          - number
+          - "null"
+      FirstName:
+        type:
+          - string
+          - "null"
+      HasAndroidToken:
+        type:
+          - boolean
+          - "null"
+      HasEnabled2FA:
+        type:
+          - boolean
+          - "null"
+      HasIPhoneToken:
+        type:
+          - boolean
+          - "null"
+      HistoryId:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
+      Img:
+        type:
+          - string
+          - "null"
+      IsSubordinate:
+        type:
+          - boolean
+          - "null"
+      LastName:
+        type:
+          - string
+          - "null"
+      LeaveAccrualArray:
+        type:
+          - array
+          - "null"
+      Mobile:
+        type:
+          - string
+          - "null"
+      Modified:
+        type:
+          - string
+          - "null"
+      PayrollId:
+        type:
+          - string
+          - "null"
+      Photo:
+        type:
+          - number
+          - "null"
+      PhotoLinkId:
+        type:
+          - string
+          - "null"
+      Pronouns:
+        type:
+          - number
+          - "null"
+      Role:
+        type:
+          - number
+          - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - number
+          - "null"
+      StressProfile:
+        type:
+          - number
+          - "null"
+      TrainingArray:
+        type:
+          - string
+          - "null"
+      TrainingFileArray:
+        type:
+          - array
+          - "null"
+      UserId:
+        type:
+          - number
+          - "null"
+      UserName:
+        type:
+          - string
+          - "null"
+      WorkplaceArray:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Agreement1:
+              type:
+                - number
+                - "null"
+            Agreement2:
+              type:
+                - number
+                - "null"
+            Agreement3:
+              type:
+                - number
+                - "null"
+            Company:
+              type:
+                - number
+                - "null"
+            Created:
+              type:
+                - string
+                - "null"
+            Creator:
+              type:
+                - number
+                - "null"
+            EmployeeId:
+              type:
+                - number
+                - "null"
+            Id:
+              type:
+                - number
+                - "null"
+            Modified:
+              type:
+                - string
+                - "null"
+            SortOrder:
+              type:
+                - number
+                - "null"
+            _DPMetaData:
+              type:
+                - object
+                - "null"
+              properties:
+                CreatorInfo:
+                  type:
+                    - object
+                    - "null"
+                System:
+                  type:
+                    - string
+                    - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  award_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AwardCode:
+        type: string
+      CountryCode:
+        type:
+          - string
+          - "null"
+      employmentTerm:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - AwardCode
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Active:
+        type:
+          - boolean
+          - "null"
+      Address:
+        type:
+          - number
+          - "null"
+      AddressObject:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              City:
+                type: string
+              ContactName:
+                type: "null"
+              Country:
+                type: number
+              Created:
+                type: string
+              Creator:
+                type: number
+              Format:
+                type: "null"
+              Id:
+                type: number
+              Modified:
+                type: string
+              Notes:
+                type: "null"
+              Phone:
+                type: "null"
+              PoBox:
+                type: "null"
+              Postcode:
+                type: string
+              Print:
+                type: string
+              Saved:
+                type: "null"
+              State:
+                type: string
+              Street1:
+                type: string
+              Street2:
+                type: "null"
+              StreetNo:
+                type: "null"
+              SuiteNo:
+                type: "null"
+              UnitNo:
+                type: "null"
+              Verified:
+                type: "null"
+      Colour:
+        type:
+          - string
+          - "null"
+      Company:
+        type:
+          - number
+          - "null"
+      CompanyAddress:
+        type:
+          - number
+          - "null"
+      CompanyCode:
+        type:
+          - string
+          - "null"
+      CompanyName:
+        type:
+          - string
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
+      Modified:
+        type:
+          - string
+          - "null"
+      OperationalUnitName:
+        type:
+          - string
+          - "null"
+      ParentOperationalUnit:
+        type:
+          - number
+          - "null"
+      PayrollExportName:
+        type:
+          - string
+          - "null"
+      RosterSortOrder:
+        type:
+          - number
+          - "null"
+      ShowOnRoster:
+        type:
+          - boolean
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          AddressObject:
+            type:
+              - object
+              - "null"
+            properties:
+              City:
+                type:
+                  - string
+                  - "null"
+              Country:
+                type:
+                  - number
+                  - "null"
+              Created:
+                type:
+                  - string
+                  - "null"
+              Creator:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Modified:
+                type:
+                  - string
+                  - "null"
+              Postcode:
+                type:
+                  - string
+                  - "null"
+              Print:
+                type:
+                  - string
+                  - "null"
+              State:
+                type:
+                  - string
+                  - "null"
+              Street1:
+                type:
+                  - string
+                  - "null"
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  timesheets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AutoPayRuleApproved:
+        type:
+          - boolean
+          - "null"
+      AutoProcessed:
+        type:
+          - boolean
+          - "null"
+      AutoRounded:
+        type:
+          - boolean
+          - "null"
+      AutoTimeApproved:
+        type:
+          - boolean
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
       Date:
         type:
           - string
           - "null"
-      Type:
+      Disputed:
+        type:
+          - boolean
+          - "null"
+      Employee:
         type:
           - number
           - "null"
+      EmployeeAgreement:
+        type:
+          - number
+          - "null"
+      EmployeeHistory:
+        type:
+          - number
+          - "null"
+      EndTime:
+        type:
+          - number
+          - "null"
+      EndTimeLocalized:
+        type:
+          - string
+          - "null"
+      Id:
+        type: number
+      Invoiced:
+        type:
+          - boolean
+          - "null"
+      IsInProgress:
+        type:
+          - boolean
+          - "null"
+      IsLeave:
+        type:
+          - boolean
+          - "null"
+      MarkedPaidUnpaidAt:
+        type:
+          - string
+          - "null"
+      Mealbreak:
+        type:
+          - string
+          - "null"
+      MealbreakSlots:
+        type:
+          - string
+          - "null"
+      Metadata:
+        type:
+          - string
+          - "null"
+      Modified:
+        type:
+          - string
+          - "null"
+      OnCost:
+        type:
+          - number
+          - "null"
+      OperationalUnit:
+        type:
+          - number
+          - "null"
+      OperationalUnitObject:
+        type:
+          - object
+          - "null"
+        properties:
+          Active:
+            type:
+              - boolean
+              - "null"
+          Address:
+            type:
+              - number
+              - "null"
+          AddressObject:
+            type:
+              - object
+              - "null"
+            properties:
+              City:
+                type:
+                  - string
+                  - "null"
+              Country:
+                type:
+                  - number
+                  - "null"
+              Created:
+                type:
+                  - string
+                  - "null"
+              Creator:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Modified:
+                type:
+                  - string
+                  - "null"
+              Postcode:
+                type:
+                  - string
+                  - "null"
+              Print:
+                type:
+                  - string
+                  - "null"
+              State:
+                type:
+                  - string
+                  - "null"
+              Street1:
+                type:
+                  - string
+                  - "null"
+          Colour:
+            type:
+              - string
+              - "null"
+          Company:
+            type:
+              - number
+              - "null"
+          CompanyAddress:
+            type:
+              - number
+              - "null"
+          CompanyCode:
+            type:
+              - string
+              - "null"
+          CompanyName:
+            type:
+              - string
+              - "null"
+          Created:
+            type:
+              - string
+              - "null"
+          Creator:
+            type:
+              - number
+              - "null"
+          Id:
+            type:
+              - number
+              - "null"
+          Modified:
+            type:
+              - string
+              - "null"
+          OperationalUnitName:
+            type:
+              - string
+              - "null"
+          ParentOperationalUnit:
+            type:
+              - number
+              - "null"
+          PayrollExportName:
+            type:
+              - string
+              - "null"
+          RosterSortOrder:
+            type:
+              - number
+              - "null"
+          ShowOnRoster:
+            type:
+              - boolean
+              - "null"
+      PayRuleApproved:
+        type:
+          - boolean
+          - "null"
+      PayStaged:
+        type:
+          - boolean
+          - "null"
+      PaycycleId:
+        type:
+          - number
+          - "null"
+      RealTime:
+        type:
+          - boolean
+          - "null"
+      ReviewState:
+        type:
+          - number
+          - "null"
+      Slots:
+        type:
+          - array
+          - "null"
+      StartTime:
+        type:
+          - number
+          - "null"
+      StartTimeLocalized:
+        type:
+          - string
+          - "null"
+      TimeApproved:
+        type:
+          - boolean
+          - "null"
+      TotalTime:
+        type:
+          - number
+          - "null"
+      TotalTimeInv:
+        type:
+          - number
+          - "null"
+      ValidationFlag:
+        type:
+          - number
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          EmployeeInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          OperationalUnitInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              Company:
+                type:
+                  - number
+                  - "null"
+              CompanyName:
+                type:
+                  - string
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              LabelWithCompany:
+                type:
+                  - string
+                  - "null"
+              OperationalUnitName:
+                type:
+                  - string
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       Answer:
         type:
           - string
@@ -301,10 +1599,20 @@ schemas:
         type:
           - string
           - "null"
+      Date:
+        type:
+          - string
+          - "null"
+      DayTimestamp:
+        type:
+          - number
+          - "null"
       GroupId:
         type:
           - number
           - "null"
+      Id:
+        type: number
       Modified:
         type:
           - string
@@ -321,11 +1629,19 @@ schemas:
         type:
           - number
           - "null"
+      TaskSetupId:
+        type:
+          - number
+          - "null"
+      Type:
+        type:
+          - number
+          - "null"
       UserEntry:
         type:
           - number
           - "null"
-      TaskSetupId:
+      UserResponsible:
         type:
           - number
           - "null"
@@ -343,11 +1659,7 @@ schemas:
               - object
               - "null"
             properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Photo:
+              DisplayName:
                 type:
                   - string
                   - "null"
@@ -355,7 +1667,11 @@ schemas:
                 type:
                   - number
                   - "null"
-              DisplayName:
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
                 type:
                   - string
                   - "null"
@@ -364,6 +1680,14 @@ schemas:
               - object
               - "null"
             properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
               Id:
                 type:
                   - number
@@ -372,625 +1696,20 @@ schemas:
                 type:
                   - string
                   - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
-              DisplayName:
-                type:
-                  - string
-                  - "null"
-      DayTimestamp:
-        type:
-          - number
-          - "null"
-      UserResponsible:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  employees:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - Id
-    properties:
-      Id:
-        type: number
-      Img:
-        type:
-          - string
-          - "null"
-      Role:
-        type:
-          - number
-          - "null"
-      Email:
-        type:
-          - string
-          - "null"
-      Photo:
-        type:
-          - number
-          - "null"
-      Active:
-        type:
-          - boolean
-          - "null"
-      Mobile:
-        type:
-          - string
-          - "null"
-      Status:
-        type:
-          - number
-          - "null"
-      UserId:
-        type:
-          - number
-          - "null"
-      Company:
-        type:
-          - number
-          - "null"
-      Contact:
-        type:
-          - number
-          - "null"
-      Created:
-        type:
-          - string
-          - "null"
-      Creator:
-        type:
-          - number
-          - "null"
-      Contract:
-        anyOf:
-          - type: string
-          - type: object
-            properties:
-              Id:
-                type: number
-              Code:
-                type: "null"
-              File:
-                type: "null"
-              Name:
-                type: string
-              PpId:
-                type: "null"
-              Award:
-                type: "null"
-              Created:
-                type: string
-              Creator:
-                type: number
-              EndDate:
-                type: "null"
-              Modified:
-                type: string
-              CountryId:
-                type: "null"
-              MigrateTo:
-                type: "null"
-              StartDate:
-                type: "null"
-              PeriodType:
-                type: number
-              BasePayRule:
-                type: number
-              Description:
-                type: "null"
-              _DPMetaData:
-                type: object
-                properties:
-                  System:
-                    type: string
-                  CreatorInfo:
-                    type: object
-              PayRuleArray:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Id:
-                      type: number
-                    CrId:
-                      type: "null"
-                    CtId:
-                      type: "null"
-                    Config:
-                      type: "null"
-                    Comment:
-                      type: "null"
-                    Created:
-                      type: string
-                    Creator:
-                      type: number
-                    RateTag:
-                      type: "null"
-                    Modified:
-                      type: string
-                    PayTitle:
-                      type: string
-                    RateType:
-                      type: "null"
-                    Schedule:
-                      type: number
-                    UnitValue:
-                      type: "null"
-                    HourlyRate:
-                      type: number
-                    IsExported:
-                      type: boolean
-                    PeriodType:
-                      type: "null"
-                    DexmlScript:
-                      type: "null"
-                    MaximumType:
-                      type: number
-                    MinimumType:
-                      type: number
-                    _DPMetaData:
-                      type: object
-                      properties:
-                        System:
-                          type: string
-                        CreatorInfo:
-                          type: object
-                    AnnualSalary:
-                      type: "null"
-                    IsMultiplier:
-                      type: boolean
-                    MaximumValue:
-                      type: "null"
-                    MinimumValue:
-                      type: "null"
-                    RecommendWith:
-                      type: number
-                    PayPortionRule:
-                      type: number
-                    RemunerationBy:
-                      type: number
-                    MultiplierValue:
-                      type: "null"
-                    PayrollCategory:
-                      type: string
-                    DexmlScriptParam:
-                      type: "null"
-                    RemunerationType:
-                      type: number
-                    MaximumShiftLength:
-                      type: "null"
-                    MinimumShiftLength:
-                      type: "null"
-                    MultiplierBaseRate:
-                      type: "null"
-                    AdvancedCalculation:
-                      type: "null"
-              StressProfile:
-                type: "null"
-              AwardStartDate:
-                type: "null"
-              LeaveRuleArray:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Id:
-                      type: number
-                    Created:
-                      type: string
-                    Creator:
-                      type: number
-                    Modified:
-                      type: string
-                    ContractId:
-                      type: number
-                    BasePayRule:
-                      type: number
-                    LeaveRuleId:
-                      type: number
-                    _DPMetaData:
-                      type: object
-                      properties:
-                        System:
-                          type: string
-                        CreatorInfo:
-                          type: object
-                          properties:
-                            Id:
-                              type: number
-                            Photo:
-                              type: string
-                            DisplayName:
-                              type: string
-                    LoadingPayRule1:
-                      type: "null"
-                    LoadingPayRule2:
-                      type: "null"
-                    LoadingPayRule3:
-                      type: "null"
-              ThirdPartySync:
-                type: string
-              EmploymentBasis:
-                type: number
-              EmploymentStatus:
-                type: number
-              EmploymentSubType:
-                type: "null"
-              EmploymentCategory:
-                type: number
-              EmploymentCondition:
-                type: "null"
-              StrictLeaveApproval:
-                type: "null"
-      LastName:
-        type:
-          - string
-          - "null"
-      Modified:
-        type:
-          - string
-          - "null"
-      Pronouns:
-        type:
-          - number
-          - "null"
-      UserName:
-        type:
-          - string
-          - "null"
-      FirstName:
-        type:
-          - string
-          - "null"
-      HistoryId:
-        type:
-          - number
-          - "null"
-      PayrollId:
-        type:
-          - string
-          - "null"
-      StartDate:
-        type:
-          - string
-          - "null"
-      AllowLogin:
-        type:
-          - boolean
-          - "null"
-      AnalyticsID:
-        type:
-          - string
-          - "null"
-      DisplayName:
-        type:
-          - string
-          - "null"
-      PhotoLinkId:
-        type:
-          - string
-          - "null"
-      _DPMetaData:
-        type:
-          - object
-          - "null"
-        properties:
-          System:
-            type:
-              - string
-              - "null"
-          CreatorInfo:
-            type:
-              - object
-              - "null"
-      HasEnabled2FA:
-        type:
-          - boolean
-          - "null"
-      IsSubordinate:
-        type:
-          - boolean
-          - "null"
-      StressProfile:
-        type:
-          - number
-          - "null"
-      TrainingArray:
-        type:
-          - string
-          - "null"
-      AllowAppraisal:
-        type:
-          - boolean
-          - "null"
-      HasIPhoneToken:
-        type:
-          - boolean
-          - "null"
-      WorkplaceArray:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            Id:
-              type:
-                - number
-                - "null"
-            Company:
-              type:
-                - number
-                - "null"
-            Created:
-              type:
-                - string
-                - "null"
-            Creator:
-              type:
-                - number
-                - "null"
-            Modified:
-              type:
-                - string
-                - "null"
-            SortOrder:
-              type:
-                - number
-                - "null"
-            Agreement1:
-              type:
-                - number
-                - "null"
-            Agreement2:
-              type:
-                - number
-                - "null"
-            Agreement3:
-              type:
-                - number
-                - "null"
-            EmployeeId:
-              type:
-                - number
-                - "null"
-            _DPMetaData:
-              type:
-                - object
-                - "null"
-              properties:
-                System:
-                  type:
-                    - string
-                    - "null"
-                CreatorInfo:
-                  type:
-                    - object
-                    - "null"
-      CanAskToShowPin:
-        type:
-          - boolean
-          - "null"
-      HasAndroidToken:
-        type:
-          - boolean
-          - "null"
-      LeaveAccrualArray:
-        type:
-          - array
-          - "null"
-      TrainingFileArray:
-        type:
-          - array
-          - "null"
-      EmployeeHourlyRate:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  locations:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - Id
-    properties:
-      Id:
-        type: number
-      Code:
-        type:
-          - string
-          - "null"
-      Active:
-        type:
-          - boolean
-          - "null"
-      Address:
-        type:
-          - number
-          - "null"
-      Contact:
-        type:
-          - number
-          - "null"
-      Created:
-        type:
-          - string
-          - "null"
-      Creator:
-        type:
-          - number
-          - "null"
-      Modified:
-        type:
-          - string
-          - "null"
-      CompanyName:
-        type:
-          - string
-          - "null"
-      IsWorkplace:
-        type:
-          - boolean
-          - "null"
-      TradingName:
-        type:
-          - string
-          - "null"
-      _DPMetaData:
-        type:
-          - object
-          - "null"
-        properties:
-          Geo:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Orm:
-                type:
-                  - string
-                  - "null"
-              RecId:
-                type:
-                  - number
-                  - "null"
-              Created:
-                type:
-                  - string
-                  - "null"
-              Creator:
-                type:
-                  - number
-                  - "null"
-              Latitude:
-                type:
-                  - number
-                  - "null"
-              Modified:
-                type:
-                  - string
-                  - "null"
-              Longitude:
-                type:
-                  - number
-                  - "null"
-          System:
-            type:
-              - string
-              - "null"
-          CustomData:
-            type:
-              - object
-              - "null"
-            properties: {}
-          CreatorInfo:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Photo:
-                type:
-                  - string
-                  - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
-              Pronouns:
-                type:
-                  - number
-                  - "null"
-              DisplayName:
-                type:
-                  - string
-                  - "null"
-              EmployeeProfile:
-                type:
-                  - number
-                  - "null"
-          AddressObject:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Print:
-                type:
-                  - string
-                  - "null"
-              State:
-                type:
-                  - string
-                  - "null"
-              Country:
-                type:
-                  - number
-                  - "null"
-              Created:
-                type:
-                  - string
-                  - "null"
-              Creator:
-                type:
-                  - number
-                  - "null"
-              Street1:
-                type:
-                  - string
-                  - "null"
-              Modified:
-                type:
-                  - string
-                  - "null"
-      ParentCompany:
-        type:
-          - number
-          - "null"
-      BusinessNumber:
-        type:
-          - string
-          - "null"
-      IsPayrollEntity:
-        type:
-          - boolean
-          - "null"
-      PayrollExportCode:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   news_feed:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - Id
+    additionalProperties: true
     properties:
-      Id:
-        type: number
-      Type:
-        type:
-          - number
-          - "null"
       Active:
         type:
           - boolean
+          - "null"
+      ConfirmText:
+        type:
+          - string
           - "null"
       Content:
         type:
@@ -1004,6 +1723,12 @@ schemas:
         type:
           - number
           - "null"
+      DisableComment:
+        type:
+          - boolean
+          - "null"
+      Id:
+        type: number
       Keyword:
         type:
           - string
@@ -1016,16 +1741,16 @@ schemas:
         type:
           - string
           - "null"
-      ConfirmText:
+      Type:
         type:
-          - string
+          - number
           - "null"
       _DPMetaData:
         type:
           - object
           - "null"
         properties:
-          Files:
+          AssignedUsers:
             type:
               - array
               - "null"
@@ -1034,89 +1759,37 @@ schemas:
                 - object
                 - "null"
               properties:
+                DisplayName:
+                  type:
+                    - string
+                    - "null"
+                Employee:
+                  type:
+                    - number
+                    - "null"
+                EmployeeProfile:
+                  type:
+                    - number
+                    - "null"
                 Id:
                   type:
                     - number
                     - "null"
-                Name:
+                Photo:
                   type:
                     - string
                     - "null"
-                Size:
+                Pronouns:
                   type:
                     - number
                     - "null"
-                Type:
-                  type:
-                    - string
-                    - "null"
-                Width:
-                  type:
-                    - number
-                    - "null"
-                Height:
-                  type:
-                    - number
-                    - "null"
-                Linkid:
-                  type:
-                    - string
-                    - "null"
-                Tempid:
-                  type:
-                    - string
-                    - "null"
-                Created:
-                  type:
-                    - string
-                    - "null"
-                Creator:
-                  type:
-                    - number
-                    - "null"
-                Session:
-                  type:
-                    - number
-                    - "null"
-                Modified:
-                  type:
-                    - string
-                    - "null"
-                P5050Link:
-                  type:
-                    - string
-                    - "null"
-                DynamicLink:
-                  type:
-                    - string
-                    - "null"
-                PreviewLink:
-                  type:
-                    - string
-                    - "null"
-                DownloadLink:
-                  type:
-                    - string
-                    - "null"
-          Teams:
+          CanDelete:
             type:
-              - array
-              - "null"
-          System:
-            type:
-              - string
+              - boolean
               - "null"
           Comments:
             type:
               - array
-              - "null"
-          MemoLogs:
-            type:
-              - array
-              - "null"
-          CanDelete:
-            type:
-              - boolean
               - "null"
           Companies:
             type:
@@ -1127,14 +1800,6 @@ schemas:
                 - object
                 - "null"
               properties:
-                Id:
-                  type:
-                    - number
-                    - "null"
-                Code:
-                  type:
-                    - string
-                    - "null"
                 Active:
                   type:
                     - boolean
@@ -1142,6 +1807,18 @@ schemas:
                 Address:
                   type:
                     - number
+                    - "null"
+                BusinessNumber:
+                  type:
+                    - string
+                    - "null"
+                Code:
+                  type:
+                    - string
+                    - "null"
+                CompanyName:
+                  type:
+                    - string
                     - "null"
                 Contact:
                   type:
@@ -1155,17 +1832,29 @@ schemas:
                   type:
                     - number
                     - "null"
-                Modified:
+                Id:
                   type:
-                    - string
+                    - number
                     - "null"
-                CompanyName:
+                IsPayrollEntity:
                   type:
-                    - string
+                    - boolean
                     - "null"
                 IsWorkplace:
                   type:
                     - boolean
+                    - "null"
+                Modified:
+                  type:
+                    - string
+                    - "null"
+                ParentCompany:
+                  type:
+                    - number
+                    - "null"
+                PayrollExportCode:
+                  type:
+                    - string
                     - "null"
                 TradingName:
                   type:
@@ -1176,98 +1865,11 @@ schemas:
                     - object
                     - "null"
                   properties:
-                    Geo:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        Id:
-                          type:
-                            - number
-                            - "null"
-                        Orm:
-                          type:
-                            - string
-                            - "null"
-                        RecId:
-                          type:
-                            - number
-                            - "null"
-                        Created:
-                          type:
-                            - string
-                            - "null"
-                        Creator:
-                          type:
-                            - number
-                            - "null"
-                        Latitude:
-                          type:
-                            - number
-                            - "null"
-                        Modified:
-                          type:
-                            - string
-                            - "null"
-                        Longitude:
-                          type:
-                            - number
-                            - "null"
-                    System:
-                      type:
-                        - string
-                        - "null"
-                    CustomData:
-                      type:
-                        - object
-                        - "null"
-                      properties: {}
-                    CreatorInfo:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        Id:
-                          type:
-                            - number
-                            - "null"
-                        Photo:
-                          type:
-                            - string
-                            - "null"
-                        Employee:
-                          type:
-                            - number
-                            - "null"
-                        Pronouns:
-                          type:
-                            - number
-                            - "null"
-                        DisplayName:
-                          type:
-                            - string
-                            - "null"
-                        EmployeeProfile:
-                          type:
-                            - number
-                            - "null"
                     AddressObject:
                       type:
                         - object
                         - "null"
                       properties:
-                        Id:
-                          type:
-                            - number
-                            - "null"
-                        Print:
-                          type:
-                            - string
-                            - "null"
-                        State:
-                          type:
-                            - string
-                            - "null"
                         Country:
                           type:
                             - number
@@ -1280,30 +1882,207 @@ schemas:
                           type:
                             - number
                             - "null"
-                        Street1:
+                        Id:
                           type:
-                            - string
+                            - number
                             - "null"
                         Modified:
                           type:
                             - string
                             - "null"
-                ParentCompany:
+                        Print:
+                          type:
+                            - string
+                            - "null"
+                        State:
+                          type:
+                            - string
+                            - "null"
+                        Street1:
+                          type:
+                            - string
+                            - "null"
+                    CreatorInfo:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        DisplayName:
+                          type:
+                            - string
+                            - "null"
+                        Employee:
+                          type:
+                            - number
+                            - "null"
+                        EmployeeProfile:
+                          type:
+                            - number
+                            - "null"
+                        Id:
+                          type:
+                            - number
+                            - "null"
+                        Photo:
+                          type:
+                            - string
+                            - "null"
+                        Pronouns:
+                          type:
+                            - number
+                            - "null"
+                    CustomData:
+                      type:
+                        - object
+                        - "null"
+                      properties: {}
+                    Geo:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        Created:
+                          type:
+                            - string
+                            - "null"
+                        Creator:
+                          type:
+                            - number
+                            - "null"
+                        Id:
+                          type:
+                            - number
+                            - "null"
+                        Latitude:
+                          type:
+                            - number
+                            - "null"
+                        Longitude:
+                          type:
+                            - number
+                            - "null"
+                        Modified:
+                          type:
+                            - string
+                            - "null"
+                        Orm:
+                          type:
+                            - string
+                            - "null"
+                        RecId:
+                          type:
+                            - number
+                            - "null"
+                    System:
+                      type:
+                        - string
+                        - "null"
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          Files:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                Created:
+                  type:
+                    - string
+                    - "null"
+                Creator:
                   type:
                     - number
                     - "null"
-                BusinessNumber:
+                DownloadLink:
                   type:
                     - string
                     - "null"
-                IsPayrollEntity:
-                  type:
-                    - boolean
-                    - "null"
-                PayrollExportCode:
+                DynamicLink:
                   type:
                     - string
                     - "null"
+                Height:
+                  type:
+                    - number
+                    - "null"
+                Id:
+                  type:
+                    - number
+                    - "null"
+                Linkid:
+                  type:
+                    - string
+                    - "null"
+                Modified:
+                  type:
+                    - string
+                    - "null"
+                Name:
+                  type:
+                    - string
+                    - "null"
+                P5050Link:
+                  type:
+                    - string
+                    - "null"
+                PreviewLink:
+                  type:
+                    - string
+                    - "null"
+                Session:
+                  type:
+                    - number
+                    - "null"
+                Size:
+                  type:
+                    - number
+                    - "null"
+                Tempid:
+                  type:
+                    - string
+                    - "null"
+                Type:
+                  type:
+                    - string
+                    - "null"
+                Width:
+                  type:
+                    - number
+                    - "null"
+          MemoLogs:
+            type:
+              - array
+              - "null"
           Reactions:
             type:
               - object
@@ -1333,106 +2112,38 @@ schemas:
                 type:
                   - number
                   - "null"
-          CreatorInfo:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Photo:
-                type:
-                  - string
-                  - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
-              Pronouns:
-                type:
-                  - number
-                  - "null"
-              DisplayName:
-                type:
-                  - string
-                  - "null"
-              EmployeeProfile:
-                type:
-                  - number
-                  - "null"
-          UserReaction:
-            type:
-              - array
-              - "null"
-          AssignedUsers:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                Id:
-                  type:
-                    - number
-                    - "null"
-                Photo:
-                  type:
-                    - string
-                    - "null"
-                Employee:
-                  type:
-                    - number
-                    - "null"
-                Pronouns:
-                  type:
-                    - number
-                    - "null"
-                DisplayName:
-                  type:
-                    - string
-                    - "null"
-                EmployeeProfile:
-                  type:
-                    - number
-                    - "null"
-          RequireMyConfirm:
-            type:
-              - boolean
-              - "null"
           RequireConfirmation:
             type:
               - boolean
               - "null"
-      DisableComment:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  timesheets:
-    type: object
-    $schema: http://json-schema.org/schema#
+          RequireMyConfirm:
+            type:
+              - boolean
+              - "null"
+          System:
+            type:
+              - string
+              - "null"
+          Teams:
+            type:
+              - array
+              - "null"
+          UserReaction:
+            type:
+              - array
+              - "null"
     required:
       - Id
+  addresses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      Id:
-        type: number
-      Cost:
-        type:
-          - number
-          - "null"
-      Date:
+      City:
         type:
           - string
           - "null"
-      Slots:
-        type:
-          - array
-          - "null"
-      OnCost:
+      Country:
         type:
           - number
           - "null"
@@ -1444,63 +2155,183 @@ schemas:
         type:
           - number
           - "null"
-      EndTime:
-        type:
-          - number
-          - "null"
-      IsLeave:
-        type:
-          - boolean
-          - "null"
-      Disputed:
-        type:
-          - boolean
-          - "null"
-      Employee:
-        type:
-          - number
-          - "null"
-      Invoiced:
-        type:
-          - boolean
-          - "null"
-      Metadata:
+      Id:
+        type: number
+      Modified:
         type:
           - string
+          - "null"
+      Postcode:
+        type:
+          - string
+          - "null"
+      Print:
+        type:
+          - string
+          - "null"
+      State:
+        type:
+          - string
+          - "null"
+      Street1:
+        type:
+          - string
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Category:
+        type:
+          - string
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      Group:
+        type:
+          - string
+          - "null"
+      Id:
+        type: number
+      Modified:
+        type:
+          - string
+          - "null"
+      SortOrder:
+        type:
+          - number
+          - "null"
+      Stafflog:
+        type:
+          - boolean
+          - "null"
+      System:
+        type:
+          - boolean
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Comment:
+        type:
+          - string
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
+      IgnorePermission:
+        type:
+          - boolean
+          - "null"
+      InFeed:
+        type:
+          - boolean
           - "null"
       Modified:
         type:
           - string
           - "null"
-      RealTime:
-        type:
-          - boolean
-          - "null"
-      Mealbreak:
+      Orm:
         type:
           - string
           - "null"
-      PayStaged:
-        type:
-          - boolean
-          - "null"
-      StartTime:
-        type:
-          - number
-          - "null"
-      TotalTime:
-        type:
-          - number
-          - "null"
-      PaycycleId:
-        type:
-          - number
-          - "null"
-      AutoRounded:
-        type:
-          - boolean
-          - "null"
-      ReviewState:
+      RecId:
         type:
           - number
           - "null"
@@ -1509,15 +2340,23 @@ schemas:
           - object
           - "null"
         properties:
-          System:
-            type:
-              - string
-              - "null"
           CreatorInfo:
             type:
               - object
               - "null"
             properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
               Id:
                 type:
                   - number
@@ -1526,292 +2365,21 @@ schemas:
                 type:
                   - string
                   - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
               Pronouns:
                 type:
                   - number
                   - "null"
-              DisplayName:
-                type:
-                  - string
-                  - "null"
-              EmployeeProfile:
-                type:
-                  - number
-                  - "null"
-          EmployeeInfo:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Photo:
-                type:
-                  - string
-                  - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
-              Pronouns:
-                type:
-                  - number
-                  - "null"
-              DisplayName:
-                type:
-                  - string
-                  - "null"
-              EmployeeProfile:
-                type:
-                  - number
-                  - "null"
-          OperationalUnitInfo:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              Company:
-                type:
-                  - number
-                  - "null"
-              CompanyName:
-                type:
-                  - string
-                  - "null"
-              LabelWithCompany:
-                type:
-                  - string
-                  - "null"
-              OperationalUnitName:
-                type:
-                  - string
-                  - "null"
-      TimeApproved:
-        type:
-          - boolean
-          - "null"
-      TimeApprover:
-        type:
-          - number
-          - "null"
-      TotalTimeInv:
-        type:
-          - number
-          - "null"
-      AutoProcessed:
-        type:
-          - boolean
-          - "null"
-      MealbreakSlots:
-        type:
-          - string
-          - "null"
-      ValidationFlag:
-        type:
-          - number
-          - "null"
-      EmployeeHistory:
-        type:
-          - number
-          - "null"
-      OperationalUnit:
-        type:
-          - number
-          - "null"
-      PayRuleApproved:
-        type:
-          - boolean
-          - "null"
-      AutoTimeApproved:
-        type:
-          - boolean
-          - "null"
-      EndTimeLocalized:
-        type:
-          - string
-          - "null"
-      EmployeeAgreement:
-        type:
-          - number
-          - "null"
-      MarkedPaidUnpaidAt:
-        type:
-          - string
-          - "null"
-      StartTimeLocalized:
-        type:
-          - string
-          - "null"
-      AutoPayRuleApproved:
-        type:
-          - boolean
-          - "null"
-      OperationalUnitObject:
-        type:
-          - object
-          - "null"
-        properties:
-          Id:
-            type:
-              - number
-              - "null"
-          Active:
-            type:
-              - boolean
-              - "null"
-          Colour:
+          System:
             type:
               - string
               - "null"
-          Address:
-            type:
-              - number
-              - "null"
-          Company:
-            type:
-              - number
-              - "null"
-          Created:
-            type:
-              - string
-              - "null"
-          Creator:
-            type:
-              - number
-              - "null"
-          Modified:
-            type:
-              - string
-              - "null"
-          CompanyCode:
-            type:
-              - string
-              - "null"
-          CompanyName:
-            type:
-              - string
-              - "null"
-          ShowOnRoster:
-            type:
-              - boolean
-              - "null"
-          AddressObject:
-            type:
-              - object
-              - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              City:
-                type:
-                  - string
-                  - "null"
-              Print:
-                type:
-                  - string
-                  - "null"
-              State:
-                type:
-                  - string
-                  - "null"
-              Country:
-                type:
-                  - number
-                  - "null"
-              Created:
-                type:
-                  - string
-                  - "null"
-              Creator:
-                type:
-                  - number
-                  - "null"
-              Street1:
-                type:
-                  - string
-                  - "null"
-              Modified:
-                type:
-                  - string
-                  - "null"
-              Postcode:
-                type:
-                  - string
-                  - "null"
-          CompanyAddress:
-            type:
-              - number
-              - "null"
-          RosterSortOrder:
-            type:
-              - number
-              - "null"
-          PayrollExportName:
-            type:
-              - string
-              - "null"
-          OperationalUnitName:
-            type:
-              - string
-              - "null"
-          ParentOperationalUnit:
-            type:
-              - number
-              - "null"
-    additionalProperties: true
-  award_lists:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - AwardCode
-    properties:
-      name:
-        type:
-          - string
-          - "null"
-      AwardCode:
-        type: string
-      CountryCode:
-        type:
-          - string
-          - "null"
-      employmentTerm:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  departments:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - Id
+  company_periods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      Id:
-        type: number
-      Active:
-        type:
-          - boolean
-          - "null"
-      Colour:
-        type:
-          - string
-          - "null"
-      Address:
-        type:
-          - number
-          - "null"
       Company:
         type:
           - number
@@ -1824,32 +2392,54 @@ schemas:
         type:
           - number
           - "null"
+      DateEnd:
+        type:
+          - string
+          - "null"
+      DateStart:
+        type:
+          - string
+          - "null"
+      End:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
       Modified:
         type:
           - string
           - "null"
-      CompanyCode:
+      PayPeriod:
         type:
-          - string
+          - number
           - "null"
-      CompanyName:
+      Start:
         type:
-          - string
+          - number
           - "null"
       _DPMetaData:
         type:
           - object
           - "null"
         properties:
-          System:
-            type:
-              - string
-              - "null"
           CreatorInfo:
             type:
               - object
               - "null"
             properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
               Id:
                 type:
                   - number
@@ -1858,136 +2448,124 @@ schemas:
                 type:
                   - string
                   - "null"
-              Employee:
-                type:
-                  - number
-                  - "null"
               Pronouns:
                 type:
                   - number
                   - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  employee_agreements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Active:
+        type:
+          - boolean
+          - "null"
+      CompanyName:
+        type:
+          - string
+          - "null"
+      Config:
+        type:
+          - string
+          - "null"
+      Contract:
+        type:
+          - number
+          - "null"
+      ContractFile:
+        type:
+          - number
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      EmpType:
+        type:
+          - number
+          - "null"
+      EmployeeId:
+        type:
+          - number
+          - "null"
+      HistoryId:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
+      Modified:
+        type:
+          - string
+          - "null"
+      PayPeriod:
+        type:
+          - number
+          - "null"
+      PayPoint:
+        type:
+          - number
+          - "null"
+      PayrollId:
+        type:
+          - string
+          - "null"
+      SalaryPayRule:
+        type:
+          - number
+          - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
               DisplayName:
                 type:
                   - string
+                  - "null"
+              Employee:
+                type:
+                  - number
                   - "null"
               EmployeeProfile:
                 type:
                   - number
                   - "null"
-          AddressObject:
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          System:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              Id:
-                type:
-                  - number
-                  - "null"
-              City:
-                type:
-                  - string
-                  - "null"
-              Print:
-                type:
-                  - string
-                  - "null"
-              State:
-                type:
-                  - string
-                  - "null"
-              Country:
-                type:
-                  - number
-                  - "null"
-              Created:
-                type:
-                  - string
-                  - "null"
-              Creator:
-                type:
-                  - number
-                  - "null"
-              Street1:
-                type:
-                  - string
-                  - "null"
-              Modified:
-                type:
-                  - string
-                  - "null"
-              Postcode:
-                type:
-                  - string
-                  - "null"
-      ShowOnRoster:
-        type:
-          - boolean
-          - "null"
-      AddressObject:
-        anyOf:
-          - type: array
-          - type: object
-            properties:
-              Id:
-                type: number
-              City:
-                type: string
-              Notes:
-                type: "null"
-              Phone:
-                type: "null"
-              PoBox:
-                type: "null"
-              Print:
-                type: string
-              Saved:
-                type: "null"
-              State:
-                type: string
-              Format:
-                type: "null"
-              UnitNo:
-                type: "null"
-              Country:
-                type: number
-              Created:
-                type: string
-              Creator:
-                type: number
-              Street1:
-                type: string
-              Street2:
-                type: "null"
-              SuiteNo:
-                type: "null"
-              Modified:
-                type: string
-              Postcode:
-                type: string
-              StreetNo:
-                type: "null"
-              Verified:
-                type: "null"
-              ContactName:
-                type: "null"
-      CompanyAddress:
-        type:
-          - number
-          - "null"
-      RosterSortOrder:
-        type:
-          - number
-          - "null"
-      PayrollExportName:
-        type:
-          - string
-          - "null"
-      OperationalUnitName:
-        type:
-          - string
-          - "null"
-      ParentOperationalUnit:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
+    required:
+      - Id
