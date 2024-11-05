@@ -24,6 +24,7 @@ class MockBasicFunctionalityIntegrationTest :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        commitDataIncrementally = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -49,6 +50,11 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testTruncateRefresh() {
         super.testTruncateRefresh()
+    }
+
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
     }
 
     @Test

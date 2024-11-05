@@ -96,6 +96,7 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.3 | 2024-11-04 | [48148](https://github.com/airbytehq/airbyte/pull/48148) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47875](https://github.com/airbytehq/airbyte/pull/47875) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47533](https://github.com/airbytehq/airbyte/pull/47533) | Update dependencies |
 | 0.2.0 | 2024-08-22 | [44568](https://github.com/airbytehq/airbyte/pull/44568) | Refactor connector to manifest-only format |

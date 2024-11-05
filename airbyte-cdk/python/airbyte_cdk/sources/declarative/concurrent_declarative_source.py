@@ -145,7 +145,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
 
         name_to_stream_mapping = {stream["name"]: stream for stream in self.resolved_manifest["streams"]}
 
-        for declarative_stream in super().streams(config=config):
+        for declarative_stream in self.streams(config=config):
             # Some low-code sources use a combination of DeclarativeStream and regular Python streams. We can't inspect
             # these legacy Python streams the way we do low-code streams to determine if they are concurrent compatible,
             # so we need to treat them as synchronous
