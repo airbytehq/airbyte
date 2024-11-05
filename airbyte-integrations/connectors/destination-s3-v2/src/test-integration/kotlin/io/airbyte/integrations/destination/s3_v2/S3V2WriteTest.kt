@@ -63,6 +63,7 @@ abstract class S3V2WriteTest(
         super.testTruncateRefresh()
     }
 
+    @Test
     override fun testContainerTypes() {
         super.testContainerTypes()
     }
