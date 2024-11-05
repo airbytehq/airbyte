@@ -14,11 +14,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .spec import SourceAmazonAdsSpec
-from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream
+from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
-CONFIG_DATE_FORMAT = "YYYY-MM-DD"
+
 
 
 class SourceAmazonAds(YamlDeclarativeSource):
@@ -26,11 +26,6 @@ class SourceAmazonAds(YamlDeclarativeSource):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def _validate_and_transform(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        start_date = config.get("start_date")
-        if start_date:
-            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
-        else:
-            config["start_date"] = None
         if not config.get("region"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
@@ -84,6 +79,7 @@ class SourceAmazonAds(YamlDeclarativeSource):
         non_profile_stream_classes = [
             SponsoredDisplayReportStream,
             SponsoredBrandsV3ReportStream,
+            SponsoredProductsReportStream,
         ]
         return super().streams(config=config) + [
             *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],
