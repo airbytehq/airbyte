@@ -44,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -1332,6 +1333,107 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id1"), listOf("id2")),
             cursor = listOf("updated_at"),
         )
+    }
+
+    /**
+     * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
+     * Verify that we overwrite everything correctly.
+     *
+     * This essentially verifies that the destination connector correctly recognizes NULL cursors as
+     * older than non-NULL cursors.
+     */
+    @Test
+    open fun testDedupChangeCursor() {
+        assumeTrue(verifyDataWriting && supportsDedup)
+        fun makeStream(cursor: String) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(
+                    primaryKey = listOf(listOf("id")),
+                    cursor = listOf(cursor),
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to intType,
+                            cursor to intType,
+                            "name" to stringType,
+                        )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(cursorName: String) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
+                // this is unrealistic (extractedAt should always increase between syncs),
+                // but it lets us force the dedupe behavior to rely solely on the cursor column,
+                // instead of being able to fallback onto extractedAt.
+                emittedAtMs = 100,
+            )
+        runSync(configContents, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        val stream2 = makeStream("cursor2")
+        runSync(configContents, stream2, listOf(makeRecord("cursor2")))
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "cursor2" to 1,
+                            "name" to "foo_cursor2",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = listOf("cursor2"),
+        )
+    }
+
+    open val manyStreamCount = 20
+
+    /**
+     * Some destinations can't handle large numbers of streams. This test runs a basic smoke test
+     * against a catalog with many streams. Subclasses many configure the number of streams using
+     * [manyStreamCount].
+     */
+    @Test
+    open fun testManyStreamsCompletion() {
+        assumeTrue(verifyDataWriting)
+        assertTrue(
+            manyStreamCount > 1,
+            "manyStreamCount should be greater than 1. If you want to disable this test, just override it and use @Disabled.",
+        )
+        val streams =
+            (0..manyStreamCount).map { i ->
+                DestinationStream(
+                    DestinationStream.Descriptor(randomizedNamespace, "test_stream_$i"),
+                    Append,
+                    ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                    generationId = 42,
+                    minimumGenerationId = 42,
+                    syncId = 42,
+                )
+            }
+        val messages =
+            (0..manyStreamCount).map { i ->
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream_$i",
+                    """{"id": 1, "name": "foo_$i"}""",
+                    emittedAtMs = 100,
+                )
+            }
+        // Just verify that we don't crash.
+        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
     }
 
     // TODO basic allTypes() test
