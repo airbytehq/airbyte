@@ -10,7 +10,7 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `organisation_id` | `string` | Organisation ID. TO be provided if a user belongs to multiple organisations |  |
+| `organization_id` | `string` | Organization ID. TO be provided if a user belongs to multiple organizations |  |
 | `region` | `string` | Region.  |  |
 
 ## Streams
