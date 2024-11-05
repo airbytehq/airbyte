@@ -11,6 +11,8 @@ from airbyte_cdk.sources.declarative.partition_routers.partition_router import P
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
+logger = logging.getLogger("airbyte")
+
 
 class CursorFactory:
     def __init__(self, create_function: Callable[[], DeclarativeCursor]):
@@ -22,23 +24,20 @@ class CursorFactory:
 
 class PerPartitionCursor(DeclarativeCursor):
     """
-    Given a stream has many partitions, it is important to provide a state per partition.
+    Manages state per partition when a stream has many partitions, to prevent data loss or duplication.
 
-    Record | Stream Slice | Last Record | DatetimeCursorBased cursor
-    -- | -- | -- | --
-    1 | {"start_time": "2021-01-01","end_time": "2021-01-31","owner_resource": "1"''} | cursor_field: “2021-01-15” | 2021-01-15
-    2 | {"start_time": "2021-02-01","end_time": "2021-02-28","owner_resource": "1"''} | cursor_field: “2021-02-15” | 2021-02-15
-    3 | {"start_time": "2021-01-01","end_time": "2021-01-31","owner_resource": "2"''} | cursor_field: “2021-01-03” | 2021-01-03
-    4 | {"start_time": "2021-02-01","end_time": "2021-02-28","owner_resource": "2"''} | cursor_field: “2021-02-14” | 2021-02-14
+    **Partition Limitation and Limit Reached Logic**
 
-    Given the following errors, this can lead to some loss or duplication of records:
-    When | Problem | Affected Record
-    -- | -- | --
-    Between record #1 and #2 | Loss | #3
-    Between record #2 and #3 | Loss | #3, #4
-    Between record #3 and #4 | Duplication | #1, #2
+    - **DEFAULT_MAX_PARTITIONS_NUMBER**: The maximum number of partitions to keep in memory (default is 10,000).
+    - **_cursor_per_partition**: An ordered dictionary that stores cursors for each partition.
+    - **_over_limit**: A counter that increments each time an oldest partition is removed when the limit is exceeded.
 
-    Therefore, we need to manage state per partition.
+    The class ensures that the number of partitions tracked does not exceed the `DEFAULT_MAX_PARTITIONS_NUMBER` to prevent excessive memory usage.
+
+    - When the number of partitions exceeds the limit, the oldest partitions are removed from `_cursor_per_partition`, and `_over_limit` is incremented accordingly.
+    - The `limit_reached` method returns `True` when `_over_limit` exceeds `DEFAULT_MAX_PARTITIONS_NUMBER`, indicating that the global cursor should be used instead of per-partition cursors.
+
+    This approach avoids unnecessary switching to a global cursor due to temporary spikes in partition counts, ensuring that switching is only done when a sustained high number of partitions is observed.
     """
 
     DEFAULT_MAX_PARTITIONS_NUMBER = 10000
@@ -54,30 +53,40 @@ class PerPartitionCursor(DeclarativeCursor):
         # The dict is ordered to ensure that once the maximum number of partitions is reached,
         # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
+        self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
-            # Ensure the maximum number of partitions is not exceeded
-            self._ensure_partition_limit()
+            yield from self.generate_slices_from_partition(partition)
 
-            cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
-            if not cursor:
-                partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
-                cursor = self._create_cursor(partition_state)
-                self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
+    def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
+        # Ensure the maximum number of partitions is not exceeded
+        self._ensure_partition_limit()
 
-            for cursor_slice in cursor.stream_slices():
-                yield StreamSlice(partition=partition, cursor_slice=cursor_slice, extra_fields=partition.extra_fields)
+        cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
+        if not cursor:
+            partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
+            cursor = self._create_cursor(partition_state)
+            self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
+
+        for cursor_slice in cursor.stream_slices():
+            yield StreamSlice(partition=partition, cursor_slice=cursor_slice, extra_fields=partition.extra_fields)
 
     def _ensure_partition_limit(self) -> None:
         """
         Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
         """
         while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
+            self._over_limit += 1
             oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
-            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}.")
+            logger.warning(
+                f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}. Over limit: {self._over_limit}."
+            )
+
+    def limit_reached(self) -> bool:
+        return self._over_limit > self.DEFAULT_MAX_PARTITIONS_NUMBER
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -120,6 +129,10 @@ class PerPartitionCursor(DeclarativeCursor):
         else:
             for state in stream_state["states"]:
                 self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+            # set default state for missing partitions if it is per partition with fallback to global
+            if "state" in stream_state:
+                self._state_to_migrate_from = stream_state["state"]
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
