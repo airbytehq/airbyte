@@ -765,6 +765,9 @@ class AsyncStreamConsumerTest {
         val throwable =
             assertThrows(RuntimeException::class.java) { consumer.accept(retyped, retyped.length) }
         // Ensure that the offending data has been scrubbed from the error message
-        assertFalse(throwable.message!!.contains(offender))
+        assertFalse(
+            throwable.message!!.contains(offender),
+            "message should not contain the offender. Was ${throwable.message}"
+        )
     }
 }
