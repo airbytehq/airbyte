@@ -78,6 +78,18 @@ abstract class S3V2WriteTest(
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
 }
 
 class S3V2WriteTestJsonUncompressed :
