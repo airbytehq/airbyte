@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7b8b9550-331c-46c8-a299-943fb6ae2a72
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-falcon
   githubIssueLabel: source-falcon
   icon: falcon.svg

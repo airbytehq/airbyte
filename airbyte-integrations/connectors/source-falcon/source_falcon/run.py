@@ -7,9 +7,12 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
+from .config_migrations import MigrateRAASCredentials
 from .source import SourceFalcon
 
 
 def run():
     source = SourceFalcon()
-    launch(source, sys.argv[1:])
+    _args = sys.argv[1:]
+    MigrateRAASCredentials.migrate(_args, source)
+    launch(source, _args)

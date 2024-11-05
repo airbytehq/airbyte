@@ -20,7 +20,7 @@ class TestReports(TestCase):
         return CatalogBuilder().with_stream(name=f"test/{report_id}", sync_mode=sync_mode).build()
 
     def config(self, report_id: str):
-        return ConfigBuilder().with_report_id(f"test/{report_id}").build()
+        return ConfigBuilder().with_report_id(f"test/{report_id}").raas_build()
 
     def xml_schema_content(self, report: str):
         with open(str(pathlib.Path(__file__).parent.parent / "resource/http/response/xml" / f"{report}.xml"), "r") as f:
@@ -78,7 +78,14 @@ class TestReports(TestCase):
             self.mock_schema_request(http_mocker, report)
 
             output = discover(SourceFalcon(), self.config(report))
-            assert output.catalog.catalog.streams[0].json_schema == self.get_expected_json_schema(report)
+            assert output.catalog.catalog
+
+            stream_names = [stream.name for stream in output.catalog.catalog.streams]
+            assert f"test/{report}" in stream_names
+
+            for stream in output.catalog.catalog.streams:
+                if stream.name == f"test/{report}":
+                    assert stream.json_schema == self.get_expected_json_schema(report)
 
     @HttpMocker()
     def test_read_record_follows_json_schema(self, http_mocker: HttpMocker):

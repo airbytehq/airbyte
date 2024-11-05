@@ -1,0 +1,10 @@
+{
+  "tenant_id": "tenant",
+  "host": "host",
+  "credentials": {
+    "username": "username",
+    "password": "password",
+    "report_ids": ["test/report_1", "test/report_2"],
+    "auth_type": "RAAS"
+  }
+}

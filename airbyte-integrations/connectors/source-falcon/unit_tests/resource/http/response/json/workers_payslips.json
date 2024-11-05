@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "gross": "387568312",
+      "status": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "net": "2094770882",
+      "date": "2024-10-26",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1",
+      "href": "1"
+    },
+    {
+      "gross": "387568312",
+      "status": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "net": "2094770882",
+      "date": "2024-10-26",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2",
+      "href": "2"
+    },
+    {
+      "gross": "387568312",
+      "status": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "net": "2094770882",
+      "date": "2024-10-26",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3",
+      "href": "3"
+    }
+  ],
+  "total": 0
+}

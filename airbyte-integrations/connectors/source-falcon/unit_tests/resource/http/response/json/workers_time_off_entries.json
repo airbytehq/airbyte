@@ -1,0 +1,104 @@
+{
+  "data": [
+    {
+      "units": "1288080140",
+      "employee": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "unitOfTime": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "timeOffRequest": {
+        "status": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string",
+        "href": "string"
+      },
+      "date": "2024-10-26T07:00:00.000Z",
+      "timeOff": {
+        "plan": {
+          "id": "id",
+          "descriptor": "string",
+          "href": "string"
+        },
+        "id": "string",
+        "href": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "id": "1",
+      "href": "1",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    },
+    {
+      "units": "1288080140",
+      "employee": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "unitOfTime": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "timeOffRequest": {
+        "status": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string",
+        "href": "string"
+      },
+      "date": "2024-10-26T07:00:00.000Z",
+      "timeOff": {
+        "plan": {
+          "id": "id",
+          "descriptor": "string",
+          "href": "string"
+        },
+        "id": "string",
+        "href": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "id": "2",
+      "href": "2",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    },
+    {
+      "units": "1288080140",
+      "employee": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "unitOfTime": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "timeOffRequest": {
+        "status": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string",
+        "href": "string"
+      },
+      "date": "2024-10-26T07:00:00.000Z",
+      "timeOff": {
+        "plan": {
+          "id": "id",
+          "descriptor": "string",
+          "href": "string"
+        },
+        "id": "string",
+        "href": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "id": "3",
+      "href": "3",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    }
+  ],
+  "total": 0
+}

@@ -8,45 +8,545 @@ check:
     - Reports
 
 definitions:
-  streams:
-    #    DO NOT RENAME -- used as template for all custom reports
-    Reports:
+  raas:
+    streams:
+      #    DO NOT RENAME -- used as template for all custom reports
+      Reports:
+        type: DeclarativeStream
+        name: Reports
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/raas/base_requester"
+            path: "{{report_id}}"
+            http_method: GET
+            request_parameters:
+              format: json
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - Report_Entry
+            schema_normalization: Default
+        transformations:
+          - type: AddFields
+            fields:
+              - path:
+                  - data
+                value: "{{ record }}"
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: source_falcon.schema_loader.ReportSchemaLoader
+    base_requester:
+      type: HttpRequester
+      url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/
+      authenticator:
+        type: BasicHttpAuthenticator
+        password: '{{ config["credentials"]["password"] }}'
+        username: '{{ config["credentials"]["username"] }}'
+
+  rest:
+    selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["data"]
+
+    requester:
+      type: HttpRequester
+      url_base: "https://{{ config['host'] }}/api/common/v1/{{ config['tenant_id'] }}"
+      http_method: "GET"
+      request_parameters:
+        limit: "100"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token'] }}"
+
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/rest/selector"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 100
+        page_token_option:
+          type: "RequestOption"
+          field_name: "offset"
+          inject_into: "request_parameter"
+      requester:
+        $ref: "#/definitions/rest/requester"
+
+    base_stream:
       type: DeclarativeStream
-      name: Reports
       retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: "{{report_id}}"
-          http_method: GET
-          request_parameters:
-            format: json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - Report_Entry
-          schema_normalization: Default
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - data
-              value: "{{ record }}"
-      schema_loader:
-        type: CustomSchemaLoader
-        class_name: source_falcon.schema_loader.ReportSchemaLoader
-  base_requester:
-    type: HttpRequester
-    url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/
-    authenticator:
-      type: BasicHttpAuthenticator
-      password: '{{ config["password"] }}'
-      username: '{{ config["username"] }}'
+        $ref: "#/definitions/rest/retriever"
+
+    # for worker related streams
+    retriever_by_worker:
+      $ref: "#/definitions/rest/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: worker_id
+            stream: "#/definitions/rest/streams/workers_stream"
+
+    #client side inr
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters['cursor_field']}}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime: "{{ config['credentials'].get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ')) }}"
+      is_client_side_incremental: true
+
+    streams:
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/#common/v1/organizations
+      organizations_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "organizations"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/organizations"
+        $parameters:
+          path: "/organizations"
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/#common/v1/get-/workers
+      workers_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "workers"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers"
+        $parameters:
+          path: "/workers"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#common/v1/get-/workers/-ID-/directReports
+      workers_direct_reports_stream:
+        type: DeclarativeStream
+        name: "workers_direct_reports"
+        primary_key: "id"
+        $parameters:
+          path: "/workers/{{ stream_partition.worker_id }}/directReports"
+        retriever:
+          $ref: "#/definitions/rest/retriever_by_worker"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers_direct_reports"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#common/v1/get-/workers/-ID-/directReports
+      workers_history_stream:
+        type: DeclarativeStream
+        name: "workers_history"
+        primary_key: "id"
+        $parameters:
+          path: "/workers/{{ stream_partition.worker_id }}/history"
+        retriever:
+          $ref: "#/definitions/rest/retriever_by_worker"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers_history"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#common/v1/get-/workers/-ID-/paySlips
+      workers_payslips_stream:
+        type: DeclarativeStream
+        name: "workers_payslips"
+        primary_key: "id"
+        $parameters:
+          path: "/workers/{{ stream_partition.worker_id }}/paySlips"
+          cursor_field: "date"
+        retriever:
+          $ref: "#/definitions/rest/retriever_by_worker"
+        incremental_sync:
+          $ref: "#/definitions/rest/incremental_sync"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers_payslips"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#common/v1/get-/workers/-ID-/timeOffEntries
+      workers_time_off_entries_stream:
+        type: DeclarativeStream
+        name: "workers_time_off_entries"
+        primary_key: "id"
+        $parameters:
+          path: "/workers/{{ stream_partition.worker_id }}/timeOffEntries"
+          cursor_field: "date"
+        retriever:
+          $ref: "#/definitions/rest/retriever_by_worker"
+        incremental_sync:
+          $ref: "#/definitions/rest/incremental_sync"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers_time_off_entries"
+
+    schemas:
+      organizations:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+          descriptor:
+            type:
+              - "null"
+              - string
+      workers:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          primaryWorkPhone:
+            type:
+              - "null"
+              - string
+          isManager:
+            type:
+              - "null"
+              - boolean
+          primaryWorkEmail:
+            type:
+              - "null"
+              - string
+          businessTitle:
+            type:
+              - "null"
+              - string
+          primarySupervisoryOrganization:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+      workers_direct_reports:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          primaryWorkPhone:
+            type:
+              - "null"
+              - string
+          isManager:
+            type:
+              - "null"
+              - boolean
+          primaryWorkEmail:
+            type:
+              - "null"
+              - string
+          businessTitle:
+            type:
+              - "null"
+              - string
+          primarySupervisoryOrganization:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+      workers_history:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          subject:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          initiator:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          effective:
+            type:
+              - "null"
+              - string # date
+            format: "date"
+          due:
+            type:
+              - "null"
+              - string
+            format: "date"
+          initiated:
+            type:
+              - "null"
+              - string
+            format: "date-time"
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+      workers_payslips:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          gross:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          net:
+            type:
+              - "null"
+              - integer
+          date:
+            type:
+              - "null"
+              - string
+            format: "date-time"
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
+      workers_time_off_entries:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          units:
+            type:
+              - "null"
+              - integer
+          employee:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          unitOfTime:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          timeOffRequest:
+            type:
+              - "null"
+              - object
+            properties:
+              status:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          date:
+            type:
+              - "null"
+              - string
+            format: "date-time"
+          timeOff:
+            type:
+              - "null"
+              - object
+            properties:
+              plan:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+                  href:
+                    type:
+                      - "null"
+                      - string
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          id:
+            type:
+              - "null"
+              - string
+          descriptor:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
 
 streams:
-  - $ref: "#/definitions/streams/Reports"
+  - $ref: "#/definitions/raas/streams/Reports"
+  - $ref: "#/definitions/rest/streams/organizations_stream"
+  - $ref: "#/definitions/rest/streams/workers_stream"
+  - $ref: "#/definitions/rest/streams/workers_direct_reports_stream"
+  - $ref: "#/definitions/rest/streams/workers_history_stream"
+  - $ref: "#/definitions/rest/streams/workers_payslips_stream"
+  - $ref: "#/definitions/rest/streams/workers_time_off_entries_stream"
 
 spec:
   type: Spec
@@ -54,33 +554,74 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - username
       - tenant_id
-      - report_ids
       - host
+      - credentials
     properties:
-      host:
-        type: string
-        order: 4
-        title: host
-      password:
-        type: string
-        order: 1
-        title: Password
-        always_show: true
-        airbyte_secret: true
-      username:
-        type: string
-        order: 0
-        title: Username
       tenant_id:
         type: string
-        order: 2
-        title: tenant_id
-      report_ids:
-        type: array
-        order: 3
-        title: Report IDs
+        order: 0
+        title: Workday tenant
+      host:
+        type: string
+        order: 1
+        title: Workday hostname
+      credentials:
+        type: object
+        title: Authentication
+        description: Report Based Streams and REST API Streams use different methods of Authentication. Choose streams type you want to sync and provide needed credentials for them.
+        oneOf:
+          - title: Report Based Streams
+            required:
+              - username
+              - password
+              - report_ids
+              - auth_type
+            properties:
+              username:
+                type: string
+                order: 0
+                title: Username of your Workday account
+              password:
+                type: string
+                order: 1
+                title: Password of your Workday account
+                airbyte_secret: true
+              report_ids:
+                type: array
+                order: 2
+                title: Report IDs you want to sync.
+                description: Report IDs can be found by clicking the three dots on the right side of the report > Web Service > View URLs > in JSON url copy everything between Workday tenant/ and ?format=json.
+                examples:
+                  - "for JSON url https://hostname/ccx/service/customreport2/tenant/report/id?format=json Report ID is report/id."
+              auth_type:
+                order: 3
+                const: RAAS
+                title: RAAS
+          - title: REST API Streams
+            required:
+              - access_token
+              - auth_type
+            properties:
+              access_token:
+                type: string
+                order: 0
+                title: Access token.
+                description: Follow the instructions in the "OAuth 2.0 in Postman - API Client for Integrations" article in the Workday community docs to obtain access token.
+                airbyte_secret: true
+              start_date:
+                type: string
+                order: 1
+                format: date-time
+                title: Start date
+                description: Rows after this date will be synced, default 2 years ago.
+                examples:
+                  - "2024-10-26T07:00:00.000Z"
+                pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
+              auth_type:
+                order: 2
+                const: REST
+                title: REST
     additionalProperties: true
 
 metadata:

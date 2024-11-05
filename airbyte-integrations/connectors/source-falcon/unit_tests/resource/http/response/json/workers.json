@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "primaryWorkPhone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "isManager": true,
+      "primaryWorkEmail": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "primarySupervisoryOrganization": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1",
+      "href": "1"
+    },
+    {
+      "primaryWorkPhone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "isManager": true,
+      "primaryWorkEmail": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "primarySupervisoryOrganization": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2",
+      "href": "2"
+    },
+    {
+      "primaryWorkPhone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "isManager": true,
+      "primaryWorkEmail": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "primarySupervisoryOrganization": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3",
+      "href": "3"
+    }
+  ],
+  "total": 3
+}
