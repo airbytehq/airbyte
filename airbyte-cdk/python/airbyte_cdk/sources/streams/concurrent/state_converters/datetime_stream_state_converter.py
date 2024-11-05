@@ -169,7 +169,7 @@ class CustomFormatConcurrentStreamStateConverter(IsoMillisConcurrentStreamStateC
     incoming state in any valid datetime format via Pendulum.
     """
 
-    def __init__(self, datetime_format: str, input_datetime_formats: Optional[List[str]], is_sequential_state: bool = True, cursor_granularity: Optional[timedelta] = None):
+    def __init__(self, datetime_format: str, input_datetime_formats: Optional[List[str]] = None, is_sequential_state: bool = True, cursor_granularity: Optional[timedelta] = None):
         super().__init__(is_sequential_state=is_sequential_state, cursor_granularity=cursor_granularity)
         self._datetime_format = datetime_format
         self._input_datetime_formats = input_datetime_formats if input_datetime_formats else []
