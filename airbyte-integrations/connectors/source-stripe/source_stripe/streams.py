@@ -738,7 +738,10 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent=parent,
             sub_items_attr=sub_items_attr,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(
-                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                response_filter=response_filter,
+                slice_data_retriever=kwargs.get("slice_data_retriever"),
             ),
             **kwargs,
         )
