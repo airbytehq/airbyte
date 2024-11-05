@@ -7,7 +7,7 @@ Docs : https://www.zoho.com/billing/api/v1/introduction/#overview
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `region` | `string` | Region. The region code for the Zoho Books API, such as &#39;com&#39;, &#39;eu&#39;, &#39;in&#39;, etc. |  |
+| `region` | `string` | Region.  |  |
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
@@ -35,6 +35,6 @@ Docs : https://www.zoho.com/billing/api/v1/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-27 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-05 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

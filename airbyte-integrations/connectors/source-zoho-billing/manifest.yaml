@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -491,9 +491,6 @@ spec:
     properties:
       region:
         type: string
-        description: >-
-          The region code for the Zoho Books API, such as 'com', 'eu', 'in',
-          etc.
         enum:
           - com
           - eu
@@ -542,89 +539,89 @@ metadata:
     recurring expenses: true
   testedStreams:
     Products:
+      hasRecords: true
       streamHash: 3559af1b8b9c39c808e7cc443ed39986d01c9f7b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     plans:
+      hasRecords: true
       streamHash: 87dcac9d871bd6f46ef14b9b5bb8bcac4b90b4c5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     addons:
+      hasRecords: true
       streamHash: cb5fbfeb69812236fb07c83d9790e0210e1d0221
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     coupons:
+      hasRecords: true
       streamHash: 993ea9c3b516ff7d17af3c86fa96f84512a51016
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     customers:
+      hasRecords: true
       streamHash: 3d9283d8772f0be0de752d03b3d965b35a1e64aa
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Quotes:
+      hasRecords: true
       streamHash: 8c5d61d9d1308824d4e7f3ffcfd6901f7e494599
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     invoices:
+      hasRecords: true
       streamHash: 6581dfcf3271ee2bc74116b9caa5cff8a92509e6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     expenses:
+      hasRecords: true
       streamHash: dc0771255b9eda75a8d9639f479d2f617890abbc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     subscriptions:
+      hasRecords: true
       streamHash: 2736e2dc3555443a736220100e5d983f62a6d214
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxes:
+      hasRecords: true
       streamHash: b2c6cc88453b1e57f032a4cf629477c7a22caa82
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transactions:
+      hasRecords: true
       streamHash: 8423da8f90714fd04ff6a8a0489b9a97bf0a1956
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     recurring expenses:
+      hasRecords: true
       streamHash: 8a14a626e7a8035af06d5babb3360549f3741545
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://www.zoho.com/books/api/v3/introduction/#organization-id
 
