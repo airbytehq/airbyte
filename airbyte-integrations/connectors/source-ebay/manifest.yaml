@@ -40,8 +40,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -71,6 +76,8 @@ definitions:
             field_name: offset
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -98,14 +105,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - violationSummaries
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -119,17 +118,28 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             /sell/analytics/v1/customer_service_metric/{{
-            config["customer_service_metric_type"] }}/{{
+            stream_partition["customer_service_metric_type"] }}/{{
             config['evaluation_type'] }}
           http_method: GET
-          request_parameters:
-            evaluation_marketplace_id: "{{ config['evaluation_marketplace_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - dimensionMetrics
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - ITEM_NOT_AS_DESCRIBED
+              - ITEM_NOT_RECEIVED
+            cursor_field: customer_service_metric_type
+          - type: ListPartitionRouter
+            values: "{{ config.evaluation_marketplace }}"
+            cursor_field: evaluation_marketplace_id
+            request_option:
+              type: RequestOption
+              inject_into: request_parameter
+              field_name: evaluation_marketplace_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -161,11 +171,11 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 500
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -197,11 +207,11 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1
+            page_size: 500
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -215,8 +225,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /commerce/charity/v1/charity_org
           http_method: GET
-          request_parameters:
-            q: "{{ config['serch'] }}"
           request_headers:
             X-EBAY-C-MARKETPLACE-ID: "{{ config[\"marketplace_id\"] }}"
         record_selector:
@@ -233,6 +241,15 @@ definitions:
             field_name: offset
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.charity_registration_ids }}"
+          cursor_field: charity_org_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: registration_ids
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -260,8 +277,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -271,13 +293,9 @@ definitions:
     url_base: https://{{ config['environment'] }}.ebay.com
     authenticator:
       type: SessionTokenAuthenticator
-      request_authentication:
-        type: Bearer
-      session_token_path:
-        - access_token
       login_requester:
         type: HttpRequester
-        url_base: https://api.sandbox.ebay.com/identity/v1/oauth2
+        url_base: https://{{config.environment}}.ebay.com/identity/v1/oauth2
         path: token
         authenticator:
           type: NoAuth
@@ -289,6 +307,10 @@ definitions:
         request_body_data:
           grant_type: refresh_token
           refresh_token: "{{ config['refresh_token'] }}"
+      session_token_path:
+        - access_token
+      request_authentication:
+        type: Bearer
 
 streams:
   - $ref: "#/definitions/streams/inventory_items"
@@ -309,10 +331,8 @@ spec:
       - authorization_credentials
       - marketplace_id
       - refresh_token
-      - customer_service_metric_type
       - evaluation_type
-      - evaluation_marketplace_id
-      - serch
+      - evaluation_marketplace
       - environment
     properties:
       authorization_credentials:
@@ -329,32 +349,25 @@ spec:
         order: 2
         title: Refresh Token
         airbyte_secret: true
-      customer_service_metric_type:
-        type: string
-        enum:
-          - ITEM_NOT_AS_DESCRIBED
-          - ITEM_NOT_RECEIVED
-        order: 3
-        title: Customer Service Metric Type
       evaluation_type:
         type: string
-        order: 4
+        order: 3
         title: evaluation_type
-      evaluation_marketplace_id:
-        type: string
-        order: 5
-        title: evaluation_marketplace_id
-      serch:
-        type: string
-        title: Serch
-        order: 6
+      evaluation_marketplace:
+        type: array
+        order: 4
+        title: Evaluation Marketplace
       environment:
         type: string
-        title: environment
         enum:
           - api.sandbox
           - api
-        order: 7
+        order: 5
+        title: Environment
+      charity_registration_ids:
+        type: array
+        title: Charity Registration Ids
+        order: 6
     additionalProperties: true
 
 metadata:
@@ -369,56 +382,56 @@ metadata:
     get_campaigns: true
   testedStreams:
     inventory_items:
-      hasRecords: true
-      streamHash: a994269525d03558d490d4c707f3b838b4863201
+      streamHash: 8c34d172b9aff0e4bc68256e321fe250e1635126
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     offers:
-      hasRecords: true
-      streamHash: 6d1a4315ca8436a7e994819d72aafdbb4932d3c3
+      streamHash: 5f1cb8a38f670ebc322a3bace9b12697b88e12be
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     violation_summary:
-      hasRecords: true
-      streamHash: 6fb5c6e3a95b3c038682e941df5eb5e55a802e6e
+      streamHash: 6bfbe9a0abcaf55aab3c3101a3525c10d6eb617f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customer_service_metric:
-      hasRecords: true
-      streamHash: 98bb2d10e3a5508ef5f505aa6d1537f6f5fd6b63
+      streamHash: 3777bab23275751159250459a38861595034f5fe
       hasResponse: true
-      primaryKeysAreUnique: true
+      responsesAreSuccessful: true
+      hasRecords: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     order_tasks:
-      streamHash: 509d63abe6c0f17b642fdc6e83ab94428502f7a1
+      streamHash: 285d6f13d89c9ec98e42e2bc0e90a19f8861254e
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     inventory_tasks:
-      streamHash: 643813fdaf8957d769f32fbe2bdc08297169b8bf
+      streamHash: 02d703486892cd734e183dd7f618bacae26ed91a
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     charity_orgs:
-      streamHash: f44028645ddfff3ca3494f7667a6466dbf13726c
+      streamHash: c41fd369f532a1a5a81b9366e4a2978e0157f03b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     get_campaigns:
-      streamHash: ab8b0067833f8e9993595f3a43ccdbd12c4df5b3
+      streamHash: eda9792104fa9b619951c68dcbf5ee5c82e327e3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
