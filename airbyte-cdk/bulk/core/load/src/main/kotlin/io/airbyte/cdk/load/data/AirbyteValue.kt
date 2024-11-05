@@ -63,6 +63,11 @@ value class IntegerValue(val value: Long) : AirbyteValue, Comparable<IntegerValu
 }
 
 @JvmInline
+value class IntValue(val value: Int) : AirbyteValue, Comparable<IntValue> {
+    override fun compareTo(other: IntValue): Int = value.compareTo(other.value)
+}
+
+@JvmInline
 value class NumberValue(val value: BigDecimal) : AirbyteValue, Comparable<NumberValue> {
     override fun compareTo(other: NumberValue): Int = value.compareTo(other.value)
 }
@@ -143,7 +148,7 @@ value class TimeValue(val value: String) : AirbyteValue, Comparable<TimeValue> {
 @JvmInline
 value class ArrayValue(val values: List<AirbyteValue>) : AirbyteValue {
     companion object {
-        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { it as AirbyteValue })
+        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { AirbyteValue.from(it) })
     }
 }
 

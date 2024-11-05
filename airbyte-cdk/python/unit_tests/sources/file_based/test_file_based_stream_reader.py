@@ -73,6 +73,9 @@ class TestStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: RemoteFile) -> IOBase:
         pass
 
+    def file_size(self, file: RemoteFile) -> int:
+        return 0
+
 
 class TestSpec(AbstractFileBasedSpec):
     @classmethod

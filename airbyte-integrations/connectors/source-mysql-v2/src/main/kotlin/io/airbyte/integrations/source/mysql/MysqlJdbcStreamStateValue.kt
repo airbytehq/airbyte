@@ -44,7 +44,7 @@ data class MysqlJdbcStreamStateValue(
             )
         }
 
-        /** Value representing the progress of a ongoing snapshot not involving cursor columns. */
+        /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
         fun snapshotCheckpoint(
             primaryKey: List<Field>,
             primaryKeyCheckpoint: List<JsonNode>,
