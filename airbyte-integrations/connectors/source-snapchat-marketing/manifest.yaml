@@ -4952,7 +4952,7 @@ spec:
         default: 1_DAY
     additionalProperties: true
   advanced_auth:
-    auth_flow_type: "auth2.0"
+    auth_flow_type: "oauth2.0"
     predicate_key: null,
     predicate_value: null,
     oauth_config_specification:
