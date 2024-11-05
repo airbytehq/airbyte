@@ -374,27 +374,43 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         namespace = message.record.namespace,
                         name = message.record.stream,
                     )
-                DestinationRecord(
-                    stream = stream.descriptor,
-                    data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
-                    emittedAtMs = message.record.emittedAt,
-                    meta =
+                // TODO: File transfer check
+                if (true) {
+                    DestinationRecord(
+                        stream = stream.descriptor,
+                        data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
+                        emittedAtMs = message.record.emittedAt,
+                        meta =
                         DestinationRecord.Meta(
                             changes =
-                                message.record.meta
-                                    ?.changes
-                                    ?.map {
-                                        DestinationRecord.Change(
-                                            field = it.field,
-                                            change = it.change,
-                                            reason = it.reason,
-                                        )
-                                    }
-                                    ?.toMutableList()
-                                    ?: mutableListOf()
+                            message.record.meta
+                                ?.changes
+                                ?.map {
+                                    DestinationRecord.Change(
+                                        field = it.field,
+                                        change = it.change,
+                                        reason = it.reason,
+                                    )
+                                }
+                                ?.toMutableList()
+                                ?: mutableListOf()
                         ),
-                    serialized = serialized
-                )
+                        serialized = serialized
+                    )
+                } else {
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = message.record.emittedAt,
+                        serialized = serialized,
+                        fileMessage = DestinationFile.AirbyteRecordMessageFile(
+                            fileUrl = message.record.additionalProperties["file_url"] as String?,
+                            bytes = message.record.additionalProperties["bytes"] as Long?,
+                            fileRelativePath = message.record.additionalProperties["file_relative_path"] as String?,
+                            modified = message.record.additionalProperties["modified"] as Long?,
+                            sourceFileUrl = message.record.additionalProperties["source_file_url"] as String?
+                        )
+                    )
+                }
             }
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
@@ -404,17 +420,32 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         name = status.streamDescriptor.name,
                     )
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
+                    // TODO: File transfer FF
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            DestinationRecordStreamComplete(
-                                stream.descriptor,
-                                message.trace.emittedAt.toLong()
-                            )
+                            if (true) {
+                                DestinationRecordStreamComplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            } else {
+                                DestinationFileStreamComplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            }
                         AirbyteStreamStatus.INCOMPLETE ->
-                            DestinationRecordStreamIncomplete(
-                                stream.descriptor,
-                                message.trace.emittedAt.toLong()
-                            )
+                            if (true) {
+                                DestinationRecordStreamIncomplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            } else {
+                                DestinationFileStreamIncomplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            }
                         else -> Undefined
                     }
                 } else {
