@@ -15,7 +15,8 @@ from urllib.parse import urljoin
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
@@ -122,7 +123,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
-        report_info_list = self._init_and_try_read_records(profile, report_date)
+        try:
+            report_info_list = self._init_and_try_read_records(profile, report_date)
+        except TooManyRequests as e:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message=f"Too many requests on resource {e}. Please retry later",
+                internal_message=f"Errors received from the API were: {e}",
+            )
         self._update_state(profile, report_date)
 
         for report_info in report_info_list:
@@ -250,7 +258,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             session = self._report_download_session if is_download_report else self._session
             response = session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise TooManyRequests()
+            raise TooManyRequests("429: Too many requests during report creation. Please try again later...")
         return response
 
     def get_date_range(self, start_date: Date, timezone: str) -> Iterable[str]:

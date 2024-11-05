@@ -13,6 +13,7 @@ import pendulum
 import pytest
 import requests_mock
 import responses
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pendulum import Date
@@ -328,7 +329,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     stream_slice = {"profile": profiles[0], "reportDate": "2021-07-25"}
     responses.add(responses.POST, "https://advertising-api.amazon.com/reporting/reports", json={}, status=429)
 
-    with raises(TooManyRequests):
+    with raises(AirbyteTracedException):
         _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(responses.calls) == 10
 
