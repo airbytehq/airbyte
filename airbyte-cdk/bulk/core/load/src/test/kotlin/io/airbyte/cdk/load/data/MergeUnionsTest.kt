@@ -50,10 +50,7 @@ class MergeUnionsTest {
                                 properties =
                                     linkedMapOf(
                                         "foo" to
-                                            FieldType(
-                                                UnionType(listOf(StringType, IntegerType)),
-                                                false
-                                            )
+                                            FieldType(UnionType.of(StringType, IntegerType), false)
                                     )
                             ),
                             false
@@ -77,7 +74,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = false)
                 )
                 .with(StringType)
                 .with(IntegerType)
@@ -94,10 +91,10 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType(listOf(StringType, IntegerType)), nullable = false)
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = false)
                 )
                 .with(StringType)
-                .with(UnionType(listOf(StringType, UnionType(listOf(IntegerType, StringType)))))
+                .with(UnionType.of(StringType, UnionType.of(IntegerType, StringType)))
                 .with(IntegerType)
                 .endUnion()
                 .build()

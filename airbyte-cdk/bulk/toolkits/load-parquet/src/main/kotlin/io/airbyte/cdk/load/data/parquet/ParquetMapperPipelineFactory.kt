@@ -15,11 +15,7 @@ import io.airbyte.cdk.load.data.SchemalessValuesToJson
 import io.airbyte.cdk.load.data.TimeStringToInteger
 import io.airbyte.cdk.load.data.UnionTypeToDisjointRecord
 import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 
-@Singleton
-@Secondary
 class ParquetMapperPipelineFactory : MapperPipelineFactory {
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(

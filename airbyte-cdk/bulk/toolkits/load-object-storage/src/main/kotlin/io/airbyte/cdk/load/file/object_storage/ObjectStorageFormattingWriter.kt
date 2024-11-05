@@ -95,6 +95,7 @@ class CSVFormattingWriter(
             *record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
         )
     }
+
     override fun close() {
         printer.close()
     }
@@ -112,7 +113,6 @@ class AvroFormattingWriter(
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
     override fun accept(record: DestinationRecord) {
-
         val dataMapped =
             pipeline
                 .map(record.data, record.meta?.changes)

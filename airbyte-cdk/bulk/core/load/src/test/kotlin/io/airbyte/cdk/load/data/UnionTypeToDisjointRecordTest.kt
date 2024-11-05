@@ -22,8 +22,8 @@ class UnionTypeToDisjointRecordTest {
             )
         val (inputSchema, expectedOutput) =
             SchemaRecordBuilder<Root>()
-                .with(UnionType(listOf(StringType))) // union of 1 => ignore
-                .with(UnionType(listOf(StringType, IntegerType)), expected = disjointRecord)
+                .with(UnionType.of(StringType)) // union of 1 => ignore
+                .with(UnionType.of(StringType, IntegerType), expected = disjointRecord)
                 .build()
         val output = UnionTypeToDisjointRecord().map(inputSchema)
         Assertions.assertEquals(expectedOutput, output)
@@ -33,7 +33,7 @@ class UnionTypeToDisjointRecordTest {
     fun testUnionOfTypesWithSameNameThrows() {
         val (inputSchema, _) =
             SchemaRecordBuilder<Root>()
-                .with(UnionType(listOf(ObjectType(linkedMapOf()), ObjectTypeWithoutSchema)))
+                .with(UnionType.of(ObjectType(linkedMapOf()), ObjectTypeWithoutSchema))
                 .build()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             UnionTypeToDisjointRecord().map(inputSchema)

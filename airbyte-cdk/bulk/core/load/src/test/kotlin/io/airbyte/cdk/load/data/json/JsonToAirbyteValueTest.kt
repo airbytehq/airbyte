@@ -136,7 +136,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.textNode("hello"),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(stringValue is StringValue)
         Assertions.assertEquals("hello", (stringValue as StringValue).value)
@@ -145,7 +145,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.numberNode(42),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(intValue is IntegerValue)
         Assertions.assertEquals(42, (intValue as IntegerValue).value)
