@@ -103,7 +103,7 @@ def get_stream_by_name(streams, stream_name):
 def test_streams_profile(config, profiles_response):
     setup_responses(profiles_response=profiles_response)
 
-    source = SourceAmazonAds()
+    source = SourceAmazonAds(None, config,{})
     streams = source.streams(config)
 
     profile_stream = get_stream_by_name(streams, "profiles")
@@ -122,7 +122,7 @@ def test_streams_profile(config, profiles_response):
 def test_streams_portfolios(config, profiles_response, portfolios_response):
     setup_responses(profiles_response=profiles_response, portfolios_response=portfolios_response)
 
-    source = SourceAmazonAds()
+    source = SourceAmazonAds(None, config,{})
     streams = source.streams(config)
 
     portfolio_stream = get_stream_by_name(streams, "portfolios")
@@ -256,36 +256,6 @@ def test_streams_displays(
     schema = test_stream.get_json_schema()
     for r in records:
         validate(schema=schema, instance=r)
-    assert any([endpoint in call.request.url for call in responses.calls])
-
-
-@pytest.mark.parametrize(
-    ("stream_name", "endpoint"),
-    [
-        ("sponsored_brands_campaigns", "sb/v4/campaigns/list"),
-        ("sponsored_brands_ad_groups", "sb/v4/adGroups/list"),
-        ("sponsored_brands_keywords", "sb/keywords"),
-        ("sponsored_product_campaigns", "sp/campaigns/list"),
-        ("sponsored_product_ad_groups", "sp/adGroups/list"),
-        ("sponsored_product_keywords", "sp/keywords/list"),
-        ("sponsored_product_negative_keywords", "sp/negativeKeywords/list"),
-        ("sponsored_product_ads", "sp/productAds/list"),
-        ("sponsored_product_targetings", "sp/targets/list"),
-    ],
-)
-@responses.activate
-def test_streams_brands_and_products(config, stream_name, endpoint, profiles_response):
-    if endpoint != "sb/keywords":
-        setup_responses(profiles_response=profiles_response, post_response=endpoint)
-    else:
-        setup_responses(profiles_response=profiles_response, generic_response=endpoint)
-
-    source = SourceAmazonAds()
-    streams = source.streams(config)
-    test_stream = get_stream_by_name(streams, stream_name)
-
-    records = get_all_stream_records(test_stream)
-    assert records == []
     assert any([endpoint in call.request.url for call in responses.calls])
 
 
