@@ -29,7 +29,7 @@ definitions:
           path: items
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -57,6 +57,8 @@ definitions:
     users:
       type: DeclarativeStream
       name: users
+      primary_key:
+        - user_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -64,12 +66,13 @@ definitions:
           path: users
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - users
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -100,7 +103,7 @@ definitions:
           path: contacts
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -137,7 +140,7 @@ definitions:
           path: invoices
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,7 +177,7 @@ definitions:
           path: recurringinvoices
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -211,7 +214,7 @@ definitions:
           path: customerpayments
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -248,7 +251,7 @@ definitions:
           path: creditnotes
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -285,7 +288,7 @@ definitions:
           path: expenses
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -322,7 +325,7 @@ definitions:
           path: /settings/taxes
           http_method: GET
           request_headers:
-            X-com-zoho-invoice-organizationid: "{{ config['organisation_id'] }}"
+            X-com-zoho-invoice-organizationid: "{{ config['organization_id'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -396,14 +399,13 @@ spec:
         order: 2
         title: Refresh token
         airbyte_secret: true
-      organisation_id:
+      organization_id:
         type: string
-        description: TO be provided if a user belongs to multiple organisations
+        description: To be provided if a user belongs to multiple organizations
         order: 3
-        title: Organisation ID
+        title: Organization ID
       region:
         type: string
-        title: Region
         enum:
           - com
           - eu
@@ -414,6 +416,7 @@ spec:
           - sa
           - ca
         order: 4
+        title: Region
     additionalProperties: true
 
 metadata:
@@ -429,68 +432,68 @@ metadata:
     taxes: true
   testedStreams:
     items:
-      streamHash: a65954f8043f07ea8589b364354d6d0f9166b0e9
+      streamHash: 2d6534f99c83d65519effcb14e7d119db1674f5a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: 4a03f27b9cd29e5b11c3b809bdff33d9cb2764f3
+      streamHash: a246106b1c4373a5105508c126c539ca69b541d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: ad3d400b01f443bac91c9f4c60f344bcf899d40b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 6150e20bbb3c3b7fefae12d87efb22179139d52a
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     invoices:
-      streamHash: 6c39d086dd2af0f6a250063f4b30b38f249faab6
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: cb0cb9526e649a7522b3b2d86aa4ef5af5581a0b
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     recurring_invoices:
-      streamHash: 161c18fa912d802149545380c660433f53ae29d6
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 5de65fa77e81237f1fa6a6275a6dbaff59458b80
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     customer_payments:
-      streamHash: 6a3305ae522c1f170ec9c4fbc7fb62e17e8c8909
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 7625f6062136e947be65114ae692df425d96aa7c
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     credit notes:
-      streamHash: 1e65c40a1df8f87546d4d1c6729fe0750e0bd551
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: e1cf97fe81ac4aefb324072130c8946e515e802b
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     expenses:
-      streamHash: 5428251be3d15e59163f09293c6c08fa1c6b9d7a
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 147537711b05fb4a95fbb6c85c1c14c0e43f4a9d
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxes:
-      streamHash: ace223285fc2be6876fd01fe26e3ed307f6a00ef
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: f47e68753dd13cf3fb35b455ac0ea4ef6539e27d
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -588,116 +591,66 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      code:
-        type:
-          - number
-          - "null"
-      message:
+      email:
         type:
           - string
           - "null"
-      page_context:
+      invitation_type:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          applied_filter:
-            type:
-              - string
-              - "null"
-          has_more_page:
-            type:
-              - boolean
-              - "null"
-          page:
-            type:
-              - number
-              - "null"
-          per_page:
-            type:
-              - number
-              - "null"
-          report_name:
-            type:
-              - string
-              - "null"
-          sort_column:
-            type:
-              - string
-              - "null"
-          sort_order:
-            type:
-              - string
-              - "null"
-      users:
+      is_current_user:
         type:
-          - array
+          - boolean
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            email:
-              type:
-                - string
-                - "null"
-            invitation_type:
-              type:
-                - string
-                - "null"
-            is_current_user:
-              type:
-                - boolean
-                - "null"
-            is_customer_segmented:
-              type:
-                - boolean
-                - "null"
-            is_employee:
-              type:
-                - boolean
-                - "null"
-            is_super_admin:
-              type:
-                - boolean
-                - "null"
-            is_vendor_segmented:
-              type:
-                - boolean
-                - "null"
-            mobile:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            photo_url:
-              type:
-                - string
-                - "null"
-            role_id:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-            user_id:
-              type:
-                - string
-                - "null"
-            user_role:
-              type:
-                - string
-                - "null"
-            user_type:
-              type:
-                - string
-                - "null"
+      is_customer_segmented:
+        type:
+          - boolean
+          - "null"
+      is_employee:
+        type:
+          - boolean
+          - "null"
+      is_super_admin:
+        type:
+          - boolean
+          - "null"
+      is_vendor_segmented:
+        type:
+          - boolean
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: string
+      user_role:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+    required:
+      - user_id
   contacts:
     type: object
     $schema: http://json-schema.org/schema#
