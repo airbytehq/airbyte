@@ -15,8 +15,8 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -80,13 +80,13 @@ class DefaultInputConsumerTask(
                     )
                 queue.publish(reserved.replace(wrapped))
             }
-            is DestinationStreamComplete -> {
+            is DestinationRecordStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
                 queue.publish(reserved.replace(wrapped))
                 queue.close()
             }
-            is DestinationStreamIncomplete ->
+            is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
         }
     }

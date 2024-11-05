@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
@@ -97,12 +97,12 @@ class InputConsumerTaskTest {
         )
     }
 
-    private fun makeStreamComplete(stream: DestinationStream): DestinationStreamComplete {
-        return DestinationStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+    private fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
+        return DestinationRecordStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
-    private fun makeStreamIncomplete(stream: DestinationStream): DestinationStreamIncomplete {
-        return DestinationStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+    private fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
+        return DestinationRecordStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
     private fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
