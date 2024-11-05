@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
@@ -23,6 +23,7 @@ from botocore.exceptions import ClientError
 from botocore.session import get_session
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+from typing_extensions import override
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
@@ -182,6 +183,14 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
+
+    @override
+    def file_size(self, file: RemoteFile) -> int:
+        s3_object: boto3.s3.Object = self.s3_client.get_object(
+            Bucket=self.config.bucket,
+            Key=file.uri,
+        )
+        return cast(int, s3_object["ContentLength"])
 
     @staticmethod
     def _is_folder(file) -> bool:
