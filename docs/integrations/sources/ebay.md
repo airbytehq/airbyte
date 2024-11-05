@@ -8,11 +8,10 @@ The eBay connector  enables seamless data synchronization between eBay&#39;s pla
 | `authorization_credentials` | `string` | Authorization credentials.  |  |
 | `marketplace_id` | `string` | Marketplace Id.  |  |
 | `refresh_token` | `string` | Refresh Token.  |  |
-| `customer_service_metric_type` | `string` | Customer Service Metric Type.  |  |
-| `evaluation_type` | `string` | evaluation_type.  |  |
-| `evaluation_marketplace_id` | `string` | evaluation_marketplace_id.  |  |
-| `serch` | `string` | Serch.  |  |
-| `environment` | `string` | environment.  |  |
+| `evaluation_type` | `string` | Evaluation Type.  |  |
+| `evaluation_marketplace` | `string` | Evaluation Marketplaces.  |  |
+| `environment` | `string` | Environment.  | `api.sandbox` or `production` |
+| `charity_registration_ids` | `string` | Charity Registration Ids.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -23,7 +22,7 @@ The eBay connector  enables seamless data synchronization between eBay&#39;s pla
 | customer_service_metric |  | No pagination | ✅ |  ❌  |
 | order_tasks | taskId | DefaultPaginator | ✅ |  ❌  |
 | inventory_tasks | taskId | DefaultPaginator | ✅ |  ❌  |
-| charity_orgs |  | DefaultPaginator | ✅ |  ❌  |
+| charity_orgs | charityOrgId | DefaultPaginator | ✅ |  ❌  |
 | get_campaigns | campaignId | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
