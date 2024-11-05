@@ -96,7 +96,7 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
-    CustomOutputFormatConcurrentStreamStateConverter,
+    CustomFormatConcurrentStreamStateConverter,
 )
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
@@ -2648,7 +2648,7 @@ def test_create_concurrent_cursor_from_datetime_based_cursor_all_fields(stream_s
     assert concurrent_cursor._end_provider() == expected_end
     assert concurrent_cursor._concurrent_state == expected_concurrent_state
 
-    assert isinstance(stream_state_converter, CustomOutputFormatConcurrentStreamStateConverter)
+    assert isinstance(stream_state_converter, CustomFormatConcurrentStreamStateConverter)
     assert stream_state_converter._datetime_format == expected_datetime_format
     assert stream_state_converter._is_sequential_state
     assert stream_state_converter._cursor_granularity == expected_cursor_granularity

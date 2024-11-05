@@ -6,14 +6,27 @@ from __future__ import annotations
 import json
 import pkgutil
 import sys
+import traceback
+from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Any, List, Mapping, Optional
 
+from airbyte_cdk import TState
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteMessage, ConnectorSpecificationSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecificationSerializer,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from orjson import orjson
 
 
 class SourceLocalYaml(YamlDeclarativeSource):
@@ -21,7 +34,7 @@ class SourceLocalYaml(YamlDeclarativeSource):
     Declarative source defined by a yaml file in the local filesystem
     """
 
-    def __init__(self):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         """
         HACK!
             Problem: YamlDeclarativeSource relies on the calling module name/path to find the yaml file.
@@ -33,7 +46,7 @@ class SourceLocalYaml(YamlDeclarativeSource):
                 When all manifest connectors are updated to use the new airbyte-cdk.
                 When all manifest connectors are updated to use the source-declarative-manifest as the base image.
         """
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
 
 def _is_local_manifest_command(args: List[str]) -> bool:
@@ -48,8 +61,39 @@ def handle_command(args: List[str]) -> None:
         handle_remote_manifest_command(args)
 
 
+def _get_local_yaml_source(args: List[str]):
+    catalog_path = AirbyteEntrypoint.extract_catalog(args)
+    config_path = AirbyteEntrypoint.extract_config(args)
+    state_path = AirbyteEntrypoint.extract_state(args)
+    try:
+        return SourceLocalYaml(
+            SourceLocalYaml.read_catalog(catalog_path) if catalog_path else None,
+            SourceLocalYaml.read_config(config_path) if config_path else None,
+            SourceLocalYaml.read_state(state_path) if state_path else None,
+        )
+    except Exception as error:
+        print(
+            orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message=f"Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance. Error: {error}",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            ).decode()
+        )
+        raise error
+
+
 def handle_local_manifest_command(args: List[str]) -> None:
-    source = SourceLocalYaml()
+    source = _get_local_yaml_source(args)
     launch(source, args)
 
 
