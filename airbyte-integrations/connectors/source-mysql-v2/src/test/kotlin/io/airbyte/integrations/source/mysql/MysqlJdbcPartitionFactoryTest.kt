@@ -4,22 +4,29 @@
 
 package io.airbyte.integrations.source.mysql
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.Feed
 import io.airbyte.cdk.read.NoOpGlobalLockResource
 import io.airbyte.cdk.read.SelectQuerier
+import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
+import java.time.OffsetDateTime
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -29,10 +36,12 @@ class MysqlJdbcPartitionFactoryTest {
         private val selectQueryGenerator = MysqlSourceOperations()
         private val sharedState = sharedState()
         private val cdcSharedState = sharedState(global = true)
+        private val config = mockk<MysqlSourceConfiguration>()
 
-        val mysqlJdbcPartitionFactory = MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator)
+        val mysqlJdbcPartitionFactory =
+            MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator, config)
         val mysqlCdcJdbcPartitionFactory =
-            MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator)
+            MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
         val fieldId = Field("id", IntFieldType)
         val stream =
@@ -41,7 +50,7 @@ class MysqlJdbcPartitionFactoryTest {
                     StreamIdentifier.from(
                         StreamDescriptor().withNamespace("test").withName("stream1")
                     ),
-                fields = listOf(fieldId),
+                schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
@@ -71,24 +80,50 @@ class MysqlJdbcPartitionFactoryTest {
 
             return DefaultJdbcSharedState(
                 configuration,
-                BufferingOutputConsumer(ClockFactory().fixed()),
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
                 NoOpGlobalLockResource()
             )
         }
+
+        private fun streamFeedBootstrap(
+            stream: Stream,
+            incumbentStateValue: OpaqueStateValue? = null
+        ) =
+            StreamFeedBootstrap(
+                outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
+                metaFieldDecorator =
+                    object : MetaFieldDecorator {
+                        override val globalCursor: MetaField? = null
+                        override val globalMetaFields: Set<MetaField> = emptySet()
+
+                        override fun decorateRecordData(
+                            timestamp: OffsetDateTime,
+                            globalStateValue: OpaqueStateValue?,
+                            stream: Stream,
+                            recordData: ObjectNode
+                        ) {}
+                    },
+                stateQuerier =
+                    object : StateQuerier {
+                        override val feeds: List<Feed> = listOf(stream)
+                        override fun current(feed: Feed): OpaqueStateValue? =
+                            if (feed == stream) incumbentStateValue else null
+                    },
+                stream,
+            )
     }
 
     @Test
     fun testColdStartWithPkCursorBased() {
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(stream, null)
+        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream))
         assertTrue(jdbcPartition is MysqlJdbcSnapshotWithCursorPartition)
     }
 
     @Test
     fun testColdStartWithPkCdc() {
-        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(stream, null)
+        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream))
         assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
     }
 
@@ -100,12 +135,12 @@ class MysqlJdbcPartitionFactoryTest {
                     StreamIdentifier.from(
                         StreamDescriptor().withNamespace("test").withName("stream2")
                     ),
-                fields = listOf(fieldId),
+                schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(),
                 configuredCursor = fieldId,
             )
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamWithoutPk, null)
+        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(streamWithoutPk))
         assertTrue(jdbcPartition is MysqlJdbcNonResumableSnapshotWithCursorPartition)
     }
 
@@ -128,7 +163,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(stream, incomingStateValue)
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
     }
 
@@ -147,7 +183,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(stream, incomingStateValue)
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
 
         assertTrue(jdbcPartition is MysqlJdbcSnapshotWithCursorPartition)
     }
@@ -167,7 +204,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(stream, incomingStateValue)
+        val jdbcPartition =
+            mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
     }
 
@@ -184,7 +222,8 @@ class MysqlJdbcPartitionFactoryTest {
         """.trimIndent()
             )
 
-        val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(stream, incomingStateValue)
+        val jdbcPartition =
+            mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertNull(jdbcPartition)
     }
 }
