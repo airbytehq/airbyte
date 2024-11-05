@@ -8,6 +8,10 @@ interface AirbyteSchemaMapper {
     fun map(schema: AirbyteType): AirbyteType
 }
 
+class AirbyteSchemaNoopMapper : AirbyteSchemaMapper {
+    override fun map(schema: AirbyteType): AirbyteType = schema
+}
+
 interface AirbyteSchemaIdentityMapper : AirbyteSchemaMapper {
     override fun map(schema: AirbyteType): AirbyteType =
         when (schema) {

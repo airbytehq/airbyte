@@ -11,10 +11,12 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
@@ -43,6 +45,9 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
+    val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
+    val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
+
     fun dump(): List<OutputRecord> {
         val prefix = pathFactory.getFinalDirectory(stream).toString()
         return runBlocking {
@@ -90,30 +95,24 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream
-                    .toAvroReader(stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor))
-                    .use { reader ->
-                        reader
-                            .recordSequence()
-                            .map {
-                                it.toAirbyteValue(stream.schema.withAirbyteMeta()).toOutputRecord()
-                            }
-                            .toList()
-                    }
+                val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta()
+                inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
+                    ->
+                    reader
+                        .recordSequence()
+                        .map { it.toAirbyteValue(finalSchema).toOutputRecord() }
+                        .toList()
+                }
             }
             is ParquetFormatConfiguration -> {
-                inputStream
-                    .toParquetReader(
-                        stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor)
-                    )
-                    .use { reader ->
-                        reader
-                            .recordSequence()
-                            .map {
-                                it.toAirbyteValue(stream.schema.withAirbyteMeta()).toOutputRecord()
-                            }
-                            .toList()
-                    }
+                val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta()
+                inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
+                    reader ->
+                    reader
+                        .recordSequence()
+                        .map { it.toAirbyteValue(finalSchema).toOutputRecord() }
+                        .toList()
+                }
             }
         }
 }

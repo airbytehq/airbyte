@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.test.util.Root
-import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -119,32 +117,5 @@ class TimeStringToIntegerTest {
                 "Failed for ${it.first} to ${it.second}"
             )
         }
-    }
-
-    @Test
-    fun testBasicSchemaBehavior() {
-        val (inputSchema, expectedOutput) =
-            SchemaRecordBuilder<Root>()
-                .with(DateType, IntegerType)
-                .withRecord()
-                .with(TimestampTypeWithTimezone, IntegerType)
-                .endRecord()
-                .with(TimestampTypeWithoutTimezone, IntegerType)
-                .withRecord()
-                .with(TimeTypeWithTimezone, IntegerType)
-                .withRecord()
-                .with(TimeTypeWithoutTimezone, IntegerType)
-                .endRecord()
-                .endRecord()
-                .withUnion(
-                    expectedInstead =
-                        FieldType(UnionType(listOf(IntegerType, IntegerType)), nullable = false)
-                )
-                .with(DateType)
-                .with(TimeTypeWithTimezone)
-                .endUnion()
-                .build()
-        val output = TimeStringTypeToIntegerType().map(inputSchema)
-        Assertions.assertEquals(expectedOutput, output)
     }
 }

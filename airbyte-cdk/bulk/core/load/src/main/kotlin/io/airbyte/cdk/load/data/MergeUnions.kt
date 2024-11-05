@@ -44,11 +44,10 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
                         continue
                     }
 
-                    if (existingField != field) {
-                        throw IllegalArgumentException(
-                            "Cannot merge unions of objects with different types for the same field"
-                        )
-                    }
+                    // Combine the fields, recursively merging unions, object fields, etc
+                    val mergedFields = mapUnion(UnionType(listOf(existingField.type, field.type)))
+                    newProperties[name] =
+                        FieldType(mergedFields, existingField.nullable || field.nullable)
 
                     // If the fields are identical, we can just keep the existing field
                 }

@@ -114,4 +114,16 @@ class MapperPipelineTest {
 
         Assertions.assertEquals(2, changes.size, "two failures were captured")
     }
+
+    @Test
+    fun testFailedMappingThrowsOnNonNullable() {
+        val (inputValue, inputSchema, _) =
+            ValueTestBuilder<Root>()
+                .with(IntegerValue(2), IntegerType, NullValue, nullable = false) // fail: reject 2
+                .build()
+
+        val pipeline = makePipeline(inputSchema)
+
+        Assertions.assertThrows(IllegalStateException::class.java) { pipeline.map(inputValue) }
+    }
 }

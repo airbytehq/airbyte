@@ -1488,25 +1488,26 @@ abstract class BasicFunctionalityIntegrationTest(
                         "struct" to
                             FieldType(
                                 ObjectType(linkedMapOf("foo" to numberType)),
-                                nullable = false
+                                nullable = true
                             ),
                         "struct_schemaless" to
-                            FieldType(ObjectTypeWithEmptySchema, nullable = false),
-                        "struct_empty" to FieldType(ObjectTypeWithEmptySchema, nullable = false),
-                        "array" to FieldType(ArrayType(numberType), nullable = false),
-                        "array_schemaless" to FieldType(ArrayTypeWithoutSchema, nullable = false),
-                        "string" to FieldType(StringType, nullable = false),
-                        "number" to FieldType(NumberType, nullable = false),
-                        "boolean" to FieldType(BooleanType, nullable = false),
+                            FieldType(ObjectTypeWithEmptySchema, nullable = true),
+                        "struct_empty" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
+                        "array" to FieldType(ArrayType(numberType), nullable = true),
+                        "array_schemaless" to FieldType(ArrayTypeWithoutSchema, nullable = true),
+                        "string" to FieldType(StringType, nullable = true),
+                        "number" to FieldType(NumberType, nullable = true),
+                        "integer" to FieldType(IntegerType, nullable = true),
+                        "boolean" to FieldType(BooleanType, nullable = true),
                         "timestamp_with_timezone" to
-                            FieldType(TimestampTypeWithTimezone, nullable = false),
+                            FieldType(TimestampTypeWithTimezone, nullable = true),
                         "timestamp_without_timezone" to
-                            FieldType(TimestampTypeWithoutTimezone, nullable = false),
-                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = false),
+                            FieldType(TimestampTypeWithoutTimezone, nullable = true),
+                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
                         "time_without_timezone" to
-                            FieldType(TimeTypeWithoutTimezone, nullable = false),
-                        "date" to FieldType(DateType, nullable = false),
-                        "unknown" to FieldType(UnknownType("test"), nullable = false),
+                            FieldType(TimeTypeWithoutTimezone, nullable = true),
+                        "date" to FieldType(DateType, nullable = true),
+                        "unknown" to FieldType(UnknownType("test"), nullable = true),
                     )
                 ),
                 generationId = 42,
@@ -1879,7 +1880,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 1,
                             "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
-                            "empty_object" to emptyMap<String, Any?>(),
+                            "empty_object" to
+                                if (stringifySchemalessObjects) "{}" else emptyMap<Any, Any>(),
                             "schemaless_object" to
                                 if (stringifySchemalessObjects) {
                                     """{"uuid":"38F52396-736D-4B23-B5B4-F504D8894B97","probability":1.5}"""
@@ -1891,7 +1893,7 @@ abstract class BasicFunctionalityIntegrationTest(
                                 },
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
-                                    """[10,"foo",null,{"bar:"qua"}]"""
+                                    """[10,"foo",null,{"bar":"qua"}]"""
                                 } else {
                                     listOf(10, "foo", null, mapOf("bar" to "qua"))
                                 },
@@ -2137,24 +2139,18 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 1,
                             "combined_type" to maybePromote("string", "string1"),
                             "union_of_objects_with_properties_identical" to
-                                maybePromote("object", mapOf("id" to 10, "name" to "Joe")),
+                                mapOf("id" to 10, "name" to "Joe"),
                             "union_of_objects_with_properties_overlapping" to
-                                maybePromote(
-                                    "object",
-                                    mapOf("id" to 20, "name" to "Jane", "flagged" to true)
-                                ),
+                                mapOf("id" to 20, "name" to "Jane", "flagged" to true),
                             "union_of_objects_with_properties_contradicting" to
-                                maybePromote("object", mapOf("id" to 1, "name" to "Jenny")),
+                                mapOf("id" to maybePromote("integer", 1), "name" to "Jenny"),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                maybePromote(
-                                    "object",
-                                    mapOf(
-                                        "id" to 30,
-                                        "name" to "Phil",
-                                        "flagged" to false,
-                                        "description" to "Very Phil",
-                                    )
-                                ),
+                                mapOf(
+                                    "id" to 30,
+                                    "name" to "Phil",
+                                    "flagged" to false,
+                                    "description" to "Very Phil",
+                                )
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2166,16 +2162,16 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 2,
                             "combined_type" to maybePromote("integer", 20),
                             "union_of_objects_with_properties_identical" to
-                                maybePromote("object", emptyMap<String, Any?>()),
+                                emptyMap<String, Any?>(),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                maybePromote("object", emptyMap<String, Any?>()),
+                                emptyMap<String, Any?>(),
                             "union_of_objects_with_properties_overlapping" to
-                                maybePromote("object", emptyMap<String, Any?>()),
+                                emptyMap<String, Any?>(),
                             "union_of_objects_with_properties_contradicting" to
-                                maybePromote(
-                                    "object",
-                                    mapOf("id" to "seal-one-hippity", "name" to "James")
-                                ),
+                                mapOf(
+                                    "id" to maybePromote("string", "seal-one-hippity"),
+                                    "name" to "James"
+                                )
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2189,7 +2185,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "union_of_objects_with_properties_identical" to null,
                             "union_of_objects_with_properties_overlapping" to null,
                             "union_of_objects_with_properties_nonoverlapping" to null,
-                            "union_of_objects_with_properties_contradicting" to null,
+                            "union_of_objects_with_properties_contradicting" to null
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
