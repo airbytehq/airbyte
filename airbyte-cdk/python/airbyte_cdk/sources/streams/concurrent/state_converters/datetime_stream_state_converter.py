@@ -179,13 +179,14 @@ class CustomFormatConcurrentStreamStateConverter(IsoMillisConcurrentStreamStateC
         super().__init__(is_sequential_state=is_sequential_state, cursor_granularity=cursor_granularity)
         self._datetime_format = datetime_format
         self._input_datetime_formats = input_datetime_formats if input_datetime_formats else []
+        self._input_datetime_formats += [self._datetime_format]
         self._parser = DatetimeParser()
 
     def output_format(self, timestamp: datetime) -> str:
         return timestamp.strftime(self._datetime_format)
 
     def parse_timestamp(self, timestamp: str) -> datetime:
-        for datetime_format in self._input_datetime_formats + [self._datetime_format]:
+        for datetime_format in self._input_datetime_formats:
             try:
                 return self._parser.parse(timestamp, datetime_format)
             except ValueError:
