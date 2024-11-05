@@ -11,9 +11,6 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `user` | `number` | User.  |  |
-| `file_id` | `number` | File Id.  |  |
-| `folder_id` | `number` | Folder Id.  |  |
-| `search_input` | `string` | Search Input.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
