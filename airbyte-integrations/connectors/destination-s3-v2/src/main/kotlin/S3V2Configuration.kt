@@ -19,11 +19,9 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-@Requires(property = "")
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,

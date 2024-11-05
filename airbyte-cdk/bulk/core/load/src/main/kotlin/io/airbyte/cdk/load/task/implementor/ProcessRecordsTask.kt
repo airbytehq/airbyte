@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
-import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -68,14 +67,7 @@ class DefaultProcessRecordsTask(
                                 it !is DestinationStreamComplete &&
                                     it !is DestinationStreamIncomplete
                             }
-                            .map { when (it) {
-                                is DestinationRecord -> it
-                                is DestinationFile -> it
-                                else ->
-                                    throw IllegalStateException(
-                                        "Expected record message, got ${it::class}"
-                                    )
-                            }}
+                            .map { it as DestinationRecord }
                             .iterator()
                     streamLoader.processRecords(records, file.totalSizeBytes)
                 }

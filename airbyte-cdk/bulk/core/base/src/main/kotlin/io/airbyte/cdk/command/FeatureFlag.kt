@@ -34,8 +34,7 @@ enum class FeatureFlag(
         get() = "${envVar.name}=$requiredEnvVarValue"
 
     enum class EnvVar(val defaultValue: String = "") {
-        DEPLOYMENT_MODE,
-        AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME
+        DEPLOYMENT_MODE
     }
 
     companion object {
