@@ -233,7 +233,10 @@ class FileBasedStreamPartition(Partition):
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
                     # If stream is flagged for file_transfer the record should data in file key
                     record_message_data = record_data.record.file if self._use_file_transfer() else record_data.record.data
-                    yield Record(data=record_message_data, partition=self, is_file_transfer_message=self._use_file_transfer())
+                    if record_message_data is None:
+                        raise ExceptionWithDisplayMessage("A record without data was found")
+                    else:
+                        yield Record(data=record_message_data, partition=self, is_file_transfer_message=self._use_file_transfer())
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
@@ -276,7 +279,7 @@ class FileBasedStreamPartition(Partition):
         return self._stream.name
 
     @cache
-    def _use_file_transfer(self):
+    def _use_file_transfer(self) -> bool:
         return hasattr(self._stream, "use_file_transfer") and self._stream.use_file_transfer
 
     def __repr__(self) -> str:
