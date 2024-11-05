@@ -1,0 +1,23 @@
+data:
+  connectorType: destination
+  definitionId: 1e9bb025-2064-42af-9de5-33400a0f0e26
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-edgao-iceberg-experiment
+  name: edgao iceberg experiment
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE_COPY_AZURE_BLOB__CREDS
+          fileName: copy_azure_blob_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
