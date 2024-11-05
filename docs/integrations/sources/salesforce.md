@@ -83,7 +83,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 1.  If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
 2.  When running a curl command, run it with the `-L` option to follow any redirects.
-3.  If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
+3.  If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
 
 <!-- /env:oss -->
 
