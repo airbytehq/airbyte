@@ -61,6 +61,10 @@ You'll need to pass your Airbyte contact the following information of the create
 
 Once we've received this information from you, We'll setup SSO for you and let you know once it's ready to be used.
 
+:::warning
+For security purposes, existing applications to access the Airbyte API created by users before enabling SSO will be disabled once the user that owns the application signs in via SSO for the first time. Ensure to replace application secrets that may have been in use after SSO is enabled.
+:::
+
 </TabItem>
 <TabItem value="Self-Managed" label="Self-Managed">
 

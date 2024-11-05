@@ -65,6 +65,10 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * **Client Secret**
     * **Email Domain** (users signing in from this domain will be required to sign in via SSO)
 
+    :::warning
+    For security purposes, existing applications to access the Airbyte API created by users before enabling SSO will be disabled once the user that owns the application signs in via SSO for the first time. Ensure to replace application secrets that may have been in use after SSO is enabled.
+    :::
+
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">
     Create the application with the following parameters:
