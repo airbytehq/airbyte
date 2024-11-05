@@ -41,9 +41,9 @@ sealed interface DestinationStreamAffinedMessage : DestinationMessage {
     val stream: DestinationStream.Descriptor
 }
 
-sealed interface DestinationRecordDomainMessage: DestinationStreamAffinedMessage
+sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessage
 
-sealed interface DestinationFileDomainMessage: DestinationStreamAffinedMessage
+sealed interface DestinationFileDomainMessage : DestinationStreamAffinedMessage
 
 data class DestinationRecord(
     override val stream: DestinationStream.Descriptor,
@@ -381,20 +381,20 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
                         emittedAtMs = message.record.emittedAt,
                         meta =
-                        DestinationRecord.Meta(
-                            changes =
-                            message.record.meta
-                                ?.changes
-                                ?.map {
-                                    DestinationRecord.Change(
-                                        field = it.field,
-                                        change = it.change,
-                                        reason = it.reason,
-                                    )
-                                }
-                                ?.toMutableList()
-                                ?: mutableListOf()
-                        ),
+                            DestinationRecord.Meta(
+                                changes =
+                                    message.record.meta
+                                        ?.changes
+                                        ?.map {
+                                            DestinationRecord.Change(
+                                                field = it.field,
+                                                change = it.change,
+                                                reason = it.reason,
+                                            )
+                                        }
+                                        ?.toMutableList()
+                                        ?: mutableListOf()
+                            ),
                         serialized = serialized
                     )
                 } else {
@@ -402,13 +402,19 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         stream = stream.descriptor,
                         emittedAtMs = message.record.emittedAt,
                         serialized = serialized,
-                        fileMessage = DestinationFile.AirbyteRecordMessageFile(
-                            fileUrl = message.record.additionalProperties["file_url"] as String?,
-                            bytes = message.record.additionalProperties["bytes"] as Long?,
-                            fileRelativePath = message.record.additionalProperties["file_relative_path"] as String?,
-                            modified = message.record.additionalProperties["modified"] as Long?,
-                            sourceFileUrl = message.record.additionalProperties["source_file_url"] as String?
-                        )
+                        fileMessage =
+                            DestinationFile.AirbyteRecordMessageFile(
+                                fileUrl =
+                                    message.record.additionalProperties["file_url"] as String?,
+                                bytes = message.record.additionalProperties["bytes"] as Long?,
+                                fileRelativePath =
+                                    message.record.additionalProperties["file_relative_path"]
+                                        as String?,
+                                modified = message.record.additionalProperties["modified"] as Long?,
+                                sourceFileUrl =
+                                    message.record.additionalProperties["source_file_url"]
+                                        as String?
+                            )
                     )
                 }
             }
