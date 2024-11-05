@@ -64,8 +64,8 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
     
     @HttpMocker()
     def test_given_breaking_error_when_read_products_then_stream_is_ignored(self, http_mocker):
@@ -179,8 +179,8 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
@@ -294,8 +294,8 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
@@ -409,8 +409,8 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
     
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):

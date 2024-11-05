@@ -19,7 +19,7 @@ def read_stream(
     expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(SourceAmazonAds(), config, catalog, state, expecting_exception)
+    return read(SourceAmazonAds(catalog=catalog, config=config, state=state), config, catalog, state, expecting_exception)
 
 
 def get_log_messages_by_log_level(logs: List[AirbyteMessage], log_level: LogLevel) -> List[str]:

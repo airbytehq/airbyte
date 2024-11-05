@@ -5,7 +5,42 @@ import json
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
-from source_amazon_ads.streams.attribution_report import BRAND_REFERRAL_BONUS, METRICS_MAP
+
+BRAND_REFERRAL_BONUS = "brb_bonus_amount"
+
+METRICS_MAP = {
+    "PERFORMANCE": [
+        "Click-throughs",
+        "attributedDetailPageViewsClicks14d",
+        "attributedAddToCartClicks14d",
+        "attributedPurchases14d",
+        "unitsSold14d",
+        "attributedSales14d",
+        "attributedTotalDetailPageViewsClicks14d",
+        "attributedTotalAddToCartClicks14d",
+        "attributedTotalPurchases14d",
+        "totalUnitsSold14d",
+        "totalAttributedSales14d",
+    ],
+    "PRODUCTS": [
+        "attributedDetailPageViewsClicks14d",
+        "attributedAddToCartClicks14d",
+        "attributedPurchases14d",
+        "unitsSold14d",
+        "attributedSales14d",
+        "brandHaloDetailPageViewsClicks14d",
+        "brandHaloAttributedAddToCartClicks14d",
+        "brandHaloAttributedPurchases14d",
+        "brandHaloUnitsSold14d",
+        "brandHaloAttributedSales14d",
+        "attributedNewToBrandPurchases14d",
+        "attributedNewToBrandUnitsSold14d",
+        "attributedNewToBrandSales14d",
+        "brandHaloNewToBrandPurchases14d",
+        "brandHaloNewToBrandUnitsSold14d",
+        "brandHaloNewToBrandSales14d",
+    ],
+}
 
 from .base_request_builder import AmazonAdsBaseRequestBuilder
 
@@ -72,7 +107,7 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
 
     def __init__(self, resource: str) -> None:
         super().__init__(resource)
-        self._cursor_field: Optional[int] = ""
+        self._cursor_field: Optional[int] = None
         self._end_date: Optional[str] = None
         self._grouping: Optional[str] = None
         self._limit: Optional[int] = None
@@ -89,8 +124,8 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         body: dict = OrderedDict()
         if self._report_type:
             body["reportType"] = self._report_type
-        if self._limit:
-            body["count"] = self._limit
+        if self._grouping:
+            body["groupBy"] = self._grouping
         if self._metrics:
             body["metrics"] = ",".join(self._metrics)
         if self._start_date:
@@ -98,10 +133,11 @@ class AttributionReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         if self._end_date:
             body["endDate"] = self._end_date
 
-        body["cursorId"] = self._cursor_field
+        if self._cursor_field:
+            body["cursorId"] = self._cursor_field
+        if self._limit:
+            body["count"] = self._limit
 
-        if self._grouping:
-            body["groupBy"] = self._grouping
 
         return json.dumps(body)
 

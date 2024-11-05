@@ -4,15 +4,12 @@
 
 import json
 
-import pendulum
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
-from freezegun import freeze_time
+
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
-from source_amazon_ads.streams import AttributionReportProducts
 
 from .utils import read_full_refresh
 
@@ -123,36 +120,3 @@ def test_attribution_report_with_pagination(mocker, config, profiles_response, a
 
     # request should be called 2 times for a single profile
     assert len(attribution_records) == 2 * len(attribution_data.get("reports"))
-
-
-@freeze_time("2022-05-15 12:00:00")
-def test_attribution_report_slices(config):
-
-    profiles = [
-        dict(profileId=1, timezone="America/Los_Angeles", accountInfo=dict(id="1", type="seller", marketplaceStringId="")),
-        dict(profileId=2, timezone="America/Los_Angeles", accountInfo=dict(id="1", type="seller", marketplaceStringId="")),
-    ]
-
-    stream = AttributionReportProducts(config, profiles=profiles)
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-
-    assert slices == [
-        {"profileId": 1, "startDate": "20220514", "endDate": "20220515"},
-        {"profileId": 2, "startDate": "20220514", "endDate": "20220515"},
-    ]
-
-    config["start_date"] = pendulum.from_format("2022-05-01", "YYYY-MM-DD").date()
-    stream = AttributionReportProducts(config, profiles=profiles)
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-    assert slices == [
-        {"profileId": 1, "startDate": "20220501", "endDate": "20220515"},
-        {"profileId": 2, "startDate": "20220501", "endDate": "20220515"},
-    ]
-
-    config["start_date"] = pendulum.from_format("2022-01-01", "YYYY-MM-DD").date()
-    stream = AttributionReportProducts(config, profiles=profiles)
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-    assert slices == [
-        {"profileId": 1, "startDate": "20220214", "endDate": "20220515"},
-        {"profileId": 2, "startDate": "20220214", "endDate": "20220515"},
-    ]

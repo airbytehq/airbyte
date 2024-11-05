@@ -824,7 +824,10 @@ definitions:
             response_filters:
               - http_codes: [400]
                 action: IGNORE
-                error_message: "This profileID is not authorized to use Amazon Attribution"
+                error_message: "{{ response }}"
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -902,7 +905,10 @@ definitions:
             response_filters:
               - http_codes: [400]
                 action: IGNORE
-                error_message: "This profileID is not authorized to use Amazon Attribution"
+                error_message: "{{ response }}"
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -977,7 +983,10 @@ definitions:
             response_filters:
               - http_codes: [400]
                 action: IGNORE
-                error_message: "This profileID is not authorized to use Amazon Attribution"
+                error_message: "{{ response }}"
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -1052,7 +1061,10 @@ definitions:
             response_filters:
               - http_codes: [400]
                 action: IGNORE
-                error_message: "This profileID is not authorized to use Amazon Attribution"
+                error_message: "{{ response }}"
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
           path: /attribution/report
           http_method: POST
           request_headers:
