@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -54,7 +53,6 @@ class AirbyteTypeToAvroSchema {
                 LogicalTypes.date().addToSchema(schema)
             }
             is IntegerType -> SchemaBuilder.builder().longType()
-            is NullType -> SchemaBuilder.builder().nullType()
             is NumberType -> SchemaBuilder.builder().doubleType()
             is ObjectTypeWithEmptySchema ->
                 throw IllegalArgumentException("Object type with empty schema is not supported")

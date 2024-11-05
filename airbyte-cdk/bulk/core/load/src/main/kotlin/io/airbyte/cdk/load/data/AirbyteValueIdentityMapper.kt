@@ -45,7 +45,6 @@ open class AirbyteValueIdentityMapper(
                     mapTimestampWithTimezone(value as TimestampValue, path)
                 is TimestampTypeWithoutTimezone ->
                     mapTimestampWithoutTimezone(value as TimestampValue, path)
-                is NullType -> mapNull(path)
                 is UnknownType -> {
                     collectFailure(path)
                     mapNull(path)
