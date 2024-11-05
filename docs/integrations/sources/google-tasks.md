@@ -43,6 +43,7 @@ Steps:
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.4 | 2024-11-05 | [48366](https://github.com/airbytehq/airbyte/pull/48366) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.3 | 2024-11-05 | [47770](https://github.com/airbytehq/airbyte/pull/47770) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47550](https://github.com/airbytehq/airbyte/pull/47550) | Update dependencies |
 | 0.0.1 | 2024-09-12 | [45427](https://github.com/airbytehq/airbyte/pull/45427) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
