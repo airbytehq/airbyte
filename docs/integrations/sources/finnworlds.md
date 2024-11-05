@@ -7,30 +7,24 @@ Docs : https://finnworlds.com/
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `list` | `string` | List. Choose isin, ticker, reg_lei or cik | ticker |
-| `list_countries_for_bonds` | `string` | List Countries for Bonds.  | country |
 | `key` | `string` | API Key.  |  |
-| `from` | `string` | From. The date you need candle sticks from  | 2024-09-24 |
-| `type_of_bond_` | `string` | Type of bond . For example 10y | 10y |
+| `bond_type` | `array` | Bond Type. For example 10y, 5y, 2y... |  |
+| `countries` | `array` | Countries. brazil, united states, italia, japan |  |
+| `tickers` | `array` | Tickers. AAPL, T, MU, GOOG |  |
+| `start_date` | `string` | Start date.  |  |
+| `commodities` | `array` | Commodities. Options Available: beef, cheese, oil, ... |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Bonds List | country | DefaultPaginator | ✅ |  ❌  |
-| Bonds |  | No pagination | ✅ |  ❌  |
-| Dividends List | ticker | DefaultPaginator | ✅ |  ❌  |
-| Dividends |  | No pagination | ✅ |  ❌  |
-| Stock Splits List | ticker | DefaultPaginator | ✅ |  ❌  |
-| Stock Splits |  | No pagination | ✅ |  ❌  |
-| CandleStick List | ticker | DefaultPaginator | ✅ |  ❌  |
-| Historical CandleStick |  | No pagination | ✅ |  ❌  |
-| Macro List | country | DefaultPaginator | ✅ |  ❌  |
-| Macro Calendar |  | No pagination | ✅ |  ❌  |
-| Macro Indicator |  | No pagination | ✅ |  ❌  |
-| Commodities List | name | DefaultPaginator | ✅ |  ❌  |
-| Commodities | commodity_name | No pagination | ✅ |  ❌  |
-| Benchmark List | benchmark | DefaultPaginator | ✅ |  ❌  |
-| Benchmark |  | No pagination | ✅ |  ❌  |
+| bonds | country.datetime.type | No pagination | ✅ |  ❌  |
+| dividends |  | No pagination | ✅ |  ❌  |
+| stock_splits | ticker.date | No pagination | ✅ |  ❌  |
+| historical_candlestick | ticker.date | No pagination | ✅ |  ✅  |
+| macro_calendar |  | No pagination | ✅ |  ❌  |
+| macro_indicator |  | No pagination | ✅ |  ❌  |
+| commodities | commodity_name.datetime | No pagination | ✅ |  ❌  |
+| benchmark | datetime.country.benchmark | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -39,6 +33,6 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-25 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-05 | | Initial release by [@marcosmarxm](https://github.com/marcosmarxm) via Connector Builder |
 
 </details>
