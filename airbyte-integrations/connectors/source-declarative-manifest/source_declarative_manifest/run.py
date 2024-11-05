@@ -89,7 +89,7 @@ def _get_local_yaml_source(args: List[str]):
                 )
             ).decode()
         )
-        return None
+        raise error
 
 
 def handle_local_manifest_command(args: List[str]) -> None:
