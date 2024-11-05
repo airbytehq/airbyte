@@ -379,6 +379,7 @@ def test_given_multiple_input_datetime_format_when_parse_timestamp_then_iterate_
 
     assert parsed_datetime == datetime(2024, 1, 1, tzinfo=timezone.utc)
 
+
 def test_given_when_parse_timestamp_then_eventually_fallback_on_output_format():
     output_format = "%Y-%m-%dT%H:%M:%S"
     input_formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d"]
