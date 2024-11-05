@@ -100,7 +100,6 @@ class BasicAmazonAdsStream(Stream, ABC):
     Base class for all Amazon Ads streams.
     """
 
-
     def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]] = None):
         self._profiles = profiles or []
         self._client_id = config["client_id"]
@@ -181,6 +180,7 @@ class SubProfilesStream(AmazonAdsStream):
     """
     Stream for getting resources with pagination support and getting resources based on list of profiles set by source.
     """
+
     is_resumable = False
     page_size = 100
 
