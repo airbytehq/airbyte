@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -54,6 +54,8 @@ definitions:
     offers:
       type: DeclarativeStream
       name: offers
+      primary_key:
+        - offerId
       retriever:
         type: SimpleRetriever
         requester:
@@ -219,6 +221,8 @@ definitions:
     charity_orgs:
       type: DeclarativeStream
       name: charity_orgs
+      primary_key:
+        - charityOrgId
       retriever:
         type: SimpleRetriever
         requester:
@@ -352,7 +356,7 @@ spec:
       evaluation_type:
         type: string
         order: 3
-        title: evaluation_type
+        title: Evaluation Type
       evaluation_marketplace:
         type: array
         order: 4
@@ -389,7 +393,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     offers:
-      streamHash: 5f1cb8a38f670ebc322a3bace9b12697b88e12be
+      streamHash: 98d90f01a6ea6e5f38c1c207af26ee75a584b41a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -424,7 +428,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     charity_orgs:
-      streamHash: c41fd369f532a1a5a81b9366e4a2978e0157f03b
+      streamHash: 9572303a91023e9b38bd19ba6d987d2ea50e3b31
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -594,9 +598,7 @@ schemas:
           - string
           - "null"
       offerId:
-        type:
-          - string
-          - "null"
+        type: string
       pricingSummary:
         type:
           - object
@@ -636,6 +638,8 @@ schemas:
             type:
               - boolean
               - "null"
+    required:
+      - offerId
   violation_summary:
     type: object
     $schema: http://json-schema.org/schema#
@@ -842,9 +846,7 @@ schemas:
           - string
           - "null"
       charityOrgId:
-        type:
-          - string
-          - "null"
+        type: string
       location:
         type:
           - object
@@ -905,6 +907,8 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - charityOrgId
   get_campaigns:
     type: object
     $schema: http://json-schema.org/schema#
