@@ -69,6 +69,13 @@ data class DestinationRecord(
             const val COLUMN_NAME_AB_META: String = "_airbyte_meta"
             const val COLUMN_NAME_AB_GENERATION_ID: String = "_airbyte_generation_id"
             const val COLUMN_NAME_DATA: String = "_airbyte_data"
+            val COLUMN_NAMES =
+                setOf(
+                    COLUMN_NAME_AB_RAW_ID,
+                    COLUMN_NAME_AB_EXTRACTED_AT,
+                    COLUMN_NAME_AB_META,
+                    COLUMN_NAME_AB_GENERATION_ID,
+                )
         }
 
         fun asProtocolObject(): AirbyteRecordMessageMeta =

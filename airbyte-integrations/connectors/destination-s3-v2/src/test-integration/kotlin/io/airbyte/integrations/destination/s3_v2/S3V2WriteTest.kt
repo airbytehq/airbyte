@@ -106,6 +106,15 @@ class S3V2WriteTestJsonUncompressed :
         allTypesBehavior = Untyped,
     )
 
+class S3V2WriteTestJsonRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
 class S3V2WriteTestJsonStaging :
     S3V2WriteTest(
         S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
@@ -132,6 +141,21 @@ class S3V2WriteTestCsvUncompressed :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
     )
+
+class S3V2WriteTestCsvRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+    ) {
+    @Disabled("Does not work yet")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
 
 class S3V2WriteTestCsvGzip :
     S3V2WriteTest(
