@@ -7,16 +7,14 @@ Docs : https://mailosaur.com/docs
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `username` | `string` | Username. Enter &quot;api&quot; here |  |
-| `password` | `string` | Password. Enter your api key here |  |
+| `username` | `string` | Username. Enter API here |  |
+| `password` | `string` | Password. Enter your API Key here |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Messages | id | No pagination | ✅ |  ❌  |
-| Message | id | No pagination | ✅ |  ❌  |
 | Servers | id | No pagination | ✅ |  ❌  |
-| Server | id | No pagination | ✅ |  ❌  |
 | Transactions | timestamp | No pagination | ✅ |  ❌  |
 
 ## Changelog
