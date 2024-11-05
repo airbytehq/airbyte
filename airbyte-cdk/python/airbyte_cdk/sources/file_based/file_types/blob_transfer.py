@@ -23,7 +23,7 @@ class _FileReader:
 
         try:
             file_size = stream_reader.file_size(file)
-            with stream_reader.open_file(file, file_read_mode, "UTF-8", logger) as fp:
+            with stream_reader.open_file(file, file_read_mode, encoding=None, logger=logger) as fp:
                 yield fp, file_size
 
         except Exception as ex:
@@ -56,4 +56,4 @@ class BlobTransfer:
 
     @property
     def file_read_mode(self) -> FileReadMode:
-        return FileReadMode.READ
+        return FileReadMode.READ_BINARY
