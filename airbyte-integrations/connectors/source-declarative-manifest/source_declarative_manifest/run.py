@@ -20,6 +20,7 @@ from airbyte_cdk.models import (
     AirbyteMessageSerializer,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
+    ConnectorSpecificationSerializer,
     TraceType,
     Type,
 )
