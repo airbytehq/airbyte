@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -36,10 +36,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: stream_position
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_stream_position') }}"
-            stop_condition: "{{ response.get('next_stream_position') is none }}"
+            stop_condition: "{{ response.chunk_size == 0 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -67,8 +72,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: marker
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get(\"next_marker\")  }}"
             stop_condition: "{{ response.get(\"next_marker\") is none }}"
       schema_loader:
@@ -98,9 +108,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1000
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -131,6 +145,7 @@ definitions:
             field_name: offset
           pagination_strategy:
             type: OffsetIncrement
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -166,8 +181,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: marker
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_marker') }}"
             stop_condition: "{{ response.get('next_marker') is none }}"
       schema_loader:
@@ -197,19 +217,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: stream_position
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_stream_position', '') }}"
-            stop_condition: >-
-              {{ response.get('next_stream_position') is none or
-              response.get('next_stream_position') == '' }}
+            stop_condition: "{{ response.chunk_size == 0 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/admin_logs"
-    all_files_and_folders:
+    files:
       type: DeclarativeStream
-      name: all_files_and_folders
+      name: files
       primary_key:
         - id
       retriever:
@@ -224,46 +247,26 @@ definitions:
             type: DpathExtractor
             field_path:
               - entries
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['type'] == \"file\"}}"
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/all_files_and_folders"
-    pending_collaborations:
-      type: DeclarativeStream
-      name: pending_collaborations
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /2.0/collaborations
-          http_method: GET
-          request_parameters:
-            status: pending
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
+          page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/pending_collaborations"
+          $ref: "#/schemas/files"
     file_collaborations:
       type: DeclarativeStream
       name: file_collaborations
@@ -273,7 +276,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2.0/files/{{ config['file_id'] }}/collaborations
+          path: /2.0/files/{{ stream_slice['file_id'] }}/collaborations
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -287,10 +290,23 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: marker
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_marker') }}"
             stop_condition: "{{ response.get('next_marker') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: file_id
+              stream:
+                $ref: "#/definitions/streams/files"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -304,7 +320,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2.0/folders/{{ config['folder_id'] }}/collaborations
+          path: /2.0/folders/{{ stream_slice['folder_id'] }}/collaborations
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -318,10 +334,23 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: marker
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_marker') }}"
             stop_condition: "{{ response.get('next_marker') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: folder_id
+              stream:
+                $ref: "#/definitions/streams/folders"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -335,7 +364,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2.0/files/{{ config['file_id'] }}/comments
+          path: /2.0/files/{{ stream_slice['file_id'] }}/comments
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -349,10 +378,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 1000
+            page_size: 100
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: file_id
+              stream:
+                $ref: "#/definitions/streams/files"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -382,47 +423,19 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: marker
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('next_marker') }}"
             stop_condition: "{{ response.get('next_marker') is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/recent_items"
-    search:
-      type: DeclarativeStream
-      name: search
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /2.0/search
-          http_method: GET
-          request_parameters:
-            query: "{{ config['search_input'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - entries
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 200
-            inject_on_first_request: true
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/search"
     file_tasks:
       type: DeclarativeStream
       name: file_tasks
@@ -432,7 +445,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2.0/files/{{ config['file_id'] }}/tasks
+          path: /2.0/files/{{ stream_slice['file_id'] }}/tasks
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -444,6 +457,14 @@ definitions:
               - task_assignment_collection
               - entries
               - "*"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: file_id
+              stream:
+                $ref: "#/definitions/streams/files"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -508,6 +529,44 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /2.0/folders/0/items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['type'] == \"folder\"}}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
   base_requester:
     type: HttpRequester
     url_base: https://api.box.com
@@ -518,10 +577,10 @@ definitions:
       client_secret: "{{ config[\"client_secret\"] }}"
       expires_in_name: expires_in
       access_token_name: access_token
-      token_refresh_endpoint: https://api.box.com/oauth2/token
       refresh_request_body:
-        box_subject_type: user
         box_subject_id: "{{ config['user'] }}"
+        box_subject_type: user
+      token_refresh_endpoint: https://api.box.com/oauth2/token
 
 streams:
   - $ref: "#/definitions/streams/events"
@@ -530,16 +589,15 @@ streams:
   - $ref: "#/definitions/streams/collection_items"
   - $ref: "#/definitions/streams/sign_request"
   - $ref: "#/definitions/streams/admin_logs"
-  - $ref: "#/definitions/streams/all_files_and_folders"
-  - $ref: "#/definitions/streams/pending_collaborations"
+  - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_collaborations"
   - $ref: "#/definitions/streams/folder_collaborations"
   - $ref: "#/definitions/streams/file_comments"
   - $ref: "#/definitions/streams/recent_items"
-  - $ref: "#/definitions/streams/search"
   - $ref: "#/definitions/streams/file_tasks"
   - $ref: "#/definitions/streams/trashed_items"
   - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/folders"
 
 spec:
   type: Spec
@@ -550,38 +608,23 @@ spec:
       - client_id
       - client_secret
       - user
-      - file_id
-      - folder_id
-      - search_input
     properties:
       client_id:
         type: string
         name: client_id
+        order: 0
         title: OAuth Client ID
         airbyte_secret: true
-        order: 0
       client_secret:
         type: string
         name: client_secret
+        order: 1
         title: OAuth Client Secret
         airbyte_secret: true
-        order: 1
       user:
         type: number
-        title: User
         order: 2
-      file_id:
-        type: number
-        title: File Id
-        order: 3
-      folder_id:
-        type: number
-        title: Folder Id
-        order: 4
-      search_input:
-        type: string
-        title: Search Input
-        order: 5
+        title: User
     additionalProperties: true
 
 metadata:
@@ -592,124 +635,116 @@ metadata:
     collection_items: true
     sign_request: true
     admin_logs: true
-    all_files_and_folders: true
-    pending_collaborations: true
+    files: true
     file_collaborations: true
     folder_collaborations: true
     file_comments: true
     recent_items: true
-    search: true
     file_tasks: true
     trashed_items: true
     users: true
+    folders: true
   testedStreams:
     events:
-      streamHash: 4c1f8d8f693d7a92ee8dec80d838660e4bece5f5
+      streamHash: 5f6a527cfa95216243803a32516a01f06260bb01
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sign_templates:
-      streamHash: 58e74175dc9e9c018f1db93b31f994d992f1ec21
+      streamHash: 4ab2165704ff19049bf1ecc510154302f122e5ba
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     collections:
-      streamHash: 886189616f6f7b66fc9789b732c80e7f32aa7047
+      streamHash: 99a1e98e0e5e1f0e34c55e3c067158efc139614d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     collection_items:
-      streamHash: c9f9946c5dea8f0e13f35a98f979a175a4d31371
+      streamHash: 166e60e6b8bccc1e6854a88f7ad29fe76f08a83a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sign_request:
-      streamHash: b9312ff248912fe56db30bf97dbcf9baa4bcde45
+      streamHash: a75dbf901501cd636c8087c31ea771b4aba77d65
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     admin_logs:
-      streamHash: 8385c32c4dcaea9e4abad576b76d32dd492567dc
+      streamHash: d29f65619562bd57f0ab2ffde25f45fe85094fed
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    all_files_and_folders:
-      streamHash: d65bc3e1a5be3f799bf15b1c455ccc8720a616fa
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    pending_collaborations:
-      streamHash: c4720c47fb3dc8639f047bf50b255eaabea7ba54
+    files:
+      streamHash: f2bddba5e78d73843ff573adddc0f5b664d98deb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     file_collaborations:
-      streamHash: 3f0ee868e6e0a0e788970230242619b1413f52b7
+      streamHash: b57e258db538c594ace1cba278854f0702bbe926
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     folder_collaborations:
-      streamHash: b472659517461cc25be8548d1dd3d9acad9b42e3
+      streamHash: 9154707962f8ebc5736593f901aa484ba6aa3d34
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     file_comments:
-      streamHash: 51fcb8eb26244c28d8208d41cde1a22fc9f5a628
+      streamHash: 2711d975ffe518367db630ef6dc0c2598b5cb86d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     recent_items:
-      streamHash: 2b620c6da8c3ac7b4be0bb481c00bd067d9a9d2f
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    search:
-      streamHash: e324924387256d1e6893203d34cff6832349331c
+      streamHash: a220c9ba1787d7da58f2d496a76a176600c800ff
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     file_tasks:
-      streamHash: 4c5d718f9c10bab0d8680c6703b9f358a0cc573e
+      streamHash: b7cdc6e9b385a24c4f491d8b820a6924bd52070f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     trashed_items:
+      hasRecords: true
       streamHash: 220c9d1eb25065d60d7347c9219ae6882b3bfdb4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      streamHash: 0e26a32514f04fae7185887ae41861452eb580f7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    users:
-      streamHash: 0e26a32514f04fae7185887ae41861452eb580f7
+    folders:
+      streamHash: e8aee8caba4e6a759ead1aa1b2b20f27f6d690de
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1597,11 +1632,36 @@ schemas:
         type:
           - string
           - "null"
+      accessible_by:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          login:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
       additional_details:
         type:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           metadata:
             type:
               - object
@@ -1616,6 +1676,10 @@ schemas:
                   - string
                   - "null"
           access_token_identifier:
+            type:
+              - string
+              - "null"
+          collab_id:
             type:
               - string
               - "null"
@@ -1688,7 +1752,23 @@ schemas:
                     type:
                       - string
                       - "null"
+          comment_id:
+            type:
+              - number
+              - "null"
           ekm_id:
+            type:
+              - string
+              - "null"
+          invitation_message:
+            type:
+              - string
+              - "null"
+          is_performed_by_admin:
+            type:
+              - boolean
+              - "null"
+          message:
             type:
               - string
               - "null"
@@ -1704,6 +1784,10 @@ schemas:
             type:
               - string
               - "null"
+          role:
+            type:
+              - string
+              - "null"
           service_id:
             type:
               - string
@@ -1712,6 +1796,35 @@ schemas:
             type:
               - string
               - "null"
+          sharedLinkSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              newCanDownload:
+                type:
+                  - boolean
+                  - "null"
+              newCanEdit:
+                type:
+                  - boolean
+                  - "null"
+              newCanPreview:
+                type:
+                  - boolean
+                  - "null"
+              newIsExpirationDateSet:
+                type:
+                  - boolean
+                  - "null"
+              newIsPasswordProtected:
+                type:
+                  - boolean
+                  - "null"
+              newVisibilityStatus:
+                type:
+                  - string
+                  - "null"
           shared_link_id:
             type:
               - string
@@ -1856,6 +1969,62 @@ schemas:
             type:
               - number
               - "null"
+          task:
+            type:
+              - object
+              - "null"
+            properties:
+              created_by:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  login:
+                    type:
+                      - string
+                      - "null"
+              due_at:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+          task_assignment:
+            type:
+              - object
+              - "null"
+            properties:
+              assigned_to:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  login:
+                    type:
+                      - string
+                      - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
           version_id:
             type:
               - string
@@ -1901,6 +2070,22 @@ schemas:
           - "null"
         properties:
           type:
+            type:
+              - string
+              - "null"
+          file_id:
+            type:
+              - string
+              - "null"
+          file_name:
+            type:
+              - string
+              - "null"
+          folder_id:
+            type:
+              - string
+              - "null"
+          folder_name:
             type:
               - string
               - "null"
@@ -1966,9 +2151,13 @@ schemas:
                 type:
                   - string
                   - "null"
+          user_email:
+            type:
+              - string
+              - "null"
     required:
       - event_id
-  all_files_and_folders:
+  files:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2014,27 +2203,6 @@ schemas:
           - "null"
     required:
       - id
-  pending_collaborations:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      entries:
-        type:
-          - array
-          - "null"
-      limit:
-        type:
-          - number
-          - "null"
-      offset:
-        type:
-          - number
-          - "null"
-      total_count:
-        type:
-          - number
-          - "null"
   file_collaborations:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2314,260 +2482,6 @@ schemas:
           - "null"
     required:
       - id
-  search:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      description:
-        type:
-          - string
-          - "null"
-      content_created_at:
-        type:
-          - string
-          - "null"
-      content_modified_at:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      created_by:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          login:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      etag:
-        type:
-          - string
-          - "null"
-      file_version:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          sha1:
-            type:
-              - string
-              - "null"
-      id:
-        type: string
-      item_status:
-        type:
-          - string
-          - "null"
-      modified_at:
-        type:
-          - string
-          - "null"
-      modified_by:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          login:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      name:
-        type:
-          - string
-          - "null"
-      owned_by:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          login:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      parent:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          etag:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          sequence_id:
-            type:
-              - string
-              - "null"
-      path_collection:
-        type:
-          - object
-          - "null"
-        properties:
-          entries:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                etag:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                sequence_id:
-                  type:
-                    - string
-                    - "null"
-          total_count:
-            type:
-              - number
-              - "null"
-      sequence_id:
-        type:
-          - string
-          - "null"
-      sha1:
-        type:
-          - string
-          - "null"
-      shared_link:
-        type:
-          - object
-          - "null"
-        properties:
-          access:
-            type:
-              - string
-              - "null"
-          download_count:
-            type:
-              - number
-              - "null"
-          download_url:
-            type:
-              - string
-              - "null"
-          effective_access:
-            type:
-              - string
-              - "null"
-          effective_permission:
-            type:
-              - string
-              - "null"
-          is_password_enabled:
-            type:
-              - boolean
-              - "null"
-          permissions:
-            type:
-              - object
-              - "null"
-            properties:
-              can_download:
-                type:
-                  - boolean
-                  - "null"
-              can_edit:
-                type:
-                  - boolean
-                  - "null"
-              can_preview:
-                type:
-                  - boolean
-                  - "null"
-          preview_count:
-            type:
-              - number
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-      size:
-        type:
-          - number
-          - "null"
-    required:
-      - id
   file_tasks:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2774,6 +2688,31 @@ schemas:
           - string
           - "null"
       timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      sequence_id:
         type:
           - string
           - "null"
