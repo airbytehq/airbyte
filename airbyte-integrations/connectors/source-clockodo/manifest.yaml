@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -35,6 +35,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -50,8 +65,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/absences
           http_method: GET
-          request_parameters:
-            year: "{{ config['year'] }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -60,6 +73,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - absences
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['years'] }}"
+          cursor_field: year
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: year
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -83,6 +104,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - customers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -98,9 +134,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/entries
           http_method: GET
-          request_parameters:
-            time_since: "{{ config[\"start_time\"] }}"
-            time_until: "{{ config[\"end_time\"] }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -109,6 +142,38 @@ definitions:
             type: DpathExtractor
             field_path:
               - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: time_last_change
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: time_since
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: time_until
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -193,8 +258,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /nonbusinessdays
           http_method: GET
-          request_parameters:
-            year: "{{ config[\"year\"] }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -203,6 +266,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - nonbusinessdays
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.years }}"
+          cursor_field: year
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: year
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -249,6 +320,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - services
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: items_per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -331,8 +417,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /userreports
           http_method: GET
-          request_parameters:
-            year: "{{ config[\"year\"] }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -341,6 +425,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - userreports
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.years }}"
+          cursor_field: year
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: year
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -404,42 +496,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/customers_projects"
-    access_services:
-      type: DeclarativeStream
-      name: access_services
-      primary_key:
-        - user_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v2/users/{{ stream_partition.user_id }}/access/services
-          http_method: GET
-          request_headers:
-            X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: user_id
-              stream:
-                $ref: "#/definitions/streams/users"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - user_id
-              value: "{{ stream_partition.user_id }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/access_services"
     work_times:
       type: DeclarativeStream
       name: work_times
@@ -461,6 +517,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - work_time_days
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.paging.current_page | int + 1 }}"
+            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -498,7 +564,6 @@ streams:
   - $ref: "#/definitions/streams/user_reports"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/customers_projects"
-  - $ref: "#/definitions/streams/access_services"
   - $ref: "#/definitions/streams/work_times"
 
 spec:
@@ -510,9 +575,8 @@ spec:
       - api_key
       - email_address
       - external_application
-      - year
-      - start_time
-      - end_time
+      - years
+      - start_date
     properties:
       api_key:
         type: string
@@ -541,22 +605,17 @@ spec:
         order: 2
         title: External Application Header
         default: Airbyte
-      year:
-        type: integer
+      years:
+        type: array
+        description: 2024, 2025
+        title: Years
         order: 3
-        title: Year
-      start_time:
+      start_date:
         type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 4
-        title: Start Time
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-      end_time:
-        type: string
-        order: 5
-        title: End Time
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
@@ -577,135 +636,127 @@ metadata:
     user_reports: true
     users: true
     customers_projects: true
-    access_services: true
     work_times: true
   testedStreams:
     projects:
-      hasRecords: true
-      streamHash: c20ed7eae5fb167c882f3c6eb4a1d7cd55b2fd1b
+      streamHash: 5118bb02f9bab96765d8d050e22412bdd5d51e35
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     absences:
-      hasRecords: true
-      streamHash: 4d1bac0e109eb79525a88791182f00af535afe4b
+      streamHash: f26eb7e9a1605b995726ed13f6197e765acc385e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customers:
-      hasRecords: true
-      streamHash: 89614c50d9d9288eaf9803b9df86b2f4701d4e81
+      streamHash: 08ca930fb7cfb6c36a63fe1a37542795cbc05984
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     entries:
-      hasRecords: true
-      streamHash: 5a19c75b62024b3a57e6db5c485e55a725a0382f
+      streamHash: b4177032cf2a20851d3d07deb6c9a71fe3499645
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    holidays_carry:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    holidays_carry:
       streamHash: e48839eff131e148fe0fc088d169982751c78e81
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    holidays_quota:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    holidays_quota:
       streamHash: b9c95ec43672adfb723739044bb58a56dac3c908
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    lumpsum_services:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lumpsum_services:
       streamHash: 4a184ac9dbd17e470dfe6e1ad2f5de90756df6dc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     non_business_days:
-      hasRecords: true
-      streamHash: d6b2b9aab81fb5559cedeea33da21494c060b407
+      streamHash: a6fd505564d95facf53816c0cfba75f8f13c2ac9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    overtime_carry:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    overtime_carry:
       streamHash: b2d2f23a96f7597fb258c8bf39582870782437d5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     services:
-      hasRecords: true
-      streamHash: 9be06dd127740d50ed61b7668eb2b3467f50e015
+      streamHash: 0657be7ab387318a21947cb7388dceb662387251
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    surcharges:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    surcharges:
       streamHash: 4d54a3384127ccd4e306d3622476667b53906fe7
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    target_hours:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    target_hours:
       streamHash: d43471c2a05f4fdb9de873ed7c8665c752b16159
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    teams:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
       streamHash: 799dd4476020338c6f755be19a044b1216a72426
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     user_reports:
-      hasRecords: true
-      streamHash: 344b3eba48273e3cf8e76b8aa111ac55aaef1572
+      streamHash: 78993ea668dfeeab72f98a4a24d6875496825b84
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
-      streamHash: 27443691afdde08e4fa030a126c9d81c88483e44
+      streamHash: bce80801cf75761b9491c55a9f3eb211e6f92e1e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customers_projects:
-      hasRecords: true
-      streamHash: 31a8f205c197128dd7fc90fecc3a61fbaf3d3505
+      streamHash: 564b5039ce98dfcc33f4ec0c145ce940ca3aa9d8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    access_services:
       hasRecords: true
-      streamHash: 509f9d8d4361d6ee1f400565ebbf8aa893400f72
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     work_times:
-      hasRecords: true
-      streamHash: 50530cffc46c4ffbbcc2865f052e158105fb2a61
+      streamHash: b25e0d40c153790d8cb4ecc3ddfd707edcf3eb81
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://www.clockodo.com/en/api/
 
@@ -868,6 +919,10 @@ schemas:
           - "null"
       id:
         type: number
+      lumpsum:
+        type:
+          - number
+          - "null"
       lumpsum_services_amount:
         type:
           - number
@@ -905,9 +960,7 @@ schemas:
           - string
           - "null"
       time_last_change:
-        type:
-          - string
-          - "null"
+        type: string
       time_last_change_work_time:
         type:
           - string
@@ -926,6 +979,7 @@ schemas:
           - "null"
     required:
       - id
+      - time_last_change
   holidays_carry:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1386,6 +1440,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - number
+            - "null"
       active:
         type:
           - boolean
@@ -1402,11 +1460,19 @@ schemas:
         type:
           - boolean
           - "null"
+      creator:
+        type:
+          - number
+          - "null"
       default_holidays_count:
         type:
           - boolean
           - "null"
       default_target_hours:
+        type:
+          - boolean
+          - "null"
+      edit_lock_sync:
         type:
           - boolean
           - "null"
@@ -1444,9 +1510,21 @@ schemas:
         type:
           - string
           - "null"
+      weekend_friday:
+        type:
+          - boolean
+          - "null"
       weekstart_monday:
         type:
           - boolean
+          - "null"
+      work_time_edit_lock_days:
+        type:
+          - number
+          - "null"
+      worktime_regulation_id:
+        type:
+          - number
           - "null"
     required:
       - id
@@ -1464,22 +1542,12 @@ schemas:
           - boolean
           - "null"
       report:
-        type:
-          - boolean
-          - "null"
-      user_id:
-        type: number
-    required:
-      - user_id
-  access_services:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      add:
-        type:
-          - boolean
-          - "null"
+        anyOf:
+          - type: boolean
+          - type: object
+            properties:
+              "3797976":
+                type: boolean
       user_id:
         type: number
     required:
