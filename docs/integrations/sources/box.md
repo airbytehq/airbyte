@@ -24,14 +24,13 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 | collection_items | id | DefaultPaginator | ✅ |  ❌  |
 | sign_request | id | DefaultPaginator | ✅ |  ❌  |
 | admin_logs | event_id | DefaultPaginator | ✅ |  ❌  |
-| all_files_and_folders | id | DefaultPaginator | ✅ |  ❌  |
-| pending_collaborations |  | DefaultPaginator | ✅ |  ❌  |
+| files | id | DefaultPaginator | ✅ |  ❌  |
 | file_collaborations | id | DefaultPaginator | ✅ |  ❌  |
-| folder_collaborations | id | DefaultPaginator | ✅ |  ❌  |
 | file_comments | id | DefaultPaginator | ✅ |  ❌  |
-| recent_items | id | DefaultPaginator | ✅ |  ❌  |
-| search | id | DefaultPaginator | ✅ |  ❌  |
 | file_tasks | id | No pagination | ✅ |  ❌  |
+| folders | id | DefaultPaginator | ✅ |  ❌  |
+| folder_collaborations | id | DefaultPaginator | ✅ |  ❌  |
+| recent_items | id | DefaultPaginator | ✅ |  ❌  |
 | trashed_items | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 
