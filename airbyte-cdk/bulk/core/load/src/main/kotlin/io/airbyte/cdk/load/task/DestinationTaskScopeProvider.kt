@@ -42,7 +42,11 @@ interface InternalScope : ScopedTask
 
 interface ImplementorScope : ScopedTask
 
-interface InputScope : ScopedTask
+/**
+ * Some tasks should be immediately cancelled upon any failure (for example, reading from stdin, the
+ * every-15-minutes flush). Those tasks should be placed into the fail-fast scope.
+ */
+interface KillableScope : ScopedTask
 
 @Singleton
 @Secondary
@@ -71,14 +75,14 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
                 .asCoroutineDispatcher()
         )
 
-    private val inputScope = ControlScope("input", Job(), Dispatchers.IO)
+    private val failFastScope = ControlScope("input", Job(), Dispatchers.IO)
 
     override suspend fun launch(task: WrappedTask<ScopedTask>) {
         val scope =
             when (task.innerTask) {
                 is InternalScope -> internalScope
                 is ImplementorScope -> implementorScope
-                is InputScope -> inputScope
+                is KillableScope -> failFastScope
             }
         scope.scope.launch {
             var nJobs = scope.runningJobs.incrementAndGet()
@@ -120,8 +124,8 @@ class DestinationTaskScopeProvider(config: DestinationConfiguration) :
 
     override suspend fun kill() {
         log.info { "Killing task scopes" }
-        // Stop accepting input
-        inputScope.job.cancel()
+        // Terminate tasks which should be immediately terminated
+        failFastScope.job.cancel()
 
         // Give the implementor tasks a chance to fail gracefully
         withTimeoutOrNull(timeoutMs) {
