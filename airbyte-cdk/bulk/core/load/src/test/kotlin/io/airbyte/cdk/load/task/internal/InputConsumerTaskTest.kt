@@ -199,13 +199,12 @@ class InputConsumerTaskTest {
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
-
         Assertions.assertEquals(StreamRecordCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(1, streamComplete1.bytesReserved)
+        Assertions.assertEquals(10L, manager1.recordCount())
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
         Assertions.assertEquals(StreamRecordCompleteWrapped(0), streamComplete2.value)
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
-        Assertions.assertEquals(1, streamComplete1.bytesReserved)
-        Assertions.assertEquals(10L, manager1.recordCount())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
     }
