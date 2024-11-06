@@ -11,6 +11,10 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.DestinationFileStreamComplete
+import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
+import io.airbyte.cdk.load.message.DestinationFileWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
@@ -20,8 +24,11 @@ import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.Sized
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
+import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
+import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.MemoryManager
@@ -58,6 +65,9 @@ class InputConsumerTaskTest {
     @Inject
     lateinit var recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+    @Inject
+    lateinit var fileQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationFileWrapped>>
     @Inject lateinit var checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
     @Inject lateinit var syncManager: SyncManager
     @Inject lateinit var mockInputFlow: MockInputFlow
@@ -97,12 +107,33 @@ class InputConsumerTaskTest {
         )
     }
 
+    private val nullFileMessage = DestinationFile.AirbyteRecordMessageFile()
+
+    private fun makeFile(stream: DestinationStream, record: String): DestinationFile {
+        return DestinationFile(
+            stream = stream.descriptor,
+            emittedAtMs = 0,
+            serialized = record,
+            fileMessage = nullFileMessage,
+        )
+    }
+
     private fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
         return DestinationRecordStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
+    private fun makeFileStreamComplete(stream: DestinationStream): DestinationFileStreamComplete {
+        return DestinationFileStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+    }
+
     private fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
         return DestinationRecordStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+    }
+
+    private fun makeFileStreamIncomplete(
+        stream: DestinationStream
+    ): DestinationFileStreamIncomplete {
+        return DestinationFileStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
     private fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
@@ -143,6 +174,7 @@ class InputConsumerTaskTest {
         }
         mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1))
         mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream2))
+
         launch { task.execute() }
 
         val messages1 =
@@ -162,20 +194,69 @@ class InputConsumerTaskTest {
                     makeRecord(MockDestinationCatalogFactory.stream1, "test${it}")
                 )
             }
-        val streamComplete1: Reserved<DestinationRecordWrapped> =
-            queue1.consume().take(1).toList().first()
-        val streamComplete2: Reserved<DestinationRecordWrapped> =
-            queue2.consume().take(1).toList().first()
+        val streamComplete1: Reserved<out Sized> = queue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<out Sized> = queue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
-        Assertions.assertEquals(StreamRecordCompleteWrapped(10), streamComplete1.value)
-        Assertions.assertEquals(1, streamComplete1.bytesReserved)
-        Assertions.assertEquals(10L, manager1.recordCount())
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
 
+        Assertions.assertEquals(StreamRecordCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
         Assertions.assertEquals(StreamRecordCompleteWrapped(0), streamComplete2.value)
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
+        Assertions.assertEquals(1, streamComplete1.bytesReserved)
+        Assertions.assertEquals(10L, manager1.recordCount())
+        Assertions.assertEquals(0L, manager2.recordCount())
+        mockInputFlow.stop()
+    }
+
+    @Test
+    fun testSendFiles() = runTest {
+        val fileQueue1 = fileQueueSupplier.get(MockDestinationCatalogFactory.stream1.descriptor)
+        val fileQueue2 = fileQueueSupplier.get(MockDestinationCatalogFactory.stream2.descriptor)
+
+        val manager1 =
+            syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
+        val manager2 =
+            syncManager.getStreamManager(MockDestinationCatalogFactory.stream2.descriptor)
+
+        (0 until 10).forEach {
+            mockInputFlow.addMessage(
+                makeFile(MockDestinationCatalogFactory.stream1, "test${it}"),
+                it * 2L
+            )
+        }
+        mockInputFlow.addMessage(makeFileStreamComplete(MockDestinationCatalogFactory.stream1))
+        mockInputFlow.addMessage(makeFileStreamComplete(MockDestinationCatalogFactory.stream2))
+        launch { task.execute() }
+
+        val messages1 =
+            fileQueue1
+                .consume()
+                .takeUntilInclusive { (it.value as StreamFileWrapped).file.serialized == "test9" }
+                .toList()
+
+        Assertions.assertEquals(10, messages1.size)
+        val expectedRecords =
+            (0 until 10).map {
+                StreamFileWrapped(
+                    it.toLong(),
+                    it * 2L,
+                    makeFile(MockDestinationCatalogFactory.stream1, "test${it}")
+                )
+            }
+        val streamComplete1: Reserved<out Sized> = fileQueue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<out Sized> = fileQueue2.consume().take(1).toList().first()
+
+        Assertions.assertEquals(expectedRecords, messages1.map { it.value })
+        Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
+        Assertions.assertEquals(StreamFileCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(emptyList<DestinationFileWrapped>(), fileQueue1.consume().toList())
+        Assertions.assertEquals(StreamFileCompleteWrapped(0), streamComplete2.value)
+        Assertions.assertEquals(emptyList<DestinationFileWrapped>(), fileQueue2.consume().toList())
+
+        Assertions.assertEquals(1, streamComplete1.bytesReserved)
+        Assertions.assertEquals(10L, manager1.recordCount())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
     }
@@ -322,6 +403,17 @@ class InputConsumerTaskTest {
     fun testStreamIncompleteThrows() = runTest {
         mockInputFlow.addMessage(makeRecord(MockDestinationCatalogFactory.stream1, "test"), 1L)
         mockInputFlow.addMessage(makeStreamIncomplete(MockDestinationCatalogFactory.stream1), 0L)
+        CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
+        mockInputFlow.stop()
+    }
+
+    @Test
+    fun testFileStreamIncompleteThrows() = runTest {
+        mockInputFlow.addMessage(makeFile(MockDestinationCatalogFactory.stream1, "test"), 1L)
+        mockInputFlow.addMessage(
+            makeFileStreamIncomplete(MockDestinationCatalogFactory.stream1),
+            0L
+        )
         CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
         mockInputFlow.stop()
     }

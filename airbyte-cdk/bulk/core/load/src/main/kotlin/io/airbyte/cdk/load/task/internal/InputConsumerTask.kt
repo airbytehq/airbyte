@@ -101,7 +101,7 @@ class DefaultInputConsumerTask(
                 val wrapped =
                     StreamFileWrapped(
                         index = manager.countRecordIn(),
-                        sizeBytes = message.fileMessage.bytes ?: 0,
+                        sizeBytes = sizeBytes,
                         file = message
                     )
                 fileQueue.publish(reserved.replace(wrapped))

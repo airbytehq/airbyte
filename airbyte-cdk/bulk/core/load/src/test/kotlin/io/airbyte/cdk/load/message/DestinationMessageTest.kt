@@ -114,10 +114,11 @@ class DestinationMessageTest {
                 )
 
         val parsedMessage =
-            factory(false).fromAirbyteMessage(
-                inputMessage,
-                Jsons.serialize(inputMessage),
-            ) as GlobalCheckpoint
+            factory(false)
+                .fromAirbyteMessage(
+                    inputMessage,
+                    Jsons.serialize(inputMessage),
+                ) as GlobalCheckpoint
 
         Assertions.assertEquals(
             inputMessage.also {
@@ -202,56 +203,56 @@ class DestinationMessageTest {
         @JvmStatic
         fun roundTrippableFileMessages(): List<Arguments> =
             listOf(
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage()
-                            .withStream("name")
-                            .withNamespace("namespace")
-                            .withEmittedAt(1234)
-                            .withAdditionalProperty("file_url", "file://foo/bar")
-                            .withAdditionalProperty("bytes", 9001L)
-                            .withAdditionalProperty("file_relative_path", "foo/bar")
-                            .withAdditionalProperty("modified", 123L)
-                            .withAdditionalProperty("source_file_url", "file://source/foo/bar")
-                    ),
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withEmittedAt(1234.0)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    // Intentionally no "reasons" here - destinations never
-                                    // inspect that
-                                    // field, so it's not round-trippable
-                                    .withStreamDescriptor(descriptor.asProtocolObject())
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                            .COMPLETE
-                                    )
-                            )
-                    ),
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withEmittedAt(1234.0)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    // Intentionally no "reasons" here - destinations never
-                                    // inspect that
-                                    // field, so it's not round-trippable
-                                    .withStreamDescriptor(descriptor.asProtocolObject())
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                            .INCOMPLETE
-                                    )
-                            )
-                    ),
-            )
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            AirbyteRecordMessage()
+                                .withStream("name")
+                                .withNamespace("namespace")
+                                .withEmittedAt(1234)
+                                .withAdditionalProperty("file_url", "file://foo/bar")
+                                .withAdditionalProperty("bytes", 9001L)
+                                .withAdditionalProperty("file_relative_path", "foo/bar")
+                                .withAdditionalProperty("modified", 123L)
+                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .COMPLETE
+                                        )
+                                )
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .INCOMPLETE
+                                        )
+                                )
+                        ),
+                )
                 .map { Arguments.of(it) }
     }
 }

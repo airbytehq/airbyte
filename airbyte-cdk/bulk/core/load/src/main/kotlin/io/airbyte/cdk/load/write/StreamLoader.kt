@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamIncompleteResult
