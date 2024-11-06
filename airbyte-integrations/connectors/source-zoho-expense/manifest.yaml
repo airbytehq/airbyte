@@ -391,7 +391,7 @@ spec:
         name: domain
         order: 0
         title: Data Center
-        default: in
+        default: com
       client_id:
         type: string
         name: client_id
