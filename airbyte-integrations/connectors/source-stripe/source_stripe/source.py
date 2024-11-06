@@ -483,7 +483,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
-            UpdatedCursorIncrementalStripeLazySubStream(
+            UpdatedCursorIncrementalStripeSubStream(
                 name="customer_balance_transactions",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
                 parent=self.customers(**args),
