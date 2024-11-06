@@ -5,9 +5,8 @@
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `data_center` | `string` | Data Center. The data center where the Bigin account's resources are hosted | com |
 | `client_id` | `string` | OAuth Client ID.  |  |
-| `data_center` | `string` | Data Center. The data center where the Bigin account&#39;s resources are hosted | in |
-| `module_name` | `string` | Module Name.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
 
