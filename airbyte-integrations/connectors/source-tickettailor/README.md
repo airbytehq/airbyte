@@ -1,7 +1,7 @@
 # TicketTailor
 This directory contains the manifest-only connector for `source-tickettailor`.
 
-Integrate seamlessly with Drip using this Airbyte connector, enabling smooth data sync for all your email marketing needs. Effortlessly connect and automate data flows to optimize your marketing strategies with ease.
+The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seamless extraction of key event data, including details on events, products, vouchers, discounts, check-ins, issued tickets, orders, and waitlists. This integration allows businesses to analyze ticket sales, attendance, and customer interactions, streamlining event management insights.
 
 ## Usage
 There are multiple ways to use this connector:
