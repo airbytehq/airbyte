@@ -7,7 +7,7 @@ from unittest import TestCase
 import pendulum
 import requests_mock
 from airbyte_cdk.models import Level as LogLevel
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteStateBlob
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher
 from source_amazon_ads.streams.report_streams import brands_report, display_report, products_report
 
@@ -211,6 +211,7 @@ class TestDisplayReportStreams(TestCase):
             )
 
         output = read_stream("sponsored_brands_v3_report_stream", SyncMode.full_refresh, self._config)
+        assert output.most_recent_state.stream_state ==  AirbyteStateBlob({"1":{'reportDate': '2024-11-06'}})
         assert len(output.records) == 1
 
     @HttpMocker()
