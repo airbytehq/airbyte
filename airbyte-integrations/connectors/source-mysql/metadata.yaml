@@ -9,20 +9,23 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.9.0
+  dockerImageTag: 3.9.0-rc.1
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql-v2
   icon: mysql.svg
   license: ELv2
-  name: Mysqlv2 Source
+  name: Mysql Source
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   supportLevel: community
   tags:
     - language:java
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
