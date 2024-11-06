@@ -400,6 +400,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         end_date = self.config.get("date_ranges_end_date")
         if end_date is not None:
+            end_date = utils.string_to_date(end_date, DATE_FORMAT)
             end_date = max(end_date, today)
         else:
             end_date = today
