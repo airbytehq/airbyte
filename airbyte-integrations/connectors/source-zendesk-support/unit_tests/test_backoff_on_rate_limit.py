@@ -7,7 +7,6 @@ from typing import Dict, Optional
 
 import pytest
 import requests
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
 
