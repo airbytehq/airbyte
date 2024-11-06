@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -14,23 +14,49 @@ check:
 
 definitions:
   streams:
-    events:
+    events_series:
       type: DeclarativeStream
-      name: events
+      name: events_series
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_series
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            inject_into: request_parameter
             field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('data', [])[-1].get('id') if response.get('data')
-              else None }}
-            stop_condition: "{{ not response.get('data') }}"
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events_series"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /event_series/{{ stream_partition.event_series_id }}/events
@@ -41,67 +67,40 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/events_series"
               parent_key: id
               partition_field: event_series_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/events_series"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
-    orders:
-      type: DeclarativeStream
-      name: orders
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: starting_after
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('links', {}).get('next') }}"
-            stop_condition: "{{ response.get('links', {}).get('next') is none }}"
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /orders
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/orders"
     products:
       type: DeclarativeStream
       name: products
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /products
@@ -112,8 +111,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -121,19 +133,10 @@ definitions:
     vouchers:
       type: DeclarativeStream
       name: vouchers
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /vouchers
@@ -144,60 +147,32 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/vouchers"
-    check_ins:
-      type: DeclarativeStream
-      name: check_ins
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /check_ins
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/check_ins"
     discounts:
       type: DeclarativeStream
       name: discounts
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /discounts
@@ -208,29 +183,140 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/discounts"
-    waitlists:
-      type: DeclarativeStream
-      name: waitlists
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
+            inject_into: request_parameter
             field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('data', [])[-1].get('id') if response.get('data')
-              else None }}
-            stop_condition: "{{ not response.get('data') }}"
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discounts"
+    check_ins:
+      type: DeclarativeStream
+      name: check_ins
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /check_ins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/check_ins"
+    issued_tickets:
+      type: DeclarativeStream
+      name: issued_tickets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /issued_tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issued_tickets"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    waitlists:
+      type: DeclarativeStream
+      name: waitlists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
@@ -243,100 +329,40 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/events_series"
               parent_key: id
               partition_field: event_series_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/events_series"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/waitlists"
-    events_series:
-      type: DeclarativeStream
-      name: events_series
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /event_series
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/events_series"
-    issued_tickets:
-      type: DeclarativeStream
-      name: issued_tickets
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /issued_tickets
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/issued_tickets"
     vouchers_codes:
       type: DeclarativeStream
       name: vouchers_codes
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /vouchers/{{ stream_partition.voucher_id }}/codes
@@ -347,16 +373,29 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/vouchers"
               parent_key: id
               partition_field: voucher_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/vouchers"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -366,7 +405,6 @@ definitions:
     url_base: https://api.tickettailor.com/v1
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
       username: "{{ config[\"api_key\"] }}"
 
 streams:
@@ -399,104 +437,313 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://developers.tickettailor.com/
-  testedStreams:
-    events:
-      hasRecords: true
-      streamHash: 6c56fd62ff7a7f72c8b6ab4f80b0d07b07737e04
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    orders:
-      hasRecords: true
-      streamHash: 47c518efd12dd29674cc43e50f53caeeab181154
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    products:
-      hasRecords: true
-      streamHash: 20219e1f455e1736ae099ecd16a94371b1427b6d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    vouchers:
-      hasRecords: true
-      streamHash: 6e643d098ff6cdaae64876743e41b88c7c6428fa
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    check_ins:
-      hasRecords: true
-      streamHash: f8fed191c4cbe37b14181a4bf9e91972c482196d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    discounts:
-      hasRecords: true
-      streamHash: 2fe9c8b77c4c1f6236c9a31e6c37a6115fc39a43
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    waitlists:
-      hasRecords: true
-      streamHash: 21898e09ab921204d1c0109e0a561dd78ff6c6a3
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    events_series:
-      hasRecords: true
-      streamHash: 1f8a6324744e44804ae3f8e3ad0d9c6634c9c968
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    issued_tickets:
-      hasRecords: true
-      streamHash: 006b7aeded37845e23733fe5eeebfc40cc408a1f
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    vouchers_codes:
-      hasRecords: true
-      streamHash: 367304ffe5ce7f848c186dabdd8b837e4f636958
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+  autoImportSchema:
+    events_series: false
+    events: false
+    products: true
+    vouchers: true
+    discounts: true
+    check_ins: true
+    issued_tickets: false
+    orders: true
+    waitlists: true
+    vouchers_codes: true
   yamlComponents:
     global:
       - authenticator
-  autoImportSchema:
-    events: false
-    orders: false
-    products: false
-    vouchers: false
-    check_ins: false
-    discounts: false
-    waitlists: false
-    events_series: false
-    issued_tickets: false
-    vouchers_codes: false
+  testedStreams:
+    events_series:
+      streamHash: 8edc6149c41ac5f309b997d506e5a331bb215a65
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 4c7e6383c411206fda1cd6fb8b3f1907af4ac154
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 5c343c5681138d3959a81f5150fd053edc381c83
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    vouchers:
+      streamHash: 46718e9c71f7dcd6d5b5c9e8de5fcf0a76bd14a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    discounts:
+      streamHash: 00b8b496bee85bb5d2c21f3879830d73b0ce5d01
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    check_ins:
+      streamHash: b77c3fb88b9fb6929fae8929e7cb269e50cf4b5e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    issued_tickets:
+      streamHash: 1790e3cd3a801aeabd8fe92cbeefca72505ee4a3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    orders:
+      streamHash: 22469a462b78e7c6bec358fbda0b953ee34c61e2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    waitlists:
+      streamHash: a6980ff5fc3e0602c1f89e98149d3c066a74e5ac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    vouchers_codes:
+      hasRecords: true
+      streamHash: b20f977fbefd70df0ded312917929285c04800b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.tickettailor.com/
 
 schemas:
+  events_series:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      add_ons:
+        type:
+          - array
+          - "null"
+      bundles:
+        type:
+          - array
+          - "null"
+      call_to_action:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      default_ticket_groups:
+        type:
+          - array
+          - "null"
+      default_ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          header:
+            type:
+              - string
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      next_occurrence_date:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      object:
+        type:
+          - string
+          - "null"
+      online_event:
+        type:
+          - string
+          - "null"
+      payment_methods:
+        type:
+          - array
+          - "null"
+      private:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      total_occurrences:
+        type:
+          - number
+          - "null"
+      upcoming_occurrences:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - object
+          - "null"
+        properties:
+          postal_code:
+            type:
+              - string
+              - "null"
+      voucher_ids:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+    additionalProperties: true
   events:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
     properties:
-      id:
-        type: string
+      bundles:
+        type:
+          - array
+          - "null"
       chk:
+        type:
+          - string
+          - "null"
+      currency:
         type:
           - string
           - "null"
@@ -505,23 +752,7 @@ schemas:
           - object
           - "null"
         properties:
-          iso:
-            type:
-              - string
-              - "null"
           date:
-            type:
-              - string
-              - "null"
-          time:
-            type:
-              - string
-              - "null"
-          unix:
-            type:
-              - number
-              - "null"
-          timezone:
             type:
               - string
               - "null"
@@ -529,58 +760,72 @@ schemas:
             type:
               - string
               - "null"
-      start:
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      event_series_id:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          iso:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          time:
-            type:
-              - string
-              - "null"
-          unix:
-            type:
-              - number
-              - "null"
-          timezone:
-            type:
-              - string
-              - "null"
-          formatted:
-            type:
-              - string
-              - "null"
       hidden:
         type:
           - string
           - "null"
+      id:
+        type: string
       object:
         type:
           - string
-          - "null"
-      bundles:
-        type:
-          - array
           - "null"
       revenue:
         type:
           - number
           - "null"
-      currency:
+      start:
         type:
-          - string
+          - object
           - "null"
-      unavailable:
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      ticket_groups:
         type:
-          - string
+          - array
           - "null"
       ticket_types:
         type:
@@ -595,39 +840,15 @@ schemas:
               type:
                 - string
                 - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            price:
-              type:
-                - number
-                - "null"
-            object:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-            quantity:
-              type:
-                - number
-                - "null"
-            sort_order:
-              type:
-                - number
-                - "null"
             booking_fee:
               type:
                 - number
                 - "null"
             has_overrides:
+              type:
+                - string
+                - "null"
+            id:
               type:
                 - string
                 - "null"
@@ -639,11 +860,23 @@ schemas:
               type:
                 - number
                 - "null"
-            quantity_held:
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            price:
               type:
                 - number
                 - "null"
-            quantity_total:
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_held:
               type:
                 - number
                 - "null"
@@ -651,14 +884,18 @@ schemas:
               type:
                 - number
                 - "null"
-      ticket_groups:
-        type:
-          - array
-          - "null"
-      event_series_id:
-        type:
-          - string
-          - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
       tickets_available:
         type:
           - string
@@ -667,409 +904,209 @@ schemas:
         type:
           - number
           - "null"
-    additionalProperties: true
-  orders:
-    type: object
-    $schema: http://json-schema.org/schema#
+      unavailable:
+        type:
+          - string
+          - "null"
     required:
       - id
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      fulfilment_type:
+        type:
+          - string
+          - "null"
       id:
         type: string
-      tax:
+      linked_to_all_event_series:
         type:
-          - number
+          - string
           - "null"
-      total:
+      name:
         type:
-          - number
+          - string
           - "null"
       object:
         type:
           - string
+          - "null"
+      price:
+        type:
+          - number
           - "null"
       status:
         type:
           - string
           - "null"
-      txn_id:
-        type:
-          - string
-          - "null"
-      currency:
+      updated_at:
         type:
           - object
           - "null"
         properties:
-          code:
+          date:
             type:
               - string
               - "null"
-          base_multiplier:
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
             type:
               - number
               - "null"
-      subtotal:
-        type:
-          - number
-          - "null"
-      meta_data:
-        type:
-          - array
-          - "null"
-      created_at:
-        type:
-          - number
-          - "null"
-      line_items:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            description:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            total:
-              type:
-                - number
-                - "null"
-            value:
-              type:
-                - number
-                - "null"
-            object:
-              type:
-                - string
-                - "null"
-            item_id:
-              type:
-                - string
-                - "null"
-            quantity:
-              type:
-                - number
-                - "null"
-            booking_fee:
-              type:
-                - number
-                - "null"
-      total_paid:
-        type:
-          - number
-          - "null"
-      buyer_details:
-        type:
-          - object
-          - "null"
-        properties:
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          address:
-            type:
-              - object
-              - "null"
-            properties:
-              address_1:
-                type:
-                  - string
-                  - "null"
-              address_2:
-                type:
-                  - string
-                  - "null"
-              address_3:
-                type:
-                  - string
-                  - "null"
-              postal_code:
-                type:
-                  - string
-                  - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          custom_questions:
-            type:
-              - array
-              - "null"
-      event_summary:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          venue:
-            type:
-              - object
-              - "null"
-            properties:
-              postal_code:
-                type:
-                  - string
-                  - "null"
-          end_date:
-            type:
-              - object
-              - "null"
-            properties:
-              iso:
-                type:
-                  - string
-                  - "null"
-              date:
-                type:
-                  - string
-                  - "null"
-              time:
-                type:
-                  - string
-                  - "null"
-              unix:
-                type:
-                  - number
-                  - "null"
-              timezone:
-                type:
-                  - string
-                  - "null"
-              formatted:
-                type:
-                  - string
-                  - "null"
-          event_id:
-            type:
-              - string
-              - "null"
-          start_date:
-            type:
-              - object
-              - "null"
-            properties:
-              iso:
-                type:
-                  - string
-                  - "null"
-              date:
-                type:
-                  - string
-                  - "null"
-              time:
-                type:
-                  - string
-                  - "null"
-              unix:
-                type:
-                  - number
-                  - "null"
-              timezone:
-                type:
-                  - string
-                  - "null"
-              formatted:
-                type:
-                  - string
-                  - "null"
-          event_series_id:
-            type:
-              - string
-              - "null"
-      refund_amount:
-        type:
-          - number
-          - "null"
-      tax_treatment:
-        type:
-          - string
-          - "null"
-      issued_tickets:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            description:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            email:
-              type:
-                - string
-                - "null"
-            object:
-              type:
-                - string
-                - "null"
-            source:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-            barcode:
-              type:
-                - string
-                - "null"
-            event_id:
-              type:
-                - string
-                - "null"
-            order_id:
-              type:
-                - string
-                - "null"
-            checked_in:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - number
-                - "null"
-            updated_at:
-              type:
-                - number
-                - "null"
-            barcode_url:
-              type:
-                - string
-                - "null"
-            qr_code_url:
-              type:
-                - string
-                - "null"
-            ticket_type_id:
-              type:
-                - string
-                - "null"
-            event_series_id:
-              type:
-                - string
-                - "null"
-            custom_questions:
-              type:
-                - array
-                - "null"
-      payment_method:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-      credited_out_amount:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  products:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
-    additionalProperties: true
+    required:
+      - id
   vouchers:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
-    additionalProperties: true
-  check_ins:
-    type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      object:
-        type:
-          - string
-          - "null"
-      event_id:
-        type:
-          - string
-          - "null"
-      quantity:
-        type:
-          - number
-          - "null"
-      created_at:
-        type:
-          - number
-          - "null"
-      check_in_at:
-        type:
-          - number
-          - "null"
-      event_series_id:
-        type:
-          - string
-          - "null"
-      issued_ticket_id:
-        type:
-          - string
-          - "null"
     additionalProperties: true
-  discounts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
     properties:
       type:
         type:
           - string
           - "null"
+      available_codes:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      event_series_ids:
+        type:
+          - array
+          - "null"
+      expiry:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
       id:
         type: string
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      partial_redemption:
+        type:
+          - string
+          - "null"
+      total_codes:
+        type:
+          - number
+          - "null"
+      usable_on_any_event:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  discounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      booking_fee_amount:
+        type:
+          - number
+          - "null"
       code:
         type:
           - string
           - "null"
+      face_value_amount:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
       name:
         type:
           - string
@@ -1094,28 +1131,75 @@ schemas:
           type:
             - string
             - "null"
-      face_value_percentage:
-        type:
-          - number
-          - "null"
-      booking_fee_percentage:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  waitlists:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - id
+  check_ins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
+      check_in_at:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
       id:
         type: string
-      email:
+      issued_ticket_id:
         type:
           - string
           - "null"
       object:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  issued_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      barcode:
+        type:
+          - string
+          - "null"
+      barcode_url:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      custom_questions:
+        type:
+          - array
+          - "null"
+      email:
         type:
           - string
           - "null"
@@ -1123,75 +1207,37 @@ schemas:
         type:
           - string
           - "null"
-      created_at:
+      event_series_id:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          iso:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          time:
-            type:
-              - string
-              - "null"
-          unix:
-            type:
-              - number
-              - "null"
-          timezone:
-            type:
-              - string
-              - "null"
-          formatted:
-            type:
-              - string
-              - "null"
-    additionalProperties: true
-  events_series:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
       id:
         type: string
-      url:
+      last_name:
         type:
           - string
           - "null"
-      name:
-        type:
-          - string
-          - "null"
-      venue:
-        type:
-          - object
-          - "null"
-        properties:
-          postal_code:
-            type:
-              - string
-              - "null"
-      images:
-        type:
-          - object
-          - "null"
-        properties:
-          header:
-            type:
-              - string
-              - "null"
-          thumbnail:
-            type:
-              - string
-              - "null"
       object:
+        type:
+          - string
+          - "null"
+      order_id:
+        type:
+          - string
+          - "null"
+      qr_code_url:
+        type:
+          - string
+          - "null"
+      source:
         type:
           - string
           - "null"
@@ -1199,55 +1245,260 @@ schemas:
         type:
           - string
           - "null"
-      add_ons:
-        type:
-          - array
-          - "null"
-      bundles:
-        type:
-          - array
-          - "null"
-      private:
+      ticket_type_id:
         type:
           - string
           - "null"
-      revenue:
+      updated_at:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      buyer_details:
+        type:
+          - object
+          - "null"
+        properties:
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              address_1:
+                type:
+                  - string
+                  - "null"
+              address_2:
+                type:
+                  - string
+                  - "null"
+              address_3:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+          custom_questions:
+            type:
+              - array
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      credited_out_amount:
         type:
           - number
           - "null"
       currency:
         type:
-          - string
+          - object
           - "null"
-      timezone:
+        properties:
+          base_multiplier:
+            type:
+              - number
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+      event_summary:
         type:
-          - string
+          - object
           - "null"
-      created_at:
-        type:
-          - number
-          - "null"
-      voucher_ids:
+        properties:
+          end_date:
+            type:
+              - object
+              - "null"
+            properties:
+              date:
+                type:
+                  - string
+                  - "null"
+              formatted:
+                type:
+                  - string
+                  - "null"
+              iso:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - string
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              unix:
+                type:
+                  - number
+                  - "null"
+          event_id:
+            type:
+              - string
+              - "null"
+          event_series_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - object
+              - "null"
+            properties:
+              date:
+                type:
+                  - string
+                  - "null"
+              formatted:
+                type:
+                  - string
+                  - "null"
+              iso:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - string
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              unix:
+                type:
+                  - number
+                  - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              postal_code:
+                type:
+                  - string
+                  - "null"
+      id:
+        type: string
+      issued_tickets:
         type:
           - array
           - "null"
-      online_event:
-        type:
-          - string
-          - "null"
-      call_to_action:
-        type:
-          - string
-          - "null"
-      payment_methods:
-        type:
-          - array
-          - "null"
-      total_occurrences:
-        type:
-          - number
-          - "null"
-      default_ticket_types:
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            barcode:
+              type:
+                - string
+                - "null"
+            barcode_url:
+              type:
+                - string
+                - "null"
+            checked_in:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            custom_questions:
+              type:
+                - array
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            event_id:
+              type:
+                - string
+                - "null"
+            event_series_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            order_id:
+              type:
+                - string
+                - "null"
+            qr_code_url:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            ticket_type_id:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
+      line_items:
         type:
           - array
           - "null"
@@ -1260,23 +1511,23 @@ schemas:
               type:
                 - string
                 - "null"
+            description:
+              type:
+                - string
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
             id:
               type:
                 - string
                 - "null"
-            name:
+            item_id:
               type:
                 - string
-                - "null"
-            price:
-              type:
-                - number
                 - "null"
             object:
-              type:
-                - string
-                - "null"
-            status:
               type:
                 - string
                 - "null"
@@ -1284,60 +1535,76 @@ schemas:
               type:
                 - number
                 - "null"
-            sort_order:
+            total:
               type:
                 - number
                 - "null"
-            booking_fee:
+            value:
               type:
                 - number
                 - "null"
-            has_overrides:
-              type:
-                - string
-                - "null"
-            max_per_order:
-              type:
-                - number
-                - "null"
-            min_per_order:
-              type:
-                - number
-                - "null"
-            quantity_held:
-              type:
-                - number
-                - "null"
-            quantity_total:
-              type:
-                - number
-                - "null"
-            quantity_issued:
-              type:
-                - number
-                - "null"
-      next_occurrence_date:
+      meta_data:
+        type:
+          - array
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      payment_method:
         type:
           - object
           - "null"
         properties:
-          iso:
+          type:
             type:
               - string
               - "null"
+      refund_amount:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      tax:
+        type:
+          - number
+          - "null"
+      tax_treatment:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      total_paid:
+        type:
+          - number
+          - "null"
+      txn_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  waitlists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
           date:
-            type:
-              - string
-              - "null"
-          time:
-            type:
-              - string
-              - "null"
-          unix:
-            type:
-              - number
-              - "null"
-          timezone:
             type:
               - string
               - "null"
@@ -1345,48 +1612,23 @@ schemas:
             type:
               - string
               - "null"
-      total_issued_tickets:
-        type:
-          - number
-          - "null"
-      upcoming_occurrences:
-        type:
-          - number
-          - "null"
-      default_ticket_groups:
-        type:
-          - array
-          - "null"
-    additionalProperties: true
-  issued_tickets:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
       email:
-        type:
-          - string
-          - "null"
-      object:
-        type:
-          - string
-          - "null"
-      source:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      barcode:
         type:
           - string
           - "null"
@@ -1394,93 +1636,29 @@ schemas:
         type:
           - string
           - "null"
-      order_id:
+      id:
+        type: string
+      object:
         type:
           - string
           - "null"
-      full_name:
-        type:
-          - string
-          - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      checked_in:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - number
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - number
-          - "null"
-      barcode_url:
-        type:
-          - string
-          - "null"
-      qr_code_url:
-        type:
-          - string
-          - "null"
-      ticket_type_id:
-        type:
-          - string
-          - "null"
-      event_series_id:
-        type:
-          - string
-          - "null"
-      custom_questions:
-        type:
-          - array
-          - "null"
-    additionalProperties: true
+    required:
+      - id
   vouchers_codes:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
       code:
         type:
           - string
-          - "null"
-      value:
-        type:
-          - number
           - "null"
       expiry:
         type:
           - object
           - "null"
         properties:
-          iso:
-            type:
-              - string
-              - "null"
           date:
-            type:
-              - string
-              - "null"
-          time:
-            type:
-              - string
-              - "null"
-          unix:
-            type:
-              - number
-              - "null"
-          timezone:
             type:
               - string
               - "null"
@@ -1488,12 +1666,35 @@ schemas:
             type:
               - string
               - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
       object:
         type:
           - string
+          - "null"
+      value:
+        type:
+          - number
           - "null"
       voucher_id:
         type:
           - string
           - "null"
-    additionalProperties: true
+    required:
+      - id
