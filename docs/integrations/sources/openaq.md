@@ -9,48 +9,27 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `countriesids` | `string` | CountriesIds. The list of IDs of countries (comma separated) you need the data for | 79,155,9 |
+| `country_ids` | `array` | Countries. The list of IDs of countries (comma separated) you need the data for, check more: https://docs.openaq.org/resources/countries |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Instruments | id | DefaultPaginator | ✅ |  ❌  |
-| Instrument |  | No pagination | ✅ |  ❌  |
-| Manufacturers | id | DefaultPaginator | ✅ |  ❌  |
-| Manufacturer | id | No pagination | ✅ |  ❌  |
-| Manufacturer Instruments | id | No pagination | ✅ |  ❌  |
-| Locations | id | DefaultPaginator | ✅ |  ❌  |
-| Location | id | No pagination | ✅ |  ❌  |
-| Licenses |  | DefaultPaginator | ✅ |  ❌  |
-| License Instrument | id | No pagination | ✅ |  ❌  |
-| Parameters | id | DefaultPaginator | ✅ |  ❌  |
-| Parameter |  | No pagination | ✅ |  ❌  |
-| Countries | id | DefaultPaginator | ✅ |  ❌  |
-| Country |  | No pagination | ✅ |  ❌  |
-| Latest Parameters |  | No pagination | ✅ |  ❌  |
-| Sensors | id | No pagination | ✅ |  ❌  |
-| Sensor | id | No pagination | ✅ |  ❌  |
-| Providers | id | DefaultPaginator | ✅ |  ❌  |
-| Provider | id | No pagination | ✅ |  ❌  |
-| Owners | id | DefaultPaginator | ✅ |  ❌  |
-| Owner | id | No pagination | ✅ |  ❌  |
-| Location’s Latest Measurement |  | No pagination | ✅ |  ❌  |
-| Measurements |  | DefaultPaginator | ✅ |  ❌  |
-| Measurements Aggregated To Day |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated To Year |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Day to Year |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Days to Month |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Day to Month of Year |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Day to Day Of Week |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hour To Month of Year |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hour To Day Of Week |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hour To Hour of Day |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hour To Year |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hours to Monthly |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated From Hours to Daily |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated To Hour |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated To Daily |  | No pagination | ✅ |  ❌  |
-| Measurements Aggregated To Hourly |  | No pagination | ✅ |  ❌  |
+| instruments | id | DefaultPaginator | ✅ |  ❌  |
+| manufacturers | id | DefaultPaginator | ✅ |  ❌  |
+| manufacturer_instruments | id | No pagination | ✅ |  ❌  |
+| locations | id | DefaultPaginator | ✅ |  ❌  |
+| licenses |  | DefaultPaginator | ✅ |  ❌  |
+| license_instrument | id | No pagination | ✅ |  ❌  |
+| parameters | id | DefaultPaginator | ✅ |  ❌  |
+| countries | id | DefaultPaginator | ✅ |  ❌  |
+| latest_parameters |  | No pagination | ✅ |  ❌  |
+| sensors | id | DefaultPaginator | ✅ |  ❌  |
+| providers | id | DefaultPaginator | ✅ |  ❌  |
+| owners | id | DefaultPaginator | ✅ |  ❌  |
+| location_latest_measure |  | No pagination | ✅ |  ❌  |
+| sensor_measurements |  | DefaultPaginator | ✅ |  ❌  |
+| measurements_daily |  | DefaultPaginator | ✅ |  ❌  |
+| measurements_yearly |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -59,6 +38,6 @@ Docs : https://docs.openaq.org/using-the-api/quick-start
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-19 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-06 | | Initial release by [@marcosmarxm](https://github.com/marcosmarxm) via Connector Builder |
 
 </details>
