@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -123,3 +123,12 @@ class AbstractFileBasedStreamReader(ABC):
             )
             return use_file_transfer
         return False
+
+    @abstractmethod
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, Any]:
+        """
+        This is required for connectors that will support writing to
+        files. It will handle the logic to download,get,read,acquire or
+        whatever is more efficient to get a file from the source.
+        """
+        ...
