@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import datetime
 import json
 import logging
@@ -354,10 +355,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+        if stream_slice and "startDate" in stream_slice and "endDate" in stream_slice:
+            date_range = {"startDate": stream_slice["startDate"], "endDate": stream_slice["endDate"]}
+        else:
+            date_range = stream_slice
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
-            "dateRanges": [stream_slice],
+            "dateRanges": [date_range],
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
@@ -414,7 +419,6 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
-
         # remove offset and limit fields according to their absence in
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
         payload.pop("offset", None)

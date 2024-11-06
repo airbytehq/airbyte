@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.task.internal
 
 import com.google.common.collect.Range
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.LocalFile
-import io.airbyte.cdk.load.file.TempFileProvider
+import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
@@ -22,8 +20,11 @@ import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.util.takeUntilInclusive
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
+import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.nio.file.Path
+import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
 
@@ -36,8 +37,7 @@ interface SpillToDiskTask : StreamLevel, InternalScope
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
 class DefaultSpillToDiskTask(
-    private val config: DestinationConfiguration,
-    private val tmpFileProvider: TempFileProvider,
+    private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
@@ -53,22 +53,17 @@ class DefaultSpillToDiskTask(
     )
 
     override suspend fun execute() {
-        val tmpFile =
-            tmpFileProvider.createTempFile(
-                config.tmpFileDirectory,
-                config.firstStageTmpFilePrefix,
-                config.firstStageTmpFileSuffix
-            )
+        val tmpFile = spillFileProvider.createTempFile()
         val result =
-            tmpFile.toFileWriter().use { writer ->
+            tmpFile.outputStream().use { outputStream ->
                 queue
                     .consume()
                     .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordWrapped -> {
-                                    writer.write(wrapped.record.serialized)
-                                    writer.write("\n")
+                                    outputStream.write(wrapped.record.serialized)
+                                    outputStream.write("\n")
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
                                     val nextSize = sizeBytes + wrapped.sizeBytes
                                     val forceFlush =
@@ -108,8 +103,7 @@ interface SpillToDiskTaskFactory {
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
-    private val config: DestinationConfiguration,
-    private val tmpFileProvider: TempFileProvider,
+    private val spillFileProvider: SpillFileProvider,
     private val queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
@@ -119,8 +113,7 @@ class DefaultSpillToDiskTaskFactory(
         stream: DestinationStream
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(
-            config,
-            tmpFileProvider,
+            spillFileProvider,
             queueSupplier.get(stream.descriptor),
             flushStrategy,
             stream,
@@ -130,7 +123,7 @@ class DefaultSpillToDiskTaskFactory(
 }
 
 data class SpilledRawMessagesLocalFile(
-    val localFile: LocalFile,
+    val localFile: Path,
     val totalSizeBytes: Long,
     val indexRange: Range<Long>,
     val endOfStream: Boolean = false

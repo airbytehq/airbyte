@@ -38,19 +38,23 @@ class AirbyteValueWithMetaToOutputRecord {
                 OutputRecord.Meta(
                     syncId = (meta.values["sync_id"] as IntegerValue).value,
                     changes =
-                        (meta.values["changes"] as ArrayValue).values.map {
-                            DestinationRecord.Change(
-                                field = ((it as ObjectValue).values["field"] as StringValue).value,
-                                change =
-                                    AirbyteRecordMessageMetaChange.Change.fromValue(
-                                        (it.values["change"] as StringValue).value
-                                    ),
-                                reason =
-                                    AirbyteRecordMessageMetaChange.Reason.fromValue(
-                                        (it.values["reason"] as StringValue).value
-                                    )
-                            )
-                        }
+                        (meta.values["changes"] as ArrayValue)
+                            .values
+                            .map {
+                                DestinationRecord.Change(
+                                    field =
+                                        ((it as ObjectValue).values["field"] as StringValue).value,
+                                    change =
+                                        AirbyteRecordMessageMetaChange.Change.fromValue(
+                                            (it.values["change"] as StringValue).value
+                                        ),
+                                    reason =
+                                        AirbyteRecordMessageMetaChange.Reason.fromValue(
+                                            (it.values["reason"] as StringValue).value
+                                        )
+                                )
+                            }
+                            .toMutableList()
                 )
         )
     }

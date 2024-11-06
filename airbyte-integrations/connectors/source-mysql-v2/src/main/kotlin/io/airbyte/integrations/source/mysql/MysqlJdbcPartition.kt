@@ -21,6 +21,7 @@ import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
+import io.airbyte.cdk.read.NoWhere
 import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.SelectColumnMaxValue
@@ -130,8 +131,9 @@ sealed class MysqlJdbcResumablePartition(
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
-                where,
+                NoWhere,
                 OrderBy(checkpointColumns),
+                Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -176,8 +178,34 @@ sealed class MysqlJdbcResumablePartition(
     open val isLowerBoundIncluded: Boolean = false
 }
 
-/** Implementation of a [JdbcPartition] for a snapshot partition. */
-class MysqlJdbcSnapshotPartition(
+/** RFR for cursor based read. */
+class MysqlJdbcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+
+    // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
+    // in RFR case.
+    override val completeState: OpaqueStateValue
+        get() =
+            MysqlJdbcStreamStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+            )
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlJdbcStreamStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+/** RFR for CDC. */
+class MysqlJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
@@ -187,17 +215,35 @@ class MysqlJdbcSnapshotPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            when (upperBound) {
-                null -> MysqlJdbcStreamStateValue.snapshotCompleted
-                else ->
-                    MysqlJdbcStreamStateValue.snapshotCheckpoint(
-                        primaryKey = checkpointColumns,
-                        primaryKeyCheckpoint = upperBound,
-                    )
-            }
+            MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                primaryKey = checkpointColumns,
+                primaryKeyCheckpoint =
+                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
+            )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MysqlJdbcStreamStateValue.snapshotCheckpoint(
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+/**
+ * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC
+ * initial sync.
+ */
+class MysqlJdbcCdcSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?
+) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val upperBound: List<JsonNode>? = null
+    override val completeState: OpaqueStateValue
+        get() = MysqlCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
