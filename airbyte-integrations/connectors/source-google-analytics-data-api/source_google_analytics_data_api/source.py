@@ -485,7 +485,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def default_date_ranges_start_date(self) -> str:
         # set default date ranges start date to 2 years ago
         return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
-    
+
     @property
     def default_date_ranges_end_date(self) -> str:
         # set default date ranges end date to today
@@ -507,7 +507,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             raise ConfigurationError(str(e))
 
         return start_date
-    
+
     def _validate_and_transform_end_date(self, end_date: str) -> datetime.date:
         end_date = self.default_date_ranges_end_date if not end_date else end_date
 
