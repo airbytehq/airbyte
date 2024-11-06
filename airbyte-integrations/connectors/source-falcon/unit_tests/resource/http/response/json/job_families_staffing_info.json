@@ -1,0 +1,53 @@
+{
+  "data": [
+    {
+      "inactive": true,
+      "jobFamilyGroup": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "summary": "Sample Job Family Summary",
+      "jobProfiles": [
+        {
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1"
+    },
+    {
+      "inactive": true,
+      "jobFamilyGroup": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "summary": "Sample Job Family Summary",
+      "jobProfiles": [
+        {
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2"
+    },
+    {
+      "inactive": true,
+      "jobFamilyGroup": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "summary": "Sample Job Family Summary",
+      "jobProfiles": [
+        {
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3"
+    }
+  ],
+  "total": 0
+}

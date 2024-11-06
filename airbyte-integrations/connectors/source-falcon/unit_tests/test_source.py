@@ -53,7 +53,7 @@ class TestSourceFalcon(unittest.TestCase):
     def test_rest_streams(self):
         source = SourceFalcon()
         streams = source.streams(self.rest_config)
-        assert len(streams) == 6
+        assert len(streams) == 11
 
     @HttpMocker()
     def test_raas_check(self, http_mocker: HttpMocker):

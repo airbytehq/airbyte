@@ -55,13 +55,20 @@ definitions:
 
     requester:
       type: HttpRequester
-      url_base: "https://{{ config['host'] }}/api/common/v1/{{ config['tenant_id'] }}"
+      url_base: "https://{{ config['host'] }}/api/{{ parameters.get('space', 'common') }}/v1/{{ config['tenant_id'] }}"
       http_method: "GET"
       request_parameters:
         limit: "100"
       authenticator:
         type: BearerAuthenticator
         api_token: "{{ config['credentials']['access_token'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - http_codes: [403]
+            action: FAIL
+            failure_type: config_error
+            error_message: "The user has insufficient permissions to read stream data."
 
     retriever:
       type: SimpleRetriever
@@ -192,6 +199,71 @@ definitions:
           schema:
             $ref: "#/definitions/rest/schemas/workers_time_off_entries"
 
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/#staffing/v6/get-/workers
+      workers_staffing_info_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "workers_staffing_info"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/workers_staffing_info"
+        $parameters:
+          path: "/workers"
+          space: "staffing"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#staffing/v6/get-/jobs
+      jobs_staffing_info_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "jobs_staffing_info"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/jobs_staffing_info"
+        $parameters:
+          path: "/jobs"
+          space: "staffing"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#staffing/v6/get-/jobFamilies
+      job_families_staffing_info_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "job_families_staffing_info"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/job_families_staffing_info"
+        $parameters:
+          path: "/jobFamilies"
+          space: "staffing"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#staffing/v6/get-/jobProfiles
+      job_profiles_staffing_info_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "job_profiles_staffing_info"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/job_profiles_staffing_info"
+        $parameters:
+          path: "/jobProfiles"
+          space: "staffing"
+
+      # https://community.workday.com/sites/default/files/file-hosting/restapi/index.html#person/v4/get-/people
+      people_stream:
+        $ref: "#/definitions/rest/base_stream"
+        name: "people"
+        primary_key: "id"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/definitions/rest/schemas/people"
+        $parameters:
+          path: "/people"
+          space: "person"
+
     schemas:
       organizations:
         $schema: http://json-schema.org/draft-07/schema#
@@ -235,6 +307,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -285,6 +358,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -319,6 +393,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -336,6 +411,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -389,6 +465,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -436,6 +513,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -453,6 +531,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               id:
                 type:
@@ -470,6 +549,7 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               status:
                 type:
@@ -496,11 +576,13 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
             properties:
               plan:
                 type:
                   - "null"
                   - object
+                additionalProperties: true
                 properties:
                   id:
                     type:
@@ -538,6 +620,514 @@ definitions:
             type:
               - "null"
               - string
+      workers_staffing_info:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          primaryJob:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              businessTitle:
+                type:
+                  - "null"
+                  - string
+              supervisoryOrganization:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              jobType:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+              jobProfile:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              location:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  country:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      descriptor:
+                        type:
+                          - "null"
+                          - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+              workSpace:
+                type:
+                  - "null"
+                  - string
+                properties:
+                  locationChain:
+                    type:
+                      - "null"
+                      - string
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              phone:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          workerId:
+            type:
+              - "null"
+              - string
+          workerType:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              href:
+                type:
+                  - "null"
+                  - string
+          additionalJobs:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                businessTitle:
+                  type:
+                    - "null"
+                    - string
+                supervisoryOrganization:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    descriptor:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                jobType:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    descriptor:
+                      type:
+                        - "null"
+                        - string
+                jobProfile:
+                  type:
+                    - "null"
+                    - string
+                  properties:
+                    descriptor:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                location:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    country:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        descriptor:
+                          type:
+                            - "null"
+                            - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    descriptor:
+                      type:
+                        - "null"
+                        - string
+                workSpace:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    locationChain:
+                      type:
+                        - "null"
+                        - string
+                    descriptor:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                descriptor:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      jobs_staffing_info:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          location:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              country:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  descriptor:
+                    type:
+                      - "null"
+                      - string
+              id:
+                type:
+                  - "null"
+                  - string
+              descriptor:
+                type:
+                  - "null"
+                  - string
+          businessTitle:
+            type:
+              - "null"
+              - string
+          worker:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          supervisoryOrganization:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          nextPayPeriodStartDate:
+            type:
+              - "null"
+              - string
+            format: "date-time"
+          jobType:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              descriptor:
+                type:
+                  - "null"
+                  - string
+          jobProfile:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              descriptor:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - string
+          descriptor:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      job_families_staffing_info:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          inactive:
+            type:
+              - "null"
+              - boolean
+          jobFamilyGroup:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              descriptor:
+                - "null"
+                - string
+              id:
+                - "null"
+                - string
+          summary:
+            type:
+              - "null"
+              - string
+          jobProfiles:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                descriptor:
+                  type:
+                    - "null"
+                    - string
+          id:
+            type:
+              - "null"
+              - string
+          descriptor:
+            type:
+              - "null"
+              - string
+      job_profiles_staffing_info:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          inactive:
+            type:
+              - "null"
+              - boolean
+          name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      people:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          photos:
+            type:
+              - "null"
+              - string
+          homeEmails:
+            type:
+              - "null"
+              - string
+          personalInformation:
+            type:
+              - "null"
+              - string
+          homeWebAddresses:
+            type:
+              - "null"
+              - string
+          universal_ID:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+          workInstantMessengers:
+            type:
+              - "null"
+              - string
+          homePhones:
+            type:
+              - "null"
+              - string
+          preferredName:
+            type:
+              - "null"
+              - string
+          workEmails:
+            type:
+              - "null"
+              - string
+          workAddresses:
+            type:
+              - "null"
+              - string
+          workWebAddresses:
+            type:
+              - "null"
+              - string
+          homeAddresses:
+            type:
+              - "null"
+              - string
+          audioNamePronunciation:
+            type:
+              - "null"
+              - string
+          legalName:
+            type:
+              - "null"
+              - string
+          socialNetworks:
+            type:
+              - "null"
+              - string
+          workPhones:
+            type:
+              - "null"
+              - string
+          additionalNames:
+            type:
+              - "null"
+              - string
+          homeInstantMessengers:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          href:
+            type:
+              - "null"
+              - string
 
 streams:
   - $ref: "#/definitions/raas/streams/Reports"
@@ -547,6 +1137,11 @@ streams:
   - $ref: "#/definitions/rest/streams/workers_history_stream"
   - $ref: "#/definitions/rest/streams/workers_payslips_stream"
   - $ref: "#/definitions/rest/streams/workers_time_off_entries_stream"
+  - $ref: "#/definitions/rest/streams/workers_staffing_info_stream"
+  - $ref: "#/definitions/rest/streams/jobs_staffing_info_stream"
+  - $ref: "#/definitions/rest/streams/job_families_staffing_info_stream"
+  - $ref: "#/definitions/rest/streams/job_profiles_staffing_info_stream"
+  - $ref: "#/definitions/rest/streams/people_stream"
 
 spec:
   type: Spec
