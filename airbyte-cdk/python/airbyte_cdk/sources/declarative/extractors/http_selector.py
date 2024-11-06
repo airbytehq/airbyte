@@ -3,14 +3,12 @@
 #
 
 from abc import abstractmethod
-from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
-@dataclass
 class HttpSelector:
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering

@@ -63,6 +63,7 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0, description="The percentage of users that should receive the new version initially."
     )
@@ -100,8 +101,8 @@ class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
 
-    sl: Optional[Literal[100, 200, 300]] = None
-    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+    sl: Optional[Literal[0, 100, 200, 300]] = None
+    ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
 
 
 class GitInfo(BaseModel):
@@ -176,6 +177,7 @@ class VersionBreakingChange(BaseModel):
 
     upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
     message: str = Field(..., description="Descriptive message detailing the breaking change.")
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -251,7 +253,7 @@ class ConnectorReleaseCandidates(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionReleaseCandidate] = Field(
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+(-[0-9A-Za-z-.]+)?$"), VersionReleaseCandidate] = Field(
         ..., description="Each entry denotes a release candidate version of a connector."
     )
 
@@ -299,6 +301,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     releases: Optional[ConnectorRegistryReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
+    supportsFileTransfer: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
     language: Optional[str] = Field(None, description="The language the connector is written in")

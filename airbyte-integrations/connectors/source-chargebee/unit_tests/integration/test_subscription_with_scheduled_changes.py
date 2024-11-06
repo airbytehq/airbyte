@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -19,7 +20,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from source_chargebee import SourceChargebee
 
 from .config import ConfigBuilder
@@ -36,20 +36,26 @@ _CURSOR_FIELD = "updated_at"
 _NO_STATE = {}
 _NOW = datetime.now(timezone.utc)
 
+
 def _a_parent_request() -> ChargebeeRequestBuilder:
     return ChargebeeRequestBuilder.subscription_endpoint(_SITE, _SITE_API_KEY)
+
 
 def _a_child_request() -> ChargebeeSubstreamRequestBuilder:
     return ChargebeeSubstreamRequestBuilder.subscription_with_scheduled_changes_endpoint(_SITE, _SITE_API_KEY)
 
+
 def _config() -> ConfigBuilder:
     return ConfigBuilder().with_site(_SITE).with_site_api_key(_SITE_API_KEY).with_product_catalog(_PRODUCT_CATALOG)
+
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).with_stream("subscription", sync_mode).build()
 
-def _source() -> SourceChargebee:
-    return SourceChargebee()
+
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> SourceChargebee:
+    return SourceChargebee(catalog=catalog, config=config, state=state)
+
 
 def _a_parent_record() -> RecordBuilder:
     return create_record_builder(
@@ -59,6 +65,7 @@ def _a_parent_record() -> RecordBuilder:
         record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD])
     )
 
+
 def _a_child_record() -> RecordBuilder:
     return create_record_builder(
         find_template("subscription_with_scheduled_changes", __file__),
@@ -67,12 +74,14 @@ def _a_child_record() -> RecordBuilder:
         record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD])
     )
 
+
 def _a_parent_response() -> HttpResponseBuilder:
     return create_response_builder(
         find_template("subscription", __file__),
         FieldPath("list"),
         pagination_strategy=ChargebeePaginationStrategy()
     )
+
 
 def _a_child_response() -> HttpResponseBuilder:
 
@@ -82,6 +91,7 @@ def _a_child_response() -> HttpResponseBuilder:
         pagination_strategy=ChargebeePaginationStrategy()
     )
 
+
 def _read(
     config_builder: ConfigBuilder,
     sync_mode: SyncMode,
@@ -90,7 +100,9 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(), config, catalog, state, expecting_exception)
+    source = _source(catalog=catalog, config=config, state=state)
+    return read(source, config, catalog, state, expecting_exception)
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):

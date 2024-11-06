@@ -193,6 +193,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
             og_repo_dir = await context.get_repo_dir()
             update_base_image_in_metadata = UpdateBaseImageMetadata(
                 context,
+                await context.get_connector_dir(),
                 set_if_not_exists=set_if_not_exists,
             )
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
@@ -232,6 +233,7 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
             # UPDATE BASE IMAGE IN METADATA
             update_base_image_in_metadata = UpdateBaseImageMetadata(
                 context,
+                await context.get_connector_dir(),
                 set_if_not_exists=True,
             )
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()

@@ -310,14 +310,24 @@ definitions:
     customer_usage:
       type: DeclarativeStream
       name: customer_usage
-      primary_key:
-        - lago_invoice_id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /customers/{{stream_slice.customer_external_id}}/current_usage
+          path: >-
+            /customers/{{stream_slice.customer_external_id}}/current_usage?external_subscription_id={{stream_slice.external_subscription_id}}
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{response.status == 405 and response.code ==
+                      'no_active_subscription' }}
+                    http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -325,13 +335,31 @@ definitions:
             field_path:
               - customer_usage
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: external_id
-              partition_field: customer_external_id
-              stream:
-                $ref: "#/definitions/streams/customers"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: external_customer_id
+                partition_field: customer_external_id
+                stream:
+                  $ref: "#/definitions/streams/subscriptions"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: external_id
+                partition_field: external_subscription_id
+                stream:
+                  $ref: "#/definitions/streams/subscriptions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{stream_slice.customer_external_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{stream_slice.external_subscription_id}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -372,6 +400,80 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/fees"
+    customer_usage_past:
+      type: DeclarativeStream
+      name: customer_usage_past
+      primary_key:
+        - lago_invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /customers/{{stream_slice.customer_external_id}}/past_usage?external_subscription_id={{stream_slice.external_subscription_id}}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{response.status == 405 and response.code ==
+                      'no_active_subscription' }}
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usage_periods
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.meta.next_page }}"
+            stop_condition: "{{ response.meta.next_page is none}}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: external_customer_id
+                partition_field: customer_external_id
+                stream:
+                  $ref: "#/definitions/streams/subscriptions"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: external_id
+                partition_field: external_subscription_id
+                stream:
+                  $ref: "#/definitions/streams/subscriptions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{stream_slice.customer_external_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{stream_slice.external_subscription_id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_usage_past"
   base_requester:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.getlago.com/api/v1') }}"
@@ -390,6 +492,7 @@ streams:
   - $ref: "#/definitions/streams/wallets"
   - $ref: "#/definitions/streams/customer_usage"
   - $ref: "#/definitions/streams/fees"
+  - $ref: "#/definitions/streams/customer_usage_past"
 
 spec:
   type: Spec
@@ -1362,6 +1465,44 @@ schemas:
               type:
                 - "null"
                 - integer
+            filters:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount_cents:
+                    type:
+                      - number
+                      - "null"
+                  events_count:
+                    type:
+                      - number
+                      - "null"
+                  units:
+                    type:
+                      - string
+                      - "null"
+                  values:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      card_type:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+            grouped_usage:
+              type:
+                - array
+                - "null"
             groups:
               type:
                 - "null"
@@ -1403,6 +1544,10 @@ schemas:
         type:
           - "null"
           - string
+      customer_id:
+        type:
+          - string
+          - "null"
       from_datetime:
         type:
           - "null"
@@ -1415,6 +1560,10 @@ schemas:
         type:
           - "null"
           - string
+      subscription_id:
+        type:
+          - string
+          - "null"
       taxes_amount_cents:
         type:
           - "null"
@@ -1788,3 +1937,178 @@ schemas:
         type:
           - "null"
           - string
+  customer_usage_past:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount_cents:
+        type:
+          - number
+          - "null"
+      charges_usage:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount_cents:
+              type:
+                - number
+                - "null"
+            amount_currency:
+              type:
+                - string
+                - "null"
+            billable_metric:
+              type:
+                - object
+                - "null"
+              properties:
+                aggregation_type:
+                  type:
+                    - string
+                    - "null"
+                code:
+                  type:
+                    - string
+                    - "null"
+                lago_id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            charge:
+              type:
+                - object
+                - "null"
+              properties:
+                charge_model:
+                  type:
+                    - string
+                    - "null"
+                lago_id:
+                  type:
+                    - string
+                    - "null"
+            events_count:
+              type:
+                - number
+                - "null"
+            filters:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount_cents:
+                    type:
+                      - number
+                      - "null"
+                  events_count:
+                    type:
+                      - number
+                      - "null"
+                  units:
+                    type:
+                      - string
+                      - "null"
+                  values:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      card_type:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+            grouped_usage:
+              type:
+                - array
+                - "null"
+            groups:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount_cents:
+                    type:
+                      - number
+                      - "null"
+                  events_count:
+                    type:
+                      - number
+                      - "null"
+                  key:
+                    type:
+                      - string
+                      - "null"
+                  lago_id:
+                    type:
+                      - string
+                      - "null"
+                  units:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            units:
+              type:
+                - string
+                - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      from_datetime:
+        type:
+          - string
+          - "null"
+      issuing_date:
+        type:
+          - string
+          - "null"
+      lago_invoice_id:
+        type: string
+      subscription_id:
+        type:
+          - string
+          - "null"
+      taxes_amount_cents:
+        type:
+          - number
+          - "null"
+      to_datetime:
+        type:
+          - string
+          - "null"
+      total_amount_cents:
+        type:
+          - number
+          - "null"
+    required:
+      - lago_invoice_id

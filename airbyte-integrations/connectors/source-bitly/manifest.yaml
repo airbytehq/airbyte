@@ -1,0 +1,905 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Bitly is the most widely trusted link management platform in the world. By
+  using the Bitly API, you will exercise the full power of your links through
+  automated link customization, mobile deep linking, and click analytics.
+
+check:
+  type: CheckStream
+  stream_names:
+    - bsds
+
+definitions:
+  streams:
+    bitlinks:
+      type: DeclarativeStream
+      name: bitlinks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/groups//{{ stream_partition['group_guid'] }}/bitlinks
+          http_method: GET
+          request_parameters:
+            archived: both
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - links
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: search_after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("pagination", {}).get("search_after", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("search_after", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: guid
+              partition_field: group_guid
+              stream:
+                $ref: "#/definitions/streams/groups"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_after
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created_before
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bitlinks"
+    bitlink_clicks:
+      type: DeclarativeStream
+      name: bitlink_clicks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/bitlinks/{{ stream_partition['bitlink'] }}/clicks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: bitlink
+              stream:
+                $ref: "#/definitions/streams/bitlinks"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bitlink_clicks"
+    bsds:
+      type: DeclarativeStream
+      name: bsds
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/bsds
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bsds"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+0000"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - channels
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+0000"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - groups
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+0000"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    group_preferences:
+      type: DeclarativeStream
+      name: group_preferences
+      primary_key:
+        - group_guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/groups/{{ stream_partition['group_guid'] }}/preferences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: guid
+              partition_field: group_guid
+              stream:
+                $ref: "#/definitions/streams/groups"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group_preferences"
+    group_shorten_counts:
+      type: DeclarativeStream
+      name: group_shorten_counts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/groups/{{ stream_partition['group_guid'] }}/shorten_counts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: guid
+              partition_field: group_guid
+              stream:
+                $ref: "#/definitions/streams/groups"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group_shorten_counts"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - guid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+0000"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    organization_shorten_counts:
+      type: DeclarativeStream
+      name: organization_shorten_counts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v4/organizations/{{ stream_partition['organization_guid']
+            }}/shorten_counts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: guid
+              partition_field: organization_guid
+              stream:
+                $ref: "#/definitions/streams/organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_shorten_counts"
+    qr_codes:
+      type: DeclarativeStream
+      name: qr_codes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v4/bitlinks/{{ stream_partition['bitlink'] }}/qr
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: bitlink
+              stream:
+                $ref: "#/definitions/streams/bitlinks"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+0000"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/qr_codes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api-ssl.bitly.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/bitlinks"
+  - $ref: "#/definitions/streams/bitlink_clicks"
+  - $ref: "#/definitions/streams/bsds"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/group_preferences"
+  - $ref: "#/definitions/streams/group_shorten_counts"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/organization_shorten_counts"
+  - $ref: "#/definitions/streams/qr_codes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - end_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      end_date:
+        type: string
+        title: End date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bitlinks: true
+    bitlink_clicks: true
+    bsds: true
+    campaigns: true
+    channels: true
+    groups: true
+    group_preferences: true
+    group_shorten_counts: true
+    organizations: true
+    organization_shorten_counts: true
+    qr_codes: true
+  testedStreams:
+    bitlinks:
+      streamHash: 580f8d9b85350f5db6ddc5bdd88ed587bcdddafc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    bitlink_clicks:
+      streamHash: 0774175586c1712abd9f2a11157f9d6a78aa5313
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    bsds:
+      streamHash: 5dd84e122dbd80157d99c2df492882957efa9c9a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    campaigns:
+      streamHash: c668dae1f00978f5f23c64f81f3c85992210a0c8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    channels:
+      streamHash: c4f72d30c096d4c272cefe77e5f1415acc3d47a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: 7bcbd695c7896dc6bfed1ab4748ad916afc63585
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    group_preferences:
+      streamHash: 525e739961eb593a4444a49a2cfee3023b4602b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    group_shorten_counts:
+      streamHash: 326b71274a249fa902dff3816f4be0499539395c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: b24e5aae17b5fd760d0a2dde52d1888bad3626a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_shorten_counts:
+      streamHash: d6a3adb33927320cfbb8514b47b73b5df901ad6e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    qr_codes:
+      streamHash: 53c87e7e0a4ebf244862ece2af2f5232ea61b34f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  bitlinks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      custom_bitlinks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      deeplinks:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      link:
+        type:
+          - string
+          - "null"
+      long_url:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          group:
+            type:
+              - string
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  bitlink_clicks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      link_clicks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            clicks:
+              type:
+                - number
+                - "null"
+            date:
+              type:
+                - string
+                - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      unit_reference:
+        type:
+          - string
+          - "null"
+      units:
+        type:
+          - number
+          - "null"
+  bsds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bsds:
+        type:
+          - array
+          - "null"
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaigns:
+        type:
+          - array
+          - "null"
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      channels:
+        type:
+          - array
+          - "null"
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bsds:
+        type:
+          - array
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      guid:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      modified:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organization_guid:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          organization:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+    required:
+      - guid
+      - modified
+  group_preferences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      domain_preference:
+        type:
+          - string
+          - "null"
+      group_guid:
+        type: string
+    required:
+      - group_guid
+  group_shorten_counts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      facet:
+        type:
+          - string
+          - "null"
+      metrics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      unit_reference:
+        type:
+          - string
+          - "null"
+      units:
+        type:
+          - number
+          - "null"
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bsds:
+        type:
+          - array
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      guid:
+        type: string
+      is_active:
+        type:
+          - boolean
+          - "null"
+      modified:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          groups:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      tier:
+        type:
+          - string
+          - "null"
+      tier_display_name:
+        type:
+          - string
+          - "null"
+      tier_family:
+        type:
+          - string
+          - "null"
+    required:
+      - guid
+      - modified
+  organization_shorten_counts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      facet:
+        type:
+          - string
+          - "null"
+      metrics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      unit:
+        type:
+          - string
+          - "null"
+      unit_reference:
+        type:
+          - string
+          - "null"
+      units:
+        type:
+          - number
+          - "null"
+  qr_codes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created:
+        type:
+          - string
+          - "null"
+      customization:
+        type:
+          - object
+          - "null"
+        properties:
+          color:
+            type:
+              - string
+              - "null"
+          exclude_bitly_logo:
+            type:
+              - boolean
+              - "null"
+          image_format:
+            type:
+              - string
+              - "null"
+          include_bitly_brand:
+            type:
+              - boolean
+              - "null"
+          is_hidden:
+            type:
+              - boolean
+              - "null"
+      group_guid:
+        type:
+          - string
+          - "null"
+      has_stored:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_customized:
+        type:
+          - boolean
+          - "null"
+      is_hidden:
+        type:
+          - boolean
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      modified:
+        type: string
+      qr_code:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -16,7 +17,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder

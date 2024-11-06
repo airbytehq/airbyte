@@ -111,8 +111,11 @@ The key that you are assigned is rate-limited and as such any applications that 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                                        |
-| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                        |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.2 | 2024-10-29 | [47779](https://github.com/airbytehq/airbyte/pull/47779) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47456](https://github.com/airbytehq/airbyte/pull/47456) | Update dependencies |
+| 0.2.0 | 2024-09-06 | [45195](https://github.com/airbytehq/airbyte/pull/45195) | Refactor connector to manifest-only format |
 | 0.1.9 | 2024-08-31 | [44997](https://github.com/airbytehq/airbyte/pull/44997) | Update dependencies |
 | 0.1.8 | 2024-08-24 | [44746](https://github.com/airbytehq/airbyte/pull/44746) | Update dependencies |
 | 0.1.7 | 2024-08-17 | [44208](https://github.com/airbytehq/airbyte/pull/44208) | Update dependencies |
@@ -122,6 +125,6 @@ The key that you are assigned is rate-limited and as such any applications that 
 | 0.1.3 | 2024-07-13 | [41878](https://github.com/airbytehq/airbyte/pull/41878) | Update dependencies |
 | 0.1.2 | 2024-07-10 | [41505](https://github.com/airbytehq/airbyte/pull/41505) | Update dependencies |
 | 0.1.1 | 2024-07-10 | [41049](https://github.com/airbytehq/airbyte/pull/41049) | Migrate to poetry |
-| 0.1.0   | 2022-10-30 | [#18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
+| 0.1.0 | 2022-10-30 | [18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
 
 </details>

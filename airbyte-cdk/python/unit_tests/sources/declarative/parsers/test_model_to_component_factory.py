@@ -7,9 +7,11 @@ import datetime
 from typing import Any, Mapping
 
 import freezegun
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -19,15 +21,23 @@ from airbyte_cdk.sources.declarative.auth.token import (
 )
 from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
+from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder, PaginationDecoderDecorator
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    PerPartitionCursor,
+    PerPartitionWithGlobalCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
@@ -70,7 +80,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
@@ -80,6 +94,10 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomFormatConcurrentStreamStateConverter,
+)
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
@@ -115,7 +133,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -145,6 +162,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -180,11 +199,23 @@ list_stream:
     step: "P10D"
     cursor_field: "created"
     cursor_granularity: "PT0.000001S"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: before
     $parameters:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 check:
   type: CheckStream
   stream_names: ["list_stream"]
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] or 10 }}"
+  max_concurrency: 25
 spec:
   type: Spec
   documentation_url: https://airbyte.com/#yaml-from-manifest
@@ -241,7 +272,7 @@ spec:
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -249,7 +280,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
@@ -259,6 +290,14 @@ spec:
     assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
+
+    assert isinstance(stream.retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert stream.retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert stream.retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert stream.retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert stream.retriever.request_option_provider._partition_field_end.string == "end_time"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
@@ -290,6 +329,14 @@ spec:
     }
     advanced_auth = spec.advanced_auth
     assert advanced_auth.auth_flow_type.value == "oauth2.0"
+
+    concurrency_level = factory.create_component(
+        model_type=ConcurrencyLevelModel, component_definition=manifest["concurrency_level"], config=input_config
+    )
+    assert isinstance(concurrency_level, ConcurrencyLevel)
+    assert isinstance(concurrency_level._default_concurrency, InterpolatedString)
+    assert concurrency_level._default_concurrency.string == "{{ config['num_workers'] or 10 }}"
+    assert concurrency_level.max_concurrency == 25
 
 
 def test_interpolate_config():
@@ -566,7 +613,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -578,8 +624,26 @@ requester:
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['apikey'] }}"
+    type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
+    expiration_duration: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
   request_parameters:
     unit: "day"
 list_stream:
@@ -608,6 +672,8 @@ list_stream:
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
+    decoder:
+      $ref: "#/decoder"
     partition_router:
       type: ListPartitionRouter
       values: "{{config['repos']}}"
@@ -648,9 +714,9 @@ list_stream:
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+    assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
 
-    datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
+    datetime_stream_slicer = stream.retriever.stream_slicer._per_partition_cursor._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
     assert isinstance(datetime_stream_slicer._start_datetime, MinMaxDatetime)
     assert datetime_stream_slicer._start_datetime.datetime.string == "{{ config['start_time'] }}"
@@ -671,7 +737,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -701,6 +766,8 @@ requester:
 retriever:
   paginator:
     type: NoPagination
+  decoder:
+    $ref: "#/decoder"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -775,7 +842,7 @@ spec:
     assert isinstance(stream.retriever.cursor, ResumableFullRefreshCursor)
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
-    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
@@ -783,7 +850,7 @@ spec:
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
     assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
-    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, PaginationDecoderDecorator)
     assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
@@ -992,7 +1059,7 @@ list_stream:
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
-    assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
+    assert isinstance(stream.retriever.record_selector.record_filter._substream_cursor, PerPartitionWithGlobalCursor)
 
 
 def test_given_data_feed_and_client_side_incremental_then_raise_error():
@@ -1196,6 +1263,8 @@ requester:
   url_base: "https://api.sendgrid.com"
   authenticator:
     type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
     expiration_duration: P10D
     login_requester:
       path: /session
@@ -1999,7 +2068,7 @@ class TestCreateTransformations:
                 "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_incremental_and_partition_router",
         ),
         pytest.param(
@@ -2024,7 +2093,7 @@ class TestCreateTransformations:
                     "cursor_field": "b_key",
                 },
             ],
-            PerPartitionCursor,
+            PerPartitionWithGlobalCursor,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
         pytest.param(None, None, SinglePartitionRouter, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
@@ -2061,15 +2130,16 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
+    print(stream.retriever.stream_slicer)
     assert isinstance(stream.retriever.stream_slicer, expected_type)
 
     if incremental and partition_router:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         if isinstance(partition_router, list) and len(partition_router) > 1:
             assert isinstance(stream.retriever.stream_slicer._partition_router, CartesianProductStreamSlicer)
             assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
     elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
-        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionWithGlobalCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
 
@@ -2314,3 +2384,409 @@ def test_create_jwt_authenticator(config, manifest, expected):
         }
     )
     assert authenticator._get_jwt_payload() == jwt_payload
+
+
+def test_use_request_options_provider_for_datetime_based_cursor():
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    datetime_based_request_options_provider = DatetimeBasedRequestOptionsProvider(
+        start_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="after",
+            parameters={},
+        ),
+        end_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="before",
+            parameters={},
+        ),
+        config=config,
+        parameters={},
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=datetime_based_cursor,
+        request_options_provider=datetime_based_request_options_provider,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, DatetimeBasedCursor)
+    assert isinstance(retriever.stream_slicer, DatetimeBasedCursor)
+
+    assert isinstance(retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert retriever.request_option_provider._partition_field_end.string == "end_time"
+
+
+def test_do_not_separate_request_options_provider_for_non_datetime_based_cursor():
+    # This test validates that we're only using the dedicated RequestOptionsProvider for DatetimeBasedCursor and using the
+    # existing StreamSlicer for other types of cursors and partition routing. Once everything is migrated this test can be deleted
+
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    list_partition_router = ListPartitionRouter(
+        cursor_field="id",
+        values=["four", "oh", "eight"],
+        config=config,
+        parameters={},
+    )
+
+    per_partition_cursor = PerPartitionCursor(
+        cursor_factory=CursorFactory(lambda: datetime_based_cursor),
+        partition_router=list_partition_router,
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=per_partition_cursor,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, PerPartitionCursor)
+    assert isinstance(retriever.stream_slicer, PerPartitionCursor)
+
+    assert isinstance(retriever.request_option_provider, PerPartitionCursor)
+    assert isinstance(retriever.request_option_provider._cursor_factory, CursorFactory)
+    assert retriever.request_option_provider._partition_router == list_partition_router
+
+
+def test_use_default_request_options_provider():
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
+    assert isinstance(retriever.request_option_provider, DefaultRequestOptionsProvider)
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_start",
+    [
+        pytest.param({}, "2024-08-01T00:00:00.000000Z", id="test_create_concurrent_cursor_without_state"),
+        pytest.param({"updated_at": "2024-10-01T00:00:00.000000Z"}, "2024-10-01T00:00:00.000000Z", id="test_create_concurrent_cursor_with_state"),
+    ]
+)
+def test_create_concurrent_cursor_from_datetime_based_cursor_all_fields(stream_state, expected_start):
+    config = {
+        "start_time": "2024-08-01T00:00:00.000000Z",
+        "end_time": "2024-10-15T00:00:00.000000Z"
+    }
+
+    expected_cursor_field = "updated_at"
+    expected_start_boundary = "custom_start"
+    expected_end_boundary = "custom_end"
+    expected_step = datetime.timedelta(days=10)
+    expected_lookback_window = datetime.timedelta(days=3)
+    expected_datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    expected_cursor_granularity = datetime.timedelta(microseconds=1)
+
+    expected_start = pendulum.parse(expected_start)
+    expected_end = datetime.datetime(year=2024, month=10, day=15, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+    if stream_state:
+        # Using incoming state, the resulting already completed partition is the start_time up to the last successful
+        # partition indicated by the legacy sequential state
+        expected_concurrent_state = {
+            "slices": [
+                {
+                    "start": pendulum.parse(config["start_time"]),
+                    "end": pendulum.parse(stream_state["updated_at"]),
+                },
+            ],
+            "state_type": "date-range",
+            "legacy": {"updated_at": "2024-10-01T00:00:00.000000Z"},
+        }
+    else:
+        expected_concurrent_state = {
+            "slices": [
+                {
+                    "start": pendulum.parse(config["start_time"]),
+                    "end": pendulum.parse(config["start_time"]),
+                },
+            ],
+            "state_type": "date-range",
+            "legacy": {},
+        }
+
+    connector_state_manager = ConnectorStateManager()
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "start_datetime": "{{ config['start_time'] }}",
+        "end_datetime": "{{ config['end_time'] }}",
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D"
+    }
+
+    concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+        state_manager=connector_state_manager,
+        model_type=DatetimeBasedCursorModel,
+        component_definition=cursor_component_definition,
+        stream_name=stream_name,
+        stream_namespace=None,
+        config=config,
+        stream_state=stream_state,
+    )
+
+    assert concurrent_cursor._stream_name == stream_name
+    assert not concurrent_cursor._stream_namespace
+    assert concurrent_cursor._connector_state_manager == connector_state_manager
+    assert concurrent_cursor.cursor_field.cursor_field_key == expected_cursor_field
+    assert concurrent_cursor._slice_range == expected_step
+    assert concurrent_cursor._lookback_window == expected_lookback_window
+
+    assert concurrent_cursor.slice_boundary_fields[ConcurrentCursor._START_BOUNDARY] == expected_start_boundary
+    assert concurrent_cursor.slice_boundary_fields[ConcurrentCursor._END_BOUNDARY] == expected_end_boundary
+
+    assert concurrent_cursor.start == expected_start
+    assert concurrent_cursor._end_provider() == expected_end
+    assert concurrent_cursor._concurrent_state == expected_concurrent_state
+
+    assert isinstance(stream_state_converter, CustomFormatConcurrentStreamStateConverter)
+    assert stream_state_converter._datetime_format == expected_datetime_format
+    assert stream_state_converter._is_sequential_state
+    assert stream_state_converter._cursor_granularity == expected_cursor_granularity
+
+
+@pytest.mark.parametrize(
+    "cursor_fields_to_replace,assertion_field,expected_value,expected_error",
+    [
+        pytest.param({"partition_field_start": None}, "slice_boundary_fields", ('start_time', 'custom_end'), None, id="test_no_partition_field_start"),
+        pytest.param({"partition_field_end": None}, "slice_boundary_fields", ('custom_start', 'end_time'), None, id="test_no_partition_field_end"),
+        pytest.param({"lookback_window": None}, "_lookback_window", None, None, id="test_no_lookback_window"),
+        pytest.param({"lookback_window": "{{ config.does_not_exist }}"}, "_lookback_window", None, None, id="test_no_lookback_window"),
+        pytest.param({"step": None}, None, None, ValueError, id="test_no_step_raises_exception"),
+        pytest.param({"cursor_granularity": None}, None, None, ValueError, id="test_no_cursor_granularity_exception"),
+        pytest.param({
+            "end_time": None,
+            "cursor_granularity": None,
+            "step": None,
+        }, "_slice_range", datetime.timedelta(days=61), None, id="test_uses_a_single_time_interval_when_no_specified_step_and_granularity"),
+    ]
+)
+@freezegun.freeze_time("2024-10-01T00:00:00")
+def test_create_concurrent_cursor_from_datetime_based_cursor(cursor_fields_to_replace, assertion_field, expected_value, expected_error):
+    connector_state_manager = ConnectorStateManager()
+
+    config = {
+        "start_time": "2024-08-01T00:00:00.000000Z",
+        "end_time": "2024-09-01T00:00:00.000000Z"
+    }
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "start_datetime": "{{ config['start_time'] }}",
+        "end_datetime": "{{ config['end_time'] }}",
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D",
+    }
+
+    for cursor_field_to_replace, value in cursor_fields_to_replace.items():
+        if value is None:
+            cursor_component_definition[cursor_field_to_replace] = value
+        else:
+            del cursor_component_definition[cursor_field_to_replace]
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    if expected_error:
+        with pytest.raises(expected_error):
+            connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+                state_manager=connector_state_manager,
+                model_type=DatetimeBasedCursorModel,
+                component_definition=cursor_component_definition,
+                stream_name=stream_name,
+                stream_namespace=None,
+                config=config,
+                stream_state={},
+            )
+    else:
+        concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+            state_manager=connector_state_manager,
+            model_type=DatetimeBasedCursorModel,
+            component_definition=cursor_component_definition,
+            stream_name=stream_name,
+            stream_namespace=None,
+            config=config,
+            stream_state={},
+        )
+
+        assert getattr(concurrent_cursor, assertion_field) == expected_value
+
+
+def test_create_concurrent_cursor_uses_min_max_datetime_format_if_defined():
+    """
+    Validates a special case for when the start_time.datetime_format and end_time.datetime_format are defined, the date to
+    string parser should not inherit from the parent DatetimeBasedCursor.datetime_format. The parent which uses an incorrect
+    precision would fail if it were used by the dependent children.
+    """
+    expected_start = datetime.datetime(year=2024, month=8, day=1, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+    expected_end = datetime.datetime(year=2024, month=9, day=1, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
+
+    connector_state_manager = ConnectorStateManager()
+
+    config = {
+        "start_time": "2024-08-01T00:00:00Z",
+        "end_time": "2024-09-01T00:00:00Z"
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+
+    stream_name = "test"
+
+    cursor_component_definition = {
+        "type": "DatetimeBasedCursor",
+        "cursor_field": "updated_at",
+        "datetime_format": "%Y-%m-%dT%H:%MZ",
+        "start_datetime": {
+            "type": "MinMaxDatetime",
+            "datetime": "{{ config.start_time }}",
+            "datetime_format": "%Y-%m-%dT%H:%M:%SZ"
+        },
+        "end_datetime": {
+            "type": "MinMaxDatetime",
+            "datetime": "{{ config.end_time }}",
+            "datetime_format": "%Y-%m-%dT%H:%M:%SZ"
+        },
+        "partition_field_start": "custom_start",
+        "partition_field_end": "custom_end",
+        "step": "P10D",
+        "cursor_granularity": "PT0.000001S",
+        "lookback_window": "P3D"
+    }
+
+    concurrent_cursor, stream_state_converter = connector_builder_factory.create_concurrent_cursor_from_datetime_based_cursor(
+        state_manager=connector_state_manager,
+        model_type=DatetimeBasedCursorModel,
+        component_definition=cursor_component_definition,
+        stream_name=stream_name,
+        stream_namespace=None,
+        config=config,
+        stream_state={},
+    )
+
+    assert concurrent_cursor.start == expected_start
+    assert concurrent_cursor._end_provider() == expected_end
+    assert concurrent_cursor._concurrent_state == {
+        "slices": [
+            {
+                "start": expected_start,
+                "end": expected_start,
+            },
+        ],
+        "state_type": "date-range",
+        "legacy": {},
+    }

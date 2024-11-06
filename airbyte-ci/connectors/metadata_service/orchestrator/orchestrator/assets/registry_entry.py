@@ -94,8 +94,8 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
 def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
     documentation_url = metadata.get("documentationUrl")
     final_registry_releases = {}
-
-    if metadata.get("releases", {}).get("breakingChanges"):
+    releases = metadata.get("releases")
+    if releases is not None and releases.get("breakingChanges"):
         # apply defaults for connector releases
         final_registry_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(
             metadata["releases"], documentation_url
@@ -111,7 +111,7 @@ def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
                 )
             final_registry_releases["breakingChanges"] = breaking_changes
 
-    if metadata.get("releases", {}).get("rolloutConfiguration"):
+    if releases is not None and releases.get("rolloutConfiguration"):
         final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
     return final_registry_releases
 
@@ -287,12 +287,31 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     return overridden_metadata_data
 
 
+def apply_entry_schema_migrations(registry_entry: dict) -> dict:
+    """Apply schema migrations to the registry entry.
+
+    Args:
+        registry_entry (dict): The registry entry.
+
+    Returns:
+        dict: The registry entry with the schema migrations applied.
+    """
+    # Remove the isReleaseCandidate field from the registry entry
+    if registry_entry.get("releases", {}).get("isReleaseCandidate") is not None:
+        registry_entry["releases"].pop("isReleaseCandidate")
+    # Remove the releases field if it is empty
+    if registry_entry.get("releases") == dict():
+        registry_entry.pop("releases")
+    return registry_entry
+
+
 @sentry_sdk.trace
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     json_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = json.loads(json_string)
 
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
+    registry_entry_dict = apply_entry_schema_migrations(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
 
     return connector_type, registry_entry

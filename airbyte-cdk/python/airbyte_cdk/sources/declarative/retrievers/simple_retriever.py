@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from dataclasses import InitVar, dataclass, field
 from functools import partial
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.request_options import DefaultRequestOptionsProvider, RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -61,6 +63,7 @@ class SimpleRetriever(Retriever):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
+    request_option_provider: RequestOptionsProvider = field(default_factory=lambda: DefaultRequestOptionsProvider(parameters={}))
     cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
@@ -158,7 +161,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_params,
-            self.stream_slicer.get_request_params,
+            self.request_option_provider.get_request_params,
         )
         if isinstance(params, str):
             raise ValueError("Request params cannot be a string")
@@ -184,7 +187,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_body_data,
-            self.stream_slicer.get_request_body_data,
+            self.request_option_provider.get_request_body_data,
         )
 
     def _request_body_json(
@@ -203,7 +206,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_body_json,
-            self.stream_slicer.get_request_body_json,
+            self.request_option_provider.get_request_body_json,
         )
         if isinstance(body_json, str):
             raise ValueError("Request body json cannot be a string")
@@ -231,21 +234,21 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            return []
-
-        self._last_response = response
-        record_generator = self.record_selector.select_records(
-            response=response,
-            stream_state=stream_state,
-            records_schema=records_schema,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token,
-        )
-        self._last_page_size = 0
-        for record in record_generator:
-            self._last_page_size += 1
-            self._last_record = record
-            yield record
+            yield from []
+        else:
+            self._last_response = response
+            record_generator = self.record_selector.select_records(
+                response=response,
+                stream_state=stream_state,
+                records_schema=records_schema,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            )
+            self._last_page_size = 0
+            for record in record_generator:
+                self._last_page_size += 1
+                self._last_record = record
+                yield record
 
     @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

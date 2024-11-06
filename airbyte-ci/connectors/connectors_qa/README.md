@@ -108,10 +108,23 @@ poe lint
 
 ## Changelog
 
+### 1.10.0
+Do not enforce that PyPi publication is enabled for Python connectors.
+Enforce that it's declared in the metadata file.
+It can be set to true or false. 
+
+### 1.9.1
+
+Fail assets icon check if the icon is the default Airbyte icon.
+
+### 1.8.0
+
+Added minimum sl threshold value to documentation checks to skip them for connectors for which sl is 0.
+
 ### 1.7.0
 
-Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 
-`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`, 
+Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`,
+`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`,
 `CheckTutorialsSectionContent`, `CheckChangelogSectionContent` checks that verifies that documentation file follow standard template.
 
 ### 1.6.0
@@ -168,7 +181,7 @@ Fix access to connector types: it should be accessed from the `Connector.connect
 
 - Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that
   the check applies to.
-- Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
+- Make `CheckPublishToPyPiIsDeclared` run on source connectors only.
 
 ### 1.0.0
 

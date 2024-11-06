@@ -28,8 +28,25 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 ## GLOBAL VARIABLES ##
 
 # spec.yaml and spec.json will be removed as part of the conversion. But if they are present, it's fine to convert still.
-MANIFEST_ONLY_COMPATIBLE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py", "spec.json", "spec.yaml"]
-MANIFEST_ONLY_KEEP_FILES = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml", "secrets"]
+MANIFEST_ONLY_COMPATIBLE_FILES = [
+    "manifest.yaml",
+    "components.py",
+    "run.py",
+    "__init__.py",
+    "source.py",
+    "spec.json",
+    "spec.yaml",
+    "__pycache__",
+]
+MANIFEST_ONLY_FILES_TO_KEEP = [
+    "manifest.yaml",
+    "components.py",
+    "metadata.yaml",
+    "icon.svg",
+    "integration_tests",
+    "acceptance-test-config.yml",
+    "secrets",
+]
 
 
 ## STEPS ##
@@ -151,10 +168,17 @@ class StripConnector(Step):
     async def _run(self) -> StepResult:
         connector = self.context.connector
 
-        ## 1. Move manifest.yaml to the root level of the directory
+        ## 1a. Move manifest.yaml to the root level of the directory
         self.logger.info("Moving manifest to the root level of the directory")
         root_manifest_path = connector.code_directory / "manifest.yaml"
         connector.manifest_path.rename(root_manifest_path)
+
+        ## 1b. Move components.py to the root level of the directory if it exists
+        components_path = connector.python_source_dir_path / "components.py"
+        if components_path.exists():
+            self.logger.info("Custom components file found. Moving to the root level of the directory")
+            root_components_path = connector.manifest_only_components_path
+            components_path.rename(root_components_path)
 
         ## 2. Update the version in manifest.yaml
         try:
@@ -195,7 +219,7 @@ class StripConnector(Step):
         ## 4. Delete all non-essential files
         try:
             for item in connector.code_directory.iterdir():
-                if item.name in MANIFEST_ONLY_KEEP_FILES:
+                if item.name in MANIFEST_ONLY_FILES_TO_KEEP:
                     continue  # Preserve the allowed files
                 else:
                     self._delete_directory_item(item)

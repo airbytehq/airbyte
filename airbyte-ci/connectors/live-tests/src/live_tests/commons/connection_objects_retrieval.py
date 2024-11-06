@@ -240,7 +240,7 @@ def _get_connection_objects_from_retrieved_objects(
         )
     elif retrieved_source_docker_image.split(":")[1] != source_docker_image_tag:
         raise InvalidConnectionError(
-            f"The provided docker image tag ({source_docker_image_tag}) does not match the image tag for connection ID {connection_id}. Please double check that this connection is using the correct image tag. Connection URL: {connection_url}"
+            f"The provided docker image tag ({source_docker_image_tag}) does not match the image tag for connection ID {connection_id}. Please double check that this connection is using the correct image tag and the latest job ran using this version. Connection URL: {connection_url}"
         )
 
     return ConnectionObjects(

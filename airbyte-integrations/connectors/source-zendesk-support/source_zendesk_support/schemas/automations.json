@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "actions": {
+      "type": "array",
+      "description": "An object describing what the automation will do",
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "field": {
+            "type": ["string", "null"]
+          },
+          "value": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "active": {
+      "type": ["boolean", "null"],
+      "description": "Whether the automation is active"
+    },
+    "conditions": {
+      "type": "object",
+      "description": "An object that describes the conditions under which the automation will execute",
+      "properties": {
+        "all": {
+          "type": "array",
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "field": {
+                "type": ["string", "null"]
+              },
+              "operator": {
+                "type": ["string", "null"]
+              },
+              "value": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        },
+        "any": {
+          "type": "array",
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "field": {
+                "type": ["string", "null"]
+              },
+              "operator": {
+                "type": ["string", "null"]
+              },
+              "value": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "description": "The time the automation was created",
+      "type": ["string", "null"]
+    },
+    "default": {
+      "type": ["boolean", "null"],
+      "description": "If true, the automation is a default automation"
+    },
+    "id": {
+      "type": ["integer", "null"],
+      "description": "Automatically assigned when created"
+    },
+    "position": {
+      "type": ["integer", "null"],
+      "description": "The position of the automation which specifies the order it will be executed"
+    },
+    "raw_title": {
+      "type": ["string", "null"],
+      "description": "The raw title of the automation"
+    },
+    "title": {
+      "type": ["string", "null"],
+      "description": "The title of the automation"
+    },
+    "updated_at": {
+      "description": "The time of the last update of the automation",
+      "type": ["string", "null"]
+    }
+  }
+}

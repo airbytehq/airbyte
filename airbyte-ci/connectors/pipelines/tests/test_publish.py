@@ -9,6 +9,7 @@ from typing import List
 import anyio
 import pytest
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
+from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -24,6 +25,7 @@ def publish_context(mocker, dagger_client, tmpdir):
         docker_hub_username=None,
         docker_hub_password=None,
         docker_image="hello-world:latest",
+        rollout_mode=RolloutMode.PUBLISH,
     )
 
 
@@ -168,7 +170,7 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
     run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.FAILURE)
 
-    context = mocker.MagicMock(pre_release=pre_release)
+    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     run_metadata_validation.assert_called_once()
@@ -305,9 +307,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
-    context = mocker.MagicMock(
-        pre_release=pre_release,
-    )
+    context = mocker.MagicMock(pre_release=pre_release, rollout_mode=RolloutMode.PUBLISH)
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
@@ -396,6 +396,7 @@ async def test_run_connector_python_registry_publish_pipeline(
         ),
         python_registry_token=api_token,
         python_registry_url="https://test.pypi.org/legacy/",
+        rollout_mode=RolloutMode.PUBLISH,
     )
     semaphore = anyio.Semaphore(1)
     if api_token is None:
@@ -420,19 +421,20 @@ async def test_run_connector_python_registry_publish_pipeline(
 
 class TestPushConnectorImageToRegistry:
     @pytest.mark.parametrize(
-        "is_pre_release, is_release_candidate, should_publish_latest",
+        "is_pre_release, version, should_publish_latest",
         [
-            (False, False, True),
-            (True, False, False),
-            (False, True, False),
-            (True, True, False),
+            (False, "1.0.0", True),
+            (True, "1.1.0-dev", False),
+            (False, "1.1.0-rc.1", False),
+            (True, "1.1.0-rc.1", False),
         ],
     )
-    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, is_release_candidate, should_publish_latest):
+    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, version, should_publish_latest):
         publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
         publish_context.docker_repository = "airbyte/source-pokeapi"
         publish_context.pre_release = is_pre_release
-        publish_context.connector.metadata = {"releases": {"isReleaseCandidate": is_release_candidate}}
+        publish_context.connector.version = version
+        publish_context.connector.metadata = {"dockerImageTag": version}
         step = publish_pipeline.PushConnectorImageToRegistry(publish_context)
         amd_built_container = mocker.Mock(publish=mocker.AsyncMock())
         arm_built_container = mocker.Mock(publish=mocker.AsyncMock())
