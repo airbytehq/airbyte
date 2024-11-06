@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.dev_null
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -80,11 +81,41 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
 
         return SimpleBatch(state = Batch.State.COMPLETE)
     }
+
+    override suspend fun processFiles(
+        records: Iterator<DestinationFile>,
+        totalSizeBytes: Long
+    ): Batch {
+        log.info { "Processing record batch with logging" }
+
+        records.forEach { record ->
+            if (recordCount.getAndIncrement() % logEvery == 0L) {
+                if (sampleRate == 1.0 || prng.nextDouble() < sampleRate) {
+                    if (logCount.incrementAndGet() < maxEntryCount) {
+                        log.info {
+                            "Logging Destination(stream=${stream.descriptor}, recordIndex=$recordCount, logEntry=$logCount/$maxEntryCount): $record"
+                        }
+                    }
+                }
+            }
+        }
+
+        log.info { "Completed record batch." }
+
+        return SimpleBatch(state = Batch.State.COMPLETE)
+    }
 }
 
 class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
+        totalSizeBytes: Long
+    ): Batch {
+        return SimpleBatch(state = Batch.State.COMPLETE)
+    }
+
+    override suspend fun processFiles(
+        records: Iterator<DestinationFile>,
         totalSizeBytes: Long
     ): Batch {
         return SimpleBatch(state = Batch.State.COMPLETE)
@@ -112,6 +143,18 @@ class ThrottledStreamLoader(
 
         return SimpleBatch(state = Batch.State.COMPLETE)
     }
+
+    override suspend fun processFiles(
+        records: Iterator<DestinationFile>,
+        totalSizeBytes: Long
+    ): Batch {
+        log.info { "Processing record batch with delay of $millisPerRecord per record" }
+
+        records.forEach { _ -> delay(millisPerRecord) }
+        log.info { "Completed record batch." }
+
+        return SimpleBatch(state = Batch.State.COMPLETE)
+    }
 }
 
 class FailingStreamLoader(override val stream: DestinationStream, private val numMessages: Int) :
@@ -124,6 +167,27 @@ class FailingStreamLoader(override val stream: DestinationStream, private val nu
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
+        totalSizeBytes: Long
+    ): Batch {
+        log.info { "Processing record batch with failure after $numMessages messages" }
+
+        records.forEach { record ->
+            messageCount.getAndIncrement().let { messageCount ->
+                if (messageCount > numMessages) {
+                    val message =
+                        "Failing Destination(stream=${stream.descriptor}, numMessages=$numMessages: failing at $record"
+                    log.info { message }
+                    throw RuntimeException(message)
+                }
+            }
+        }
+        log.info { "Completed record batch." }
+
+        return SimpleBatch(state = Batch.State.COMPLETE)
+    }
+
+    override suspend fun processFiles(
+        records: Iterator<DestinationFile>,
         totalSizeBytes: Long
     ): Batch {
         log.info { "Processing record batch with failure after $numMessages messages" }

@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFact
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamIncompleteResult
@@ -108,6 +109,13 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         } else {
             FinalizedObject(remoteObject = obj)
         }
+    }
+
+    override suspend fun processFiles(
+        records: Iterator<DestinationFile>,
+        totalSizeBytes: Long
+    ): Batch {
+        TODO("Not yet implemented")
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -22,7 +22,7 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamCompleteWrapped
+import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
@@ -169,12 +169,12 @@ class InputConsumerTaskTest {
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
-        Assertions.assertEquals(StreamCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(StreamRecordCompleteWrapped(10), streamComplete1.value)
         Assertions.assertEquals(1, streamComplete1.bytesReserved)
         Assertions.assertEquals(10L, manager1.recordCount())
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
 
-        Assertions.assertEquals(StreamCompleteWrapped(0), streamComplete2.value)
+        Assertions.assertEquals(StreamRecordCompleteWrapped(0), streamComplete2.value)
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
@@ -211,7 +211,7 @@ class InputConsumerTaskTest {
                     1L,
                     makeRecord(MockDestinationCatalogFactory.stream2, "test")
                 ),
-                StreamCompleteWrapped(1)
+                StreamRecordCompleteWrapped(1)
             ),
             queue2.consume().toList().map { it.value }
         )
@@ -223,7 +223,7 @@ class InputConsumerTaskTest {
         queue1.close()
         val messages1 = queue1.consume().toList()
         Assertions.assertEquals(11, messages1.size)
-        Assertions.assertEquals(messages1[10].value, StreamCompleteWrapped(10))
+        Assertions.assertEquals(messages1[10].value, StreamRecordCompleteWrapped(10))
         Assertions.assertEquals(
             mockInputFlow.initialMemory - 11,
             mockInputFlow.memoryManager.remainingMemoryBytes,
