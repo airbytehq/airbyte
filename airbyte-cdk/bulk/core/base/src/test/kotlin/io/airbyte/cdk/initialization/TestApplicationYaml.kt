@@ -19,6 +19,7 @@ class TestApplicationYaml {
 }
 
 data class TestBean(val testApplicationYamlEntry: String)
+
 @Factory
 class TestFactory {
     @Bean
