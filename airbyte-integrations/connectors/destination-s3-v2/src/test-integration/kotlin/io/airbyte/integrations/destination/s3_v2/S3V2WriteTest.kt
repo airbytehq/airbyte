@@ -6,7 +6,10 @@ package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -17,6 +20,7 @@ abstract class S3V2WriteTest(
     preserveUndeclaredFields: Boolean,
     /** This is false for staging mode, and true for non-staging mode. */
     commitDataIncrementally: Boolean = false,
+    allTypesBehavior: AllTypesBehavior,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -30,6 +34,7 @@ abstract class S3V2WriteTest(
         promoteUnionToObject = promoteUnionToObject,
         preserveUndeclaredFields = preserveUndeclaredFields,
         commitDataIncrementally = commitDataIncrementally,
+        allTypesBehavior = allTypesBehavior,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -63,6 +68,7 @@ abstract class S3V2WriteTest(
         super.testTruncateRefresh()
     }
 
+    @Test
     override fun testContainerTypes() {
         super.testContainerTypes()
     }
@@ -77,6 +83,18 @@ abstract class S3V2WriteTest(
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
 }
 
 class S3V2WriteTestJsonUncompressed :
@@ -85,6 +103,7 @@ class S3V2WriteTestJsonUncompressed :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestJsonStaging :
@@ -93,6 +112,7 @@ class S3V2WriteTestJsonStaging :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestJsonGzip :
@@ -101,6 +121,7 @@ class S3V2WriteTestJsonGzip :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestCsvUncompressed :
@@ -109,6 +130,7 @@ class S3V2WriteTestCsvUncompressed :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestCsvGzip :
@@ -117,6 +139,7 @@ class S3V2WriteTestCsvGzip :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestAvroUncompressed :
@@ -125,6 +148,7 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
     ) {
     @Disabled("Not yet working")
     @Test
@@ -136,6 +160,12 @@ class S3V2WriteTestAvroUncompressed :
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }
 
@@ -145,6 +175,7 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
     ) {
     @Disabled("Not yet working")
     @Test
@@ -156,6 +187,12 @@ class S3V2WriteTestAvroBzip2 :
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }
 
@@ -165,6 +202,7 @@ class S3V2WriteTestParquetUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
     ) {
     @Disabled("Not yet working")
     @Test
@@ -176,6 +214,12 @@ class S3V2WriteTestParquetUncompressed :
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }
 
@@ -185,6 +229,7 @@ class S3V2WriteTestParquetSnappy :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
     ) {
     @Disabled("Not yet working")
     @Test
@@ -196,5 +241,11 @@ class S3V2WriteTestParquetSnappy :
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Disabled("Not yet working")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }

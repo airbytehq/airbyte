@@ -1,0 +1,4 @@
+airbyte:
+  test: value
+  test-default: ${NOT_PRESENT:default}
+  test-env: ${PRESENT:default}
