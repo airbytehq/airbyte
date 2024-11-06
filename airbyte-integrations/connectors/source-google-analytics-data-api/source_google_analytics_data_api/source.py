@@ -398,7 +398,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        while start_date <= today:
+        end_date = self.config.get("date_ranges_end_date")
+        if end_date is not None:
+            end_date = utils.string_to_date(end_date, self._record_date_format, old_format=DATE_FORMAT)
+            end_date = max(end_date, today)
+        else:
+            end_date = today
+
+        while start_date <= end_date:
             # stop producing slices if 429 + specific scenario is hit
             # see GoogleAnalyticsQuotaHandler for more info.
             if GoogleAnalyticsQuotaHandler.stop_iter:
@@ -406,7 +413,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             else:
                 yield {
                     "startDate": utils.date_to_string(start_date),
-                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), end_date)),
                 }
                 start_date += datetime.timedelta(days=self.config["window_in_days"])
 
