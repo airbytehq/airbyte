@@ -398,7 +398,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        end_date = self.config.get("date_ranges_end_date")
+        end_date = min(self.config.get("date_ranges_end_date"), today)
 
         while start_date <= end_date:
             # stop producing slices if 429 + specific scenario is hit
