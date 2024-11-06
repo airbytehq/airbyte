@@ -30,7 +30,6 @@ class JsonToAirbyteValue {
                 is BooleanType -> toBoolean(json)
                 is DateType -> DateValue(json.asText())
                 is IntegerType -> toInteger(json)
-                is NullType -> toNull(json)
                 is NumberType -> toNumber(json)
                 is ObjectType -> toObject(json, schema)
                 is ObjectTypeWithoutSchema,
@@ -185,7 +184,6 @@ class JsonToAirbyteValue {
             is BooleanType -> json.isBoolean
             is DateType -> json.isTextual
             is IntegerType -> json.isIntegralNumber
-            is NullType -> json.isNull
             is NumberType -> json.isNumber
             is ObjectType,
             is ObjectTypeWithoutSchema,

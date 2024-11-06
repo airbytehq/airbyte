@@ -35,7 +35,6 @@ class AirbyteValueIdentityMapperTest {
                     ArrayTypeWithoutSchema
                 )
                 .withRecord()
-                .with(NullValue, NullType)
                 .endRecord()
                 .endRecord()
                 .build()
