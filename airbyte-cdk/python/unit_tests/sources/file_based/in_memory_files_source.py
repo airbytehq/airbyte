@@ -9,7 +9,7 @@ import logging
 import tempfile
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional, Dict
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import avro.io as ai
 import avro.schema as avro_schema
