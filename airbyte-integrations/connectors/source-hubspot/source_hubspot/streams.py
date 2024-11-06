@@ -41,6 +41,8 @@ from source_hubspot.helpers import (
     IURLPropertyRepresentation,
     StoreAsIs,
 )
+from source_hubspot.components import NewToLegacyFieldTransformation
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -336,6 +338,7 @@ class Stream(HttpStream, ABC):
     properties_scopes: Set = None
     unnest_fields: Optional[List[str]] = None
     checkpoint_by_page = False
+    transformations: List[RecordTransformation] = None
 
     @cached_property
     def record_unnester(self):
@@ -688,6 +691,8 @@ class Stream(HttpStream, ABC):
             record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
+            for transformation in self.transformations:
+                record = transformation().transform(record)
             yield record
 
     @staticmethod
@@ -1513,6 +1518,7 @@ class Deals(CRMSearchStream):
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    transformations = [NewToLegacyFieldTransformation]
 
 
 class DealsArchived(ClientSideIncrementalStream):
@@ -1526,6 +1532,7 @@ class DealsArchived(ClientSideIncrementalStream):
     cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    transformations = [NewToLegacyFieldTransformation]
 
     def request_params(
         self,
@@ -2198,6 +2205,7 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+    transformations = [NewToLegacyFieldTransformation]
 
 
 class EngagementsCalls(CRMSearchStream):
