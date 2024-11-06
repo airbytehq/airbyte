@@ -20,7 +20,6 @@ from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayRe
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
 
 
-
 class SourceAmazonAds(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})

@@ -50,6 +50,7 @@ class TooManyRequests(Exception):
     Custom exception occured when response with 429 status code received
     """
 
+
 CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
@@ -87,7 +88,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._session.auth = authenticator
         self._report_download_session = self._session
-        self._start_date: Optional[str] = pendulum.from_format(config["start_date"], CONFIG_DATE_FORMAT).date() if config.get("start_date") else None
+        self._start_date: Optional[str] = (
+            pendulum.from_format(config["start_date"], CONFIG_DATE_FORMAT).date() if config.get("start_date") else None
+        )
         self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)

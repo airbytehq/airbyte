@@ -7,7 +7,6 @@ import json
 import pytest
 import requests
 import responses
-
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
 
