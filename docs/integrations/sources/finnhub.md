@@ -6,25 +6,25 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. The API key to use for authentication |  |
-| `end_date` | `string` | end_date.  |  |
-| `start_date` | `string` | start_date.  |  |
-| `company_symbol` | `string` | company_symbol.  |  |
+| `symbols` | `array` | Companies.  |  |
+| `market_news_category` | `string` | Market News Category. This parameter can be 1 of the following values general, forex, crypto, merger. | general |
+| `exchange` | `string` | Exchange. More info: https://finnhub.io/docs/api/stock-symbols | US |
+| `start_date_2` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | marketnews | id | No pagination | ✅ |  ❌  |
-| stocksymbols |  | No pagination | ✅ |  ❌  |
-| basicfinancials | cik | No pagination | ✅ |  ❌  |
-| financialsreported | cik | No pagination | ✅ |  ❌  |
-| companyprofile | ticker | No pagination | ✅ |  ❌  |
-| secfilings |  | No pagination | ✅ |  ❌  |
-| insidertransactions |  | No pagination | ✅ |  ❌  |
-| insidersentiment |  | No pagination | ✅ |  ❌  |
-| companynews |  | No pagination | ✅ |  ❌  |
-| stockrecommendations |  | No pagination | ✅ |  ❌  |
-| earningssurprises |  | No pagination | ✅ |  ❌  |
-| stockquote |  | No pagination | ✅ |  ❌  |
+| stock_symbols |  | No pagination | ✅ |  ❌  |
+| basic_financial_report | accessNumber | No pagination | ✅ |  ✅  |
+| company_profile | ticker | No pagination | ✅ |  ❌  |
+| sec_filings | accessNumber | No pagination | ✅ |  ✅  |
+| insider_transactions |  | No pagination | ✅ |  ✅  |
+| insider_sentiment |  | No pagination | ✅ |  ❌  |
+| company_news |  | No pagination | ✅ |  ✅  |
+| stock_recommendations |  | No pagination | ✅ |  ❌  |
+| earnings_surprises | symbol.period | No pagination | ✅ |  ❌  |
+| stock_quote |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -33,6 +33,6 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-24 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-06 | | Initial release by [@marcosmarxm](https://github.com/marcosmarxm) via Connector Builder |
 
 </details>
