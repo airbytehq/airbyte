@@ -40,7 +40,6 @@ data class StreamFileWrapped(
     val file: DestinationFile
 ) : DestinationFileWrapped()
 
-
 data class StreamRecordCompleteWrapped(
     val index: Long,
 ) : DestinationRecordWrapped() {

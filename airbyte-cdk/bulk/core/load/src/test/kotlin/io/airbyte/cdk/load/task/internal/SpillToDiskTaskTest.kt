@@ -84,7 +84,9 @@ class SpillToDiskTaskTest {
                 )
             )
         }
-        queue.publish(memoryManager.reserveBlocking(0L, StreamRecordCompleteWrapped(index = maxRecords)))
+        queue.publish(
+            memoryManager.reserveBlocking(0L, StreamRecordCompleteWrapped(index = maxRecords))
+        )
         return bytesReserved
     }
 

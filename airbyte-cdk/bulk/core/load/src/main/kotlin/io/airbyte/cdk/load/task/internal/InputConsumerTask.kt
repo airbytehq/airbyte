@@ -28,8 +28,8 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamFileWrapped
+import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.MemoryManager

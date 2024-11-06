@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /**
@@ -365,7 +366,10 @@ data object Undefined : DestinationMessage {
 }
 
 @Singleton
-class DestinationMessageFactory(private val catalog: DestinationCatalog) {
+class DestinationMessageFactory(
+    private val catalog: DestinationCatalog,
+    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
@@ -374,8 +378,26 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         namespace = message.record.namespace,
                         name = message.record.stream,
                     )
-                // TODO: File transfer check
-                if (true) {
+                if (fileTransferEnabled) {
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = message.record.emittedAt,
+                        serialized = serialized,
+                        fileMessage =
+                            DestinationFile.AirbyteRecordMessageFile(
+                                fileUrl =
+                                    message.record.additionalProperties["file_url"] as String?,
+                                bytes = message.record.additionalProperties["bytes"] as Long?,
+                                fileRelativePath =
+                                    message.record.additionalProperties["file_relative_path"]
+                                        as String?,
+                                modified = message.record.additionalProperties["modified"] as Long?,
+                                sourceFileUrl =
+                                    message.record.additionalProperties["source_file_url"]
+                                        as String?
+                            )
+                    )
+                } else {
                     DestinationRecord(
                         stream = stream.descriptor,
                         data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
@@ -397,25 +419,6 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                             ),
                         serialized = serialized
                     )
-                } else {
-                    DestinationFile(
-                        stream = stream.descriptor,
-                        emittedAtMs = message.record.emittedAt,
-                        serialized = serialized,
-                        fileMessage =
-                            DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl =
-                                    message.record.additionalProperties["file_url"] as String?,
-                                bytes = message.record.additionalProperties["bytes"] as Long?,
-                                fileRelativePath =
-                                    message.record.additionalProperties["file_relative_path"]
-                                        as String?,
-                                modified = message.record.additionalProperties["modified"] as Long?,
-                                sourceFileUrl =
-                                    message.record.additionalProperties["source_file_url"]
-                                        as String?
-                            )
-                    )
                 }
             }
             AirbyteMessage.Type.TRACE -> {
@@ -426,28 +429,27 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         name = status.streamDescriptor.name,
                     )
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
-                    // TODO: File transfer FF
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            if (true) {
-                                DestinationRecordStreamComplete(
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamComplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
                                 )
                             } else {
-                                DestinationFileStreamComplete(
+                                DestinationRecordStreamComplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
-                            if (true) {
-                                DestinationRecordStreamIncomplete(
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamIncomplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
                                 )
                             } else {
-                                DestinationFileStreamIncomplete(
+                                DestinationRecordStreamIncomplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
                                 )
