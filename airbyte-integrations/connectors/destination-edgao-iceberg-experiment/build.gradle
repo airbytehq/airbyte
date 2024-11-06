@@ -24,13 +24,16 @@ application {
 //}
 
 dependencies {
-    // implementation("org.apache.iceberg:iceberg-core:1.6.1")
+    implementation("org.apache.iceberg:iceberg-core:1.6.1")
     // implementation("org.apache.iceberg:iceberg-api:1.6.1")
-    // implementation("org.apache.iceberg:iceberg-aws:1.6.1")
-    // implementation("org.apache.hadoop:hadoop-common:3.4.1")
-    implementation("aws.sdk.kotlin:glue:1.3.67")
+    implementation("org.apache.iceberg:iceberg-aws:1.6.1")
+    implementation("org.apache.iceberg:iceberg-parquet:1.6.1")
+    implementation("org.apache.hadoop:hadoop-common:3.4.1")
+    implementation("org.apache.parquet:parquet-column:1.13.1")
+    implementation("software.amazon.awssdk:glue:2.29.6")
+    implementation("software.amazon.awssdk:sts:2.29.6")
+    implementation("software.amazon.awssdk:s3:2.29.6")
+
+    // implementation("aws.sdk.kotlin:glue:1.3.67")
     // implementation("aws.sdk.kotlin:glue-jvm:1.3.67")
-    // implementation("software.amazon.awssdk:glue:2.29.6")
-    // implementation("software.amazon.awssdk:sts:2.29.6")
-    // implementation("software.amazon.awssdk:s3:2.29.6")
 }
