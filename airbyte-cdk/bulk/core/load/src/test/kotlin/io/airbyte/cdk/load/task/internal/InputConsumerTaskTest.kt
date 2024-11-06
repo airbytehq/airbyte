@@ -194,8 +194,8 @@ class InputConsumerTaskTest {
                     makeRecord(MockDestinationCatalogFactory.stream1, "test${it}")
                 )
             }
-        val streamComplete1: Reserved<out Sized> = queue1.consume().take(1).toList().first()
-        val streamComplete2: Reserved<out Sized> = queue2.consume().take(1).toList().first()
+        val streamComplete1: Reserved<DestinationRecordWrapped> = queue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<DestinationRecordWrapped> = queue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
@@ -245,8 +245,8 @@ class InputConsumerTaskTest {
                     makeFile(MockDestinationCatalogFactory.stream1, "test${it}")
                 )
             }
-        val streamComplete1: Reserved<out Sized> = fileQueue1.consume().take(1).toList().first()
-        val streamComplete2: Reserved<out Sized> = fileQueue2.consume().take(1).toList().first()
+        val streamComplete1: Reserved<DestinationFileWrapped> = fileQueue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<DestinationFileWrapped> = fileQueue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
