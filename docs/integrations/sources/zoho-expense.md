@@ -6,9 +6,10 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `client_id` | `string` | OAuth Client ID.  |  |
-| `data_center` | `string` | Data Center. The domain suffix for the Zoho Expense API based on your data center location (e.g., &#39;com&#39;, &#39;eu&#39;, &#39;in&#39;, etc.) | in |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
+| `data_center` | `string` | Data Center. The domain suffix for the Zoho Expense API based on your data center location (e.g., `com`, `in`, `jp` etc.) | `com` |
+
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -21,6 +22,7 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 | organizations | organization_id | DefaultPaginator | ✅ |  ❌  |
 | expense_categories | category_id | DefaultPaginator | ✅ |  ❌  |
 | currencies | currency_id | DefaultPaginator | ✅ |  ❌  |
+| taxes | tax_id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
