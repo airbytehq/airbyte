@@ -134,7 +134,7 @@ class SourceAmazonAds(AbstractSource):
         ]
         portfolios_stream = Portfolios(**stream_args)
         return [
-            Profiles(**stream_args),
+            profiles_stream,
             portfolios_stream,
             *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],
         ]
