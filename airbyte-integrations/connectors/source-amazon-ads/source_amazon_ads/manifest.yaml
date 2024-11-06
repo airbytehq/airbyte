@@ -321,6 +321,15 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: sb/keywords
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
+              - predicate: "{{ 'code' in response and 'details' in response }}"
+                action: IGNORE
+                error_message: "{{ response.code }}; {{ response.details }}"
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -349,6 +358,15 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: sb/v4/campaigns/list
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
+              - predicate: "{{ 'code' in response and 'details' in response }}"
+                action: IGNORE
+                error_message: "{{ response.code }}; {{ response.details }}"
           http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -393,6 +411,15 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - predicate: "{{ 'message' in response }}"
+                action: FAIL
+                error_message: "{{ response.message }}"
+              - predicate: "{{ 'code' in response and 'details' in response }}"
+                action: IGNORE
+                error_message: "{{ response.code }}; {{ response.details }}"
           path: sb/v4/adGroups/list
           http_method: POST
           request_headers:
