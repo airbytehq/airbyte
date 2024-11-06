@@ -575,7 +575,7 @@ class ModelToComponentFactory:
             )
 
         # When step is not defined, default to a step size from the starting date to the present moment
-        step_length = datetime.datetime.now(tz=datetime.timezone.utc) - start_date
+        step_length = datetime.timedelta.max
         interpolated_step = (
             InterpolatedString.create(datetime_based_cursor_model.step, parameters=datetime_based_cursor_model.parameters or {})
             if datetime_based_cursor_model.step
