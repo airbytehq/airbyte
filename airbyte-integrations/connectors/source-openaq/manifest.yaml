@@ -14,13 +14,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Instruments
+    - instruments
 
 definitions:
   streams:
-    Instruments:
+    instruments:
       type: DeclarativeStream
-      name: Instruments
+      name: instruments
       primary_key:
         - id
       retriever:
@@ -53,36 +53,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Instruments"
-    Instrument:
+          $ref: "#/schemas/instruments"
+    manufacturers:
       type: DeclarativeStream
-      name: Instrument
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: instruments/{{ stream_partition.instrument_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: instrument_id
-              stream:
-                $ref: "#/definitions/streams/Instruments"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Instrument"
-    Manufacturers:
-      type: DeclarativeStream
-      name: Manufacturers
+      name: manufacturers
       primary_key:
         - id
       retriever:
@@ -115,39 +89,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Manufacturers"
-    Manufacturer:
+          $ref: "#/schemas/manufacturers"
+    manufacturer_instruments:
       type: DeclarativeStream
-      name: Manufacturer
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: manufacturers/{{ stream_partition.manufacturer_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: manufacturer_id
-              stream:
-                $ref: "#/definitions/streams/Manufacturers"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Manufacturer"
-    Manufacturer Instruments:
-      type: DeclarativeStream
-      name: Manufacturer Instruments
+      name: manufacturer_instruments
       primary_key:
         - id
       retriever:
@@ -169,14 +114,14 @@ definitions:
               parent_key: id
               partition_field: manufacturer_id
               stream:
-                $ref: "#/definitions/streams/Manufacturers"
+                $ref: "#/definitions/streams/manufacturers"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Manufacturer Instruments"
-    Locations:
+          $ref: "#/schemas/manufacturer_instruments"
+    locations:
       type: DeclarativeStream
-      name: Locations
+      name: locations
       primary_key:
         - id
       retriever:
@@ -185,8 +130,19 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: locations
           http_method: GET
-          request_parameters:
-            countries_id: "{{ config['countriesids'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,42 +164,21 @@ definitions:
             page_size: 1000
             start_from_page: 1
             inject_on_first_request: true
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Locations"
-    Location:
-      type: DeclarativeStream
-      name: Location
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: locations/{{ stream_partition.location_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: location_id
-              stream:
-                $ref: "#/definitions/streams/Locations"
+          type: ListPartitionRouter
+          values: "{{ config.country_ids }}"
+          cursor_field: co_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: countries_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Location"
-    Licenses:
+          $ref: "#/schemas/locations"
+    licenses:
       type: DeclarativeStream
-      name: Licenses
+      name: licenses
       retriever:
         type: SimpleRetriever
         requester:
@@ -274,10 +209,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Licenses"
-    License Instrument:
+          $ref: "#/schemas/licenses"
+    license_instrument:
       type: DeclarativeStream
-      name: License Instrument
+      name: license_instrument
       primary_key:
         - id
       retriever:
@@ -299,14 +234,14 @@ definitions:
               parent_key: id
               partition_field: licenses_id
               stream:
-                $ref: "#/definitions/streams/Licenses"
+                $ref: "#/definitions/streams/licenses"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/License Instrument"
-    Parameters:
+          $ref: "#/schemas/license_instrument"
+    parameters:
       type: DeclarativeStream
-      name: Parameters
+      name: parameters
       primary_key:
         - id
       retriever:
@@ -339,37 +274,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Parameters"
-    Parameter:
+          $ref: "#/schemas/parameters"
+    countries:
       type: DeclarativeStream
-      name: Parameter
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: parameters/{{ stream_partition.parameters_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parameters_id
-              stream:
-                $ref: "#/definitions/streams/Parameters"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Parameter"
-    Countries:
-      type: DeclarativeStream
-      name: Countries
+      name: countries
       primary_key:
         - id
       retriever:
@@ -402,37 +310,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Countries"
-    Country:
+          $ref: "#/schemas/countries"
+    latest_parameters:
       type: DeclarativeStream
-      name: Country
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: countries/{{ stream_partition.countries_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: countries_id
-              stream:
-                $ref: "#/definitions/streams/Countries"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Country"
-    Latest Parameters:
-      type: DeclarativeStream
-      name: Latest Parameters
+      name: latest_parameters
       retriever:
         type: SimpleRetriever
         requester:
@@ -452,14 +333,14 @@ definitions:
               parent_key: id
               partition_field: parameters_id
               stream:
-                $ref: "#/definitions/streams/Parameters"
+                $ref: "#/definitions/streams/parameters"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Latest Parameters"
-    Sensors:
+          $ref: "#/schemas/latest_parameters"
+    sensors:
       type: DeclarativeStream
-      name: Sensors
+      name: sensors
       primary_key:
         - id
       retriever:
@@ -468,12 +349,40 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: locations/{{ stream_partition.location_id }}/sensors
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -481,43 +390,14 @@ definitions:
               parent_key: id
               partition_field: location_id
               stream:
-                $ref: "#/definitions/streams/Locations"
+                $ref: "#/definitions/streams/locations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Sensors"
-    Sensor:
+          $ref: "#/schemas/sensors"
+    providers:
       type: DeclarativeStream
-      name: Sensor
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Sensor"
-    Providers:
-      type: DeclarativeStream
-      name: Providers
+      name: providers
       primary_key:
         - id
       retriever:
@@ -550,39 +430,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Providers"
-    Provider:
+          $ref: "#/schemas/providers"
+    owners:
       type: DeclarativeStream
-      name: Provider
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: providers/{{ stream_partition.provider_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: provider_id
-              stream:
-                $ref: "#/definitions/streams/Providers"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Provider"
-    Owners:
-      type: DeclarativeStream
-      name: Owners
+      name: owners
       primary_key:
         - id
       retriever:
@@ -615,39 +466,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Owners"
-    Owner:
+          $ref: "#/schemas/owners"
+    location_latest_measure:
       type: DeclarativeStream
-      name: Owner
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: owners/{{ stream_partition.owner_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: owner_id
-              stream:
-                $ref: "#/definitions/streams/Owners"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Owner"
-    Location’s Latest Measurement:
-      type: DeclarativeStream
-      name: Location’s Latest Measurement
+      name: location_latest_measure
       retriever:
         type: SimpleRetriever
         requester:
@@ -667,14 +489,14 @@ definitions:
               parent_key: id
               partition_field: location_id
               stream:
-                $ref: "#/definitions/streams/Locations"
+                $ref: "#/definitions/streams/locations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Location’s Latest Measurement"
-    Measurements:
+          $ref: "#/schemas/location_latest_measure"
+    sensor_measurements:
       type: DeclarativeStream
-      name: Measurements
+      name: sensor_measurements
       retriever:
         type: SimpleRetriever
         requester:
@@ -709,26 +531,55 @@ definitions:
               parent_key: id
               partition_field: sensor_id
               stream:
-                $ref: "#/definitions/streams/Sensors"
+                $ref: "#/definitions/streams/sensors"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Measurements"
-    Measurements Aggregated To Day:
+          $ref: "#/schemas/sensor_measurements"
+    measurements_daily:
       type: DeclarativeStream
-      name: Measurements Aggregated To Day
+      name: measurements_daily
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: sensors/{{ stream_partition.sensor_id }}/days
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: SUCCESS
+                    http_codes:
+                      - 500
+                    error_message: Internal Server Error
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -736,14 +587,14 @@ definitions:
               parent_key: id
               partition_field: sensor_id
               stream:
-                $ref: "#/definitions/streams/Sensors"
+                $ref: "#/definitions/streams/sensors"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Measurements Aggregated To Day"
-    Measurements Aggregated To Year:
+          $ref: "#/schemas/measurements_daily"
+    measurements_yearly:
       type: DeclarativeStream
-      name: Measurements Aggregated To Year
+      name: measurements_yearly
       retriever:
         type: SimpleRetriever
         requester:
@@ -763,362 +614,11 @@ definitions:
               parent_key: id
               partition_field: sensor_id
               stream:
-                $ref: "#/definitions/streams/Sensors"
+                $ref: "#/definitions/streams/sensors"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Measurements Aggregated To Year"
-    Measurements Aggregated From Day to Year:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Day to Year
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/days/yearly
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Day to Year"
-    Measurements Aggregated From Days to Month:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Days to Month
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/days/monthly
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Days to Month"
-    Measurements Aggregated From Day to Month of Year:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Day to Month of Year
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/days/monthofyear
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Day to Month of Year"
-    Measurements Aggregated From Day to Day Of Week:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Day to Day Of Week
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/days/dayofweek
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Day to Day Of Week"
-    Measurements Aggregated From Hour To Month of Year:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hour To Month of Year
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/monthofyear
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hour To Month of Year"
-    Measurements Aggregated From Hour To Day Of Week:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hour To Day Of Week
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/dayofweek
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hour To Day Of Week"
-    Measurements Aggregated From Hour To Hour of Day:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hour To Hour of Day
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/hourofday
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hour To Hour of Day"
-    Measurements Aggregated From Hour To Year:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hour To Year
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/yearly
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hour To Year"
-    Measurements Aggregated From Hours to Monthly:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hours to Monthly
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/monthofyear
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hours to Monthly"
-    Measurements Aggregated From Hours to Daily:
-      type: DeclarativeStream
-      name: Measurements Aggregated From Hours to Daily
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours/daily
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated From Hours to Daily"
-    Measurements Aggregated To Hour:
-      type: DeclarativeStream
-      name: Measurements Aggregated To Hour
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/hours
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated To Hour"
-    Measurements Aggregated To Daily:
-      type: DeclarativeStream
-      name: Measurements Aggregated To Daily
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/measurements/daily
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated To Daily"
-    Measurements Aggregated To Hourly:
-      type: DeclarativeStream
-      name: Measurements Aggregated To Hourly
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: sensors/{{ stream_partition.sensor_id }}/measurements/hourly
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: sensor_id
-              stream:
-                $ref: "#/definitions/streams/Sensors"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Measurements Aggregated To Hourly"
+          $ref: "#/schemas/measurements_yearly"
   base_requester:
     type: HttpRequester
     url_base: https://api.openaq.org/v3/
@@ -1131,43 +631,22 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: "#/definitions/streams/Instruments"
-  - $ref: "#/definitions/streams/Instrument"
-  - $ref: "#/definitions/streams/Manufacturers"
-  - $ref: "#/definitions/streams/Manufacturer"
-  - $ref: "#/definitions/streams/Manufacturer Instruments"
-  - $ref: "#/definitions/streams/Locations"
-  - $ref: "#/definitions/streams/Location"
-  - $ref: "#/definitions/streams/Licenses"
-  - $ref: "#/definitions/streams/License Instrument"
-  - $ref: "#/definitions/streams/Parameters"
-  - $ref: "#/definitions/streams/Parameter"
-  - $ref: "#/definitions/streams/Countries"
-  - $ref: "#/definitions/streams/Country"
-  - $ref: "#/definitions/streams/Latest Parameters"
-  - $ref: "#/definitions/streams/Sensors"
-  - $ref: "#/definitions/streams/Sensor"
-  - $ref: "#/definitions/streams/Providers"
-  - $ref: "#/definitions/streams/Provider"
-  - $ref: "#/definitions/streams/Owners"
-  - $ref: "#/definitions/streams/Owner"
-  - $ref: "#/definitions/streams/Location’s Latest Measurement"
-  - $ref: "#/definitions/streams/Measurements"
-  - $ref: "#/definitions/streams/Measurements Aggregated To Day"
-  - $ref: "#/definitions/streams/Measurements Aggregated To Year"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Day to Year"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Days to Month"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Day to Month of Year"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Day to Day Of Week"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hour To Month of Year"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hour To Day Of Week"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hour To Hour of Day"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hour To Year"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hours to Monthly"
-  - $ref: "#/definitions/streams/Measurements Aggregated From Hours to Daily"
-  - $ref: "#/definitions/streams/Measurements Aggregated To Hour"
-  - $ref: "#/definitions/streams/Measurements Aggregated To Daily"
-  - $ref: "#/definitions/streams/Measurements Aggregated To Hourly"
+  - $ref: "#/definitions/streams/instruments"
+  - $ref: "#/definitions/streams/manufacturers"
+  - $ref: "#/definitions/streams/manufacturer_instruments"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/licenses"
+  - $ref: "#/definitions/streams/license_instrument"
+  - $ref: "#/definitions/streams/parameters"
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/latest_parameters"
+  - $ref: "#/definitions/streams/sensors"
+  - $ref: "#/definitions/streams/providers"
+  - $ref: "#/definitions/streams/owners"
+  - $ref: "#/definitions/streams/location_latest_measure"
+  - $ref: "#/definitions/streams/sensor_measurements"
+  - $ref: "#/definitions/streams/measurements_daily"
+  - $ref: "#/definitions/streams/measurements_yearly"
 
 spec:
   type: Spec
@@ -1176,314 +655,148 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - country_ids
     properties:
       api_key:
         type: string
         order: 0
         title: API Key
         airbyte_secret: true
-      countriesids:
-        type: string
-        description: The list of IDs of countries (comma separated) you need the data for
-        title: CountriesIds
-        default: 79,155,9
+      country_ids:
+        type: array
+        description: >-
+          The list of IDs of countries (comma separated) you need the data for,
+          check more: https://docs.openaq.org/resources/countries
         order: 1
+        title: Countries
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    Instruments: true
-    Instrument: true
-    Manufacturers: true
-    Manufacturer: true
-    Manufacturer Instruments: true
-    Locations: true
-    Location: true
-    Licenses: true
-    License Instrument: true
-    Parameters: true
-    Parameter: true
-    Countries: true
-    Country: true
-    Latest Parameters: true
-    Sensors: true
-    Sensor: true
-    Providers: true
-    Provider: true
-    Owners: true
-    Owner: true
-    Location’s Latest Measurement: true
-    Measurements: true
-    Measurements Aggregated To Day: true
-    Measurements Aggregated To Year: true
-    Measurements Aggregated From Day to Year: true
-    Measurements Aggregated From Days to Month: true
-    Measurements Aggregated From Day to Month of Year: true
-    Measurements Aggregated From Day to Day Of Week: true
-    Measurements Aggregated From Hour To Month of Year: true
-    Measurements Aggregated From Hour To Day Of Week: true
-    Measurements Aggregated From Hour To Hour of Day: true
-    Measurements Aggregated From Hour To Year: true
-    Measurements Aggregated From Hours to Monthly: true
-    Measurements Aggregated From Hours to Daily: true
-    Measurements Aggregated To Hour: true
-    Measurements Aggregated To Daily: true
-    Measurements Aggregated To Hourly: true
+    instruments: true
+    manufacturers: true
+    manufacturer_instruments: true
+    locations: true
+    licenses: true
+    license_instrument: true
+    parameters: true
+    countries: true
+    latest_parameters: true
+    sensors: true
+    providers: true
+    owners: true
+    location_latest_measure: true
+    sensor_measurements: true
+    measurements_daily: true
+    measurements_yearly: true
   testedStreams:
-    Instruments:
-      hasRecords: true
-      streamHash: 8c00147c2e49b52c6ca7d206d19864668bcc9c1a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Instrument:
-      hasRecords: true
-      streamHash: 002d82d4c95dd9a4a5fd0e705dd2e3af7853675d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Manufacturers:
-      hasRecords: true
-      streamHash: 7427e5ef4c92e80fe72c95c3ca5dc50c3f716f10
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Manufacturer:
-      hasRecords: true
-      streamHash: 7ee82e1eb9f116db29e6b634ccb9491699659e3c
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Manufacturer Instruments:
-      hasRecords: true
-      streamHash: 82d486a0088ac4455ffb1b54caa4154d8fa93f24
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Locations:
-      streamHash: 2cbf6f20136f3fcb6113e1ddb023795d0d49a6f0
+    instruments:
+      streamHash: 37ced606dd4d1ee203685c7dfff05e26f1c6fbe0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Location:
-      streamHash: b1eeb0601420b0b597669b865ebffbe07cce419a
+    manufacturers:
+      streamHash: 758a158a89e8f45543eb8c22c99ea8643ea462ab
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Licenses:
-      hasRecords: true
-      streamHash: 0926e1bf3e039ee42c299f5e10a0bd3071c7ec9a
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    License Instrument:
-      hasRecords: true
-      streamHash: c565ed287e84c74937c633fbf5c07326b3c5464d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Parameters:
-      hasRecords: true
-      streamHash: 91a81fa9396fd98fd20985dc78eeeb3acc50c014
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Parameter:
-      hasRecords: true
-      streamHash: f0952686dc3a9c4f60d61fb4267b62f85fa358af
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Countries:
-      hasRecords: true
-      streamHash: bf89ea0d442afd12b3d0bead03859d76f175df7d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Country:
-      hasRecords: true
-      streamHash: 8a459629e18972c2217da59d30c42852c545bfd1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Latest Parameters:
-      hasRecords: true
-      streamHash: 2ff4a6dabea09aa9654cbe88685f52206044c226
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Sensors:
-      hasRecords: true
-      streamHash: be9cc78cfe1fba19a5e26ce05e0dea41dcfd4d21
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Sensor:
-      streamHash: 5abc8a2217e1d29aabd1293fe6dc16ec1fb01fe2
+    manufacturer_instruments:
+      streamHash: 1d7607c726b0ca392e558ae0b2244c6696b67a0e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Providers:
-      hasRecords: true
-      streamHash: 0f119597c4b931c9b5d09d5e339097dffe26313c
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Provider:
-      hasRecords: true
-      streamHash: bd02604d2a5b12918b9230a1ecb87f867e8dda2e
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Owners:
-      hasRecords: true
-      streamHash: 913b8fa83486dd135f6f5e9ab6425123b80c248b
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Owner:
-      hasRecords: true
-      streamHash: 52d3d7e65330c301e35aca13cbc61c767d0f5653
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Location’s Latest Measurement:
-      streamHash: 11f396292d182f57af7ecac06a0690bf7019fb1b
+    locations:
+      streamHash: 19ade0d6f041647c45cc191e69b2d4fb6c4a5203
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements:
-      streamHash: 07fcc6121dd93b438cf2fe8891efad4a1ae3b59a
+    licenses:
+      streamHash: 186c2b5653b20ef06c281f6aef755eee7b1c050f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated To Day:
-      streamHash: 9be260f3dd3bf62d351a671256b556fe0628a220
+    license_instrument:
+      streamHash: 1ba49590965222df97cb14b486c66eddbffd3253
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated To Year:
-      streamHash: da3e1fc5829723c194c50c41adfc6c38e5c52d5d
+    parameters:
+      streamHash: 2957351af4367680bc00dee0b089bb0b44ab51f1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Day to Year:
-      streamHash: 8794a9815683bb0bf74215c507fd787104a02c6f
+    countries:
+      streamHash: 8d9861715c30528ea96f98e4cb461a87ab3fbef0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Days to Month:
-      streamHash: ff971f09b0327ca5d1c5c5d9f2c3a134b68512e9
+    latest_parameters:
+      streamHash: 5c9ed8694a093960cd9fa4a5a5821d4b2ccd9282
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Day to Month of Year:
-      streamHash: 9304434f274bc6deeb6b60ba2539e87a21ff8466
+    sensors:
+      streamHash: 32b6ebb6a4882b0e0b46b458aa2ad685df21be9e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Day to Day Of Week:
-      streamHash: 996a700dbf482907228b33553ad2bb7a5fbc7d91
+    providers:
+      streamHash: d4d7e6b2db844501fb3a3a8b004071d0be10c22a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Hour To Month of Year:
-      streamHash: e5bf86ceb2b76bc5f087dd0c66b9f8562d0d1e44
+    owners:
+      streamHash: f39546df1a5c47d70a3c98d020dae113f1bcd6f5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Hour To Day Of Week:
-      streamHash: 7e8c25993bb66ee8b3558f5e8a194def88553824
+    location_latest_measure:
+      streamHash: d55e14b3570d202bb19b85675d5de26b634a8597
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Hour To Hour of Day:
-      streamHash: c7a7cd74983e0aaeab07a06482b1d7e6ab3a22b4
+    sensor_measurements:
+      streamHash: b1a0f502086b51e638bc82d67731db75b05d2392
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Hour To Year:
-      streamHash: 773bcd42717f518420e2d42e111ab19fc2b6f7e5
+    measurements_daily:
+      streamHash: 1c3febd96e12e486b4a47d61cff3e6b6026a2157
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Measurements Aggregated From Hours to Monthly:
-      streamHash: 0cf4c08c41320252b35eea6ba03abd70d4597f6a
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Measurements Aggregated From Hours to Daily:
-      streamHash: 12cfc4ca444ba3c376c7e9add69a174d5f933a74
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Measurements Aggregated To Hour:
-      streamHash: 0d092d864d0db73cd5039f99731ae3b4b3f60ea4
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Measurements Aggregated To Daily:
-      streamHash: a7112da5bd2b3293273d16eddf6a68fa2a9f3093
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    Measurements Aggregated To Hourly:
-      streamHash: 309def4859c23cb0bacb413e7971f178b431089b
+    measurements_yearly:
+      streamHash: 713432a65dbf7b74fa621638c524aa2c3def25b2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1492,7 +805,7 @@ metadata:
   assist: {}
 
 schemas:
-  Instruments:
+  instruments:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1522,71 +835,7 @@ schemas:
           - "null"
     required:
       - id
-  Instrument:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      meta:
-        type:
-          - object
-          - "null"
-        properties:
-          found:
-            type:
-              - number
-              - "null"
-          limit:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          page:
-            type:
-              - number
-              - "null"
-          website:
-            type:
-              - string
-              - "null"
-      results:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            isMonitor:
-              type:
-                - boolean
-                - "null"
-            manufacturer:
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  type:
-                    - number
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-            name:
-              type:
-                - string
-                - "null"
-  Manufacturers:
+  manufacturers:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1616,37 +865,7 @@ schemas:
           - "null"
     required:
       - id
-  Manufacturer:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: number
-      instruments:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-      name:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Manufacturer Instruments:
+  manufacturer_instruments:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1676,7 +895,7 @@ schemas:
           - "null"
     required:
       - id
-  Locations:
+  locations:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1880,211 +1099,7 @@ schemas:
           - "null"
     required:
       - id
-  Location:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      bounds:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
-      coordinates:
-        type:
-          - object
-          - "null"
-        properties:
-          latitude:
-            type:
-              - number
-              - "null"
-          longitude:
-            type:
-              - number
-              - "null"
-      country:
-        type:
-          - object
-          - "null"
-        properties:
-          code:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      datetimeFirst:
-        type:
-          - object
-          - "null"
-        properties:
-          local:
-            type:
-              - string
-              - "null"
-          utc:
-            type:
-              - string
-              - "null"
-      datetimeLast:
-        type:
-          - object
-          - "null"
-        properties:
-          local:
-            type:
-              - string
-              - "null"
-          utc:
-            type:
-              - string
-              - "null"
-      id:
-        type: number
-      instruments:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-      isMobile:
-        type:
-          - boolean
-          - "null"
-      isMonitor:
-        type:
-          - boolean
-          - "null"
-      licenses:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            attribution:
-              type:
-                - object
-                - "null"
-              properties:
-                name:
-                  type:
-                    - string
-                    - "null"
-            dateFrom:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-      locality:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      owner:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      provider:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-      sensors:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            parameter:
-              type:
-                - object
-                - "null"
-              properties:
-                displayName:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                units:
-                  type:
-                    - string
-                    - "null"
-      timezone:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Licenses:
+  licenses:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2121,7 +1136,7 @@ schemas:
         type:
           - string
           - "null"
-  License Instrument:
+  license_instrument:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2158,7 +1173,7 @@ schemas:
           - "null"
     required:
       - id
-  Parameters:
+  parameters:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2183,32 +1198,7 @@ schemas:
           - "null"
     required:
       - id
-  Parameter:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      description:
-        type:
-          - string
-          - "null"
-      displayName:
-        type:
-          - string
-          - "null"
-      id:
-        type:
-          - number
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      units:
-        type:
-          - string
-          - "null"
-  Countries:
+  countries:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2254,53 +1244,7 @@ schemas:
                 - "null"
     required:
       - id
-  Country:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      code:
-        type:
-          - string
-          - "null"
-      datetimeFirst:
-        type:
-          - string
-          - "null"
-      datetimeLast:
-        type:
-          - string
-          - "null"
-      id:
-        type:
-          - number
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      parameters:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            units:
-              type:
-                - string
-                - "null"
-  Latest Parameters:
+  latest_parameters:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2343,7 +1287,7 @@ schemas:
         type:
           - number
           - "null"
-  Sensors:
+  sensors:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2510,174 +1454,7 @@ schemas:
               - "null"
     required:
       - id
-  Sensor:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      datetimeFirst:
-        type:
-          - object
-          - "null"
-        properties:
-          local:
-            type:
-              - string
-              - "null"
-          utc:
-            type:
-              - string
-              - "null"
-      datetimeLast:
-        type:
-          - object
-          - "null"
-        properties:
-          local:
-            type:
-              - string
-              - "null"
-          utc:
-            type:
-              - string
-              - "null"
-      id:
-        type: number
-      latest:
-        type:
-          - object
-          - "null"
-        properties:
-          coordinates:
-            type:
-              - object
-              - "null"
-            properties:
-              latitude:
-                type:
-                  - number
-                  - "null"
-              longitude:
-                type:
-                  - number
-                  - "null"
-          datetime:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          value:
-            type:
-              - number
-              - "null"
-      name:
-        type:
-          - string
-          - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          displayName:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-    required:
-      - id
-  Providers:
+  providers:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2756,90 +1533,7 @@ schemas:
           - "null"
     required:
       - id
-  Provider:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      bbox:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          coordinates:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - number
-                    - "null"
-      datetimeAdded:
-        type:
-          - string
-          - "null"
-      datetimeFirst:
-        type:
-          - string
-          - "null"
-      datetimeLast:
-        type:
-          - string
-          - "null"
-      entitiesId:
-        type:
-          - number
-          - "null"
-      exportPrefix:
-        type:
-          - string
-          - "null"
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      parameters:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            units:
-              type:
-                - string
-                - "null"
-      sourceName:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Owners:
+  owners:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2852,20 +1546,7 @@ schemas:
           - "null"
     required:
       - id
-  Owner:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-  Location’s Latest Measurement:
+  location_latest_measure:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2908,7 +1589,7 @@ schemas:
         type:
           - number
           - "null"
-  Measurements:
+  sensor_measurements:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2967,6 +1648,15 @@ schemas:
           percentCoverage:
             type:
               - number
+              - "null"
+      flagInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          hasFlags:
+            type:
+              - boolean
               - "null"
       parameter:
         type:
@@ -3028,7 +1718,7 @@ schemas:
         type:
           - number
           - "null"
-  Measurements Aggregated To Day:
+  measurements_daily:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -3088,166 +1778,14 @@ schemas:
             type:
               - number
               - "null"
-      parameter:
+      flagInfo:
         type:
           - object
           - "null"
         properties:
-          id:
+          hasFlags:
             type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated To Year:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
+              - boolean
               - "null"
       parameter:
         type:
@@ -3350,7 +1888,7 @@ schemas:
         type:
           - number
           - "null"
-  Measurements Aggregated From Day to Year:
+  measurements_yearly:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -3410,1937 +1948,14 @@ schemas:
             type:
               - number
               - "null"
-      parameter:
+      flagInfo:
         type:
           - object
           - "null"
         properties:
-          id:
+          hasFlags:
             type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Days to Month:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Day to Month of Year:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Day to Day Of Week:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hour To Month of Year:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hour To Day Of Week:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hour To Hour of Day:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hour To Year:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hours to Monthly:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated From Hours to Daily:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated To Hour:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated To Daily:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
-              - "null"
-      parameter:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          units:
-            type:
-              - string
-              - "null"
-      period:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          interval:
-            type:
-              - string
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-      summary:
-        type:
-          - object
-          - "null"
-        properties:
-          avg:
-            type:
-              - number
-              - "null"
-          max:
-            type:
-              - number
-              - "null"
-          median:
-            type:
-              - number
-              - "null"
-          min:
-            type:
-              - number
-              - "null"
-          q02:
-            type:
-              - number
-              - "null"
-          q25:
-            type:
-              - number
-              - "null"
-          q75:
-            type:
-              - number
-              - "null"
-          q98:
-            type:
-              - number
-              - "null"
-          sd:
-            type:
-              - number
-              - "null"
-      value:
-        type:
-          - number
-          - "null"
-  Measurements Aggregated To Hourly:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      coverage:
-        type:
-          - object
-          - "null"
-        properties:
-          datetimeFrom:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          datetimeTo:
-            type:
-              - object
-              - "null"
-            properties:
-              local:
-                type:
-                  - string
-                  - "null"
-              utc:
-                type:
-                  - string
-                  - "null"
-          expectedCount:
-            type:
-              - number
-              - "null"
-          expectedInterval:
-            type:
-              - string
-              - "null"
-          observedCount:
-            type:
-              - number
-              - "null"
-          observedInterval:
-            type:
-              - string
-              - "null"
-          percentComplete:
-            type:
-              - number
-              - "null"
-          percentCoverage:
-            type:
-              - number
+              - boolean
               - "null"
       parameter:
         type:
