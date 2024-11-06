@@ -13,11 +13,11 @@ AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/fil
 DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
-class BlobTransfer:
+class FileTransfer:
     def __init__(self) -> None:
         self._local_directory = AIRBYTE_STAGING_DIRECTORY if os.path.exists(AIRBYTE_STAGING_DIRECTORY) else DEFAULT_LOCAL_DIRECTORY
 
-    def write_streams(
+    def get_file(
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
@@ -29,7 +29,3 @@ class BlobTransfer:
         except Exception as ex:
             logger.error("An error has occurred while getting file: %s", str(ex))
             raise ex
-
-    @property
-    def file_read_mode(self) -> FileReadMode:
-        return FileReadMode.READ_BINARY
