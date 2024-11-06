@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import smart_open
 from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
@@ -30,6 +30,8 @@ AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
+    FILE_SIZE_LIMIT = 1_000_000_000
+
     def __init__(self):
         super().__init__()
         self._s3_client = None
@@ -185,7 +187,14 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
 
+    @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger):
+        file_size = self.file_size(file)
+        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
         # Remove left slashes from source path format to make relative path for writing locally
         file_relative_path = file.uri.lstrip("/")
         local_file_path = path.join(local_directory, file_relative_path)
@@ -194,7 +203,6 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         makedirs(path.dirname(local_file_path), exist_ok=True)
 
         absolute_file_path = path.abspath(local_file_path)
-        file_size = self.file_size(file)
         logger.info(
             f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
         )
