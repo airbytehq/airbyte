@@ -4,7 +4,7 @@
 
 import logging
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional, Dict, Set
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
