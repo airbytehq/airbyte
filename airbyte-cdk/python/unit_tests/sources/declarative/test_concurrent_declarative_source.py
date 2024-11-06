@@ -462,7 +462,7 @@ def test_create_concurrent_cursor():
 
     incoming_locations_state = {
         "slices": [
-            {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z"},
+            {"start": "2024-07-01T00:00:00", "end": "2024-07-31T00:00:00"},
         ],
         "state_type": "date-range"
     }

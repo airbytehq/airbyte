@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -25,6 +26,7 @@ class MockBasicFunctionalityIntegrationTest :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
+        allTypesBehavior = Untyped,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -58,6 +60,11 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Test
     override fun testAppend() {
         super.testAppend()
     }
@@ -80,5 +87,10 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testUnions() {
         super.testUnions()
+    }
+
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }

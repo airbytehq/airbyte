@@ -56,6 +56,8 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.3.4 | 2024-11-05 | [48359](https://github.com/airbytehq/airbyte/pull/48359) | Revert to source-declarative-manifest v5.17.0 |
+| 0.3.3 | 2024-11-05 | [48320](https://github.com/airbytehq/airbyte/pull/48320) | Update dependencies |
 | 0.3.2 | 2024-10-22 | [47236](https://github.com/airbytehq/airbyte/pull/47236) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44142](https://github.com/airbytehq/airbyte/pull/44142) | Refactor connector to manifest-only format |

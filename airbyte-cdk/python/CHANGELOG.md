@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.2.0
+Support multiple input datetime formats as part of the concurrent cursor
+
 ## 6.1.1
 fix streams discover
 

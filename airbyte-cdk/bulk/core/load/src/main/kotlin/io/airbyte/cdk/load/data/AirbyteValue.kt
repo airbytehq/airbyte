@@ -16,6 +16,7 @@ sealed interface AirbyteValue {
     companion object {
         fun from(value: Any?): AirbyteValue =
             when (value) {
+                is AirbyteValue -> value
                 null -> NullValue
                 is String -> StringValue(value)
                 is Boolean -> BooleanValue(value)

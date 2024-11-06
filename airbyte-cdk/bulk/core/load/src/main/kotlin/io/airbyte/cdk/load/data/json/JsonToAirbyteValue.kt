@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 
 /**
@@ -29,12 +30,11 @@ class JsonToAirbyteValue {
                 is BooleanType -> toBoolean(json)
                 is DateType -> DateValue(json.asText())
                 is IntegerType -> toInteger(json)
-                is NullType -> toNull(json)
                 is NumberType -> toNumber(json)
                 is ObjectType -> toObject(json, schema)
                 is ObjectTypeWithoutSchema,
                 is ObjectTypeWithEmptySchema -> toObjectWithoutSchema(json)
-                is StringType -> StringValue(json.asText())
+                is StringType -> toString(json)
                 is TimeTypeWithTimezone,
                 is TimeTypeWithoutTimezone -> TimeValue(json.asText())
                 is TimestampTypeWithTimezone,
@@ -65,6 +65,14 @@ class JsonToAirbyteValue {
         }
 
         return ArrayValue(json.map { fromJson(it) })
+    }
+
+    private fun toString(json: JsonNode): StringValue {
+        return if (json.isTextual) {
+            StringValue(json.asText())
+        } else {
+            StringValue(Jsons.writeValueAsString(json))
+        }
     }
 
     private fun toBoolean(json: JsonNode): BooleanValue {
@@ -176,7 +184,6 @@ class JsonToAirbyteValue {
             is BooleanType -> json.isBoolean
             is DateType -> json.isTextual
             is IntegerType -> json.isIntegralNumber
-            is NullType -> json.isNull
             is NumberType -> json.isNumber
             is ObjectType,
             is ObjectTypeWithoutSchema,
