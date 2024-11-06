@@ -691,8 +691,9 @@ class Stream(HttpStream, ABC):
             record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
-            for transformation in self.transformations:
-                record = transformation().transform(record)
+            if self.transformations:
+                for transformation in self.transformations:
+                    record = transformation().transform(record)
             yield record
 
     @staticmethod

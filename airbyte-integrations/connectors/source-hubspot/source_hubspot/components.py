@@ -20,7 +20,7 @@ class NewToLegacyFieldTransformation(RecordTransformation):
     def transform(self, record: Dict[str, Any], config: Optional[Config] = None, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
     ) -> Mapping[str, Any]:
         updated_record = copy.deepcopy(record)
-        for field_name, field_value in record["properties"].items():
+        for field_name, field_value in record.get("properties", {}).items():
             for legacy_field_prefix, new_field_prefix in NEW_TO_LEGACY_FIELDS_MAPPING.items():
                 if new_field_prefix in field_name:
                     updated_field_name = field_name.replace(new_field_prefix, legacy_field_prefix)
