@@ -3,9 +3,10 @@
 #
 
 import logging
+import time
 from datetime import datetime
 from io import IOBase
-from os import getenv
+from os import getenv, makedirs, path
 from typing import Iterable, List, Optional, Set, cast
 
 import boto3.session
@@ -183,6 +184,26 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
+
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger):
+        # Remove left slashes from source path format to make relative path for writing locally
+        file_relative_path = file.uri.lstrip("/")
+        local_file_path = path.join(local_directory, file_relative_path)
+
+        # Ensure the local directory exists
+        makedirs(path.dirname(local_file_path), exist_ok=True)
+
+        absolute_file_path = path.abspath(local_file_path)
+        file_size = self.file_size(file)
+        logger.info(
+            f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
+        )
+        # at some moment maybe we will require to play with the max_pool_connections and max_concurrency of s3 config
+        start_download_time = time.time()
+        self.s3_client.download_file(self.config.bucket, file.uri, local_file_path)
+        write_duration = time.time() - start_download_time
+        logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
+        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
 
     @override
     def file_size(self, file: RemoteFile) -> int:
