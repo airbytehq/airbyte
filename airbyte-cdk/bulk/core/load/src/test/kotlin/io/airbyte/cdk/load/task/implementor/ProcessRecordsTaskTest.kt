@@ -71,13 +71,6 @@ class ProcessRecordsTaskTest {
                 pmChecksum = sum
             )
         }
-
-        override suspend fun processFiles(
-            records: Iterator<DestinationFile>,
-            totalSizeBytes: Long
-        ): Batch {
-            TODO("Not yet implemented")
-        }
     }
 
     @Singleton

@@ -37,7 +37,6 @@ interface StreamLoader {
 
     suspend fun start() {}
     suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
-    suspend fun processFiles(records: Iterator<DestinationFile>, totalSizeBytes: Long): Batch
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamIncompleteResult? = null) {}
 }

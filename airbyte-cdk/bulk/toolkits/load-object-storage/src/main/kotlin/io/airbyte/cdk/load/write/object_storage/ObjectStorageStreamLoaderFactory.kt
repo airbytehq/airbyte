@@ -111,13 +111,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         }
     }
 
-    override suspend fun processFiles(
-        records: Iterator<DestinationFile>,
-        totalSizeBytes: Long
-    ): Batch {
-        TODO("Not yet implemented")
-    }
-
     @Suppress("UNCHECKED_CAST")
     override suspend fun processBatch(batch: Batch): Batch {
         val stagedObject = batch as StagedObject<T>
