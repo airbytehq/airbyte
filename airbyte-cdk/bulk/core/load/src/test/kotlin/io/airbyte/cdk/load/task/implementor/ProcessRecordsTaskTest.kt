@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.Deserializer
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.SyncManager
@@ -69,6 +70,13 @@ class ProcessRecordsTaskTest {
                 recordCount = count,
                 pmChecksum = sum
             )
+        }
+
+        override suspend fun processFiles(
+            records: Iterator<DestinationFile>,
+            totalSizeBytes: Long
+        ): Batch {
+            TODO("Not yet implemented")
         }
     }
 
