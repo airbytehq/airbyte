@@ -48,7 +48,7 @@ internal constructor(
 /** Creates an open [TunnelSession]. */
 fun createTunnelSession(
     remote: SshdSocketAddress,
-    sshTunnel: SshTunnelMethodConfiguration,
+    sshTunnel: SshTunnelMethodConfiguration?,
     connectionOptions: SshConnectionOptions,
 ): TunnelSession {
     if (sshTunnel is SshNoTunnelMethod) {
@@ -67,6 +67,8 @@ fun createTunnelSession(
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
                 is SshPasswordAuthTunnelMethod ->
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
+
+                null -> TODO()
             }
         val session: ClientSession = connectFuture.verify(tunnelSessionTimeout).session
         when (sshTunnel) {
