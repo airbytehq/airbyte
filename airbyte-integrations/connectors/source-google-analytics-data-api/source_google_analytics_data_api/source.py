@@ -399,11 +399,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             start_date = self.config["date_ranges_start_date"]
 
         end_date = self.config.get("date_ranges_end_date")
-        if end_date is not None:
-            end_date = utils.string_to_date(end_date, DATE_FORMAT)
-            end_date = max(end_date, today)
-        else:
-            end_date = today
 
         while start_date <= end_date:
             # stop producing slices if 429 + specific scenario is hit
@@ -490,6 +485,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def default_date_ranges_start_date(self) -> str:
         # set default date ranges start date to 2 years ago
         return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
+    
+    @property
+    def default_date_ranges_end_date(self) -> str:
+        # set default date ranges end date to today
+        return pendulum.now(tz="UTC").format("YYYY-MM-DD")
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
@@ -507,6 +507,16 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             raise ConfigurationError(str(e))
 
         return start_date
+    
+    def _validate_and_transform_end_date(self, end_date: str) -> datetime.date:
+        end_date = self.default_date_ranges_end_date if not end_date else end_date
+
+        try:
+            end_date = utils.string_to_date(end_date)
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        return end_date
 
     def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         if "custom_reports_array" in config:
@@ -547,6 +557,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
         config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
+        config["date_ranges_end_date"] = self._validate_and_transform_end_date(config.get("date_ranges_end_date"))
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))
