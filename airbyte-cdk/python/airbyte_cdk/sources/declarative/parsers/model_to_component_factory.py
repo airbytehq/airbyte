@@ -529,16 +529,13 @@ class ModelToComponentFactory:
                 lookback_window = parse_duration(evaluated_lookback_window)
 
         connector_state_converter: DateTimeStreamStateConverter
-        if datetime_format == self.EPOCH_DATETIME_FORMAT:
-            connector_state_converter = EpochValueConcurrentStreamStateConverter(is_sequential_state=True)
-        else:
-            connector_state_converter = CustomFormatConcurrentStreamStateConverter(
-                datetime_format=datetime_format,
-                input_datetime_formats=datetime_based_cursor_model.cursor_datetime_formats,
-                is_sequential_state=True,
-                cursor_granularity=cursor_granularity,
-                # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
-            )
+        connector_state_converter = CustomFormatConcurrentStreamStateConverter(
+            datetime_format=datetime_format,
+            input_datetime_formats=datetime_based_cursor_model.cursor_datetime_formats,
+            is_sequential_state=True,
+            cursor_granularity=cursor_granularity,
+            # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+        )
 
         start_date_runtime_value: Union[InterpolatedString, str, MinMaxDatetime]
         if isinstance(datetime_based_cursor_model.start_datetime, MinMaxDatetimeModel):

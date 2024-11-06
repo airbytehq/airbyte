@@ -3,10 +3,11 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import requests
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
 
@@ -24,7 +25,7 @@ def test_config():
 
 
 def prepare_config(config: Dict):
-    return SourceZendeskSupport().convert_config2stream_args(config)
+    return SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
 
 
 @pytest.mark.parametrize(

@@ -17,7 +17,7 @@ def read_stream(
     stream_name: str, sync_mode: SyncMode, config: Dict[str, Any], state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
-    return read(SourceZendeskSupport(), config, catalog, state, expecting_exception)
+    return read(SourceZendeskSupport(config=config, catalog=catalog, state=state), config, catalog, state, expecting_exception)
 
 
 def get_log_messages_by_log_level(logs: List[AirbyteMessage], log_level: LogLevel) -> List[str]:
