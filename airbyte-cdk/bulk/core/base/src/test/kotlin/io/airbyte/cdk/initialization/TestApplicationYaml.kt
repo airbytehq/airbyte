@@ -32,7 +32,7 @@ data class DefaultValueBean(
 class TestFactory {
     @Bean
     fun defaultValueBean(
-        @Value("\${airbyte.file-transfer.staging-folder}") stagingFolder: String,
+        @Value("\${airbyte.file-transfer.staging-path}") stagingFolder: String,
         @Value("\${airbyte.file-transfer.enabled}") fileTransferEnable: Boolean,
     ): DefaultValueBean {
         return DefaultValueBean(stagingFolder, fileTransferEnable)
