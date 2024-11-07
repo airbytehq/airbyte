@@ -67,7 +67,6 @@ fun createTunnelSession(
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
                 is SshPasswordAuthTunnelMethod ->
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
-
                 null -> TODO()
             }
         val session: ClientSession = connectFuture.verify(tunnelSessionTimeout).session

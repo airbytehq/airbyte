@@ -35,8 +35,7 @@ import jakarta.inject.Singleton
  */
 @JsonSchemaTitle("Mysql Source Spec")
 @JsonPropertyOrder(
-    value =
-        ["host", "port", "database", "username", "replication_method"],
+    value = ["host", "port", "database", "username", "replication_method"],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)

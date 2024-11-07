@@ -134,7 +134,6 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
                         clientKey = encryption.sslClientKey,
                         clientKeyPassword = encryption.sslClientPassword
                     )
-
                 null -> TODO()
             }
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
