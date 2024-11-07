@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 5.14.0
 
 type: DeclarativeSource
 
@@ -73,9 +73,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organizations"
-    insights:
+    insights_traffic:
       type: DeclarativeStream
-      name: insights
+      name: insights_traffic
       primary_key:
         - timestamp
       retriever:
@@ -103,7 +103,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/insights"
+          $ref: "#/schemas/insights_traffic"
     content:
       type: DeclarativeStream
       name: content
@@ -135,39 +135,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/content"
-    search:
-      type: DeclarativeStream
-      name: search
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /v1/search
-          http_method: GET
-          request_parameters:
-            query: "{{ config['serch_text'] }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - items
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('next', {}).get('page') }}"
-            stop_condition: "{{ response.get('next') is none }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/search"
     org_members:
       type: DeclarativeStream
       name: org_members
@@ -217,9 +184,8 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/organizations"
-  - $ref: "#/definitions/streams/insights"
+  - $ref: "#/definitions/streams/insights_traffic"
   - $ref: "#/definitions/streams/content"
-  - $ref: "#/definitions/streams/search"
   - $ref: "#/definitions/streams/org_members"
 
 spec:
@@ -230,7 +196,6 @@ spec:
     required:
       - access_token
       - space_id
-      - serch_text
     properties:
       access_token:
         type: string
@@ -244,21 +209,16 @@ spec:
         airbyte_secret: true
       space_id:
         type: string
-        title: Space Id
         order: 1
-      serch_text:
-        type: string
-        title: Serch Text
-        order: 2
+        title: Space Id
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     users: true
     organizations: true
-    insights: true
+    insights_traffic: true
     content: true
-    search: true
     org_members: true
   testedStreams:
     users:
@@ -269,40 +229,33 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     organizations:
-      streamHash: 2f33a4c3ca1bb1263e1c2adb62dad1db5ac97b19
+      streamHash: 9ab2877e203852d0f3f72d1b43efdebe30b191e8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    insights:
-      streamHash: d564535ff299a5f9ff48981ac62941d102b8aa2f
+    insights_traffic:
+      streamHash: f592e43057580e07f97dd3533c7570c7ba8ef156
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     content:
+      hasRecords: true
       streamHash: 57e08861335cfd51ba3a9253c80fd292611ca7ce
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    search:
-      streamHash: 450e23217cf1abf0a732a650583d7e208290a85f
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
+      responsesAreSuccessful: true
     org_members:
-      streamHash: 67e3a33c9a593f4280f88998dae363b71e6f93bb
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 2ca42bd9987373ad019bf5cb16bdab15213b33e2
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developer.gitbook.com/gitbook-api/overview
 
@@ -364,6 +317,10 @@ schemas:
           - "null"
       id:
         type: string
+      inviteLinks:
+        type:
+          - boolean
+          - "null"
       object:
         type:
           - string
@@ -395,7 +352,7 @@ schemas:
           - "null"
     required:
       - id
-  insights:
+  insights_traffic:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -594,83 +551,6 @@ schemas:
             type:
               - string
               - "null"
-    required:
-      - id
-  search:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type: string
-      pages:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - string
-                - "null"
-            path:
-              type:
-                - string
-                - "null"
-            sections:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  body:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  path:
-                    type:
-                      - string
-                      - "null"
-                  title:
-                    type:
-                      - string
-                      - "null"
-                  urls:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      app:
-                        type:
-                          - string
-                          - "null"
-            title:
-              type:
-                - string
-                - "null"
-            urls:
-              type:
-                - object
-                - "null"
-              properties:
-                app:
-                  type:
-                    - string
-                    - "null"
-      title:
-        type:
-          - string
-          - "null"
     required:
       - id
   org_members:
