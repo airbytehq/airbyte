@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -20,18 +20,10 @@ definitions:
     forms:
       type: DeclarativeStream
       name: forms
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms
@@ -43,105 +35,31 @@ definitions:
             field_path:
               - results
               - forms
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/forms"
-    coupons:
-      type: DeclarativeStream
-      name: coupons
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /forms/{{ stream_partition.form_id }}/coupons
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-              - coupons
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
-              parent_key: id
-              partition_field: form_id
-      primary_key:
-        - code
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/coupons"
-    products:
-      type: DeclarativeStream
-      name: products
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /forms/{{ stream_partition.form_id }}/products
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-              - products
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
-              parent_key: id
-              partition_field: form_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/products"
     form_fields:
       type: DeclarativeStream
       name: form_fields
+      primary_key:
+        - key
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms/{{ stream_partition.form_id }}/fields
@@ -157,12 +75,10 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
               parent_key: id
               partition_field: form_id
-      primary_key:
-        - key
+              stream:
+                $ref: "#/definitions/streams/forms"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -170,18 +86,10 @@ definitions:
     submissions:
       type: DeclarativeStream
       name: submissions
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms/{{ stream_partition.form_id }}/submissions
@@ -193,16 +101,28 @@ definitions:
             field_path:
               - results
               - submissions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
               parent_key: id
               partition_field: form_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/forms"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,18 +130,10 @@ definitions:
     partial_submissions:
       type: DeclarativeStream
       name: partial_submissions
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms/{{ stream_partition.form_id }}/partial-submissions
@@ -233,20 +145,90 @@ definitions:
             field_path:
               - results
               - partial-submissions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
               parent_key: id
               partition_field: form_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/forms"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/partial_submissions"
+    coupons:
+      type: DeclarativeStream
+      name: coupons
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms/{{ stream_partition.form_id }}/coupons
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - coupons
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: form_id
+              stream:
+                $ref: "#/definitions/streams/forms"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/coupons"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /forms/{{ stream_partition.form_id }}/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+              - products
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: form_id
+              stream:
+                $ref: "#/definitions/streams/forms"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
   base_requester:
     type: HttpRequester
     url_base: https://api.paperform.co//v1
@@ -282,101 +264,66 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://paperform.readme.io/reference/getting-started-1
-  testedStreams:
-    forms:
-      hasRecords: true
-      streamHash: 8b7dcbbb501dd2be18534d629d81a287c816b0c9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    coupons:
-      hasRecords: true
-      streamHash: a3bda4044779fd2c14ac329e19258415aa33c824
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    products:
-      hasRecords: true
-      streamHash: c047306795a716e8b057f9226261c0812c170bfc
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    form_fields:
-      hasRecords: true
-      streamHash: beb3711e3ac256ce86eb0ed2dfe0969e759f4661
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    submissions:
-      hasRecords: true
-      streamHash: af50080ec9ad0e8689190efab366e2353a4ed9c3
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    partial_submissions:
-      hasRecords: true
-      streamHash: c0f3848761c183dbd351acbb49c58a677d86d0fe
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
     forms: true
-    coupons: true
-    products: true
     form_fields: true
     submissions: true
     partial_submissions: true
+    coupons: true
+    products: true
+  testedStreams:
+    forms:
+      streamHash: aa67f03ee4f154e60b419de1521d239201e8a7ee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    form_fields:
+      streamHash: 42a60b80dc7be85c5b20ee7f7a3e0d686d3ef2c3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    submissions:
+      streamHash: 2ca6affa344eeb9597a0fcc4b6164a4d7b220de1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    partial_submissions:
+      streamHash: 7ec53bf61d6b9c66cbaf8dd4ddcb66b5458f1abb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    coupons:
+      streamHash: 9be02da03521a039f6f882d88f1725fd2fc91d3c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 547dd27235ce6bfa7ba8d7f1e49c3898c8d44a9b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://paperform.readme.io/reference/getting-started-1
 
 schemas:
   forms:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      url:
-        type:
-          - string
-          - "null"
-      live:
-        type:
-          - boolean
-          - "null"
-      slug:
-        type:
-          - string
-          - "null"
-      title:
-        type:
-          - string
-          - "null"
-      space_id:
-        type:
-          - number
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      created_at_utc:
-        type:
-          - string
-          - "null"
-      updated_at_utc:
+      account_timezone:
         type:
           - string
           - "null"
@@ -385,11 +332,11 @@ schemas:
           - object
           - "null"
         properties:
-          edit_url:
+          duplicate_url:
             type:
               - string
               - "null"
-          duplicate_url:
+          edit_url:
             type:
               - string
               - "null"
@@ -401,78 +348,54 @@ schemas:
         type:
           - string
           - "null"
-      account_timezone:
+      created_at:
         type:
           - string
+          - "null"
+      created_at_utc:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      live:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      space_id:
+        type:
+          - number
           - "null"
       submission_count:
         type:
           - number
           - "null"
-    additionalProperties: true
-  coupons:
-    type: object
-    $schema: http://json-schema.org/schema#
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_at_utc:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
     required:
-      - code
-    properties:
-      code:
-        type: string
-      target:
-        type:
-          - string
-          - "null"
-      enabled:
-        type:
-          - boolean
-          - "null"
-      discountAmount:
-        type:
-          - number
-          - "null"
-      discountPercentage:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  products:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      SKU:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      sold:
-        type:
-          - number
-          - "null"
-      price:
-        type:
-          - string
-          - "null"
-      images:
-        type:
-          - array
-          - "null"
-      maximum:
-        type:
-          - number
-          - "null"
-      discountable:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
+      - id
   form_fields:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - key
+    additionalProperties: true
     properties:
       type:
         type:
@@ -484,10 +407,6 @@ schemas:
           - "null"
       key:
         type: string
-      title:
-        type:
-          - string
-          - "null"
       options:
         type:
           - array
@@ -500,15 +419,129 @@ schemas:
         type:
           - boolean
           - "null"
-    additionalProperties: true
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - key
   submissions:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
+      account_timezone:
+        type:
+          - string
+          - "null"
+      charge:
+        type:
+          - object
+          - "null"
+        properties:
+          coupon:
+            type:
+              - boolean
+              - "null"
+          discount:
+            type:
+              - number
+              - "null"
+          discounted_subscriptions:
+            type:
+              - array
+              - "null"
+          live:
+            type:
+              - boolean
+              - "null"
+          payment_source_service:
+            type:
+              - string
+              - "null"
+          processing_fee:
+            type:
+              - number
+              - "null"
+          products:
+            type:
+              - object
+              - "null"
+            properties:
+              Option1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  price:
+                    type:
+                      - number
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  summary:
+                    type:
+                      - string
+                      - "null"
+                  total:
+                    type:
+                      - number
+                      - "null"
+              Option2:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  price:
+                    type:
+                      - number
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  summary:
+                    type:
+                      - string
+                      - "null"
+                  total:
+                    type:
+                      - number
+                      - "null"
+          receipt_email:
+            type:
+              - boolean
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          tax:
+            type:
+              - number
+              - "null"
+          tax_percentage:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+          total_cents:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_at_utc:
+        type:
+          - string
+          - "null"
       data:
         type:
           - object
@@ -547,106 +580,6 @@ schemas:
             type:
               - boolean
               - "null"
-      charge:
-        type:
-          - object
-          - "null"
-        properties:
-          tax:
-            type:
-              - number
-              - "null"
-          live:
-            type:
-              - boolean
-              - "null"
-          total:
-            type:
-              - number
-              - "null"
-          coupon:
-            type:
-              - boolean
-              - "null"
-          summary:
-            type:
-              - string
-              - "null"
-          discount:
-            type:
-              - number
-              - "null"
-          products:
-            type:
-              - object
-              - "null"
-            properties:
-              Option1:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  price:
-                    type:
-                      - number
-                      - "null"
-                  total:
-                    type:
-                      - number
-                      - "null"
-                  summary:
-                    type:
-                      - string
-                      - "null"
-                  quantity:
-                    type:
-                      - number
-                      - "null"
-              Option2:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  price:
-                    type:
-                      - number
-                      - "null"
-                  total:
-                    type:
-                      - number
-                      - "null"
-                  summary:
-                    type:
-                      - string
-                      - "null"
-                  quantity:
-                    type:
-                      - number
-                      - "null"
-          total_cents:
-            type:
-              - number
-              - "null"
-          receipt_email:
-            type:
-              - boolean
-              - "null"
-          processing_fee:
-            type:
-              - number
-              - "null"
-          tax_percentage:
-            type:
-              - number
-              - "null"
-          payment_source_service:
-            type:
-              - string
-              - "null"
-          discounted_subscriptions:
-            type:
-              - array
-              - "null"
       device:
         type:
           - object
@@ -656,7 +589,7 @@ schemas:
             type:
               - string
               - "null"
-          url:
+          browser:
             type:
               - string
               - "null"
@@ -664,19 +597,19 @@ schemas:
             type:
               - string
               - "null"
-          browser:
-            type:
-              - string
-              - "null"
           embedded:
             type:
               - boolean
+              - "null"
+          ip_address:
+            type:
+              - string
               - "null"
           platform:
             type:
               - string
               - "null"
-          ip_address:
+          url:
             type:
               - string
               - "null"
@@ -688,11 +621,24 @@ schemas:
         type:
           - string
           - "null"
-      created_at:
+      id:
+        type: string
+      ip_address:
         type:
           - string
           - "null"
-      ip_address:
+    required:
+      - id
+  partial_submissions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_timezone:
+        type:
+          - string
+          - "null"
+      created_at:
         type:
           - string
           - "null"
@@ -700,28 +646,11 @@ schemas:
         type:
           - string
           - "null"
-      account_timezone:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  partial_submissions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
       data:
         type:
           - object
           - "null"
         properties:
-          sq70:
-            type:
-              - string
-              - "null"
           2146r:
             type:
               - string
@@ -739,9 +668,9 @@ schemas:
                 type:
                   - string
                   - "null"
-              url:
+              height:
                 type:
-                  - string
+                  - number
                   - "null"
               name:
                 type:
@@ -751,11 +680,11 @@ schemas:
                 type:
                   - number
                   - "null"
-              width:
+              url:
                 type:
-                  - number
+                  - string
                   - "null"
-              height:
+              width:
                 type:
                   - number
                   - "null"
@@ -828,15 +757,17 @@ schemas:
             type:
               - string
               - "null"
+          sq70:
+            type:
+              - string
+              - "null"
       form_id:
         type:
           - string
           - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      updated_at:
+      id:
+        type: string
+      last_answered:
         type:
           - string
           - "null"
@@ -844,11 +775,11 @@ schemas:
         type:
           - string
           - "null"
-      last_answered:
+      submitted_at_utc:
         type:
           - string
           - "null"
-      created_at_utc:
+      updated_at:
         type:
           - string
           - "null"
@@ -856,12 +787,63 @@ schemas:
         type:
           - string
           - "null"
-      account_timezone:
-        type:
-          - string
-          - "null"
-      submitted_at_utc:
-        type:
-          - string
-          - "null"
+    required:
+      - id
+  coupons:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      code:
+        type: string
+      discountAmount:
+        type:
+          - number
+          - "null"
+      discountPercentage:
+        type:
+          - number
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      target:
+        type:
+          - string
+          - "null"
+    required:
+      - code
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      SKU:
+        type:
+          - string
+          - "null"
+      discountable:
+        type:
+          - boolean
+          - "null"
+      images:
+        type:
+          - array
+          - "null"
+      maximum:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      sold:
+        type:
+          - number
+          - "null"
