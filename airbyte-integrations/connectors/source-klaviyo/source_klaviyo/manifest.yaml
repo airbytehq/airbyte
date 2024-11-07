@@ -220,7 +220,6 @@ definitions:
       path: "templates"
       cursor_field: "datetime"
 
-
   # Semi-Incremental streams
   metrics_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_metrics
