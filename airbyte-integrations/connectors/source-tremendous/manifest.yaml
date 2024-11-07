@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 5.17.0
 
 type: DeclarativeSource
 
@@ -38,9 +38,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 10
+            page_size: 100
             inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
@@ -49,8 +53,6 @@ definitions:
     products:
       type: DeclarativeStream
       name: products
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -71,7 +73,6 @@ definitions:
             field_name: offset
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 10
             inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
@@ -170,34 +171,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/campaigns"
-    exchange_rates:
-      type: DeclarativeStream
-      name: exchange_rates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/v2/forex
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
-            inject_on_first_request: false
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/exchange_rates"
     organizations:
       type: DeclarativeStream
       name: organizations
@@ -289,6 +262,76 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/rewards"
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config["environment"] }}.tremendous.com
@@ -302,10 +345,11 @@ streams:
   - $ref: "#/definitions/streams/funding_sources"
   - $ref: "#/definitions/streams/account_members"
   - $ref: "#/definitions/streams/campaigns"
-  - $ref: "#/definitions/streams/exchange_rates"
   - $ref: "#/definitions/streams/organizations"
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/rewards"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/invoices"
 
 spec:
   type: Spec
@@ -323,16 +367,16 @@ spec:
           dashboard under Team Settings > Developers. Save the key once you’ve
           generated it.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       environment:
         type: string
-        title: environment
         enum:
           - api
           - testflight
         order: 1
+        title: Environment
     additionalProperties: true
 
 metadata:
@@ -342,72 +386,80 @@ metadata:
     funding_sources: true
     account_members: true
     campaigns: true
-    exchange_rates: true
     organizations: true
     balance_transactions: true
     rewards: true
+    members: true
+    invoices: true
   testedStreams:
     orders:
-      streamHash: 2743ffb5f4bbb2c337f4cb5f8a79702fb8e68725
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: dd9ac3e7308d44dfed6de40252f859c99e04c1c8
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
-      streamHash: 22325cc7176801b049b5e1bfdd54fc6e5ea714ec
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c6cb16800a3e12c9eebc9c9fbd449f959d7ebec1
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     funding_sources:
+      hasRecords: true
       streamHash: 06dcd4a04c1ebd97832ba7c747bfbadb3f6cdb1e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     account_members:
+      hasRecords: true
       streamHash: 371cc88527067daa1f8b1752d31f516a2c676da7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     campaigns:
+      hasRecords: true
       streamHash: 15fed638e51342240d46f6efb8f3cb8e384db2aa
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    exchange_rates:
-      streamHash: d0e60d7f78c7f71ff6ae4d874b884932704efd44
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
+      responsesAreSuccessful: true
     organizations:
+      hasRecords: true
       streamHash: c1ab194ed5a9d57adf721f9d3d66ef97702cdbd3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     balance_transactions:
-      streamHash: feb3d41c59f6945d1abb1addf1686a4a1d19c29e
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: dae4c687de6c466303e9dae084c6249dbb9e7cab
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     rewards:
+      hasRecords: true
       streamHash: 30f243c223daae7ffb4d35b4acfc8e6774daa11b
       hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    members:
+      streamHash: efe28ca3fd698fd3e3b911c2691cf3552f887a01
+      hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoices:
+      streamHash: e889a596aaf7abae9f180dfe83617f44b71acfe3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -438,6 +490,10 @@ schemas:
           - object
           - "null"
         properties:
+          discount:
+            type:
+              - number
+              - "null"
           fees:
             type:
               - number
@@ -559,7 +615,9 @@ schemas:
           - string
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       images:
         type:
           - array
@@ -598,8 +656,6 @@ schemas:
               type:
                 - number
                 - "null"
-    required:
-      - id
   funding_sources:
     type: object
     $schema: http://json-schema.org/schema#
@@ -722,700 +778,6 @@ schemas:
               - "null"
     required:
       - id
-  exchange_rates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      forex:
-        type:
-          - object
-          - "null"
-        properties:
-          AED:
-            type:
-              - number
-              - "null"
-          AFN:
-            type:
-              - number
-              - "null"
-          ALL:
-            type:
-              - number
-              - "null"
-          AMD:
-            type:
-              - number
-              - "null"
-          ANG:
-            type:
-              - number
-              - "null"
-          AOA:
-            type:
-              - number
-              - "null"
-          ARS:
-            type:
-              - number
-              - "null"
-          AUD:
-            type:
-              - number
-              - "null"
-          AWG:
-            type:
-              - number
-              - "null"
-          AZN:
-            type:
-              - number
-              - "null"
-          BAM:
-            type:
-              - number
-              - "null"
-          BBD:
-            type:
-              - number
-              - "null"
-          BDT:
-            type:
-              - number
-              - "null"
-          BGN:
-            type:
-              - number
-              - "null"
-          BHD:
-            type:
-              - number
-              - "null"
-          BIF:
-            type:
-              - number
-              - "null"
-          BMD:
-            type:
-              - number
-              - "null"
-          BND:
-            type:
-              - number
-              - "null"
-          BOB:
-            type:
-              - number
-              - "null"
-          BRL:
-            type:
-              - number
-              - "null"
-          BSD:
-            type:
-              - number
-              - "null"
-          BTC:
-            type:
-              - number
-              - "null"
-          BTN:
-            type:
-              - number
-              - "null"
-          BWP:
-            type:
-              - number
-              - "null"
-          BYN:
-            type:
-              - number
-              - "null"
-          BYR:
-            type:
-              - number
-              - "null"
-          BZD:
-            type:
-              - number
-              - "null"
-          CAD:
-            type:
-              - number
-              - "null"
-          CDF:
-            type:
-              - number
-              - "null"
-          CHF:
-            type:
-              - number
-              - "null"
-          CLF:
-            type:
-              - number
-              - "null"
-          CLP:
-            type:
-              - number
-              - "null"
-          CNH:
-            type:
-              - number
-              - "null"
-          CNY:
-            type:
-              - number
-              - "null"
-          COP:
-            type:
-              - number
-              - "null"
-          CRC:
-            type:
-              - number
-              - "null"
-          CUC:
-            type:
-              - number
-              - "null"
-          CUP:
-            type:
-              - number
-              - "null"
-          CVE:
-            type:
-              - number
-              - "null"
-          CZK:
-            type:
-              - number
-              - "null"
-          DJF:
-            type:
-              - number
-              - "null"
-          DKK:
-            type:
-              - number
-              - "null"
-          DOP:
-            type:
-              - number
-              - "null"
-          DZD:
-            type:
-              - number
-              - "null"
-          EGP:
-            type:
-              - number
-              - "null"
-          ERN:
-            type:
-              - number
-              - "null"
-          ETB:
-            type:
-              - number
-              - "null"
-          EUR:
-            type:
-              - number
-              - "null"
-          FJD:
-            type:
-              - number
-              - "null"
-          FKP:
-            type:
-              - number
-              - "null"
-          GBP:
-            type:
-              - number
-              - "null"
-          GEL:
-            type:
-              - number
-              - "null"
-          GGP:
-            type:
-              - number
-              - "null"
-          GHS:
-            type:
-              - number
-              - "null"
-          GIP:
-            type:
-              - number
-              - "null"
-          GMD:
-            type:
-              - number
-              - "null"
-          GNF:
-            type:
-              - number
-              - "null"
-          GTQ:
-            type:
-              - number
-              - "null"
-          GYD:
-            type:
-              - number
-              - "null"
-          HKD:
-            type:
-              - number
-              - "null"
-          HNL:
-            type:
-              - number
-              - "null"
-          HRK:
-            type:
-              - number
-              - "null"
-          HTG:
-            type:
-              - number
-              - "null"
-          HUF:
-            type:
-              - number
-              - "null"
-          IDR:
-            type:
-              - number
-              - "null"
-          ILS:
-            type:
-              - number
-              - "null"
-          IMP:
-            type:
-              - number
-              - "null"
-          INR:
-            type:
-              - number
-              - "null"
-          IQD:
-            type:
-              - number
-              - "null"
-          IRR:
-            type:
-              - number
-              - "null"
-          ISK:
-            type:
-              - number
-              - "null"
-          JEP:
-            type:
-              - number
-              - "null"
-          JMD:
-            type:
-              - number
-              - "null"
-          JOD:
-            type:
-              - number
-              - "null"
-          JPY:
-            type:
-              - number
-              - "null"
-          KES:
-            type:
-              - number
-              - "null"
-          KGS:
-            type:
-              - number
-              - "null"
-          KHR:
-            type:
-              - number
-              - "null"
-          KMF:
-            type:
-              - number
-              - "null"
-          KPW:
-            type:
-              - number
-              - "null"
-          KRW:
-            type:
-              - number
-              - "null"
-          KWD:
-            type:
-              - number
-              - "null"
-          KYD:
-            type:
-              - number
-              - "null"
-          KZT:
-            type:
-              - number
-              - "null"
-          LAK:
-            type:
-              - number
-              - "null"
-          LBP:
-            type:
-              - number
-              - "null"
-          LKR:
-            type:
-              - number
-              - "null"
-          LRD:
-            type:
-              - number
-              - "null"
-          LSL:
-            type:
-              - number
-              - "null"
-          LTL:
-            type:
-              - number
-              - "null"
-          LVL:
-            type:
-              - number
-              - "null"
-          LYD:
-            type:
-              - number
-              - "null"
-          MAD:
-            type:
-              - number
-              - "null"
-          MDL:
-            type:
-              - number
-              - "null"
-          MGA:
-            type:
-              - number
-              - "null"
-          MKD:
-            type:
-              - number
-              - "null"
-          MMK:
-            type:
-              - number
-              - "null"
-          MNT:
-            type:
-              - number
-              - "null"
-          MOP:
-            type:
-              - number
-              - "null"
-          MRU:
-            type:
-              - number
-              - "null"
-          MUR:
-            type:
-              - number
-              - "null"
-          MVR:
-            type:
-              - number
-              - "null"
-          MWK:
-            type:
-              - number
-              - "null"
-          MXN:
-            type:
-              - number
-              - "null"
-          MYR:
-            type:
-              - number
-              - "null"
-          MZN:
-            type:
-              - number
-              - "null"
-          NAD:
-            type:
-              - number
-              - "null"
-          NGN:
-            type:
-              - number
-              - "null"
-          NIO:
-            type:
-              - number
-              - "null"
-          NOK:
-            type:
-              - number
-              - "null"
-          NPR:
-            type:
-              - number
-              - "null"
-          NZD:
-            type:
-              - number
-              - "null"
-          OMR:
-            type:
-              - number
-              - "null"
-          PAB:
-            type:
-              - number
-              - "null"
-          PEN:
-            type:
-              - number
-              - "null"
-          PGK:
-            type:
-              - number
-              - "null"
-          PHP:
-            type:
-              - number
-              - "null"
-          PKR:
-            type:
-              - number
-              - "null"
-          PLN:
-            type:
-              - number
-              - "null"
-          PYG:
-            type:
-              - number
-              - "null"
-          QAR:
-            type:
-              - number
-              - "null"
-          RON:
-            type:
-              - number
-              - "null"
-          RSD:
-            type:
-              - number
-              - "null"
-          RUB:
-            type:
-              - number
-              - "null"
-          RWF:
-            type:
-              - number
-              - "null"
-          SAR:
-            type:
-              - number
-              - "null"
-          SBD:
-            type:
-              - number
-              - "null"
-          SCR:
-            type:
-              - number
-              - "null"
-          SDG:
-            type:
-              - number
-              - "null"
-          SEK:
-            type:
-              - number
-              - "null"
-          SGD:
-            type:
-              - number
-              - "null"
-          SHP:
-            type:
-              - number
-              - "null"
-          SLE:
-            type:
-              - number
-              - "null"
-          SLL:
-            type:
-              - number
-              - "null"
-          SOS:
-            type:
-              - number
-              - "null"
-          SRD:
-            type:
-              - number
-              - "null"
-          STD:
-            type:
-              - number
-              - "null"
-          SVC:
-            type:
-              - number
-              - "null"
-          SYP:
-            type:
-              - number
-              - "null"
-          SZL:
-            type:
-              - number
-              - "null"
-          THB:
-            type:
-              - number
-              - "null"
-          TJS:
-            type:
-              - number
-              - "null"
-          TMT:
-            type:
-              - number
-              - "null"
-          TND:
-            type:
-              - number
-              - "null"
-          TOP:
-            type:
-              - number
-              - "null"
-          TRY:
-            type:
-              - number
-              - "null"
-          TTD:
-            type:
-              - number
-              - "null"
-          TWD:
-            type:
-              - number
-              - "null"
-          TZS:
-            type:
-              - number
-              - "null"
-          UAH:
-            type:
-              - number
-              - "null"
-          UGX:
-            type:
-              - number
-              - "null"
-          USD:
-            type:
-              - number
-              - "null"
-          UYU:
-            type:
-              - number
-              - "null"
-          UZS:
-            type:
-              - number
-              - "null"
-          VEF:
-            type:
-              - number
-              - "null"
-          VES:
-            type:
-              - number
-              - "null"
-          VND:
-            type:
-              - number
-              - "null"
-          VUV:
-            type:
-              - number
-              - "null"
-          WST:
-            type:
-              - number
-              - "null"
-          XAF:
-            type:
-              - number
-              - "null"
-          XAG:
-            type:
-              - number
-              - "null"
-          XAU:
-            type:
-              - number
-              - "null"
-          XCD:
-            type:
-              - number
-              - "null"
-          XDR:
-            type:
-              - number
-              - "null"
-          XOF:
-            type:
-              - number
-              - "null"
-          XPF:
-            type:
-              - number
-              - "null"
-          YER:
-            type:
-              - number
-              - "null"
-          ZAR:
-            type:
-              - number
-              - "null"
-          ZMK:
-            type:
-              - number
-              - "null"
-          ZMW:
-            type:
-              - number
-              - "null"
-          ZWL:
-            type:
-              - number
-              - "null"
   organizations:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1462,6 +824,36 @@ schemas:
         type:
           - string
           - "null"
+      order:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          payment:
+            type:
+              - object
+              - "null"
+            properties:
+              discount:
+                type:
+                  - number
+                  - "null"
+              fees:
+                type:
+                  - number
+                  - "null"
+              subtotal:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
   rewards:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1522,3 +914,41 @@ schemas:
               - "null"
     required:
       - id
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
