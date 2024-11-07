@@ -206,9 +206,11 @@ class SubstreamPartitionRouter(PartitionRouter):
         """
         Set the state of the parent streams.
 
+        If the `parent_state` key is missing from `stream_state`, migrate the child stream state to the parent stream's state format.
+        This migration applies only to parent streams with incremental dependencies.
+
         Args:
-            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
-            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+            stream_state (StreamState): The state of the streams to be set.
 
         Example of state format:
         {
@@ -218,6 +220,21 @@ class SubstreamPartitionRouter(PartitionRouter):
                 },
                 "parent_stream_name2": {
                     "last_updated": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
+
+        Example of migrating to parent state format:
+        - Initial state:
+        {
+            "updated_at": "2023-05-27T00:00:00Z"
+        }
+        - After migration:
+        {
+            "updated_at": "2023-05-27T00:00:00Z",
+            "parent_state": {
+                "parent_stream_name": {
+                    "parent_stream_cursor": "2023-05-27T00:00:00Z"
                 }
             }
         }
@@ -243,7 +260,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                 parent_state = {}
                 for parent_config in self.parent_stream_configs:
                     if parent_config.incremental_dependency:
-                        parent_state[parent_config.stream.name] = {parent_config.stream.stream_cursor_field: child_state}
+                        parent_state[parent_config.stream.name] = {parent_config.stream.cursor_field: child_state}
 
         # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
