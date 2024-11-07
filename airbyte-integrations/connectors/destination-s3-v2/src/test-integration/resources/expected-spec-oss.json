@@ -294,10 +294,16 @@
         "title" : "File Name Pattern",
         "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ]
       },
+      "use_staging_directory" : {
+        "type" : "boolean",
+        "default" : false,
+        "description" : "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object.",
+        "title" : "Use a Staging Directory"
+      },
       "s3_staging_prefix" : {
         "type" : "string",
         "default" : "{s3_bucket_path}/__airbyte_tmp",
-        "description" : "Path to use when staging data in the bucket directory. Documentation TBD.",
+        "description" : "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files.",
         "title" : "S3 Staging Prefix",
         "examples" : [ "__staging/data_sync/test" ]
       }

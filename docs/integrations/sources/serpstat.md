@@ -52,6 +52,7 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.2.3 | 2024-10-29 | [47928](https://github.com/airbytehq/airbyte/pull/47928) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47666](https://github.com/airbytehq/airbyte/pull/47666) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44067](https://github.com/airbytehq/airbyte/pull/44067) | Refactor connector to manifest-only format |

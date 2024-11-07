@@ -6,8 +6,6 @@ package io.airbyte.cdk.load.data
 
 sealed interface AirbyteType
 
-data object NullType : AirbyteType
-
 data object StringType : AirbyteType
 
 data object BooleanType : AirbyteType

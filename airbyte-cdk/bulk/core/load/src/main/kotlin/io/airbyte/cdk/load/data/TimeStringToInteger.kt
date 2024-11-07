@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,7 +29,7 @@ class TimeStringTypeToIntegerType : AirbyteSchemaIdentityMapper {
  * NOTE: To keep parity with the old avro/parquet code, we will always first try to parse the value
  * as with timezone, then fall back to without. But in theory we should be more strict.
  */
-class TimeStringToInteger(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class TimeStringToInteger : AirbyteValueIdentityMapper() {
     companion object {
         private val DATE_TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern(

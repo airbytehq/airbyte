@@ -8,6 +8,12 @@ Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resou
 
 Airbyte Cloud plans start at just $10 per month, with additional charges based on usage.
 
+:::note
+If you signed up for Airbyte Cloud on or after October 31st, 2024, you are automatically enrolled in our $10/month subscription plan.
+
+For those who signed up prior, we will reach out to you over the coming weeks to migrate you to the new plans, and you can continue to use Airbyte as usual in the interim.
+:::
+
 ## What are credits?
 
 Airbyte uses credits to unify pricing across multiple types of sources. You can refer to the below table to understand how pricing differs across each source.

@@ -11,15 +11,31 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecord.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -34,17 +50,41 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
+
+sealed interface AllTypesBehavior
+
+data class StronglyTyped(
+    /**
+     * Whether the destination can cast any value to string. E.g. given a StringType column, if a
+     * record contains `{"the_column": {"foo": "bar"}}`, does the connector treat this as a type
+     * error, or does it persist a serialized JSON string?
+     */
+    val convertAllValuesToString: Boolean = true,
+    /** Whether top-level fields are represented as float64, or as fixed-point values */
+    val topLevelFloatLosesPrecision: Boolean = true,
+    /** Whether floats nested inside objects/arrays are represented as float64. */
+    val nestedFloatLosesPrecision: Boolean = true,
+) : AllTypesBehavior
+
+data object Untyped : AllTypesBehavior
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
@@ -69,6 +109,20 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val isStreamSchemaRetroactive: Boolean,
     val supportsDedup: Boolean,
+    val stringifySchemalessObjects: Boolean,
+    val promoteUnionToObject: Boolean,
+    val preserveUndeclaredFields: Boolean,
+    /**
+     * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
+     * example:
+     * * A destination which writes new data to a temporary directory, and moves those files to the
+     * "real" directory at the end of the sync if and only if it received a COMPLETE status, would
+     * set this parameter to `false`.
+     * * A destination which writes new data directly into the real directory throughout the sync,
+     * would set this parameter to `true`.
+     */
+    val commitDataIncrementally: Boolean,
+    val allTypesBehavior: AllTypesBehavior,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -91,13 +145,11 @@ abstract class BasicFunctionalityIntegrationTest(
                     DestinationRecord(
                         namespace = randomizedNamespace,
                         name = "test_stream",
-                        // The `undeclared` field should be dropped by the destination, because it
-                        // is not present in the stream schema.
                         data = """{"id": 5678, "undeclared": "asdf"}""",
                         emittedAtMs = 1234,
                         changes =
                             mutableListOf(
-                                DestinationRecord.Change(
+                                Change(
                                     field = "foo",
                                     change = AirbyteRecordMessageMetaChange.Change.NULLED,
                                     reason =
@@ -143,12 +195,17 @@ abstract class BasicFunctionalityIntegrationTest(
                             OutputRecord(
                                 extractedAt = 1234,
                                 generationId = 0,
-                                data = mapOf("id" to 5678),
+                                data =
+                                    if (preserveUndeclaredFields) {
+                                        mapOf("id" to 5678, "undeclared" to "asdf")
+                                    } else {
+                                        mapOf("id" to 5678)
+                                    },
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =
                                             mutableListOf(
-                                                DestinationRecord.Change(
+                                                Change(
                                                     field = "foo",
                                                     change =
                                                         AirbyteRecordMessageMetaChange.Change
@@ -562,6 +619,477 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Test behavior in a failed truncate refresh. Sync 1 just populates two records with ID 1 and
+     * 2. The test then runs two more syncs:
+     * 1. Sync 2 emits ID 1, and then fails the sync (i.e. no COMPLETE stream status). We expect the
+     * first sync's records to still exist in the destination. The new record may be visible to the
+     * data dumper, depending on the [commitDataIncrementally] parameter.
+     * 2. Sync 3 emits ID 2, and then ends the sync normally (i.e. COMPLETE stream status). After
+     * this sync, the data from the first sync should be deleted, and the data from both the second
+     * and third syncs should be visible to the data dumper.
+     */
+    @Test
+    open fun testInterruptedTruncateWithPriorData() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        // Run a normal sync with nonempty data
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
+        runSync(
+            configContents,
+            stream1,
+            listOf(
+                makeInputRecord(1, "2024-01-23T01:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+            ),
+            stream1,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after initial sync - this indicates a bug in basic connector behavior",
+        )
+
+        val stream2 =
+            stream1.copy(
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status. This should not delete any existing data.
+        assertThrows<DestinationUncleanExitException> {
+            runSync(
+                configContents,
+                stream2,
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                streamStatus = null,
+            )
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                if (commitDataIncrementally) {
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a third sync, this time with a successful status.
+        // This should delete the first sync's data, and retain the second+third syncs' data.
+        runSync(
+            configContents,
+            stream2,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+        )
+    }
+
+    /**
+     * Largely identical to [testInterruptedTruncateWithPriorData], but doesn't run the initial
+     * sync. This is mostly relevant to warehouse destinations, where running a truncate sync into
+     * an empty destination behaves differently from running a truncate sync when the destination
+     * already contains data.
+     */
+    @Test
+    open fun testInterruptedTruncateWithoutPriorData() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status.
+        assertThrows<DestinationUncleanExitException> {
+            runSync(
+                configContents,
+                stream,
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                streamStatus = null,
+            )
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            if (commitDataIncrementally) {
+                listOf(
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                )
+            } else {
+                listOf()
+            },
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a second sync, this time with a successful status.
+        // This should retain the first syncs' data.
+        runSync(
+            configContents,
+            stream,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+        )
+    }
+
+    /**
+     * Emulates this sequence of events:
+     * 1. User runs a normal incremental sync
+     * 2. User initiates a truncate refresh, but it fails.
+     * 3. User cancels the truncate refresh, and initiates a normal incremental sync.
+     *
+     * In particular, we must retain all records from both the first and second syncs.
+     *
+     * This is, again, similar to [testInterruptedTruncateWithPriorData], except that the third sync
+     * has generation 43 + minGeneration 0 (instead of generation=minGeneration=42)(.
+     */
+    @Test
+    open fun resumeAfterCancelledTruncate() {
+        assumeTrue(verifyDataWriting)
+        fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                """{"id": $id, "updated_at": "$updatedAt", "name": "foo_${id}_$extractedAt"}""",
+                emittedAtMs = extractedAt,
+            )
+        fun makeOutputRecord(
+            id: Int,
+            updatedAt: String,
+            extractedAt: Long,
+            generationId: Long,
+            syncId: Long,
+        ) =
+            OutputRecord(
+                extractedAt = extractedAt,
+                generationId = generationId,
+                data =
+                    mapOf(
+                        "id" to id,
+                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "name" to "foo_${id}_$extractedAt",
+                    ),
+                airbyteMeta = OutputRecord.Meta(syncId = syncId),
+            )
+        // Run a normal sync with nonempty data
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
+                generationId = 41,
+                minimumGenerationId = 0,
+                syncId = 41,
+            )
+        runSync(
+            configContents,
+            stream1,
+            listOf(
+                makeInputRecord(1, "2024-01-23T01:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+            ),
+            stream1,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after initial sync - this indicates a bug in basic connector behavior",
+        )
+
+        val stream2 =
+            stream1.copy(
+                generationId = 42,
+                minimumGenerationId = 42,
+                syncId = 42,
+            )
+        // Run a sync, but don't emit a stream status. This should not delete any existing data.
+        assertThrows<DestinationUncleanExitException> {
+            runSync(
+                configContents,
+                stream2,
+                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                streamStatus = null,
+            )
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOfNotNull(
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                if (commitDataIncrementally) {
+                    makeOutputRecord(
+                        id = 1,
+                        updatedAt = "2024-01-23T02:00Z",
+                        extractedAt = 200,
+                        generationId = 42,
+                        syncId = 42,
+                    )
+                } else {
+                    null
+                }
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a failed sync.",
+        )
+
+        // Run a third sync, this time with a successful status.
+        // This should delete the first sync's data, and retain the second+third syncs' data.
+        val stream3 =
+            stream2.copy(
+                generationId = 43,
+                minimumGenerationId = 0,
+                syncId = 43,
+            )
+        runSync(
+            configContents,
+            stream3,
+            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // records from sync 1
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T01:00Z",
+                    extractedAt = 100,
+                    generationId = 41,
+                    syncId = 41,
+                ),
+                // sync 2
+                makeOutputRecord(
+                    id = 1,
+                    updatedAt = "2024-01-23T02:00Z",
+                    extractedAt = 200,
+                    generationId = 42,
+                    syncId = 42,
+                ),
+                // and sync 3
+                makeOutputRecord(
+                    id = 2,
+                    updatedAt = "2024-01-23T03:00Z",
+                    extractedAt = 300,
+                    generationId = 43,
+                    syncId = 43,
+                ),
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+        )
+    }
+
     @Test
     open fun testAppend() {
         assumeTrue(verifyDataWriting)
@@ -841,8 +1369,844 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
+     * Verify that we overwrite everything correctly.
+     *
+     * This essentially verifies that the destination connector correctly recognizes NULL cursors as
+     * older than non-NULL cursors.
+     */
+    @Test
+    open fun testDedupChangeCursor() {
+        assumeTrue(verifyDataWriting && supportsDedup)
+        fun makeStream(cursor: String) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Dedupe(
+                    primaryKey = listOf(listOf("id")),
+                    cursor = listOf(cursor),
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to intType,
+                            cursor to intType,
+                            "name" to stringType,
+                        )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(cursorName: String) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                data = """{"id": 1, "$cursorName": 1, "name": "foo_$cursorName"}""",
+                // this is unrealistic (extractedAt should always increase between syncs),
+                // but it lets us force the dedupe behavior to rely solely on the cursor column,
+                // instead of being able to fallback onto extractedAt.
+                emittedAtMs = 100,
+            )
+        runSync(configContents, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        val stream2 = makeStream("cursor2")
+        runSync(configContents, stream2, listOf(makeRecord("cursor2")))
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "cursor2" to 1,
+                            "name" to "foo_cursor2",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream2,
+            primaryKey = listOf(listOf("id")),
+            cursor = listOf("cursor2"),
+        )
+    }
+
+    open val manyStreamCount = 20
+
+    /**
+     * Some destinations can't handle large numbers of streams. This test runs a basic smoke test
+     * against a catalog with many streams. Subclasses many configure the number of streams using
+     * [manyStreamCount].
+     */
+    @Test
+    open fun testManyStreamsCompletion() {
+        assumeTrue(verifyDataWriting)
+        assertTrue(
+            manyStreamCount > 1,
+            "manyStreamCount should be greater than 1. If you want to disable this test, just override it and use @Disabled.",
+        )
+        val streams =
+            (0..manyStreamCount).map { i ->
+                DestinationStream(
+                    DestinationStream.Descriptor(randomizedNamespace, "test_stream_$i"),
+                    Append,
+                    ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                    generationId = 42,
+                    minimumGenerationId = 42,
+                    syncId = 42,
+                )
+            }
+        val messages =
+            (0..manyStreamCount).map { i ->
+                DestinationRecord(
+                    randomizedNamespace,
+                    "test_stream_$i",
+                    """{"id": 1, "name": "foo_$i"}""",
+                    emittedAtMs = 100,
+                )
+            }
+        // Just verify that we don't crash.
+        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
+    }
+
+    /** A basic test that we handle all supported data types in a reasonable way. */
+    // Depending on how future connector development goes - we might need to do something similar to
+    // BaseSqlGeneratorIntegrationTest, where we split out tests for connectors that do/don't
+    // support safe_cast. (or, we move fully to in-connector typing, and we stop worrying about
+    // per-destination safe_cast support).
+    @Test
+    open fun testAllTypes() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "struct" to
+                            FieldType(
+                                ObjectType(linkedMapOf("foo" to numberType)),
+                                nullable = false
+                            ),
+                        "struct_schemaless" to
+                            FieldType(ObjectTypeWithEmptySchema, nullable = false),
+                        "struct_empty" to FieldType(ObjectTypeWithEmptySchema, nullable = false),
+                        "array" to FieldType(ArrayType(numberType), nullable = false),
+                        "array_schemaless" to FieldType(ArrayTypeWithoutSchema, nullable = false),
+                        "string" to FieldType(StringType, nullable = false),
+                        "number" to FieldType(NumberType, nullable = false),
+                        "boolean" to FieldType(BooleanType, nullable = false),
+                        "timestamp_with_timezone" to
+                            FieldType(TimestampTypeWithTimezone, nullable = false),
+                        "timestamp_without_timezone" to
+                            FieldType(TimestampTypeWithoutTimezone, nullable = false),
+                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = false),
+                        "time_without_timezone" to
+                            FieldType(TimeTypeWithoutTimezone, nullable = false),
+                        "date" to FieldType(DateType, nullable = false),
+                        "unknown" to FieldType(UnknownType("test"), nullable = false),
+                    )
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        fun makeRecord(data: String) =
+            DestinationRecord(
+                randomizedNamespace,
+                "test_stream",
+                data,
+                emittedAtMs = 100,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                // A record with valid values for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 1,
+                          "struct": {"foo": 1.0},
+                          "struct_schemaless": {"foo": 1.0},
+                          "struct_empty": {"foo": 1.0},
+                          "array": [1.0],
+                          "array_schemaless": [1.0],
+                          "string": "foo",
+                          "number": 42.1,
+                          "integer": 42,
+                          "boolean": true,
+                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_without_timezone": "2023-01-23T12:34:56",
+                          "time_with_timezone": "12:34:56Z",
+                          "time_without_timezone": "12:34:56",
+                          "date": "2023-01-23",
+                          "unknown": {}
+                        }
+                    """.trimIndent()
+                ),
+                // A record with null for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 2,
+                          "struct": null,
+                          "struct_schemaless": null,
+                          "struct_empty": null,
+                          "array": null,
+                          "array_schemaless": null,
+                          "string": null,
+                          "number": null,
+                          "integer": null,
+                          "boolean": null,
+                          "timestamp_with_timezone": null,
+                          "timestamp_without_timezone": null,
+                          "time_with_timezone": null,
+                          "time_without_timezone": null,
+                          "date": null,
+                          "unknown": null
+                        }
+                    """.trimIndent()
+                ),
+                // A record with all fields unset
+                makeRecord("""{"id": 3}"""),
+                // A record that verifies floating-point behavior.
+                // 67.174118 cannot be represented as a standard float64
+                // (it turns into 67.17411800000001).
+                makeRecord(
+                    """
+                        {
+                          "id": 4,
+                          "struct": {"foo": 67.174118},
+                          "struct_schemaless": {"foo": 67.174118},
+                          "struct_empty": {"foo": 67.174118},
+                          "array": [67.174118],
+                          "array_schemaless": [67.174118],
+                          "number": 67.174118
+                        }
+                    """.trimIndent(),
+                ),
+                // A record with invalid values for all fields
+                makeRecord(
+                    """
+                        {
+                          "id": 5,
+                          "struct": "foo",
+                          "struct_schemaless": "foo",
+                          "struct_empty": "foo",
+                          "array": "foo",
+                          "array_schemaless": "foo",
+                          "string": {},
+                          "number": "foo",
+                          "integer": "foo",
+                          "boolean": "foo",
+                          "timestamp_with_timezone": "foo",
+                          "timestamp_without_timezone": "foo",
+                          "time_with_timezone": "foo",
+                          "time_without_timezone": "foo",
+                          "date": "foo"
+                        }
+                    """.trimIndent()
+                ),
+            ),
+        )
+
+        val nestedFloat: BigDecimal
+        val topLevelFloat: BigDecimal
+        val badValuesData: Map<String, Any?>
+        val badValuesChanges: MutableList<Change>
+        when (allTypesBehavior) {
+            is StronglyTyped -> {
+                nestedFloat =
+                    if (allTypesBehavior.nestedFloatLosesPrecision) {
+                        BigDecimal("67.17411800000001")
+                    } else {
+                        BigDecimal("67.174118")
+                    }
+                topLevelFloat =
+                    if (allTypesBehavior.topLevelFloatLosesPrecision) {
+                        BigDecimal("67.17411800000001")
+                    } else {
+                        BigDecimal("67.174118")
+                    }
+                badValuesData =
+                    mapOf(
+                        "id" to 5,
+                        "struct" to null,
+                        "struct_schemaless" to null,
+                        "struct_empty" to null,
+                        "array" to null,
+                        "array_schemaless" to null,
+                        "string" to
+                            if (allTypesBehavior.convertAllValuesToString) {
+                                "{}"
+                            } else {
+                                null
+                            },
+                        "number" to null,
+                        "integer" to null,
+                        "boolean" to null,
+                        "timestamp_with_timezone" to null,
+                        "timestamp_without_timezone" to null,
+                        "time_with_timezone" to null,
+                        "time_without_timezone" to null,
+                        "date" to null,
+                    )
+                badValuesChanges =
+                    (stream.schema as ObjectType)
+                        .properties
+                        .keys
+                        .map { key ->
+                            Change(
+                                key,
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_SERIALIZATION_ERROR,
+                            )
+                        }
+                        .filter {
+                            !allTypesBehavior.convertAllValuesToString || it.field != "string"
+                        }
+                        .toMutableList()
+            }
+            Untyped -> {
+                nestedFloat = BigDecimal("67.174118")
+                topLevelFloat = BigDecimal("67.174118")
+                badValuesData =
+                    mapOf(
+                        "id" to 5,
+                        "struct" to "foo",
+                        "struct_schemaless" to "foo",
+                        "struct_empty" to "foo",
+                        "array" to "foo",
+                        "array_schemaless" to "foo",
+                        "string" to StringValue("{}"),
+                        "number" to "foo",
+                        "integer" to "foo",
+                        "boolean" to "foo",
+                        // TODO this probably indicates that we should
+                        // 1. actually parse time types
+                        // 2. and just rely on the fallback to JsonToAirbyteValue.fromJson to return
+                        //    a StringValue
+                        "timestamp_with_timezone" to TimestampValue("foo"),
+                        "timestamp_without_timezone" to TimestampValue("foo"),
+                        "time_with_timezone" to TimeValue("foo"),
+                        "time_without_timezone" to TimeValue("foo"),
+                        "date" to DateValue("foo"),
+                    )
+                badValuesChanges = mutableListOf()
+            }
+        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "struct" to mapOf("foo" to 1.0),
+                            "struct_schemaless" to mapOf("foo" to 1.0),
+                            "struct_empty" to mapOf("foo" to 1.0),
+                            "array" to listOf(1.0),
+                            "array_schemaless" to listOf(1.0),
+                            "string" to "foo",
+                            "number" to 42.1,
+                            "integer" to 42,
+                            "boolean" to true,
+                            "timestamp_with_timezone" to
+                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                            "timestamp_without_timezone" to
+                                LocalDateTime.parse("2023-01-23T12:34:56"),
+                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_without_timezone" to LocalTime.parse("12:34:56"),
+                            "date" to LocalDate.parse("2023-01-23"),
+                            "unknown" to mapOf<String, Any?>(),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "struct" to null,
+                            "struct_schemaless" to null,
+                            "struct_empty" to null,
+                            "array" to null,
+                            "array_schemaless" to null,
+                            "string" to null,
+                            "number" to null,
+                            "integer" to null,
+                            "boolean" to null,
+                            "timestamp_with_timezone" to null,
+                            "timestamp_without_timezone" to null,
+                            "time_with_timezone" to null,
+                            "time_without_timezone" to null,
+                            "date" to null,
+                            "unknown" to null,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = mapOf("id" to 3),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 4,
+                            "struct" to mapOf("foo" to nestedFloat),
+                            "struct_schemaless" to mapOf("foo" to nestedFloat),
+                            "struct_empty" to mapOf("foo" to nestedFloat),
+                            "array" to listOf(nestedFloat),
+                            "array_schemaless" to listOf(nestedFloat),
+                            "number" to topLevelFloat,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data = badValuesData,
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = badValuesChanges),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * Some types (object/array) are expected to contain other types. Verify that we handle them
+     * correctly.
+     *
+     * In particular, verify behavior when they don't specify a schema for the values inside them.
+     * (e.g. `{type: object}` (without an explicit `properties`) / `{type: array}` (without explicit
+     * `items`). Some destinations can write those types directly; other destinations need to
+     * serialize them to a JSON string first.
+     */
+    @Test
+    open fun testContainerTypes() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "schematized_object" to
+                            FieldType(
+                                ObjectType(
+                                    linkedMapOf(
+                                        "id" to FieldType(IntegerType, nullable = true),
+                                        "name" to FieldType(StringType, nullable = true),
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "empty_object" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
+                        "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
+                        "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
+                    ),
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 1,
+                          "schematized_object": { "id": 1, "name": "Joe" },
+                          "empty_object": {},
+                          "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
+                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589100,
+                ),
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 2,
+                          "schematized_object": { "id": 2, "name": "Jane" },
+                          "empty_object": {"extra": "stuff"},
+                          "schemaless_object": { "address": { "street": "113 Hickey Rd", "zip": "37932" }, "flags": [ true, false, false ] },
+                          "schemaless_array": []
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589200,
+                ),
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 3,
+                          "schematized_object": null,
+                          "empty_object": null,
+                          "schemaless_object": null,
+                          "schemaless_array": null
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589300,
+                ),
+            )
+        )
+
+        val expectedRecords: List<OutputRecord> =
+            listOf(
+                OutputRecord(
+                    extractedAt = 1602637589100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
+                            "empty_object" to emptyMap<String, Any?>(),
+                            "schemaless_object" to
+                                if (stringifySchemalessObjects) {
+                                    """{"uuid":"38F52396-736D-4B23-B5B4-F504D8894B97","probability":1.5}"""
+                                } else {
+                                    mapOf(
+                                        "uuid" to "38F52396-736D-4B23-B5B4-F504D8894B97",
+                                        "probability" to 1.5
+                                    )
+                                },
+                            "schemaless_array" to
+                                if (stringifySchemalessObjects) {
+                                    """[10,"foo",null,{"bar:"qua"}]"""
+                                } else {
+                                    listOf(10, "foo", null, mapOf("bar" to "qua"))
+                                },
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1602637589200,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "schematized_object" to mapOf("id" to 2, "name" to "Jane"),
+                            "empty_object" to
+                                if (stringifySchemalessObjects) {
+                                    """{"extra":"stuff"}"""
+                                } else {
+                                    mapOf("extra" to "stuff")
+                                },
+                            "schemaless_object" to
+                                if (stringifySchemalessObjects) {
+                                    """{"address":{"street":"113 Hickey Rd","zip":"37932"},"flags":[true,false,false]}"""
+                                } else {
+                                    mapOf(
+                                        "address" to
+                                            mapOf(
+                                                "street" to "113 Hickey Rd",
+                                                "zip" to "37932",
+                                            ),
+                                        "flags" to listOf(true, false, false)
+                                    )
+                                },
+                            "schemaless_array" to
+                                if (stringifySchemalessObjects) {
+                                    "[]"
+                                } else {
+                                    emptyList<Any>()
+                                },
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1602637589300,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 3,
+                            "schematized_object" to null,
+                            "empty_object" to null,
+                            "schemaless_object" to null,
+                            "schemaless_array" to null,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            expectedRecords,
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    /**
+     * This test verifies that destinations handle unions correctly.
+     *
+     * Some destinations have poor native support for union types, and instead promote unions into
+     * objects. For example, given a schema `Union(String, Integer)`, this field would be written
+     * into the destination as either `{"string": "foo"}` or `{"integer": 42}`.
+     */
+    @Test
+    open fun testUnions() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
+                Append,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        // in jsonschema, there are two ways to achieve this:
+                        // {type: [string, int]}
+                        // {oneOf: [{type: string}, {type: int}]}
+                        // Our AirbyteType treats them identically, so we don't need two test cases.
+                        "combined_type" to
+                            FieldType(UnionType(listOf(StringType, IntegerType)), nullable = true),
+                        "union_of_objects_with_properties_identical" to
+                            FieldType(
+                                UnionType(
+                                    listOf(
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(IntegerType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        ),
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(IntegerType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_overlapping" to
+                            FieldType(
+                                UnionType(
+                                    listOf(
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(IntegerType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        ),
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "name" to FieldType(StringType, nullable = true),
+                                                "flagged" to
+                                                    FieldType(BooleanType, nullable = true),
+                                            )
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_nonoverlapping" to
+                            FieldType(
+                                UnionType(
+                                    listOf(
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(IntegerType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        ),
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "flagged" to
+                                                    FieldType(BooleanType, nullable = true),
+                                                "description" to
+                                                    FieldType(StringType, nullable = true),
+                                            )
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_contradicting" to
+                            FieldType(
+                                UnionType(
+                                    listOf(
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(IntegerType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        ),
+                                        ObjectType(
+                                            linkedMapOf(
+                                                "id" to FieldType(StringType, nullable = true),
+                                                "name" to FieldType(StringType, nullable = true),
+                                            )
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                    ),
+                ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            configContents,
+            stream,
+            listOf(
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 1,
+                          "combined_type": "string1",
+                          "union_of_objects_with_properties_identical": { "id": 10, "name": "Joe" },
+                          "union_of_objects_with_properties_overlapping": { "id": 20, "name": "Jane", "flagged": true },
+                          "union_of_objects_with_properties_contradicting": { "id": 1, "name": "Jenny" },
+                          "union_of_objects_with_properties_nonoverlapping": { "id": 30, "name": "Phil", "flagged": false, "description":"Very Phil" }
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589100,
+                ),
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 2,
+                          "combined_type": 20,
+                          "union_of_objects_with_properties_identical": {},
+                          "union_of_objects_with_properties_overlapping": {},
+                          "union_of_objects_with_properties_nonoverlapping": {},
+                          "union_of_objects_with_properties_contradicting": { "id": "seal-one-hippity", "name": "James" }
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589200,
+                ),
+                DestinationRecord(
+                    randomizedNamespace,
+                    "problematic_types",
+                    """
+                        {
+                          "id": 3,
+                          "combined_type": null,
+                          "union_of_objects_with_properties_identical": null,
+                          "union_of_objects_with_properties_overlapping": null,
+                          "union_of_objects_with_properties_nonoverlapping": null,
+                          "union_of_objects_with_properties_contradicting": null
+                        }""".trimIndent(),
+                    emittedAtMs = 1602637589300,
+                ),
+            )
+        )
+
+        fun maybePromote(typeName: String, value: Any?) =
+            if (promoteUnionToObject) {
+                mapOf(
+                    "type" to typeName,
+                    typeName to value,
+                )
+            } else {
+                value
+            }
+        val expectedRecords: List<OutputRecord> =
+            listOf(
+                OutputRecord(
+                    extractedAt = 1602637589100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "combined_type" to maybePromote("string", "string1"),
+                            "union_of_objects_with_properties_identical" to
+                                maybePromote("object", mapOf("id" to 10, "name" to "Joe")),
+                            "union_of_objects_with_properties_overlapping" to
+                                maybePromote(
+                                    "object",
+                                    mapOf("id" to 20, "name" to "Jane", "flagged" to true)
+                                ),
+                            "union_of_objects_with_properties_contradicting" to
+                                maybePromote("object", mapOf("id" to 1, "name" to "Jenny")),
+                            "union_of_objects_with_properties_nonoverlapping" to
+                                maybePromote(
+                                    "object",
+                                    mapOf(
+                                        "id" to 30,
+                                        "name" to "Phil",
+                                        "flagged" to false,
+                                        "description" to "Very Phil",
+                                    )
+                                ),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1602637589200,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "combined_type" to maybePromote("integer", 20),
+                            "union_of_objects_with_properties_identical" to
+                                maybePromote("object", emptyMap<String, Any?>()),
+                            "union_of_objects_with_properties_nonoverlapping" to
+                                maybePromote("object", emptyMap<String, Any?>()),
+                            "union_of_objects_with_properties_overlapping" to
+                                maybePromote("object", emptyMap<String, Any?>()),
+                            "union_of_objects_with_properties_contradicting" to
+                                maybePromote(
+                                    "object",
+                                    mapOf("id" to "seal-one-hippity", "name" to "James")
+                                ),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1602637589300,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 3,
+                            "combined_type" to null,
+                            "union_of_objects_with_properties_identical" to null,
+                            "union_of_objects_with_properties_overlapping" to null,
+                            "union_of_objects_with_properties_nonoverlapping" to null,
+                            "union_of_objects_with_properties_contradicting" to null,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            expectedRecords,
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
     companion object {
         private val intType = FieldType(IntegerType, nullable = true)
+        private val numberType = FieldType(NumberType, nullable = true)
         private val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
