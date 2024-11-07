@@ -43,6 +43,7 @@ MANIFEST_ONLY_FILES_TO_KEEP = [
     "components.py",
     "metadata.yaml",
     "icon.svg",
+    "unit_tests",
     "integration_tests",
     "acceptance-test-config.yml",
     "secrets",
@@ -188,7 +189,7 @@ class StripConnector(Step):
         ## 2. Update the version in manifest.yaml
         try:
             manifest = read_yaml(root_manifest_path)
-            manifest["version"] = "4.3.2"
+            manifest["version"] = "5.15.0"
             manifest["type"] = "DeclarativeSource"
 
             # Resolve $parameters and types with CDK magic
