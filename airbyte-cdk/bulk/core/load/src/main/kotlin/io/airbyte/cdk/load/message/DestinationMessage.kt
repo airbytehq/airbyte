@@ -266,6 +266,7 @@ sealed interface CheckpointMessage : DestinationMessage {
 
     val sourceStats: Stats?
     val destinationStats: Stats?
+    val stateMessageId: Long?
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
 }
@@ -274,7 +275,7 @@ data class StreamCheckpoint(
     val checkpoint: Checkpoint,
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
-    val additionalProperties: Map<String, Any>
+    override val stateMessageId: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -283,6 +284,7 @@ data class StreamCheckpoint(
         blob: String,
         sourceRecordCount: Long,
         destinationRecordCount: Long? = null,
+        stateMessageId: Long? = null,
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
@@ -290,11 +292,11 @@ data class StreamCheckpoint(
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
-        additionalProperties = mutableMapOf(),
+        stateMessageId,
     )
 
     override fun withDestinationStats(stats: Stats) =
-        StreamCheckpoint(checkpoint, sourceStats, stats, additionalProperties)
+        copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -311,8 +313,8 @@ data class StreamCheckpoint(
                             AirbyteStateStats()
                                 .withRecordCount(destinationStats.recordCount.toDouble())
                     }
-                    additionalProperties.forEach { (key, value) ->
-                        it.withAdditionalProperty(key, value)
+                    if (stateMessageId != null) {
+                        it.withAdditionalProperty("id", stateMessageId)
                     }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
@@ -324,15 +326,20 @@ data class GlobalCheckpoint(
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
-    val additionalProperties: MutableMap<String, Any> = mutableMapOf()
+    override val stateMessageId: Long? = null,
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
         blob: String,
         sourceRecordCount: Long,
-    ) : this(state = Jsons.deserialize(blob), Stats(sourceRecordCount))
+        stateMessageId: Long? = null,
+    ) : this(
+        state = Jsons.deserialize(blob),
+        Stats(sourceRecordCount),
+        stateMessageId = stateMessageId,
+    )
     override fun withDestinationStats(stats: Stats) =
-        GlobalCheckpoint(state, sourceStats, stats, checkpoints, additionalProperties)
+        copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -353,8 +360,8 @@ data class GlobalCheckpoint(
                             AirbyteStateStats()
                                 .withRecordCount(destinationStats.recordCount.toDouble())
                     }
-                    additionalProperties.forEach { (key, value) ->
-                        it.withAdditionalProperty(key, value)
+                    if (stateMessageId != null) {
+                        it.withAdditionalProperty("id", stateMessageId)
                     }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
@@ -468,6 +475,7 @@ class DestinationMessageFactory(
                 }
             }
             AirbyteMessage.Type.STATE -> {
+                val stateMessageId = message.state.additionalProperties["id"] as Long?
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM ->
                         StreamCheckpoint(
@@ -476,7 +484,7 @@ class DestinationMessageFactory(
                                 message.state.sourceStats?.recordCount?.let {
                                     Stats(recordCount = it.toLong())
                                 },
-                            additionalProperties = message.state.additionalProperties
+                            stateMessageId = stateMessageId,
                         )
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
@@ -489,7 +497,7 @@ class DestinationMessageFactory(
                                 message.state.global.streamStates.map {
                                     fromAirbyteStreamState(it)
                                 },
-                            additionalProperties = message.state.additionalProperties
+                            stateMessageId = stateMessageId,
                         )
                     else -> // TODO: Do we still need to handle LEGACY?
                     Undefined
