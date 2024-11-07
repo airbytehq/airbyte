@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
@@ -39,10 +38,10 @@ class AirbyteValueIdentityMapperTest {
                 .endRecord()
                 .build()
 
-        val meta = DestinationRecord.Meta()
-        val values = AirbyteValueIdentityMapper(meta).map(inputValues, inputSchema)
+        val mapper = AirbyteValueIdentityMapper()
+        val values = mapper.map(inputValues, inputSchema)
         Assertions.assertEquals(expectedValues, values)
-        Assertions.assertTrue(meta.changes.isEmpty())
+        Assertions.assertTrue(mapper.collectedChanges.isEmpty())
     }
 
     @Test
@@ -56,16 +55,15 @@ class AirbyteValueIdentityMapperTest {
                     nameOverride = "bad"
                 )
                 .build()
-        val meta = DestinationRecord.Meta()
-        val values = AirbyteValueIdentityMapper(meta).map(inputValues, inputSchema) as ObjectValue
-        Assertions.assertTrue(meta.changes.isNotEmpty())
+        val mapper = AirbyteValueIdentityMapper()
+        val values = mapper.map(inputValues, inputSchema) as ObjectValue
+        val changes = mapper.collectedChanges
+        Assertions.assertTrue(changes.isNotEmpty())
         Assertions.assertTrue(values.values["bad"] is NullValue)
-        Assertions.assertTrue(meta.changes[0].field == "bad")
+        Assertions.assertTrue(changes[0].field == "bad")
+        Assertions.assertTrue(changes[0].change == AirbyteRecordMessageMetaChange.Change.NULLED)
         Assertions.assertTrue(
-            meta.changes[0].change == AirbyteRecordMessageMetaChange.Change.NULLED
-        )
-        Assertions.assertTrue(
-            meta.changes[0].reason ==
+            changes[0].reason ==
                 AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
         )
     }

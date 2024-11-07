@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
@@ -85,7 +84,7 @@ class SchemalessTypesToJsonTest {
                     ArrayType(FieldType(StringType, nullable = false))
                 )
                 .build()
-        val mapper = SchemalessValuesToJson(DestinationRecord.Meta())
+        val mapper = SchemalessValuesToJson()
         val output = mapper.map(inputValues, inputSchema)
         Assertions.assertEquals(expectedOutput, output)
     }
@@ -120,7 +119,7 @@ class SchemalessTypesToJsonTest {
                     ArrayType(FieldType(StringType, nullable = false))
                 )
                 .build()
-        val mapper = SchemalessValuesToJson(DestinationRecord.Meta())
+        val mapper = SchemalessValuesToJson()
         val output = mapper.map(inputValues, inputSchema)
         Assertions.assertEquals(expectedOutput, output)
     }

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
@@ -14,7 +13,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapDate() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         listOf(
                 "2021-1-1" to 18628,
                 "2021-01-01" to 18628,
@@ -65,7 +64,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapTimestampWithTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
@@ -77,7 +76,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapTimestampWithoutTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
@@ -100,7 +99,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testTimeWithTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
@@ -112,7 +111,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testTimeWithoutTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
