@@ -2510,6 +2510,10 @@ class ProductVariant(ShopifyBulkQuery):
                                 color
                                 image {
                                     id
+                                    image {
+                                        src
+                                        url
+                                    }
                                 }
                             }
                         }
@@ -2517,6 +2521,8 @@ class ProductVariant(ShopifyBulkQuery):
                     grams: weight
                     image {
                         image_id: id
+                        image_src: src
+                        image_url: url
                     }
                     old_inventory_quantity: inventoryQuantity
                     product {
@@ -2587,9 +2593,9 @@ class ProductVariant(ShopifyBulkQuery):
         presentment_prices = (
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
-        
+
         image_fields = [
-            Field(name="id", alias="image_id"), 
+            Field(name="id", alias="image_id"),
             Field(name="src", alias="image_src"),
             Field(name="url", alias="image_url"),
         ]
