@@ -21,7 +21,6 @@ interface AirbyteValueMapper {
 /** An optimized identity mapper that just passes through. */
 class AirbyteValueNoopMapper : AirbyteValueMapper {
     override val collectedChanges: List<DestinationRecord.Change> = emptyList()
-
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,

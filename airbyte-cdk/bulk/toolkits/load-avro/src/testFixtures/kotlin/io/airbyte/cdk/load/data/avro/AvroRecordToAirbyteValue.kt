@@ -38,7 +38,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
 
 class AvroRecordToAirbyteValue {
-    fun convert(avroValue: Any?, schema: AirbyteType, depth: Int): AirbyteValue {
+    fun convert(avroValue: Any?, schema: AirbyteType, top: Boolean = false): AirbyteValue {
         if (avroValue == null) {
             return NullValue
         }
@@ -47,16 +47,15 @@ class AvroRecordToAirbyteValue {
                 val properties = LinkedHashMap<String, AirbyteValue>()
                 schema.properties.forEach { (name, field) ->
                     val value = (avroValue as GenericRecord).get(name)
-                    if ((value != null) || depth < 2) {
-                        properties[name] = convert(value, field.type, depth + 1)
+                    if ((value != null) || top) {
+                        properties[name] = convert(value, field.type)
                     }
                 }
                 return ObjectValue(properties)
             }
             is ArrayType -> {
                 val items = schema.items
-                val values =
-                    (avroValue as GenericArray<*>).map { convert(it, items.type, depth + 1) }
+                val values = (avroValue as GenericArray<*>).map { convert(it, items.type) }
                 return ArrayValue(values)
             }
             is ArrayTypeWithoutSchema ->
@@ -89,16 +88,16 @@ class AvroRecordToAirbyteValue {
             is TimestampTypeWithoutTimezone,
             is TimestampTypeWithTimezone ->
                 return TimestampValue(Instant.ofEpochMilli(avroValue as Long).toString())
-            is UnionType -> return tryConvertUnion(avroValue, schema, depth)
+            is UnionType -> return tryConvertUnion(avroValue, schema)
             is UnknownType -> throw UnsupportedOperationException("UnknownType is not supported")
             else -> throw IllegalArgumentException("Unsupported schema type: $schema")
         }
     }
 
-    private fun tryConvertUnion(avroValue: Any?, schema: UnionType, depth: Int): AirbyteValue {
+    private fun tryConvertUnion(avroValue: Any?, schema: UnionType): AirbyteValue {
         for (type in schema.options) {
             try {
-                return convert(avroValue, type, depth + 1)
+                return convert(avroValue, type)
             } catch (e: Exception) {
                 continue
             }
@@ -108,5 +107,5 @@ class AvroRecordToAirbyteValue {
 }
 
 fun GenericRecord.toAirbyteValue(schema: AirbyteType): AirbyteValue {
-    return AvroRecordToAirbyteValue().convert(this, schema, 0)
+    return AvroRecordToAirbyteValue().convert(this, schema, true)
 }
