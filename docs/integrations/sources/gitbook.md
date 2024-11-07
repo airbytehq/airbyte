@@ -7,7 +7,6 @@ GitBook connector  enables seamless data integration from GitBook into your data
 |-------|------|-------------|---------------|
 | `access_token` | `string` | Access Token. Personal access token for authenticating with the GitBook API. You can view and manage your access tokens in the Developer settings of your GitBook user account. |  |
 | `space_id` | `string` | Space Id.  |  |
-| `serch_text` | `string` | Serch Text.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -16,7 +15,6 @@ GitBook connector  enables seamless data integration from GitBook into your data
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
 | insights | timestamp | DefaultPaginator | ✅ |  ❌  |
 | content | id | DefaultPaginator | ✅ |  ❌  |
-| search | id | DefaultPaginator | ✅ |  ❌  |
 | org_members | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
