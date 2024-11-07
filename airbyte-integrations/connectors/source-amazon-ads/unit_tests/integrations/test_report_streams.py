@@ -220,7 +220,6 @@ class TestDisplayReportStreams(TestCase):
         When error of this kind happen, we warn and then keep syncing another reports if possible.
         In this test all report init requests are failed with known error and skipped
         """
-        self._given_oauth_and_profiles(http_mocker, self._config)
 
         ERRORS = [
             (400, "KDP authors do not have access to Sponsored Brands functionality"),
@@ -229,6 +228,7 @@ class TestDisplayReportStreams(TestCase):
         ]
 
         for status_code, msg in ERRORS:
+            self._given_oauth_and_profiles(http_mocker, self._config)
             profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
             start_date = pendulum.today(tz=profile_timezone).date()
             non_breaking_error = ErrorRecordBuilder.non_breaking_error().with_error_message(msg)
@@ -252,6 +252,7 @@ class TestDisplayReportStreams(TestCase):
                 f"SponsoredBrandsV3ReportStream for 1 profile: {json.dumps(non_breaking_error.build())}"
             )
             assert any([expected_warning_log in warn for warn in warning_logs])
+            http_mocker.clear_all_matchers()
 
     @HttpMocker()
     def test_given_known_error_when_read_display_report_then_partially_skip_records(self, http_mocker):
