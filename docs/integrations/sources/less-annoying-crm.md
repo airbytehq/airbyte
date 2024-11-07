@@ -6,7 +6,7 @@ Less Annoying CRM connector  enables seamless data integration, allowing users t
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Manage and create your API keys on the Programmer API settings page at https://account.lessannoyingcrm.com/app/Settings/Api. |  |
-| `start_date_2` | `string` | Start date.  |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
