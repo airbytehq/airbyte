@@ -260,6 +260,80 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
 
+  private void writeDateRecords(
+      final JsonNode recordJson,
+      final String dbName,
+      final String streamName,
+      final String idCol,
+      final String dateCol) {
+    testdb.with("INSERT INTO `%s` .`%s` (%s, %s) VALUES (%s, %s);", dbName, streamName,
+        idCol, dateCol,
+        recordJson.get(idCol).asInt(), recordJson.get(dateCol).asText());
+  }
+
+  @Test
+  public void testDatetime() throws Exception {
+    final String TEST_DATE_STREAM_NAME = "TEST_DATE_TABLE";
+    final String COL_DATE_TIME = "CAR_DATE";
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
+
+    // Add a datetime stream to the catalog
+    final List<JsonNode> DATE_TIME_RECORDS = ImmutableList.of(
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_DATE_TIME, "'2023-01-01 20:37:47'")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_DATE_TIME, "'2023-01-01 20:37:47'")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 130, COL_DATE_TIME, "'2023-01-01 20:37:47'")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 140, COL_DATE_TIME, "'2023-01-01 20:37:47'")));
+
+    testdb
+        .withInvalidDates()
+        .with(createTableSqlFmt(), getDatabaseName(), TEST_DATE_STREAM_NAME,
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_DATE_TIME, "DATETIME"), Optional.of(COL_ID)));
+
+    for (final JsonNode recordJson : DATE_TIME_RECORDS) {
+      writeDateRecords(recordJson, getDatabaseName(), TEST_DATE_STREAM_NAME, COL_ID, COL_DATE_TIME);
+    }
+
+    final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(
+                TEST_DATE_STREAM_NAME,
+                getDatabaseName(),
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_DATE_TIME, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            .withSupportedSyncModes(
+                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
+    airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+
+    final List<ConfiguredAirbyteStream> streams = configuredCatalog.getStreams();
+    streams.add(airbyteStream);
+    configuredCatalog.withStreams(streams);
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), configuredCatalog, null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+
+    final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
+    final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
+
+    // Write more records to trigger the CDC path
+    final List<JsonNode> DATE_TIME_RECORDS_2 = ImmutableList.of(
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_DATE_TIME, "'2023-00-00 20:37:47'")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, 190, COL_DATE_TIME, "'2023-01-01 20:37:47'")));
+
+    for (final JsonNode recordJson : DATE_TIME_RECORDS_2) {
+      writeDateRecords(recordJson, getDatabaseName(), TEST_DATE_STREAM_NAME, COL_ID, COL_DATE_TIME);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), configuredCatalog, Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1))));
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+
+    final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
+    assertEquals(recordMessages2.size(), 2);
+    final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
+  }
+
+
   @Test
   protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
 

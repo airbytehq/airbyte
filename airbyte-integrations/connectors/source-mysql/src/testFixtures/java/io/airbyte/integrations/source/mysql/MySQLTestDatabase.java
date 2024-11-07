@@ -73,6 +73,13 @@ public class MySQLTestDatabase extends
     return with("SET @@sql_mode=''");
   }
 
+  public MySQLTestDatabase withInvalidDates() {
+    // This disables strict mode in the DB and allows to insert specific values.
+    // For example, it's possible to insert date with zero values "2021-00-00"
+    return with("SET SESSION sql_mode = 'ALLOW_INVALID_DATES'");
+  }
+
+
   static private final int MAX_CONNECTIONS = 1000;
 
   @Override

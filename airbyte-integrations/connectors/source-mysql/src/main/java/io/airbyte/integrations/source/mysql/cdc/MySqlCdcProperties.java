@@ -60,9 +60,10 @@ public class MySqlCdcProperties {
      * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter}
      * {@link MySQLConverter}
      */
-    props.setProperty("converters", "boolean, datetime");
+    props.setProperty("converters", "boolean, sdf");
     props.setProperty("boolean.type", CustomMySQLTinyIntOneToBooleanConverter.class.getName());
-    props.setProperty("datetime.type", MySQLDateTimeConverter.class.getName());
+    props.setProperty("sdf.type", MySQLDateTimeConverter.class.getName());
+    //props.setProperty("int.type", MySQLDateTimeConverter.class.getName());
 
     final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())

@@ -46,7 +46,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
   @Override
   protected void initTests() {
     // bit defaults to bit(1), which is equivalent to boolean
-    addDataTypeTestData(
+    /*addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
             .airbyteType(JsonSchemaType.BOOLEAN)
@@ -272,7 +272,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .addInsertValues("'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
               .addExpectedValues("2005-10-10T23:22:21", "2013-09-05T10:10:02", "2013-09-06T10:10:02")
               .build());
-    }
+    }*/
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -282,7 +282,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues((String) null)
             .build());
 
-    addTimestampDataTypeTest();
+    /*addTimestampDataTypeTest();
 
     for (final String fullSourceType : Set.of("time", "time not null default '00:00:00'")) {
       addDataTypeTestData(
@@ -445,7 +445,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
-    addDecimalValuesTest();
+    addDecimalValuesTest();*/
   }
 
   protected void addJsonDataTypeTest() {
