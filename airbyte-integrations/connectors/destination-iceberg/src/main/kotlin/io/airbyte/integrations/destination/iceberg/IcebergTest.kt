@@ -32,28 +32,27 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
+const val AWS_ACCESS_KEY_ID = "aws.access-key-id"
+const val AWS_ACCESS_KEY_SECRET = "aws.access-key-secret"
+const val AWS_DISABLE_CHECKED_ENCODING = "aws.disableChunkedEncoding"
+const val AWS_PATH_STYLE_ACCESS = "aws.path-style-access"
+const val AWS_REGION = "aws.region"
 const val WAREHOUSE_LOCATION = "warehouse"
+const val S3_ENDPOINT = "s3.endpoint"
 const val S3_SCHEME = "s3://"
 
 fun main(args: Array<String>) {
-    val s3Client = S3Client
-        .builder()
-        .serviceConfiguration {
-            it.chunkedEncodingEnabled(false)
-            it.pathStyleAccessEnabled(true)
-        }
-        .credentialsProvider { AwsBasicCredentials.create(args[1], args[2]) }
-        .endpointOverride(URI(args[0]))
-        // The region isn't actually used but is required.
-        // Set to us-east-1 based on https://github.com/minio/minio/discussions/15063.
-        .region(Region.US_EAST_1)
-        .build()
-
     val catalogProperties = mapOf(
-        CatalogProperties.WAREHOUSE_LOCATION to WAREHOUSE_LOCATION
+        CatalogProperties.WAREHOUSE_LOCATION to WAREHOUSE_LOCATION,
+        AWS_ACCESS_KEY_ID to args[1],
+        AWS_ACCESS_KEY_SECRET to args[2],
+        AWS_REGION to Region.US_EAST_1.id(),
+        S3_ENDPOINT to args[0],
+        AWS_PATH_STYLE_ACCESS to "true",
+        AWS_DISABLE_CHECKED_ENCODING to "false",
     )
 
-    val s3Catalog = S3Catalog(s3Client=s3Client)
+    val s3Catalog = S3Catalog()
     s3Catalog.initialize(name="catalog_name", properties=catalogProperties)
 
     val spec = PartitionSpec.unpartitioned()
@@ -146,12 +145,14 @@ class S3TableOperations(val s3Client: S3Client,
     }
 }
 
-class S3Catalog(val s3Client: S3Client): BaseMetastoreCatalog() {
+class S3Catalog(): BaseMetastoreCatalog() {
     private lateinit var catalogName: String
+    private lateinit var s3Client: S3Client
     private lateinit var warehouseLocation: String
 
     override fun initialize(name: String, properties: Map<String, String>) {
         catalogName = name
+        s3Client = createS3Client(properties=properties)
         warehouseLocation = properties.getOrDefault(CatalogProperties.WAREHOUSE_LOCATION,
             WAREHOUSE_LOCATION)
         createBucketIfNotExists()
@@ -223,6 +224,24 @@ class S3Catalog(val s3Client: S3Client): BaseMetastoreCatalog() {
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun createS3Client(properties: Map<String, String>): S3Client {
+        return S3Client
+            .builder()
+            .serviceConfiguration {
+                it.chunkedEncodingEnabled(properties.getOrDefault(AWS_DISABLE_CHECKED_ENCODING, "false").toBoolean())
+                it.pathStyleAccessEnabled(properties.getOrDefault(AWS_PATH_STYLE_ACCESS, "true").toBoolean())
+            }
+            .credentialsProvider { AwsBasicCredentials.create(
+                properties.getOrDefault(AWS_ACCESS_KEY_ID, ""),
+                properties.getOrDefault(AWS_ACCESS_KEY_SECRET, ""),
+            ) }
+            .endpointOverride(URI(properties.getOrDefault(S3_ENDPOINT, "")))
+            // The region isn't actually used but is required.
+            // Set to us-east-1 based on https://github.com/minio/minio/discussions/15063.
+            .region(Region.of(properties.getOrDefault(AWS_REGION, Region.US_EAST_1.id())))
+            .build()
     }
 }
 
