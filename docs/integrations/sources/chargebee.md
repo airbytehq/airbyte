@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2   | 2024-11-07 | []()  | Replace custom client-side incremental logic with CDK implementation |
 | 0.7.1   | 2024-11-04 | [48133](https://github.com/airbytehq/airbyte/pull/48133)     | Fix `error message pattern` to handle `Product 1.0` related errors |
 | 0.7.0   | 2024-10-30 | [47978](https://github.com/airbytehq/airbyte/pull/47978)     | Upgrade the CDK and startup files to sync incremental streams concurrently |
 | 0.6.18 | 2024-10-31 | [47099](https://github.com/airbytehq/airbyte/pull/47099) | Update dependencies |
