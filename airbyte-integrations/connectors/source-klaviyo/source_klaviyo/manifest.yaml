@@ -199,7 +199,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "datetime"
+      cursor_field: "updated"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -218,7 +218,7 @@ definitions:
           "sort": "{{ parameters.cursor_field }}"
     $parameters:
       path: "templates"
-      cursor_field: "datetime"
+      cursor_field: "updated"
 
 
   # Semi-Incremental streams
@@ -993,3 +993,55 @@ spec:
           "predictive_analytics" column from being populated in your downstream destination.
         order: 2
     required: ["api_key"]
+
+metadata:
+  testedStreams:
+    profiles:
+      streamHash: 7d27c2aee801ec7d0038722136c6b7e06b14a9ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    global_exclusions:
+      streamHash: 7e7633526c2855390903d6e60973bb13b23272d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: af0180236001cbacc0788046bdc916026e1f82f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: 9edcccbf069463bf70bdc40db756e0f81eba032b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    email_templates:
+      streamHash: 4c12cf304ffe3cd0fcaba1479498ad19c18c6f32
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    metrics:
+      streamHash: 96e06644c47a223a29c85dc4318ec5f7da1cc414
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists_detailed:
+      streamHash: 34e4a9f1fb0c879b915d8558d67feb887d76f8e5
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
