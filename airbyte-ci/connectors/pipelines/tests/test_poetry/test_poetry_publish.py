@@ -61,7 +61,9 @@ def context(dagger_client: Client):
         ),
     ],
 )
-async def test_run_poetry_publish(context: PythonRegistryPublishContext, package_path: str, package_name: str, version: str, expected_asset: str):
+async def test_run_poetry_publish(
+    context: PythonRegistryPublishContext, package_path: str, package_name: str, version: str, expected_asset: str
+):
     context.package_metadata = PythonPackageMetadata(package_name, version)
     context.package_path = package_path
     pypi_registry = (
