@@ -44,6 +44,8 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
 
 class SourceZendeskSupport(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        if not config.get("start_date", None):
+            config["start_date"] = SourceZendeskSupport.get_default_start_date()
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @classmethod
@@ -63,11 +65,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
-        # old authentication flow support
-        auth_old = config.get("auth_method")
-        if auth_old:
-            if auth_old.get("auth_method") == "api_token":
-                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         # new authentication flow
         auth = config.get("credentials")
         if auth:

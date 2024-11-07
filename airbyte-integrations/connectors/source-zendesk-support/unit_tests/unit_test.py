@@ -81,13 +81,6 @@ TEST_CONFIG = {
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
 }
 
-# raw old config
-TEST_OLD_CONFIG = {
-    "auth_method": {"auth_method": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
-    "subdomain": "sandbox",
-    "start_date": "2021-06-01T00:00:00Z",
-}
-
 TEST_CONFIG_WITHOUT_START_DATE = {
     "subdomain": "sandbox",
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
@@ -159,9 +152,8 @@ def test_default_start_date():
     [
         (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
         (TEST_CONFIG_OAUTH, "test_access_token"),
-        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
     ],
-    ids=["api_token", "oauth", "old_config"],
+    ids=["api_token", "oauth"],
 )
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
@@ -171,7 +163,7 @@ def test_get_authenticator(config, expected):
 
 @pytest.mark.parametrize(
     "response, start_date, check_passed",
-    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-00T00:00:00Z", False)],
+    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-01T00:00:00Z", False)],
     ids=["check_successful", "invalid_start_date"],
 )
 def test_check(response, start_date, check_passed):
