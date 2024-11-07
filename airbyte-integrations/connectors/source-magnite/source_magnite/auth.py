@@ -7,7 +7,7 @@ from typing import Any, Mapping
 import logging
 
 # from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 # class MissingAccessTokenError(Exception):
 #     """
