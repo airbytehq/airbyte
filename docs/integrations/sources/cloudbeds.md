@@ -3,7 +3,7 @@ This is Cloudbeds source that ingests data from the Cloudbeds API.
 
 Cloudbeds is an unified hospitality platform https://cloudbeds.com
 
-In order to use this source, you must first create a cloudbeds account. Once logged in, navigate to the API credentials page for your property by clicking Account &gt; Apps &amp; Marketplace in the upper right corner.  Use the menu on the top to navigate to the API Credentials Page. Click the New Credentials button, fill in the details and click on Create. This will create an application, then click on the API Key and provide all the required scopes as needed. 
+In order to use this source, you must first create a cloudbeds account. Once logged in, navigate to the API credentials page for your property by clicking Account > Apps & Marketplace in the upper right corner.  Use the menu on the top to navigate to the API Credentials Page. Click the New Credentials button, fill in the details and click on Create. This will create an application, then click on the API Key and provide all the required scopes as needed. 
 
 You can learn more about the API here https://hotels.cloudbeds.com/api/v1.2/docs/
 
