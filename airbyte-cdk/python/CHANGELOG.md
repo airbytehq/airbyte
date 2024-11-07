@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.3.0
+ add clear method to HttpMocker
+
 ## 6.2.0
 Support multiple input datetime formats as part of the concurrent cursor
 
