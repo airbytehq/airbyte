@@ -21,6 +21,7 @@ from .utils import (
 
 DATE_FORMAT = "%Y-%m-%d"
 WINDOW_IN_DAYS = 45
+POLLING_IN_SECONDS = 30
 
 class MagniteStream(HttpStream, ABC):
     http_method = "POST"
@@ -58,8 +59,8 @@ class MagniteStream(HttpStream, ABC):
                     self.logger.warning("Precondition faild! A query is already running")
                     break
                 if query_status == 1 or query_status == 2: # created or running queries
-                    self.logger.info("Query results are not ready yet. Checking again in 5 seconds...")
-                    time.sleep(5)
+                    self.logger.info(f"Query results are not ready yet. Checking again in {POLLING_IN_SECONDS} seconds...")
+                    time.sleep(POLLING_IN_SECONDS)
                 elif query_status == 3: # completed query
                     self.logger.info(f"Query results ready")
                     data_response = requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header())
