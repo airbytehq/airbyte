@@ -26,7 +26,7 @@ The demo uses Minio as the storage location.  If you have Airbyte cloud deployed
 2. Establish two port-forwards to the Minio pod:
 ```shell
 > kubectl port-forward deployment/airbyte-minio -n ab 9000:9000
-> kubectl port-forward deployment/airbyte-minio -n ab 9001:9001
+> kubectl port-forward --address 127.0.0.1 deployment/airbyte-minio -n ab 9001:9001
 ```
 
 3. Open a browser window and navigate to http://localhost:9001/.  Use the root user name/password from the env vars to log in.
