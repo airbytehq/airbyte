@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.message.DestinationRecord.Meta
 import java.util.*
 
 class DestinationRecordToAirbyteValueWithMeta(val stream: DestinationStream) {
-    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: DestinationRecord.Meta?): ObjectValue {
+    fun convert(data: AirbyteValue, emittedAtMs: Long, meta: Meta?): ObjectValue {
         return ObjectValue(
             linkedMapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to StringValue(UUID.randomUUID().toString()),
@@ -40,6 +40,11 @@ class DestinationRecordToAirbyteValueWithMeta(val stream: DestinationStream) {
         )
     }
 }
+
+fun Pair<AirbyteValue, List<DestinationRecord.Change>>.withAirbyteMeta(
+    stream: DestinationStream,
+    emittedAtMs: Long
+) = DestinationRecordToAirbyteValueWithMeta(stream).convert(first, emittedAtMs, Meta(second))
 
 fun DestinationRecord.dataWithAirbyteMeta(stream: DestinationStream) =
     DestinationRecordToAirbyteValueWithMeta(stream).convert(data, emittedAtMs, meta)

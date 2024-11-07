@@ -10,11 +10,13 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
@@ -93,11 +95,16 @@ class AvroFormattingWriter(
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+    private val pipeline = AvroMapperPipelineFactory().create(stream)
+    private val avroSchema = pipeline.finalSchema.withAirbyteMeta().toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
     override fun accept(record: DestinationRecord) {
-        writer.write(record.dataWithAirbyteMeta(stream).toAvroRecord(avroSchema))
+        val dataMapped =
+            pipeline
+                .map(record.data, record.meta?.changes)
+                .withAirbyteMeta(stream, record.emittedAtMs)
+        writer.write(dataMapped.toAvroRecord(avroSchema))
     }
 
     override fun close() {
@@ -110,11 +117,16 @@ class ParquetFormattingWriter(
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+    private val pipeline = ParquetMapperPipelineFactory().create(stream)
+    private val avroSchema = pipeline.finalSchema.withAirbyteMeta().toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
     override fun accept(record: DestinationRecord) {
-        writer.write(record.dataWithAirbyteMeta(stream).toAvroRecord(avroSchema))
+        val dataMapped =
+            pipeline
+                .map(record.data, record.meta?.changes)
+                .withAirbyteMeta(stream, record.emittedAtMs)
+        writer.write(dataMapped.toAvroRecord(avroSchema))
     }
 
     override fun close() {

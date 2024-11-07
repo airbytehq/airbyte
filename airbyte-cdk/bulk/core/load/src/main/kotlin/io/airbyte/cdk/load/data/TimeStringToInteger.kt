@@ -13,18 +13,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-class TimeStringTypeToIntegerType : AirbyteSchemaIdentityMapper {
-    override fun mapDate(schema: DateType): AirbyteType = IntegerType
-    override fun mapTimeTypeWithTimezone(schema: TimeTypeWithTimezone): AirbyteType = IntegerType
-    override fun mapTimeTypeWithoutTimezone(schema: TimeTypeWithoutTimezone): AirbyteType =
-        IntegerType
-    override fun mapTimestampTypeWithTimezone(schema: TimestampTypeWithTimezone): AirbyteType =
-        IntegerType
-    override fun mapTimestampTypeWithoutTimezone(
-        schema: TimestampTypeWithoutTimezone
-    ): AirbyteType = IntegerType
-}
-
 /**
  * NOTE: To keep parity with the old avro/parquet code, we will always first try to parse the value
  * as with timezone, then fall back to without. But in theory we should be more strict.

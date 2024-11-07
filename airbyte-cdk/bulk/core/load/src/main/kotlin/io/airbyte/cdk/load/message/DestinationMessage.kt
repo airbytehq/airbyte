@@ -62,7 +62,7 @@ data class DestinationRecord(
         serialized = "",
     )
 
-    data class Meta(val changes: MutableList<Change> = mutableListOf()) {
+    data class Meta(val changes: List<Change> = mutableListOf()) {
         companion object {
             const val COLUMN_NAME_AB_RAW_ID: String = "_airbyte_raw_id"
             const val COLUMN_NAME_AB_EXTRACTED_AT: String = "_airbyte_extracted_at"

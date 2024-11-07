@@ -150,19 +150,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -177,19 +165,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -204,19 +180,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -231,19 +195,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
