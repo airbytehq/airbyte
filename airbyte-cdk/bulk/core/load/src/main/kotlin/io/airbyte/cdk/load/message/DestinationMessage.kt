@@ -269,6 +269,21 @@ sealed interface CheckpointMessage : DestinationMessage {
     val stateMessageId: Long?
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
+
+    fun decorateStateMessage(message: AirbyteStateMessage) {
+        if (sourceStats != null) {
+            message.sourceStats =
+                AirbyteStateStats().withRecordCount(sourceStats!!.recordCount.toDouble())
+        }
+        if (destinationStats != null) {
+            message.destinationStats =
+                AirbyteStateStats()
+                    .withRecordCount(destinationStats!!.recordCount.toDouble())
+        }
+        if (stateMessageId != null) {
+            message.withAdditionalProperty("id", stateMessageId)
+        }
+    }
 }
 
 data class StreamCheckpoint(
@@ -303,20 +318,7 @@ data class StreamCheckpoint(
             AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(checkpoint.asProtocolObject())
-                .also {
-                    if (sourceStats != null) {
-                        it.sourceStats =
-                            AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
-                    }
-                    if (destinationStats != null) {
-                        it.destinationStats =
-                            AirbyteStateStats()
-                                .withRecordCount(destinationStats.recordCount.toDouble())
-                    }
-                    if (stateMessageId != null) {
-                        it.withAdditionalProperty("id", stateMessageId)
-                    }
-                }
+        decorateStateMessage(stateMessage)
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
     }
 }
@@ -350,20 +352,7 @@ data class GlobalCheckpoint(
                         .withSharedState(state)
                         .withStreamStates(checkpoints.map { it.asProtocolObject() })
                 )
-                .also {
-                    if (sourceStats != null) {
-                        it.sourceStats =
-                            AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
-                    }
-                    if (destinationStats != null) {
-                        it.destinationStats =
-                            AirbyteStateStats()
-                                .withRecordCount(destinationStats.recordCount.toDouble())
-                    }
-                    if (stateMessageId != null) {
-                        it.withAdditionalProperty("id", stateMessageId)
-                    }
-                }
+        decorateStateMessage(stateMessage)
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
     }
 }
