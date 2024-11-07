@@ -261,6 +261,8 @@ class SubstreamPartitionRouter(PartitionRouter):
                 for parent_config in self.parent_stream_configs:
                     if parent_config.incremental_dependency:
                         parent_state[parent_config.stream.name] = {parent_config.stream.cursor_field: child_state}
+            else:
+                return
 
         # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
