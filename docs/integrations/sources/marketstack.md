@@ -15,7 +15,7 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 |-------------|-------------|------------|---------------------|----------------------|
 | Exchanges | mic | DefaultPaginator | ✅ |  ❌  |
 | Tickers | symbol | DefaultPaginator | ✅ |  ❌  |
-| Historical Data |  | DefaultPaginator | ✅ |  ❌  |
+| Historical Data |  | DefaultPaginator | ✅ |  ✅  |
 | Splits |  | DefaultPaginator | ✅ |  ❌  |
 | Dividends |  | DefaultPaginator | ✅ |  ❌  |
 
@@ -26,6 +26,6 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-26 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-07 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

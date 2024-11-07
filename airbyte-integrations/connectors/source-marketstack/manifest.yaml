@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -40,8 +40,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
@@ -76,8 +76,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
@@ -105,8 +105,6 @@ definitions:
           http_method: GET
           request_parameters:
             symbols: "{{ stream_partition.symbol }}"
-            date_from: "{{ config[\"from\"] }}"
-            date_to: "{{ config[\"to\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -121,8 +119,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
@@ -135,6 +133,28 @@ definitions:
               partition_field: symbol
               stream:
                 $ref: "#/definitions/streams/Tickers"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"from\"] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: date_to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -164,8 +184,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
@@ -207,8 +227,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
@@ -230,11 +250,11 @@ definitions:
     url_base: https://api.marketstack.com/v1/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: request_parameter
         field_name: access_key
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: request_parameter
 
 streams:
   - $ref: "#/definitions/streams/Exchanges"
@@ -253,21 +273,21 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       from:
         type: string
-        title: From
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-        format: date
         order: 1
+        title: From
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       to:
         type: string
-        title: To
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-        format: date
         order: 2
+        title: To
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
     additionalProperties: true
 
 metadata:
@@ -293,26 +313,26 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Historical Data:
-      streamHash: 6f8ea6917ba710b62f94143914cc063140065312
+      streamHash: 2a3675fd00a2941a48c611a0ac975ec77b95c46e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Splits:
+      hasRecords: true
       streamHash: c7445409904d6cb104ad6dbd411b74d8c0ba06b1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Dividends:
+      hasRecords: true
       streamHash: 9257f54df8534f6af2d51de6d6ceaa8aaea65709
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -434,9 +454,7 @@ schemas:
           - number
           - "null"
       date:
-        type:
-          - string
-          - "null"
+        type: string
       dividend:
         type:
           - number
@@ -469,6 +487,8 @@ schemas:
         type:
           - number
           - "null"
+    required:
+      - date
   Splits:
     type: object
     $schema: http://json-schema.org/schema#
