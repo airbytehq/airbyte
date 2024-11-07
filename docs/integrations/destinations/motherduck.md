@@ -51,7 +51,9 @@ In addition, columns specified in the [JSON schema](https://docs.airbyte.com/con
 | Full Refresh Sync              | Yes       |     |
 | Incremental - Append Sync      | Yes       |     |
 | Incremental - Append + Deduped | Yes       |     |
-| Namespaces                     | No        |     |
+| [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) | Yes        |     |
+| [Namespaces](/using-airbyte/core-concepts/namespaces) | No        |     |
+| [Data Generations](/operator-guides/refreshes#data-generations) | No        |     |
 
 #### Performance consideration
 
@@ -60,7 +62,6 @@ This integration will be constrained by the speed at which your filesystem accep
 ## Working with local DuckDB files
 
 This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
-
 
 ## Changelog
 
