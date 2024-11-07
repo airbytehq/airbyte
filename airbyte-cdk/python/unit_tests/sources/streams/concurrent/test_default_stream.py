@@ -132,7 +132,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
             source_defined_cursor=None,
             default_cursor_field=None,
-            source_defined_primary_key=[["id_a", "id_b"]],
+            source_defined_primary_key=[["id_a"], ["id_b"]],
             namespace=None,
         )
 
