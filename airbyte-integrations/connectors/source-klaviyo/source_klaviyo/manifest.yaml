@@ -132,12 +132,14 @@ definitions:
         $ref: "#/definitions/profiles_retriever/requester"
         request_parameters:
           $ref: "#/definitions/profiles_retriever/requester/request_parameters"
-          "updated": "{{ stream_interval.start_time }}"
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
       record_selector:
         $ref: "#/definitions/selector"
         schema_normalization: Default
     $parameters:
       path: "profiles"
+      cursor_field: "updated"
 
   global_exclusions_stream:
     # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
@@ -160,7 +162,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "updated"
+      cursor_field: "datetime"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -176,7 +178,8 @@ definitions:
         request_parameters:
           "fields[metric]": "name,created,updated,integration"
           "include": "metric"
-          "datetime": "{{ stream_interval.start_time }}"
+          "filter": "greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_schema"
@@ -188,6 +191,7 @@ definitions:
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
       path: "events"
+      cursor_field: "datetime"
 
   email_templates_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_templates
@@ -195,7 +199,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "updated"
+      cursor_field: "datetime"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -210,9 +214,12 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          "datetime": "{{ stream_interval.start_time }}"
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     $parameters:
       path: "templates"
+      cursor_field: "datetime"
+
 
   # Semi-Incremental streams
   metrics_stream:
@@ -287,7 +294,8 @@ definitions:
         request_parameters:
           "include": "metric"
           "fields[metric]": "name"
-          "datetime": "{{ stream_interval.start_time }}"
+          "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "sort": "{{ parameters.cursor_field }}"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
@@ -299,6 +307,7 @@ definitions:
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
       path: "events"
+      cursor_field: "updated"
 
   # Schemas
   shared:
