@@ -25,7 +25,7 @@ private val log = KotlinLogging.logger {}
 data class MysqlSourceConfiguration(
     override val realHost: String,
     override val realPort: Int,
-    override val sshTunnel: SshTunnelMethodConfiguration,
+    override val sshTunnel: SshTunnelMethodConfiguration?,
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
@@ -81,7 +81,7 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
     ): MysqlSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
-        val sshTunnel: SshTunnelMethodConfiguration = pojo.getTunnelMethodValue()
+        val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val jdbcProperties = mutableMapOf<String, String>()
         jdbcProperties["user"] = pojo.username
         pojo.password?.let { jdbcProperties["password"] = it }
@@ -102,7 +102,7 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             }
         }
         // Determine protocol and configure encryption.
-        val encryption: Encryption = pojo.getEncryptionValue()
+        val encryption: Encryption? = pojo.getEncryptionValue()
         val jdbcEncryption =
             when (encryption) {
                 is EncryptionPreferred -> {
@@ -134,6 +134,7 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
                         clientKey = encryption.sslClientKey,
                         clientKeyPassword = encryption.sslClientPassword
                     )
+                null -> TODO()
             }
         val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
