@@ -9,7 +9,7 @@ Docs : https://docs.onfleet.com/reference/introduction
 |-------|------|-------------|---------------|
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
-| `from` | `string` | from.  |  |
+| `start_date` | `string` | Start Date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -17,9 +17,10 @@ Docs : https://docs.onfleet.com/reference/introduction
 | organization | id | No pagination | ✅ |  ❌  |
 | admins | id | No pagination | ✅ |  ❌  |
 | workers | id | No pagination | ✅ |  ❌  |
+| worker_tasks | id | No pagination | ✅ |  ❌  |
 | teams | id | No pagination | ✅ |  ❌  |
 | hubs | id | No pagination | ✅ |  ❌  |
-| tasks | id | No pagination | ✅ |  ❌  |
+| tasks | id | No pagination | ✅ |  ✅  |
 
 ## Changelog
 
