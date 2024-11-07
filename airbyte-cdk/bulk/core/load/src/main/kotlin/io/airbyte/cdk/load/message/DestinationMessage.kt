@@ -353,7 +353,7 @@ data class GlobalCheckpoint(
                             AirbyteStateStats()
                                 .withRecordCount(destinationStats.recordCount.toDouble())
                     }
-                    it.additionalProperties.forEach { (key, value) ->
+                    additionalProperties.forEach { (key, value) ->
                         it.withAdditionalProperty(key, value)
                     }
                 }
