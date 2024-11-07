@@ -136,7 +136,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -306,7 +306,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -398,7 +398,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - start_date_2
+      - start_date
     properties:
       api_key:
         type: string
@@ -409,7 +409,7 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      start_date_2:
+      start_date:
         type: string
         order: 1
         title: Start date
