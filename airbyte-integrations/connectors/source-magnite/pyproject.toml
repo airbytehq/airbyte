@@ -15,8 +15,9 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_magnite" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-airbyte-cdk = "^5"
+python = ">=3.9,<3.12"
+airbyte-cdk = "0.80.0"
+pandas = "2.2.2"
 
 [tool.poetry.scripts]
 source-magnite = "source_magnite.run:run"
