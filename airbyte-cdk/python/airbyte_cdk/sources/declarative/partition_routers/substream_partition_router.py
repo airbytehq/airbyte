@@ -153,7 +153,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data  # type: ignore[assignment]  # record is always a Record
+                            parent_record = parent_record.record.data  # type: ignore[union-attr, assignment]  # record is always a Record
                         else:
                             continue
                     elif isinstance(parent_record, Record):
