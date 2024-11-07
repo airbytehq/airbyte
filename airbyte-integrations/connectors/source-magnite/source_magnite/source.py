@@ -157,7 +157,8 @@ class SourceMagnite(AbstractSource):
                 "range": config["range"]
             }
             response = requests.request("POST", url=url, headers=auth_headers, data=json.dumps(test_payload))
-            response.raise_for_status()
+            if response.status_code != 412:
+                response.raise_for_status()
             # TODO: retrieve data???
             return True, None
         except Exception as e:
