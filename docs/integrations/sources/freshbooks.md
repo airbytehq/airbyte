@@ -14,6 +14,8 @@ FreshBooks connector  seamlessly syncs invoicing, expenses, and client data from
 | `oauth_token_expiry_date` | `string` | Token expiry date. The date the current access token expires in. This field might be overridden by the connector based on the token refresh endpoint response. |  |
 | `business_uuid` | `string` | Business uuid.  |  |
 
+Read [this](https://documenter.getpostman.com/view/3322108/S1ERwwza#intro) section carefully to get your Account Id and Business UUID.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
