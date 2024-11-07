@@ -20,6 +20,7 @@ from .utils import (
 )
 
 DATE_FORMAT = "%Y-%m-%d"
+WINDOW_IN_DAYS = 45
 
 class MagniteStream(HttpStream, ABC):
     http_method = "POST"
@@ -127,9 +128,9 @@ class MagniteStream(HttpStream, ABC):
         while start_date <= today:
             yield {
                 "fromDate": date_to_string(start_date),
-                "toDate": date_to_string(min(start_date + timedelta(days=self.config["window_in_days"] - 1), today)),
+                "toDate": date_to_string(min(start_date + timedelta(days=WINDOW_IN_DAYS - 1), today)),
             }
-            start_date += timedelta(days=self.config["window_in_days"])
+            start_date += timedelta(days=WINDOW_IN_DAYS)
 
 
 # class MagniteQueries(MagniteStream):
