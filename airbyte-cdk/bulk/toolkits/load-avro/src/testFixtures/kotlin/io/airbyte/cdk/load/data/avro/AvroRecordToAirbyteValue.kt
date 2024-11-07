@@ -14,8 +14,6 @@ import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullType
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
@@ -55,7 +53,6 @@ class AvroRecordToAirbyteValue {
             is BooleanType -> return BooleanValue(avroValue as Boolean)
             is DateType -> throw UnsupportedOperationException("DateType is not supported")
             is IntegerType -> return IntegerValue(avroValue as Long)
-            is NullType -> return NullValue
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
             is ObjectTypeWithEmptySchema ->
                 throw UnsupportedOperationException("ObjectTypeWithEmptySchema is not supported")
