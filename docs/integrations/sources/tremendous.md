@@ -6,7 +6,7 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. You can generate an API key through the Tremendous dashboard under Team Settings &gt; Developers. Save the key once you’ve generated it. |  |
-| `environment` | `string` | environment.  |  |
+| `environment` | `string` | Environment.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -20,6 +20,7 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
 | balance_transactions |  | DefaultPaginator | ✅ |  ❌  |
 | rewards | id | DefaultPaginator | ✅ |  ❌  |
+| invoices | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
