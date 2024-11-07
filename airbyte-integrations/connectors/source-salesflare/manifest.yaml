@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -33,6 +33,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -53,6 +67,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -73,6 +101,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -93,6 +135,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -113,6 +169,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -133,6 +203,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -233,6 +317,20 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 20
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -293,81 +391,81 @@ metadata:
   testedStreams:
     tasks:
       hasRecords: true
-      streamHash: dc9550e7af2217c13ae3f481ac474e630e2a312a
+      streamHash: 4afe935d7b371d7ca3c1118f204594f612bb26f9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     accounts:
-      streamHash: 9bd22f65c006c9d2d4a439a7c03a65d84237d888
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a2b02a7b6dc2f874679649a2b3e2232907dcd269
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
-      streamHash: bdd98bc43b756b1ffa609f8fac6a8d5a83ed8e29
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: d8c27f18a1e8a7e906a9ec8dc2154366032efb27
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     opportunities:
-      streamHash: fbb26d7354da3a5cb52f9fe0c25345ebc8604bf1
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 1536aa5c34adb9703f039b971d7968b9efb71dd7
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     workflows:
-      streamHash: b7bb32859496cc549bf30729762e5bcd7abeb56b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: e24f462be53bd36f71b9280cc16de99e7c58e90f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
-      streamHash: 6eb382047b8a9db314260cf6f2938af87c6e63c9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: bbb4d37d5f81bf936a2b444ee2b5c076ad63026c
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     persons:
-      streamHash: 56df3eca979e99494fc99b9a12cb5b6031ade225
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 81c21e4b4310dcbd9b235f905743303a73e43ebe
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     email data sources:
+      hasRecords: true
       streamHash: 44e767c5abae8d6e264b8082d033660b6af3c449
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     custom field types:
+      hasRecords: true
       streamHash: 6ea245f971acb34ccb65ac54c5f423fe5714f44d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pipelines:
+      hasRecords: true
       streamHash: 1193de2ee994831ccf6dac18718c9edc8925e572
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
-      streamHash: d2d67db69e1b9925357d53559d5ef4f7054902e0
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9dc2333a4151500b5125359f05e7ceab46d304ce
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -1425,6 +1523,39 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            city:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            region:
+              type:
+                - string
+                - "null"
+            state_region:
+              type:
+                - string
+                - "null"
+            street:
+              type:
+                - string
+                - "null"
+            zip:
+              type:
+                - string
+                - "null"
       archived:
         type:
           - boolean
@@ -1628,6 +1759,19 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       team:
         type:
           - object
