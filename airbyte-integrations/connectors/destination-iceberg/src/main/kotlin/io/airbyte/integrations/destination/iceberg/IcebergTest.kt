@@ -71,7 +71,7 @@ fun main(args: Array<String>) {
         record.set(1, "name$it")
         record.set(2, OffsetDateTime.now())
         record
-    }.toMutableList() as List<Record>
+    }
 
     val filename = table.locationProvider().newDataLocation("${UUID.randomUUID()}.parquet")
 
