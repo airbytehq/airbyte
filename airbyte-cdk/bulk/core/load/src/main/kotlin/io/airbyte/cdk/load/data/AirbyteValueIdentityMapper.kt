@@ -9,7 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
 open class AirbyteValueIdentityMapper(
-    open val meta: DestinationRecord.Meta,
+    val meta: DestinationRecord.Meta,
 ) {
     private fun collectFailure(
         path: List<String>,
@@ -45,8 +45,10 @@ open class AirbyteValueIdentityMapper(
                     mapTimestampWithTimezone(value as TimestampValue, path)
                 is TimestampTypeWithoutTimezone ->
                     mapTimestampWithoutTimezone(value as TimestampValue, path)
-                is NullType -> mapNull(path)
-                is UnknownType -> mapUnknown(value as UnknownValue, path)
+                is UnknownType -> {
+                    collectFailure(path)
+                    mapNull(path)
+                }
             }
         } catch (e: Exception) {
             collectFailure(path)
@@ -111,6 +113,4 @@ open class AirbyteValueIdentityMapper(
         value
 
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
-
-    open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
 }

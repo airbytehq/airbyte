@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
@@ -45,18 +46,6 @@ abstract class IntegrationTest(
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
 ) {
-    // Connectors are calling System.getenv rather than using micronaut-y properties,
-    // so we have to mock it out, instead of just setting more properties
-    // inside NonDockerizedDestination.
-    // This field has no effect on DockerizedDestination, which explicitly
-    // sets env vars when invoking `docker run`.
-    @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
-
-    @BeforeEach
-    fun setEnvVars() {
-        nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
-    }
-
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
@@ -99,6 +88,7 @@ abstract class IntegrationTest(
         stream: DestinationStream,
         primaryKey: List<List<String>>,
         cursor: List<String>?,
+        reason: String? = null,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
@@ -110,9 +100,12 @@ abstract class IntegrationTest(
             )
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
-                fail(
+                var message =
                     "Incorrect records for ${stream.descriptor.namespace}.${stream.descriptor.name}:\n$it"
-                )
+                if (reason != null) {
+                    message = reason + "\n" + message
+                }
+                fail(message)
             }
     }
 
@@ -135,6 +128,26 @@ abstract class IntegrationTest(
         configContents: String,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
+        /**
+         * If you set this to anything other than `COMPLETE`, you may run into a race condition.
+         * It's recommended that you send an explicit state message in [messages], and run the sync
+         * in a loop until it acks the state message, e.g.
+         * ```
+         * while (true) {
+         *   val e = assertThrows<DestinationUncleanExitException> {
+         *     runSync(
+         *       ...,
+         *       listOf(
+         *         ...,
+         *         StreamCheckpoint(...),
+         *       ),
+         *       ...
+         *     )
+         *   }
+         *   if (e.stateMessages.isNotEmpty()) { break }
+         * }
+         * ```
+         */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
     ): List<AirbyteMessage> {
         val destination =
@@ -161,5 +174,18 @@ abstract class IntegrationTest(
 
     companion object {
         private val hasRunCleaner = AtomicBoolean(false)
+
+        // Connectors are calling System.getenv rather than using micronaut-y properties,
+        // so we have to mock it out, instead of just setting more properties
+        // inside NonDockerizedDestination.
+        // This field has no effect on DockerizedDestination, which explicitly
+        // sets env vars when invoking `docker run`.
+        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+
+        @JvmStatic
+        @BeforeAll
+        fun setEnvVars() {
+            nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
+        }
     }
 }

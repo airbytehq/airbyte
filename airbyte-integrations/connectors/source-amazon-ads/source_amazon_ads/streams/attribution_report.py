@@ -8,7 +8,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_amazon_ads.schemas import AttributionReportModel
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 BRAND_REFERRAL_BONUS = "brb_bonus_amount"
@@ -54,7 +53,6 @@ class AttributionReport(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
     """
 
-    model = AttributionReportModel
     primary_key = None
     data_field = "reports"
     page_size = 300
@@ -95,13 +93,13 @@ class AttributionReport(AmazonAdsStream):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for profile in self._profiles:
-            start_date = pendulum.now(tz=profile.timezone).subtract(days=1).date()
-            end_date = pendulum.now(tz=profile.timezone).date()
+            start_date = pendulum.now(tz=profile["timezone"]).subtract(days=1).date()
+            end_date = pendulum.now(tz=profile["timezone"]).date()
             if self._start_date:
                 start_date = max(self._start_date, end_date.subtract(days=self.REPORTING_PERIOD))
 
             yield {
-                "profileId": profile.profileId,
+                "profileId": profile["profileId"],
                 "startDate": start_date.format(self.REPORT_DATE_FORMAT),
                 "endDate": end_date.format(self.REPORT_DATE_FORMAT),
             }
