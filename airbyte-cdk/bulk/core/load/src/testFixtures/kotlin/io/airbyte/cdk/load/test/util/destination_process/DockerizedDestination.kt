@@ -11,8 +11,6 @@ import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Value
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.nio.file.Files
@@ -20,7 +18,6 @@ import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
-import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -228,7 +225,11 @@ class DockerizedDestination(
             process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())
+                throw DestinationUncleanExitException.of(
+                    exitCode,
+                    destinationOutput.traces(),
+                    destinationOutput.states(),
+                )
             }
         }
     }
@@ -238,20 +239,9 @@ class DockerizedDestination(
     }
 }
 
-@Singleton
-@Requires(env = [DOCKERIZED_TEST_ENV])
 class DockerizedDestinationFactory(
-    // Note that this is not the same property as in MetadataYamlPropertySource.
-    // We get this because IntegrationTest manually sets "classpath:metadata.yaml"
-    // as a property source.
-    // MetadataYamlPropertySource has nothing to do with this property.
-    @Value("\${data.docker-repository}") val imageName: String,
-    // Most tests will just use micronaut to inject this.
-    // But some tests will want to manually instantiate an instance,
-    // e.g. to run an older version of the connector.
-    // So we just hardcode 'dev' here; manual callers can pass in
-    // whatever they want.
-    @Value("dev") val imageVersion: String,
+    private val imageName: String,
+    private val imageVersion: String,
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,

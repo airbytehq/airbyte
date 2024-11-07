@@ -8,20 +8,47 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
-open class AirbyteValueIdentityMapper(
-    open val meta: DestinationRecord.Meta,
-) {
-    private fun collectFailure(
-        path: List<String>,
-        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
-    ) {
-        meta.changes.add(DestinationRecord.Change(path.joinToString("."), Change.NULLED, reason))
-    }
+interface AirbyteValueMapper {
+    val collectedChanges: List<DestinationRecord.Change>
 
     fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        path: List<String> = emptyList()
+        path: List<String> = emptyList(),
+    ): AirbyteValue
+}
+
+/** An optimized identity mapper that just passes through. */
+class AirbyteValueNoopMapper : AirbyteValueMapper {
+    override val collectedChanges: List<DestinationRecord.Change> = emptyList()
+
+    override fun map(
+        value: AirbyteValue,
+        schema: AirbyteType,
+        path: List<String>,
+    ): AirbyteValue = value
+}
+
+open class AirbyteValueIdentityMapper : AirbyteValueMapper {
+    override val collectedChanges: List<DestinationRecord.Change>
+        get() = changes.toList().also { changes.clear() }
+
+    private val changes: MutableList<DestinationRecord.Change> = mutableListOf()
+
+    private fun collectFailure(
+        path: List<String>,
+        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
+    ) {
+        val joined = path.joinToString(".")
+        if (changes.none { it.field == joined }) {
+            changes.add(DestinationRecord.Change(path.joinToString("."), Change.NULLED, reason))
+        }
+    }
+
+    override fun map(
+        value: AirbyteValue,
+        schema: AirbyteType,
+        path: List<String>,
     ): AirbyteValue =
         try {
             when (schema) {
@@ -45,8 +72,10 @@ open class AirbyteValueIdentityMapper(
                     mapTimestampWithTimezone(value as TimestampValue, path)
                 is TimestampTypeWithoutTimezone ->
                     mapTimestampWithoutTimezone(value as TimestampValue, path)
-                is NullType -> mapNull(path)
-                is UnknownType -> mapUnknown(value as UnknownValue, path)
+                is UnknownType -> {
+                    collectFailure(path)
+                    mapNull(path)
+                }
             }
         } catch (e: Exception) {
             collectFailure(path)
@@ -111,6 +140,4 @@ open class AirbyteValueIdentityMapper(
         value
 
     open fun mapNull(path: List<String>): AirbyteValue = NullValue
-
-    open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
 }
