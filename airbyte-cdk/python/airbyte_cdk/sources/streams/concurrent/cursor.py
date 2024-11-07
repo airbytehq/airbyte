@@ -344,7 +344,7 @@ class ConcurrentCursor(Cursor):
             return
 
         lower = max(lower, self._start) if self._start else lower
-        if not self._slice_range or lower + self._slice_range >= upper:
+        if not self._slice_range or self._evaluate_upper_safely(lower, self._slice_range) >= upper:
             if self._cursor_granularity and not upper_is_end:
                 yield lower, upper - self._cursor_granularity
             else:
@@ -353,7 +353,7 @@ class ConcurrentCursor(Cursor):
             stop_processing = False
             current_lower_boundary = lower
             while not stop_processing:
-                current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
+                current_upper_boundary = min(self._evaluate_upper_safely(current_lower_boundary, self._slice_range), upper)
                 has_reached_upper_boundary = current_upper_boundary >= upper
                 if self._cursor_granularity and (not upper_is_end or not has_reached_upper_boundary):
                     yield current_lower_boundary, current_upper_boundary - self._cursor_granularity
@@ -362,3 +362,14 @@ class ConcurrentCursor(Cursor):
                 current_lower_boundary = current_upper_boundary
                 if current_upper_boundary >= upper:
                     stop_processing = True
+
+    def _evaluate_upper_safely(self, lower: CursorValueType, step: GapType) -> CursorValueType:
+        """
+        Given that we set the default step at datetime.timedelta.max, we will generate an OverflowError when evaluating the next start_date
+        This method assumes that users would never enter a step that would generate an overflow. Given that would be the case, the code
+        would have broken anyway.
+        """
+        try:
+            return lower + step
+        except OverflowError:
+            return self._end_provider()
