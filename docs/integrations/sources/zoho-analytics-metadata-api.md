@@ -1,4 +1,4 @@
-# Zoho Analytics metadata api
+# Zoho Analytics Metadata API
 Zoho Analytics Metadata api connector enables seamless data syncing from Zoho Analytics metadata into data warehouses or BI tools. This connector automates OAuth authentication and ensures reliable data transfer, empowering businesses to streamline analytics workflows and gain deeper insights efficiently.
 
 ## Configuration
@@ -6,8 +6,8 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `org_id` | `number` | Org Id.  |  |
+| `data_center` | `string` | Data Center.  | `com` |
 | `client_id` | `string` | OAuth Client ID.  |  |
-| `data_center` | `string` | Data Center.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
 | `refresh_token` | `string` | OAuth Refresh Token.  |  |
 
