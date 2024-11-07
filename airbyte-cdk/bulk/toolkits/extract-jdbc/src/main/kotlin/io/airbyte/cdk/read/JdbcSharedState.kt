@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
-import io.airbyte.cdk.output.OutputConsumer
 import io.micronaut.context.annotation.DefaultImplementation
 import java.time.Instant
 
@@ -20,9 +19,6 @@ interface JdbcSharedState {
 
     /** Configuration for the JDBC source connector. */
     val configuration: JdbcSourceConfiguration
-
-    /** Where the records get dumped into. */
-    val outputConsumer: OutputConsumer
 
     /** Queries the database. */
     val selectQuerier: SelectQuerier

@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import java.util.UUID
@@ -21,12 +22,16 @@ data class ValueTestBuilder<T : SchemaRecordBuilderType>(
         inputValue: AirbyteValue,
         inputSchema: AirbyteType,
         expectedValue: AirbyteValue = inputValue,
-        nameOverride: String? = null
+        nameOverride: String? = null,
+        nullable: Boolean = false,
     ): ValueTestBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
         inputValues.values[name] = inputValue
         expectedValues.values[name] = expectedValue
-        (schemaRecordBuilder as SchemaRecordBuilder<*>).with(inputSchema, nameOverride = name)
+        (schemaRecordBuilder as SchemaRecordBuilder<*>).with(
+            FieldType(inputSchema, nullable),
+            nameOverride = name
+        )
         return this
     }
 
