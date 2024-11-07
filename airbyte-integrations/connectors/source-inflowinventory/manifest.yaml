@@ -8,7 +8,7 @@ description: >-
   Using this connector we can extract data from various streams such as
   customers , productts and sales orders.
 
-  Docs : https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
+  Docs https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
 
 check:
   type: CheckStream
@@ -29,8 +29,8 @@ definitions:
           path: "{{ config['companyid'] }}/adjustment-reasons"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -52,8 +52,8 @@ definitions:
           path: "{{ config['companyid'] }}/categories"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -75,8 +75,8 @@ definitions:
           path: "{{ config['companyid'] }}/currencies"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -86,9 +86,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/currencies"
-    customers:
+    custom_fields:
       type: DeclarativeStream
-      name: customers
+      name: custom_fields
       primary_key:
         - customFieldsId
       retriever:
@@ -98,8 +98,8 @@ definitions:
           path: "{{ config['companyid'] }}/custom-fields"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -108,7 +108,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/customers"
+          $ref: "#/schemas/custom_fields"
     locations:
       type: DeclarativeStream
       name: locations
@@ -121,8 +121,8 @@ definitions:
           path: "{{ config['companyid'] }}/locations"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -144,8 +144,8 @@ definitions:
           path: "{{ config['companyid'] }}/operation-types"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -167,8 +167,8 @@ definitions:
           path: "{{ config['companyid'] }}/payment-terms"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -190,8 +190,8 @@ definitions:
           path: "{{ config['companyid'] }}/pricing-schemes"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -213,8 +213,8 @@ definitions:
           path: "{{ config['companyid'] }}/products"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -236,8 +236,8 @@ definitions:
           path: "{{ config['companyid'] }}/product-cost-adjustments"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -259,8 +259,8 @@ definitions:
           path: "{{ config['companyid'] }}/purchase-orders"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -282,8 +282,8 @@ definitions:
           path: "{{ config['companyid'] }}/sales-orders"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -305,8 +305,8 @@ definitions:
           path: "{{ config['companyid'] }}/stock-adjustments"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -328,8 +328,8 @@ definitions:
           path: "{{ config['companyid'] }}/stock-counts"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -351,8 +351,8 @@ definitions:
           path: "{{ config['companyid'] }}/stock-transfers"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -374,8 +374,8 @@ definitions:
           path: "{{ config['companyid'] }}/tax-codes"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -397,8 +397,8 @@ definitions:
           path: "{{ config['companyid'] }}/taxing-schemes"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -420,8 +420,8 @@ definitions:
           path: "{{ config['companyid'] }}/team-members"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -443,8 +443,8 @@ definitions:
           path: "{{ config['companyid'] }}/vendors"
           http_method: GET
           request_headers:
-            Content-Type: application/json
             Accept: application/json;version=2024-03-12
+            Content-Type: application/json
         record_selector:
           type: RecordSelector
           extractor:
@@ -454,22 +454,45 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/vendors"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - customerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/customers"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
   base_requester:
     type: HttpRequester
     url_base: https://cloudapi.inflowinventory.com/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: Authorization
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/adjustment reasons"
   - $ref: "#/definitions/streams/categories"
   - $ref: "#/definitions/streams/currencies"
-  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/custom_fields"
   - $ref: "#/definitions/streams/locations"
   - $ref: "#/definitions/streams/operation types"
   - $ref: "#/definitions/streams/payment terms"
@@ -485,6 +508,7 @@ streams:
   - $ref: "#/definitions/streams/taxing schemes"
   - $ref: "#/definitions/streams/team members"
   - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/customers"
 
 spec:
   type: Spec
@@ -497,13 +521,13 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       companyid:
         type: string
-        title: CompanyID
         order: 1
+        title: CompanyID
     additionalProperties: true
 
 metadata:
@@ -511,7 +535,7 @@ metadata:
     adjustment reasons: true
     categories: true
     currencies: true
-    customers: true
+    custom_fields: true
     locations: true
     operation types: true
     payment terms: true
@@ -527,6 +551,7 @@ metadata:
     taxing schemes: true
     team members: true
     vendors: true
+    customers: true
   testedStreams:
     adjustment reasons:
       streamHash: 5f42a4f25f44127491b975e740d3799621b51613
@@ -543,119 +568,126 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     currencies:
+      hasRecords: true
       streamHash: ca7350df8fafa5ea9018a489bbeca3c64358e892
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    customers:
-      streamHash: 8065bfdcf93f4f0917d76002c3167016b0e6d287
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      streamHash: 5fbbc2de197a866111a95ae4a737ddd6faaef161
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     locations:
+      hasRecords: true
       streamHash: 8fe429a7058c796f8f2451df0339eae0a05d0188
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     operation types:
+      hasRecords: true
       streamHash: 4cb9a7422c132579866c0ce91f6d74d7b0c9721d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     payment terms:
+      hasRecords: true
       streamHash: 037f57800bd3634990b8efbb48d0806206794412
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pricing schemes:
+      hasRecords: true
       streamHash: 36a0e041e86b0a16da122df09f230193030cca52
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: b422665de15c476e9731b41751da187489741ebb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     product cost adjustments:
+      hasRecords: true
       streamHash: aa641487eaf0626fc0e0098a5dc0947248bf2ef6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchase orders:
+      hasRecords: true
       streamHash: a9977bcf60635ca1cdf5d6dbdf52def0722e9e09
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sales orders:
+      hasRecords: true
       streamHash: f0978a9901201e8bb4cf8f880f408789117db250
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stock adjustments:
+      hasRecords: true
       streamHash: 26ac5620b509f9779b8ae7e5a9029d3429000e4d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stock counts:
+      hasRecords: true
       streamHash: 00b208c84b542c34734e5f59590a3a59f1d820a2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stock transfers:
+      hasRecords: true
       streamHash: f2f09842c9f658d52269f5b4a44144be2cfb9408
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tax codes:
+      hasRecords: true
       streamHash: e8303c421ea3755fff34ec5164698b2c1b2e635d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxing schemes:
+      hasRecords: true
       streamHash: c7e20e7d8b9ac24f3068d76844155f2b5896ed8c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     team members:
+      hasRecords: true
       streamHash: 54a7197b624878df2c39ab55b97e59c69bf81954
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     vendors:
+      hasRecords: true
       streamHash: d140e7743b16868e30022f782322f692ded89265
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      streamHash: c141bbd7b1361c0461e35d62cf84f9eccb3694f3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -755,7 +787,7 @@ schemas:
           - "null"
     required:
       - currencyId
-  customers:
+  custom_fields:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2761,3 +2793,141 @@ schemas:
           - "null"
     required:
       - vendorId
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contactName:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      customerId:
+        type: string
+      defaultBillingAddressId:
+        type:
+          - string
+          - "null"
+      defaultCarrier:
+        type:
+          - string
+          - "null"
+      defaultLocationId:
+        type:
+          - string
+          - "null"
+      defaultPaymentMethod:
+        type:
+          - string
+          - "null"
+      defaultPaymentTermsId:
+        type:
+          - string
+          - "null"
+      defaultSalesRep:
+        type:
+          - string
+          - "null"
+      defaultShippingAddressId:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      pricingSchemeId:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      taxExemptNumber:
+        type:
+          - string
+          - "null"
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - customerId
