@@ -161,7 +161,11 @@ class StripConnector(Step):
             documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
             connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
             advanced_auth = spec.get("advanced_auth")
-            return {"documentation_url": documentation_url, "connection_specification": connection_specification, "advanced_auth": advanced_auth}
+            return {
+                "documentation_url": documentation_url,
+                "connection_specification": connection_specification,
+                "advanced_auth": advanced_auth,
+            }
 
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
