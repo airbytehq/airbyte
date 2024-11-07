@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -25,6 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /**
@@ -40,13 +42,17 @@ sealed interface DestinationStreamAffinedMessage : DestinationMessage {
     val stream: DestinationStream.Descriptor
 }
 
+sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessage
+
+sealed interface DestinationFileDomainMessage : DestinationStreamAffinedMessage
+
 data class DestinationRecord(
     override val stream: DestinationStream.Descriptor,
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serialized: String,
-) : DestinationStreamAffinedMessage {
+) : DestinationRecordDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
         namespace: String?,
@@ -111,6 +117,90 @@ data class DestinationRecord(
             )
 }
 
+data class DestinationFile(
+    override val stream: DestinationStream.Descriptor,
+    val emittedAtMs: Long,
+    val serialized: String,
+    val fileMessage: AirbyteRecordMessageFile
+) : DestinationFileDomainMessage {
+    /** Convenience constructor, primarily intended for use in tests. */
+    constructor(
+        namespace: String?,
+        name: String,
+        emittedAtMs: Long,
+        fileMessage: AirbyteRecordMessageFile
+    ) : this(
+        stream = DestinationStream.Descriptor(namespace, name),
+        emittedAtMs = emittedAtMs,
+        serialized = "",
+        fileMessage = fileMessage
+    )
+
+    class AirbyteRecordMessageFile {
+        constructor(
+            fileUrl: String? = null,
+            bytes: Long? = null,
+            fileRelativePath: String? = null,
+            modified: Long? = null,
+            sourceFileUrl: String? = null
+        ) {
+            this.fileUrl = fileUrl
+            this.bytes = bytes
+            this.fileRelativePath = fileRelativePath
+            this.modified = modified
+            this.sourceFileUrl = sourceFileUrl
+        }
+        constructor() :
+            this(
+                fileUrl = null,
+                bytes = null,
+                fileRelativePath = null,
+                modified = null,
+                sourceFileUrl = null
+            )
+
+        @get:JsonProperty("file_url")
+        @set:JsonProperty("file_url")
+        @JsonProperty("file_url")
+        var fileUrl: String? = null
+
+        @get:JsonProperty("bytes")
+        @set:JsonProperty("bytes")
+        @JsonProperty("bytes")
+        var bytes: Long? = null
+
+        @get:JsonProperty("file_relative_path")
+        @set:JsonProperty("file_relative_path")
+        @JsonProperty("file_relative_path")
+        var fileRelativePath: String? = null
+
+        @get:JsonProperty("modified")
+        @set:JsonProperty("modified")
+        @JsonProperty("modified")
+        var modified: Long? = null
+
+        @get:JsonProperty("source_file_url")
+        @set:JsonProperty("source_file_url")
+        @JsonProperty("source_file_url")
+        var sourceFileUrl: String? = null
+    }
+
+    override fun asProtocolMessage(): AirbyteMessage =
+        AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                AirbyteRecordMessage()
+                    .withStream(stream.name)
+                    .withNamespace(stream.namespace)
+                    .withEmittedAt(emittedAtMs)
+                    .withAdditionalProperty("file_url", fileMessage.fileUrl)
+                    .withAdditionalProperty("file_relative_path", fileMessage.fileRelativePath)
+                    .withAdditionalProperty("source_file_url", fileMessage.sourceFileUrl)
+                    .withAdditionalProperty("modified", fileMessage.modified)
+                    .withAdditionalProperty("bytes", fileMessage.bytes)
+            )
+}
+
 private fun statusToProtocolMessage(
     stream: DestinationStream.Descriptor,
     emittedAtMs: Long,
@@ -129,18 +219,34 @@ private fun statusToProtocolMessage(
                 )
         )
 
-data class DestinationStreamComplete(
+data class DestinationRecordStreamComplete(
     override val stream: DestinationStream.Descriptor,
     val emittedAtMs: Long,
-) : DestinationStreamAffinedMessage {
+) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
-data class DestinationStreamIncomplete(
+data class DestinationRecordStreamIncomplete(
     override val stream: DestinationStream.Descriptor,
     val emittedAtMs: Long,
-) : DestinationStreamAffinedMessage {
+) : DestinationRecordDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage =
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+}
+
+data class DestinationFileStreamComplete(
+    override val stream: DestinationStream.Descriptor,
+    val emittedAtMs: Long,
+) : DestinationFileDomainMessage {
+    override fun asProtocolMessage(): AirbyteMessage =
+        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+}
+
+data class DestinationFileStreamIncomplete(
+    override val stream: DestinationStream.Descriptor,
+    val emittedAtMs: Long,
+) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
@@ -267,7 +373,10 @@ data object Undefined : DestinationMessage {
 }
 
 @Singleton
-class DestinationMessageFactory(private val catalog: DestinationCatalog) {
+class DestinationMessageFactory(
+    private val catalog: DestinationCatalog,
+    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
@@ -276,27 +385,48 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         namespace = message.record.namespace,
                         name = message.record.stream,
                     )
-                DestinationRecord(
-                    stream = stream.descriptor,
-                    data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
-                    emittedAtMs = message.record.emittedAt,
-                    meta =
-                        DestinationRecord.Meta(
-                            changes =
-                                message.record.meta
-                                    ?.changes
-                                    ?.map {
-                                        DestinationRecord.Change(
-                                            field = it.field,
-                                            change = it.change,
-                                            reason = it.reason,
-                                        )
-                                    }
-                                    ?.toMutableList()
-                                    ?: mutableListOf()
-                        ),
-                    serialized = serialized
-                )
+                if (fileTransferEnabled) {
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = message.record.emittedAt,
+                        serialized = serialized,
+                        fileMessage =
+                            DestinationFile.AirbyteRecordMessageFile(
+                                fileUrl =
+                                    message.record.additionalProperties["file_url"] as String?,
+                                bytes = message.record.additionalProperties["bytes"] as Long?,
+                                fileRelativePath =
+                                    message.record.additionalProperties["file_relative_path"]
+                                        as String?,
+                                modified = message.record.additionalProperties["modified"] as Long?,
+                                sourceFileUrl =
+                                    message.record.additionalProperties["source_file_url"]
+                                        as String?
+                            )
+                    )
+                } else {
+                    DestinationRecord(
+                        stream = stream.descriptor,
+                        data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
+                        emittedAtMs = message.record.emittedAt,
+                        meta =
+                            DestinationRecord.Meta(
+                                changes =
+                                    message.record.meta
+                                        ?.changes
+                                        ?.map {
+                                            DestinationRecord.Change(
+                                                field = it.field,
+                                                change = it.change,
+                                                reason = it.reason,
+                                            )
+                                        }
+                                        ?.toMutableList()
+                                        ?: mutableListOf()
+                            ),
+                        serialized = serialized
+                    )
+                }
             }
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
@@ -308,15 +438,29 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            DestinationStreamComplete(
-                                stream.descriptor,
-                                message.trace.emittedAt.toLong()
-                            )
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamComplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            } else {
+                                DestinationRecordStreamComplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            }
                         AirbyteStreamStatus.INCOMPLETE ->
-                            DestinationStreamIncomplete(
-                                stream.descriptor,
-                                message.trace.emittedAt.toLong()
-                            )
+                            if (fileTransferEnabled) {
+                                DestinationFileStreamIncomplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            } else {
+                                DestinationRecordStreamIncomplete(
+                                    stream.descriptor,
+                                    message.trace.emittedAt.toLong()
+                                )
+                            }
                         else -> Undefined
                     }
                 } else {
