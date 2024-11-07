@@ -5,8 +5,7 @@ type: DeclarativeSource
 description: >-
   Systeme is an all in one marketing platform.
 
-  Using this connector we can extarct records from communities , contacts , tags
-  , contact fields and course resources streams.
+  Using this connector we can extarct records from communities, contacts, tags, contact fields and course resources streams.
 
   Docs : https://developer.systeme.io/reference/api
 
@@ -42,13 +41,13 @@ definitions:
             field_name: startingAfter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ last_records[-1].id }}"
-            stop_condition: "{{ response.body.hasMore is false }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -80,13 +79,13 @@ definitions:
             field_name: startingAfter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ last_records[-1].id }}"
-            stop_condition: "{{ response.body.hasMore is false }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,13 +117,13 @@ definitions:
             field_name: startingAfter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ last_records[-1].id }}"
-            stop_condition: "{{ response.body.hasMore is false }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -154,13 +153,13 @@ definitions:
             field_name: startingAfter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ last_records[-1].id }}"
-            stop_condition: "{{ response.body.hasMore is false }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -192,13 +191,13 @@ definitions:
             field_name: startingAfter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ last_records[-1].id }}"
-            stop_condition: "{{ response.body.hasMore is false }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -208,11 +207,11 @@ definitions:
     url_base: https://api.systeme.io/api/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: X-API-Key
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/communities"
@@ -231,9 +230,9 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
     additionalProperties: true
 
 metadata:
@@ -245,40 +244,40 @@ metadata:
     course_resources: true
   testedStreams:
     communities:
-      streamHash: f92bdd9b01564656ecb8fa9358553429d8c630ca
+      streamHash: c1225da50424eadc73af707657a9da51738a86b7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 66398c4837efd852d762986b600736af75d1065e
+      streamHash: 5468020d1e37baf53374c70b0d21406bd71bc353
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags:
-      streamHash: cfe7f9a88c6daf7340ef5fed85fea07fc45d6538
+      streamHash: 4e3483527bfbd9a63d8750528650257407a38b69
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contact_fields:
-      streamHash: b8fa9d7af91ee5632c7ef7993a2a913a8faa4f8b
+      streamHash: b5735729e7b2c7ddcc3f2b1f76f242dbbc73c742
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     course_resources:
-      streamHash: 5c102904b7829a1f46640cd741bbaa77453ff84c
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9191f05b35d42891f54aa2d0963952240aac1053
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
