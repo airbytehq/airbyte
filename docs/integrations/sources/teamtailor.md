@@ -45,6 +45,7 @@ Make sure to have the add-ons installed in your account for using the `nps-respo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-11-04 | [47909](https://github.com/airbytehq/airbyte/pull/47909) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47540](https://github.com/airbytehq/airbyte/pull/47540) | Update dependencies |
 | 0.0.1 | 2024-10-14 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 
