@@ -39,8 +39,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -67,8 +72,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -168,6 +178,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - datetime
+              value: "{{ now_utc() }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -228,14 +244,14 @@ metadata:
     balance: true
   testedStreams:
     mailing_lists:
-      streamHash: c76d2d1e2dd39da00266a3e59ad56189eafaf3b2
+      streamHash: 94deb8cdf6a5627bf44c8fe39cf3e0aa183184a3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaigns:
-      streamHash: 3c703d09954bfcafd4a7d9a28279722dc702451b
+      streamHash: 3ca300e8a792ec17b4154bca202122028bfbb672
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -270,7 +286,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     balance:
-      streamHash: 26f34a8de43c3450dbe0453c5f51793d3745f5ce
+      streamHash: ad1a47782c97f7dc55182808d5a147cfb4f87bf0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -716,5 +732,9 @@ schemas:
           - "null"
       currency:
         type: string
+      datetime:
+        type:
+          - string
+          - "null"
     required:
       - currency
