@@ -241,6 +241,6 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                 """.trimIndent()
             ) as ObjectNode
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
-        Assertions.assertEquals(UnionType(listOf(StringType, IntegerType)), airbyteType)
+        Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
     }
 }

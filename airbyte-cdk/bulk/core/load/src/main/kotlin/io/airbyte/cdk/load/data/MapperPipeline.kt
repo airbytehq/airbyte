@@ -23,13 +23,16 @@ class MapperPipeline(
         finalSchema = schemas.last()
     }
 
-    fun map(data: AirbyteValue): Pair<AirbyteValue, List<Change>> {
+    fun map(data: AirbyteValue, changes: List<Change>? = null): Pair<AirbyteValue, List<Change>> {
         val results =
             schemasWithMappers.runningFold(data) { value, (schema, mapper) ->
                 mapper.map(value, schema)
             }
         val changesFlattened =
-            schemasWithMappers.flatMap { it.second.collectedChanges }.toSet().toList()
+            schemasWithMappers
+                .flatMap { it.second.collectedChanges + (changes ?: emptyList()) }
+                .toSet()
+                .toList()
         return results.last() to changesFlattened
     }
 }

@@ -77,6 +77,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
@@ -119,6 +124,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
