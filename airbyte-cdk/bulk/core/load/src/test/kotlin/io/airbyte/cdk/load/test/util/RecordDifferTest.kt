@@ -109,7 +109,7 @@ class RecordDifferTest {
             Missing record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampValue(value=1970-01-01T00:00Z)): OutputRecord(rawId=null, extractedAt=1970-01-01T00:00:01.234Z, loadedAt=null, generationId=42, data=ObjectValue(values={id1=IntegerValue(value=1), id2=IntegerValue(value=100), updated_at=TimestampValue(value=1970-01-01T00:00Z), name=StringValue(value=alice), phone=StringValue(value=1234)}), airbyteMeta=null)
             Incorrect record (pk=[IntegerValue(value=1), IntegerValue(value=100)], cursor=TimestampValue(value=1970-01-01T00:00:02Z)):
               generationId: Expected 42, got 41
-              airbyteMeta: Expected Meta(changes=null, syncId=42), got null
+              airbyteMeta: Expected Meta(changes=[], syncId=42), got null
               phone: Expected StringValue(value=1234), but was StringValue(value=5678)
               email: Expected StringValue(value=charlie@example.com), but was <unset>
               address: Expected <unset>, but was StringValue(value=1234 charlie street)
