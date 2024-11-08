@@ -4,7 +4,6 @@
 from typing import Any, Mapping, MutableMapping
 
 from requests import Response
-from source_amazon_ads.schemas import BrandsAdGroup, BrandsCampaign
 from source_amazon_ads.streams.common import SubProfilesStream
 
 
@@ -61,7 +60,6 @@ class SponsoredBrandsCampaigns(SponsoredBrandsV4):
     data_field = "campaigns"
     state_filter = None
     content_type = "application/vnd.sbcampaignresource.v4+json"
-    model = BrandsCampaign
 
     def path(self, **kwargs) -> str:
         return "sb/v4/campaigns/list"
@@ -83,7 +81,6 @@ class SponsoredBrandsAdGroups(SponsoredBrandsV4):
 
     primary_key = "adGroupId"
     data_field = "adGroups"
-    model = BrandsAdGroup
     content_type = "application/vnd.sbadgroupresource.v4+json"
 
     def path(self, **kwargs) -> str:
@@ -97,7 +94,6 @@ class SponsoredBrandsKeywords(SubProfilesStream):
     """
 
     primary_key = "adGroupId"
-    model = BrandsAdGroup
 
     def path(self, **kwargs) -> str:
         return "sb/keywords"
