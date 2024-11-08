@@ -1,4 +1,4 @@
-version: 2.0.0
+version: 0.51.0
 
 type: DeclarativeSource
 
@@ -597,11 +597,6 @@ definitions:
         request_parameters:
           sort_by: "updated_at"
           sort_order: "asc"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["articles"]
     $parameters:
       name: "articles"
       path: "help_center/incremental/articles"
@@ -785,6 +780,7 @@ streams:
   - $ref: "#/definitions/schedules_stream"
   - $ref: "#/definitions/sla_policies_stream"
   - $ref: "#/definitions/tags_stream"
+  - $ref: "#/definitions/tickets_stream"
   - $ref: "#/definitions/ticket_fields_stream"
   - $ref: "#/definitions/ticket_forms_stream"
   - $ref: "#/definitions/topics_stream"

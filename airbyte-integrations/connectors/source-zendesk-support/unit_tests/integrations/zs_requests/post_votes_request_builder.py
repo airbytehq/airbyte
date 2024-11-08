@@ -25,14 +25,10 @@ class PostsVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
         if self._start_time:
             params["start_time"] = self._start_time
         if self._page_size:
-            params["page[size]"] = self._page_size
+            params["per_page"] = self._page_size
         if self._page_after:
             params["page[after]"] = self._page_after
         return params
-
-    def with_start_time(self, start_time: int) -> "PostsVotesRequestBuilder":
-        self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
-        return self
 
     def with_page_size(self, page_size: int) -> "PostsVotesRequestBuilder":
         self._page_size: int = page_size

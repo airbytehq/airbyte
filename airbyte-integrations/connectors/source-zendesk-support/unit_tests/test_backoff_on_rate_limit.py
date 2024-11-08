@@ -7,8 +7,9 @@ from typing import Dict
 
 import pytest
 import requests
+
 from source_zendesk_support.source import SourceZendeskSupport
-from source_zendesk_support.streams import Users
+from source_zendesk_support.streams import UserSettingsStream
 
 _ANY_ATTEMPT_COUNT = 10
 
@@ -39,7 +40,7 @@ def test_backoff(requests_mock, config, x_rate_limit, retry_after, expected):
     # create client
     config = prepare_config(config)
     # test stream
-    test_stream = Users(**config)
+    test_stream = UserSettingsStream(**config)
 
     url = f"{test_stream.url_base}{test_stream.path()}/count.json"
     requests_mock.get(url, json=test_response_json, headers=test_response_header, status_code=429)

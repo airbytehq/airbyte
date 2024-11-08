@@ -51,10 +51,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
             PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build(),
         )
 
@@ -73,18 +70,18 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
             ErrorResponseBuilder.response_with_status(403).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-        assert any(["Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
+        error_message = output.errors[-1].trace.error.message
+        assert (
+            error_message
+            == "Unable to read data for stream post_votes due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream post_votes on the Schema Tab. Error message: the 403 error"
+        )
 
     @HttpMocker()
     def test_given_404_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
@@ -98,18 +95,18 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
             ErrorResponseBuilder.response_with_status(404).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-        assert any(["Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
+        error_message = output.errors[-1].trace.error.message
+        assert (
+            error_message
+            == "Unable to read data for stream post_votes due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream post_votes on the Schema Tab. Error message: the 404 error"
+        )
 
     @HttpMocker()
     def test_given_500_error_when_read_posts_comments_then_stop_syncing(self, http_mocker):
@@ -123,10 +120,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
             ErrorResponseBuilder.response_with_status(500).build(),
         )
 
@@ -134,9 +128,8 @@ class TestPostsVotesStreamFullRefresh(TestCase):
             output = read_stream("post_votes", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 0
-
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any(["Internal server error" in error for error in error_logs])
+        error_message = output.errors[-1].trace.error.internal_message
+        assert error_message == "Internal server error."
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -164,22 +157,25 @@ class TestPostsVotesStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         post = posts_record_builder.build()
-        post_comments_record_builder = PostsVotesRecordBuilder.posts_votes_record()
+        post_votes_record_builder = PostsVotesRecordBuilder.posts_votes_record()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_record_builder).build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_record(post_votes_record_builder).build(),
         )
 
         output = read_stream("post_votes", SyncMode.incremental, self._config)
         assert len(output.records) == 1
 
-        post_comment = post_comments_record_builder.build()
+        post_comment = post_votes_record_builder.build()
         assert output.most_recent_state.stream_descriptor.name == "post_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": post_comment["updated_at"]})
+        assert output.most_recent_state.stream_state.__dict__ == {
+            "lookback_window": 0,
+            "parent_state": {"posts": {"updated_at": post["updated_at"]}},
+            "state": {"created_at": post_comment["updated_at"]},
+            "states": [{"cursor": {"created_at": post_comment["updated_at"]}, "partition": {"id": 7253351904271, "parent_slice": {}}}],
+            "use_global_cursor": False,
+        }
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -203,10 +199,7 @@ class TestPostsVotesStreamIncremental(TestCase):
 
         # Read first page request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(datetime_to_string(state_start_date))
-            .with_page_size(100)
-            .build(),
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build(),
             PostsVotesResponseBuilder.posts_votes_response().with_pagination().with_record(post_comments_first_record_builder).build(),
         )
 
