@@ -62,10 +62,10 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
         expectedInstead: FieldType? = null
     ): SchemaTestUnionBuilder<T> {
         val name = nameOverride ?: UUID.randomUUID().toString()
-        val inputOptions = mutableListOf<AirbyteType>()
+        val inputOptions = mutableSetOf<AirbyteType>()
         val expectedOptions =
             if (expectedInstead == null) {
-                mutableListOf<AirbyteType>()
+                mutableSetOf<AirbyteType>()
             } else {
                 null
             }
@@ -92,8 +92,8 @@ class SchemaRecordBuilder<T : SchemaRecordBuilderType>(
 
 class SchemaTestUnionBuilder<T : SchemaRecordBuilderType>(
     private val parent: SchemaRecordBuilder<T>,
-    private val options: MutableList<AirbyteType>,
-    private val expectedOptions: MutableList<AirbyteType>?
+    private val options: MutableSet<AirbyteType>,
+    private val expectedOptions: MutableSet<AirbyteType>?
 ) : SchemaRecordBuilderType {
     fun with(option: AirbyteType, expected: AirbyteType? = null): SchemaTestUnionBuilder<T> {
         options.add(option)
