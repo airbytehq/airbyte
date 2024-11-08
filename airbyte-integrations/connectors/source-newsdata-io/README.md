@@ -1,7 +1,7 @@
 # NewsData.io
 This directory contains the manifest-only connector for `source-newsdata-io`.
 
-Connector for NewsData.io to get the latest news in pagination.
+Connector for NewsData.io to get the latest news in pagination and the latest news from specific countries, categories and domains. You can also get the news sources from specific categories, countries and languages.
 
 ## Usage
 There are multiple ways to use this connector:

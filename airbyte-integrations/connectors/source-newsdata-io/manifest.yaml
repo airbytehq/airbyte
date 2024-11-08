@@ -1,8 +1,11 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
-description: Connector for NewsData.io to get the latest news in pagination.
+description: >-
+  Connector for NewsData.io to get the latest news in pagination and the latest
+  news from specific countries, categories and domains. You can also get the
+  news sources from specific categories, countries and languages.
 
 check:
   type: CheckStream
@@ -40,12 +43,144 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Latest News"
+    News Sources From Specific Category:
+      type: DeclarativeStream
+      name: News Sources From Specific Category
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sources
+          http_method: GET
+          request_parameters:
+            apiKey: "{{ config[\"apikey\"] }}"
+            category: "{{ config['category'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/News Sources From Specific Category"
+    News Sources From Specific Country:
+      type: DeclarativeStream
+      name: News Sources From Specific Country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sources
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config[\"apikey\"] }}"
+            country: "{{ config['countrycode'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/News Sources From Specific Country"
+    News Sources From Specific Language:
+      type: DeclarativeStream
+      name: News Sources From Specific Language
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sources
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config[\"apikey\"] }}"
+            language: "{{ config['languagecode'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/News Sources From Specific Language"
+    Latest News From Specific Countries:
+      type: DeclarativeStream
+      name: Latest News From Specific Countries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /latest
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config[\"apikey\"] }}"
+            country: "{{ config['countrycodes'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Latest News From Specific Countries"
+    Latest News From Specific Domain:
+      type: DeclarativeStream
+      name: Latest News From Specific Domain
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /latest
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config[\"apikey\"] }}"
+            domain: "{{ config['domain'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Latest News From Specific Domain"
+    Latest News From Specific Category:
+      type: DeclarativeStream
+      name: Latest News From Specific Category
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /latest
+          http_method: GET
+          request_parameters:
+            apikey: "{{ config[\"apikey\"] }}"
+            category: "{{ config[\"category\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Latest News From Specific Category"
   base_requester:
     type: HttpRequester
     url_base: https://newsdata.io/api/1
 
 streams:
   - $ref: "#/definitions/streams/Latest News"
+  - $ref: "#/definitions/streams/News Sources From Specific Category"
+  - $ref: "#/definitions/streams/News Sources From Specific Country"
+  - $ref: "#/definitions/streams/News Sources From Specific Language"
+  - $ref: "#/definitions/streams/Latest News From Specific Countries"
+  - $ref: "#/definitions/streams/Latest News From Specific Domain"
+  - $ref: "#/definitions/streams/Latest News From Specific Category"
 
 spec:
   type: Spec
@@ -57,16 +192,84 @@ spec:
     properties:
       apikey:
         type: string
-        title: apiKey
         order: 0
+        title: apiKey
+      category:
+        type: string
+        title: category
+        order: 1
+      countrycode:
+        type: string
+        title: countryCode
+        order: 2
+      languagecode:
+        type: string
+        title: languageCode
+        order: 3
+      countrycodes:
+        type: string
+        title: countryCodes
+        order: 4
+      domain:
+        type: string
+        title: domain
+        order: 5
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     Latest News: true
+    News Sources From Specific Category: true
+    News Sources From Specific Country: true
+    News Sources From Specific Language: true
+    Latest News From Specific Countries: true
+    Latest News From Specific Domain: true
+    Latest News From Specific Category: true
   testedStreams:
     Latest News:
       streamHash: bbbf096fa719151bb5156216e10c73d7198d89f0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    News Sources From Specific Category:
+      streamHash: f9c0185a8343661ebe3c3591bf2b0e9c74401882
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    News Sources From Specific Country:
+      streamHash: 6e89ac3fa9dedf7dc0f7b37bf95510d863ad3ab2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    News Sources From Specific Language:
+      streamHash: 0fd2cecc583cf88a696e85aae6214d0f327d3a31
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Latest News From Specific Countries:
+      streamHash: 4b471becedf821d69f0f3c236b1c3bab842d1fc7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Latest News From Specific Domain:
+      streamHash: 07c53cbd6c2a9a8bd42222f44da539b4c553fe12
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Latest News From Specific Category:
+      streamHash: 1a5a0ee5ff54c50ed40464f3590acc7cdc864afc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -76,6 +279,626 @@ metadata:
 
 schemas:
   Latest News:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      nextPage:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            ai_org:
+              type:
+                - string
+                - "null"
+            ai_region:
+              type:
+                - string
+                - "null"
+            ai_tag:
+              type:
+                - string
+                - "null"
+            article_id:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            content:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            creator:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            duplicate:
+              type:
+                - boolean
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            keywords:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            language:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            pubDate:
+              type:
+                - string
+                - "null"
+            pubDateTZ:
+              type:
+                - string
+                - "null"
+            sentiment:
+              type:
+                - string
+                - "null"
+            sentiment_stats:
+              type:
+                - string
+                - "null"
+            source_icon:
+              type:
+                - string
+                - "null"
+            source_id:
+              type:
+                - string
+                - "null"
+            source_name:
+              type:
+                - string
+                - "null"
+            source_priority:
+              type:
+                - number
+                - "null"
+            source_url:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  News Sources From Specific Category:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            last_fetch:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  News Sources From Specific Country:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            last_fetch:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  News Sources From Specific Language:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            icon:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            last_fetch:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  Latest News From Specific Countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      nextPage:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            ai_org:
+              type:
+                - string
+                - "null"
+            ai_region:
+              type:
+                - string
+                - "null"
+            ai_tag:
+              type:
+                - string
+                - "null"
+            article_id:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            content:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            creator:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            duplicate:
+              type:
+                - boolean
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            keywords:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            language:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            pubDate:
+              type:
+                - string
+                - "null"
+            pubDateTZ:
+              type:
+                - string
+                - "null"
+            sentiment:
+              type:
+                - string
+                - "null"
+            sentiment_stats:
+              type:
+                - string
+                - "null"
+            source_icon:
+              type:
+                - string
+                - "null"
+            source_id:
+              type:
+                - string
+                - "null"
+            source_name:
+              type:
+                - string
+                - "null"
+            source_priority:
+              type:
+                - number
+                - "null"
+            source_url:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  Latest News From Specific Domain:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      nextPage:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            ai_org:
+              type:
+                - string
+                - "null"
+            ai_region:
+              type:
+                - string
+                - "null"
+            ai_tag:
+              type:
+                - string
+                - "null"
+            article_id:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            content:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            duplicate:
+              type:
+                - boolean
+                - "null"
+            image_url:
+              type:
+                - string
+                - "null"
+            language:
+              type:
+                - string
+                - "null"
+            link:
+              type:
+                - string
+                - "null"
+            pubDate:
+              type:
+                - string
+                - "null"
+            pubDateTZ:
+              type:
+                - string
+                - "null"
+            sentiment:
+              type:
+                - string
+                - "null"
+            sentiment_stats:
+              type:
+                - string
+                - "null"
+            source_icon:
+              type:
+                - string
+                - "null"
+            source_id:
+              type:
+                - string
+                - "null"
+            source_name:
+              type:
+                - string
+                - "null"
+            source_priority:
+              type:
+                - number
+                - "null"
+            source_url:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      totalResults:
+        type:
+          - number
+          - "null"
+  Latest News From Specific Category:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
