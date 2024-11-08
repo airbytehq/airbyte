@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -29,6 +29,124 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/marketholidays"
+    option_chain:
+      type: DeclarativeStream
+      name: option_chain
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: option/chain
+          http_method: GET
+          request_parameters:
+            expiry_date: "{{config['expiry_date']}}"
+            instrument_key: "{{config['instrument_key']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/option_chain"
+    fullmarketquotes:
+      type: DeclarativeStream
+      name: fullmarketquotes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: market-quote/quotes
+          http_method: GET
+          request_parameters:
+            instrument_key: "{{config['instrument_key']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fullmarketquotes"
+    ohlcquotes:
+      type: DeclarativeStream
+      name: ohlcquotes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: market-quote/ohlc
+          http_method: GET
+          request_parameters:
+            interval: "{{config['quote_interval']}}"
+            instrument_key: "{{config['instrument_key']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ohlcquotes"
+    ltpquotes:
+      type: DeclarativeStream
+      name: ltpquotes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: market-quote/ltp
+          http_method: GET
+          request_parameters:
+            instrument_key: "{{config['instrument_key']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ltpquotes"
+    holdings:
+      type: DeclarativeStream
+      name: holdings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: portfolio/long-term-holdings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holdings"
+    orderdetails:
+      type: DeclarativeStream
+      name: orderdetails
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: order/retrieve-all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orderdetails"
   base_requester:
     type: HttpRequester
     url_base: https://api.upstox.com/v2/
@@ -38,6 +156,12 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/marketholidays"
+  - $ref: "#/definitions/streams/option_chain"
+  - $ref: "#/definitions/streams/fullmarketquotes"
+  - $ref: "#/definitions/streams/ohlcquotes"
+  - $ref: "#/definitions/streams/ltpquotes"
+  - $ref: "#/definitions/streams/holdings"
+  - $ref: "#/definitions/streams/orderdetails"
 
 spec:
   type: Spec
@@ -46,25 +170,103 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - instrument_key
+      - expiry_date
+      - quote_interval
+      - end_date
+      - start_date
+      - candle_interval
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
+      instrument_key:
+        type: string
+        order: 1
+        title: instrument_key
+      expiry_date:
+        type: string
+        order: 2
+        title: expiry_date
+      quote_interval:
+        type: string
+        order: 3
+        title: quote_interval
+      end_date:
+        type: string
+        order: 4
+        title: end_date
+      start_date:
+        type: string
+        order: 5
+        title: start_date
+      candle_interval:
+        type: string
+        order: 6
+        title: candle_interval
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     marketholidays: true
+    option_chain: false
+    fullmarketquotes: false
+    ohlcquotes: false
+    ltpquotes: false
+    holdings: false
+    orderdetails: false
   testedStreams:
     marketholidays:
+      hasRecords: true
       streamHash: 7c983e3c26ee6715cc84933553846bb0201197b3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    option_chain:
+      hasRecords: true
+      streamHash: 0314eba3a6ff4ec9196aee500152b6939af6d39a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    fullmarketquotes:
+      hasRecords: true
+      streamHash: 63e11002993041cee564e9cc9e8b03f407409512
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ohlcquotes:
+      hasRecords: true
+      streamHash: e305961a7b6248afe8e253d31ff98daa90e107f4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ltpquotes:
+      hasRecords: true
+      streamHash: 4559d5f5efd99eba5cc2c7831d2e5903c0878160
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    holdings:
+      hasRecords: true
+      streamHash: 63ba4fc6c1657b768a426b8b9bff0fc9e7b07610
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orderdetails:
+      hasRecords: true
+      streamHash: 0604601f2d4ed3e571e6b77a4c256d04c1d505cb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://upstox.com/developer/api-documentation
 
@@ -124,6 +326,372 @@ schemas:
                     type:
                       - number
                       - "null"
+      status:
+        type:
+          - string
+          - "null"
+  option_chain:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            call_options:
+              type:
+                - object
+                - "null"
+              properties:
+                instrument_key:
+                  type:
+                    - string
+                    - "null"
+                market_data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    ask_price:
+                      type:
+                        - number
+                        - "null"
+                    ask_qty:
+                      type:
+                        - number
+                        - "null"
+                    bid_price:
+                      type:
+                        - number
+                        - "null"
+                    bid_qty:
+                      type:
+                        - number
+                        - "null"
+                    close_price:
+                      type:
+                        - number
+                        - "null"
+                    ltp:
+                      type:
+                        - number
+                        - "null"
+                    oi:
+                      type:
+                        - number
+                        - "null"
+                    prev_oi:
+                      type:
+                        - number
+                        - "null"
+                    volume:
+                      type:
+                        - number
+                        - "null"
+                option_greeks:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    delta:
+                      type:
+                        - number
+                        - "null"
+                    gamma:
+                      type:
+                        - number
+                        - "null"
+                    iv:
+                      type:
+                        - number
+                        - "null"
+                    theta:
+                      type:
+                        - number
+                        - "null"
+                    vega:
+                      type:
+                        - number
+                        - "null"
+            expiry:
+              type:
+                - string
+                - "null"
+            pcr:
+              type:
+                - number
+                - "null"
+            put_options:
+              type:
+                - object
+                - "null"
+              properties:
+                instrument_key:
+                  type:
+                    - string
+                    - "null"
+                market_data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    ask_price:
+                      type:
+                        - number
+                        - "null"
+                    ask_qty:
+                      type:
+                        - number
+                        - "null"
+                    bid_price:
+                      type:
+                        - number
+                        - "null"
+                    bid_qty:
+                      type:
+                        - number
+                        - "null"
+                    close_price:
+                      type:
+                        - number
+                        - "null"
+                    ltp:
+                      type:
+                        - number
+                        - "null"
+                    oi:
+                      type:
+                        - number
+                        - "null"
+                    prev_oi:
+                      type:
+                        - number
+                        - "null"
+                    volume:
+                      type:
+                        - number
+                        - "null"
+                option_greeks:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    delta:
+                      type:
+                        - number
+                        - "null"
+                    gamma:
+                      type:
+                        - number
+                        - "null"
+                    iv:
+                      type:
+                        - number
+                        - "null"
+                    theta:
+                      type:
+                        - number
+                        - "null"
+                    vega:
+                      type:
+                        - number
+                        - "null"
+            strike_price:
+              type:
+                - number
+                - "null"
+            underlying_key:
+              type:
+                - string
+                - "null"
+            underlying_spot_price:
+              type:
+                - number
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+  fullmarketquotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          NSE_INDEX:Nifty 50:
+            type:
+              - object
+              - "null"
+            properties:
+              depth:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  buy:
+                    type:
+                      - array
+                      - "null"
+                  sell:
+                    type:
+                      - array
+                      - "null"
+              instrument_token:
+                type:
+                  - string
+                  - "null"
+              last_price:
+                type:
+                  - number
+                  - "null"
+              last_trade_time:
+                type:
+                  - string
+                  - "null"
+              net_change:
+                type:
+                  - number
+                  - "null"
+              ohlc:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  close:
+                    type:
+                      - number
+                      - "null"
+                  high:
+                    type:
+                      - number
+                      - "null"
+                  low:
+                    type:
+                      - number
+                      - "null"
+                  open:
+                    type:
+                      - number
+                      - "null"
+              symbol:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+      status:
+        type:
+          - string
+          - "null"
+  ohlcquotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          NSE_INDEX:Nifty 50:
+            type:
+              - object
+              - "null"
+            properties:
+              instrument_token:
+                type:
+                  - string
+                  - "null"
+              last_price:
+                type:
+                  - number
+                  - "null"
+              ohlc:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  close:
+                    type:
+                      - number
+                      - "null"
+                  high:
+                    type:
+                      - number
+                      - "null"
+                  low:
+                    type:
+                      - number
+                      - "null"
+                  open:
+                    type:
+                      - number
+                      - "null"
+      status:
+        type:
+          - string
+          - "null"
+  ltpquotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          NSE_INDEX:Nifty 50:
+            type:
+              - object
+              - "null"
+            properties:
+              instrument_token:
+                type:
+                  - string
+                  - "null"
+              last_price:
+                type:
+                  - number
+                  - "null"
+      status:
+        type:
+          - string
+          - "null"
+  holdings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+  orderdetails:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
       status:
         type:
           - string
