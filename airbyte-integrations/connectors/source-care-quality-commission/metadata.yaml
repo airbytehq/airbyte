@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2366b7bf-b83e-471c-b4a0-1405887fdf6e
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-care-quality-commission
   githubIssueLabel: source-care-quality-commission
   icon: icon.svg

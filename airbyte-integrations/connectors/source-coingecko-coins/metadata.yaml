@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-coingecko-coins
   githubIssueLabel: source-coingecko-coins
   icon: coingeckocoins.svg

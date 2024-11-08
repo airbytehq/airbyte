@@ -153,7 +153,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data  # type: ignore[union-attr]  # record is always a Record
+                            parent_record = parent_record.record.data  # type: ignore[union-attr, assignment]  # record is always a Record
                         else:
                             continue
                     elif isinstance(parent_record, Record):
@@ -206,9 +206,11 @@ class SubstreamPartitionRouter(PartitionRouter):
         """
         Set the state of the parent streams.
 
+        If the `parent_state` key is missing from `stream_state`, migrate the child stream state to the parent stream's state format.
+        This migration applies only to parent streams with incremental dependencies.
+
         Args:
-            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
-            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+            stream_state (StreamState): The state of the streams to be set.
 
         Example of state format:
         {
@@ -221,14 +223,46 @@ class SubstreamPartitionRouter(PartitionRouter):
                 }
             }
         }
+
+        Example of migrating to parent state format:
+        - Initial state:
+        {
+            "updated_at": "2023-05-27T00:00:00Z"
+        }
+        - After migration:
+        {
+            "updated_at": "2023-05-27T00:00:00Z",
+            "parent_state": {
+                "parent_stream_name": {
+                    "parent_stream_cursor": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
         """
         if not stream_state:
             return
 
-        parent_state = stream_state.get("parent_state")
-        if not parent_state:
+        parent_state = stream_state.get("parent_state", {})
+
+        # If `parent_state` doesn't exist and at least one parent stream has an incremental dependency,
+        # copy the child state to parent streams with incremental dependencies.
+        incremental_dependency = any([parent_config.incremental_dependency for parent_config in self.parent_stream_configs])
+        if not parent_state and not incremental_dependency:
             return
 
+        if not parent_state and incremental_dependency:
+            # Attempt to retrieve child state
+            substream_state = list(stream_state.values())
+            substream_state = substream_state[0] if substream_state else {}
+            parent_state = {}
+
+            # Copy child state to parent streams with incremental dependencies
+            if substream_state:
+                for parent_config in self.parent_stream_configs:
+                    if parent_config.incremental_dependency:
+                        parent_state[parent_config.stream.name] = {parent_config.stream.cursor_field: substream_state}
+
+        # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
