@@ -1,4 +1,4 @@
-version: 0.72.1
+version: 0.51.42
 type: DeclarativeSource
 
 definitions:
@@ -1073,13 +1073,6 @@ definitions:
 
   # Incremental Streams
 
-  semi_incremental_retriever:
-    $ref: "#/definitions/retriever"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        condition: "{{ record['updated'] >= stream_slice['start_time'] }}"
-
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "updated"
@@ -1096,7 +1089,9 @@ definitions:
 
   semi_incremental_stream:
     $ref: "#/definitions/incremental_stream"
-    retriever: "#/definitions/semi_incremental_retriever"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      is_client_side_incremental: true
 
   # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
   board_issues_stream:
@@ -1223,7 +1218,7 @@ definitions:
       requester:
         $ref: "#/definitions/retriever_v1/requester"
         request_parameters:
-          fields: "{{ stream_slice._partition.parent_stream_fields }}"
+          fields: "{{ stream_slice._partition.extra_fields['fields'] }}"
           jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
     transformations:
       - type: AddFields
@@ -1246,6 +1241,56 @@ definitions:
     $parameters:
       path: "sprint/{{ stream_slice.sprint_id }}/issue"
       extract_field: "issues"
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
+  issue_comments_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    name: issue_comments
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/issues_stream"
+            parent_key: "id"
+            partition_field: "issue_id"
+            incremental_dependency: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["issueId"]
+            value_type: string
+            value: "{{ stream_slice.issue_id }}"
+    $parameters:
+      path: "issue/{{ stream_slice.issue_id }}/comment"
+      extract_field: "comments"
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
+  issue_worklogs_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    name: issue_worklogs
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/issues_stream"
+            parent_key: "id"
+            partition_field: "issue_id"
+            incremental_dependency: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["issueId"]
+            value_type: string
+            value: "{{ stream_slice.issue_id }}"
+    $parameters:
+      path: "issue/{{ stream_slice.issue_id }}/worklog"
+      extract_field: "worklogs"
 
 streams:
   # Full refresh streams
@@ -1309,6 +1354,11 @@ streams:
   - "#/definitions/board_issues_stream"
   - "#/definitions/issues_stream"
   - "#/definitions/sprint_issues_stream"
+
+  # Incremental substreams
+
+  - "#/definitions/issue_comments_stream"
+  - "#/definitions/issue_worklogs_stream"
 
 check:
   type: CheckStream

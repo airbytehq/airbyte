@@ -6,9 +6,9 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import freezegun
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
 
 from .ad_requests import AttributionReportRequestBuilder, OAuthRequestBuilder, ProfilesRequestBuilder
 from .ad_responses import AttributionReportResponseBuilder, ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder
