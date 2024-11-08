@@ -1,22 +1,24 @@
-# Youtube Data
-Youtube Data
+# Youtube Data API
+The YouTube Data API v3 is an API that provides access to YouTube data, such as videos, playlists, channels, comments and simple stats.
+This is a simpler version of Youtube connector, if you need more detailed reports from your channel please check
+the [Youtube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics)
+
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `video_id` | `string` | video_id.  |  |
 | `channel_id` | `string` | channel_id.  |  |
-| `region_code` | `string` | region_code.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| video |  | DefaultPaginator | ✅ |  ❌  |
+| videos |  | DefaultPaginator | ✅ |  ❌  |
+| video_details |  | DefaultPaginator | ✅ |  ❌  |
 | channels | id | DefaultPaginator | ✅ |  ❌  |
 | comments |  | DefaultPaginator | ✅ |  ❌  |
-| popularvideos | id | DefaultPaginator | ✅ |  ❌  |
+| channel_comments | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
