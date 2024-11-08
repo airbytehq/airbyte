@@ -4,7 +4,7 @@ This is the Deputy source that ingests data from the Deputy API.
 Deputy is a software that simplifies employee scheduling, timesheets and HR in one place https://www.deputy.com/
 
 In order to use this source you must first create an account on Deputy.
-Once logged in, your Deputy install will have a specific URL in the structure of https://{installname}.{geo}.deputy.com - This is the same URL that will be the base API url .
+Once logged in, your Deputy install will have a specific URL in the structure of `https://[installname].[geo].deputy.com` - This is the same URL that will be the base API url .
 
 To obtain your bearer token to use the API, follow the steps shown here https://developer.deputy.com/deputy-docs/docs/the-hello-world-of-deputy
 This will have you create an oauth application and create an access token. Enter the access token in the input field.
