@@ -77,6 +77,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
@@ -119,6 +124,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
@@ -293,6 +303,12 @@
         "description" : "Pattern to match file names in the bucket directory. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/ListingKeysUsingAPIs.html\">here</a>",
         "title" : "File Name Pattern",
         "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ]
+      },
+      "use_staging_directory" : {
+        "type" : "boolean",
+        "default" : false,
+        "description" : "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object.",
+        "title" : "Use a Staging Directory"
       },
       "s3_staging_prefix" : {
         "type" : "string",

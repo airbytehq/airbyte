@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 570b875e-52d9-40e0-a43c-340ebae2d9f8
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-safetyculture
   githubIssueLabel: source-safetyculture
   icon: icon.svg

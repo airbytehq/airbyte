@@ -63,7 +63,8 @@ class NonDockerizedDestination(
                     } catch (e: ConnectorUncleanExitException) {
                         throw DestinationUncleanExitException.of(
                             e.exitCode,
-                            destination.results.traces()
+                            destination.results.traces(),
+                            destination.results.states(),
                         )
                     }
                     destinationComplete.complete(Unit)
