@@ -5,7 +5,7 @@ type: DeclarativeSource
 description: |-
   Tinyemail is an email marketing tool.
   We can extract data from campaigns and contacts streams using this connector.
-  Docs : https://docs.tinyemail.com/docs/tiny-email/tinyemail
+  [API Docs](https://docs.tinyemail.com/docs/tiny-email/tinyemail)
 
 check:
   type: CheckStream
@@ -40,12 +40,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
             page_size: 20
+            start_from_page: 0
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -75,6 +75,8 @@ definitions:
     sender_details:
       type: DeclarativeStream
       name: sender_details
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -85,7 +87,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - senderDetailses
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -106,6 +109,20 @@ definitions:
             field_path:
               - members
               - content
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -158,12 +175,12 @@ metadata:
     contact_members: true
   testedStreams:
     campaigns:
+      hasRecords: true
       streamHash: 87f4bfbafbdd839a4aa610151245f01bea2cdacb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
       hasRecords: true
       streamHash: abece08aa245b26686fd883cc3320886c9e78990
@@ -172,14 +189,14 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     sender_details:
-      streamHash: 36353e505d50dc566e73b6a4ca0af36aa31ef6a3
+      streamHash: ed2c5285bbe1dc8db23db6e1d0cf87827099194e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contact_members:
-      streamHash: adcad28bc95667de8e98a0f759a4cdffb45ced5a
+      streamHash: 3a6a387655eeeacce156e1e7f59f4df17b28a1d9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -342,59 +359,50 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      senderDetailses:
+      address:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            address:
-              type:
-                - string
-                - "null"
-            city:
-              type:
-                - string
-                - "null"
-            country:
-              type:
-                - string
-                - "null"
-            defaults:
-              type:
-                - boolean
-                - "null"
-            dkimSigned:
-              type:
-                - boolean
-                - "null"
-            email:
-              type:
-                - string
-                - "null"
-            emailConfirmed:
-              type:
-                - boolean
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            postalCode:
-              type:
-                - string
-                - "null"
-            region:
-              type:
-                - string
-                - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      defaults:
+        type:
+          - boolean
+          - "null"
+      dkimSigned:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emailConfirmed:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      postalCode:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   contact_members:
     type: object
     $schema: http://json-schema.org/schema#
