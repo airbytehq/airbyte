@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomFormatConcurrentStreamStateConverter,
     EpochValueConcurrentStreamStateConverter,
     IsoMillisConcurrentStreamStateConverter,
 )
@@ -246,7 +247,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     }
                 ],
             },
-            {"created": 1617030403},
+            {"created": 172800},
             id="epoch-single-slice",
         ),
         pytest.param(
@@ -255,7 +256,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
                         "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
                     },
                     {
@@ -264,7 +265,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": 1648566403},
+            {"created": 172800},
             id="epoch-overlapping-slices",
         ),
         pytest.param(
@@ -273,7 +274,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                 "state_type": "date-range",
                 "slices": [
                     {
-                        "start": datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+                        "start": datetime(1970, 1, 3, 0, 0, 0, tzinfo=timezone.utc),
                         "end": datetime(2021, 3, 29, 15, 6, 43, tzinfo=timezone.utc),
                     },
                     {
@@ -282,7 +283,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": 1617030403},
+            {"created": 172800},
             id="epoch-multiple-slices",
         ),
         pytest.param(
@@ -296,7 +297,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     }
                 ],
             },
-            {"created": "2021-03-29T15:06:43.000Z"},
+            {"created": "1970-01-03T00:00:00.000Z"},
             id="isomillis-single-slice",
         ),
         pytest.param(
@@ -314,7 +315,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": "2022-03-29T15:06:43.000Z"},
+            {"created": "1970-01-01T00:00:00.000Z"},
             id="isomillis-overlapping-slices",
         ),
         pytest.param(
@@ -332,7 +333,7 @@ def test_convert_from_sequential_state(converter, start, sequential_state, expec
                     },
                 ],
             },
-            {"created": "2021-03-29T15:06:43.000Z"},
+            {"created": "1970-01-01T00:00:00.000Z"},
             id="isomillis-multiple-slices",
         ),
     ],
@@ -367,3 +368,23 @@ def test_convert_to_sequential_state(converter, concurrent_state, expected_outpu
 def test_convert_to_sequential_state_no_slices_returns_legacy_state(converter, concurrent_state, expected_output_state):
     with pytest.raises(RuntimeError):
         converter.convert_to_state_message(CursorField("created"), concurrent_state)
+
+
+def test_given_multiple_input_datetime_format_when_parse_timestamp_then_iterate_until_successful_parsing():
+    output_format = "%Y-%m-%dT%H:%M:%S"
+    input_formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d"]
+    converter = CustomFormatConcurrentStreamStateConverter(output_format, input_formats)
+
+    parsed_datetime = converter.parse_timestamp("2024-01-01")
+
+    assert parsed_datetime == datetime(2024, 1, 1, tzinfo=timezone.utc)
+
+
+def test_given_when_parse_timestamp_then_eventually_fallback_on_output_format():
+    output_format = "%Y-%m-%dT%H:%M:%S"
+    input_formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d"]
+    converter = CustomFormatConcurrentStreamStateConverter(output_format, input_formats)
+
+    parsed_datetime = converter.parse_timestamp("2024-01-01T02:00:00")
+
+    assert parsed_datetime == datetime(2024, 1, 1, 2, 0, 0, tzinfo=timezone.utc)

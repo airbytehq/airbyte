@@ -65,3 +65,23 @@ class AbstractAvailabilityStrategy(ABC):
         :param logger: logger object to use
         :return: A StreamAvailability object describing the stream's availability
         """
+
+
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
+class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
+    """
+    An availability strategy that always indicates a stream is available.
+
+    This strategy is used to avoid breaking changes and serves as a soft
+    deprecation of the availability strategy, allowing a smoother transition
+    without disrupting existing functionality.
+    """
+
+    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        """
+        Checks stream availability.
+
+        :param logger: logger object to use
+        :return: A StreamAvailability object describing the stream's availability
+        """
+        return StreamAvailable()

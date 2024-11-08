@@ -4,13 +4,15 @@
 
 from __future__ import annotations
 
+import datetime
 import importlib
 import inspect
 import re
 from functools import partial
-from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
@@ -28,9 +30,17 @@ from airbyte_cdk.sources.declarative.auth.token import (
 )
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider, TokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
+from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
+from airbyte_cdk.sources.declarative.decoders import (
+    Decoder,
+    IterableDecoder,
+    JsonDecoder,
+    JsonlDecoder,
+    PaginationDecoderDecorator,
+    XmlDecoder,
+)
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
@@ -41,6 +51,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     DeclarativeCursor,
     GlobalSubstreamCursor,
     PerPartitionCursor,
+    PerPartitionWithGlobalCursor,
     ResumableFullRefreshCursor,
 )
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -56,6 +67,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
@@ -116,6 +128,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import XmlDecoder as XmlDecoderModel
 from airbyte_cdk.sources.declarative.partition_routers import (
     CartesianProductStreamSlicer,
     ListPartitionRouter,
@@ -157,6 +170,11 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformation import KeysToLowerTransformation
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomFormatConcurrentStreamStateConverter,
+    DateTimeStreamStateConverter,
+)
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -167,6 +185,9 @@ ComponentDefinition = Mapping[str, Any]
 
 
 class ModelToComponentFactory:
+
+    EPOCH_DATETIME_FORMAT = "%s"
+
     def __init__(
         self,
         limit_pages_fetched_per_slice: Optional[int] = None,
@@ -195,6 +216,7 @@ class ModelToComponentFactory:
             BearerAuthenticatorModel: self.create_bearer_authenticator,
             CheckStreamModel: self.create_check_stream,
             CompositeErrorHandlerModel: self.create_composite_error_handler,
+            ConcurrencyLevelModel: self.create_concurrency_level,
             ConstantBackoffStrategyModel: self.create_constant_backoff_strategy,
             CursorPaginationModel: self.create_cursor_pagination,
             CustomAuthenticatorModel: self.create_custom_component,
@@ -224,6 +246,7 @@ class ModelToComponentFactory:
             JsonlDecoderModel: self.create_jsonl_decoder,
             KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
+            XmlDecoderModel: self.create_xml_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
@@ -349,9 +372,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -379,8 +404,9 @@ class ModelToComponentFactory:
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, decoder: Decoder, **kwargs: Any
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         login_requester = self._create_component_from_model(
             model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder
         )
@@ -390,6 +416,7 @@ class ModelToComponentFactory:
             expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
+            decoder=decoder,
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
@@ -417,9 +444,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -435,6 +464,148 @@ class ModelToComponentFactory:
         return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
 
     @staticmethod
+    def create_concurrency_level(model: ConcurrencyLevelModel, config: Config, **kwargs: Any) -> ConcurrencyLevel:
+        return ConcurrencyLevel(
+            default_concurrency=model.default_concurrency,
+            max_concurrency=model.max_concurrency,
+            config=config,
+            parameters={},
+        )
+
+    def create_concurrent_cursor_from_datetime_based_cursor(
+        self,
+        state_manager: ConnectorStateManager,
+        model_type: Type[BaseModel],
+        component_definition: ComponentDefinition,
+        stream_name: str,
+        stream_namespace: Optional[str],
+        config: Config,
+        stream_state: MutableMapping[str, Any],
+        **kwargs: Any,
+    ) -> Tuple[ConcurrentCursor, DateTimeStreamStateConverter]:
+
+        component_type = component_definition.get("type")
+        if component_definition.get("type") != model_type.__name__:
+            raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
+
+        datetime_based_cursor_model = model_type.parse_obj(component_definition)
+
+        if not isinstance(datetime_based_cursor_model, DatetimeBasedCursorModel):
+            raise ValueError(f"Expected {model_type.__name__} component, but received {datetime_based_cursor_model.__class__.__name__}")
+
+        interpolated_cursor_field = InterpolatedString.create(
+            datetime_based_cursor_model.cursor_field, parameters=datetime_based_cursor_model.parameters or {}
+        )
+        cursor_field = CursorField(interpolated_cursor_field.eval(config=config))
+
+        interpolated_partition_field_start = InterpolatedString.create(
+            datetime_based_cursor_model.partition_field_start or "start_time", parameters=datetime_based_cursor_model.parameters or {}
+        )
+        interpolated_partition_field_end = InterpolatedString.create(
+            datetime_based_cursor_model.partition_field_end or "end_time", parameters=datetime_based_cursor_model.parameters or {}
+        )
+
+        slice_boundary_fields = (
+            interpolated_partition_field_start.eval(config=config),
+            interpolated_partition_field_end.eval(config=config),
+        )
+
+        datetime_format = datetime_based_cursor_model.datetime_format
+
+        cursor_granularity = (
+            parse_duration(datetime_based_cursor_model.cursor_granularity) if datetime_based_cursor_model.cursor_granularity else None
+        )
+
+        lookback_window = None
+        interpolated_lookback_window = (
+            InterpolatedString.create(datetime_based_cursor_model.lookback_window, parameters=datetime_based_cursor_model.parameters or {})
+            if datetime_based_cursor_model.lookback_window
+            else None
+        )
+        if interpolated_lookback_window:
+            evaluated_lookback_window = interpolated_lookback_window.eval(config=config)
+            if evaluated_lookback_window:
+                lookback_window = parse_duration(evaluated_lookback_window)
+
+        connector_state_converter: DateTimeStreamStateConverter
+        connector_state_converter = CustomFormatConcurrentStreamStateConverter(
+            datetime_format=datetime_format,
+            input_datetime_formats=datetime_based_cursor_model.cursor_datetime_formats,
+            is_sequential_state=True,
+            cursor_granularity=cursor_granularity,
+            # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+        )
+
+        start_date_runtime_value: Union[InterpolatedString, str, MinMaxDatetime]
+        if isinstance(datetime_based_cursor_model.start_datetime, MinMaxDatetimeModel):
+            start_date_runtime_value = self.create_min_max_datetime(model=datetime_based_cursor_model.start_datetime, config=config)
+        else:
+            start_date_runtime_value = datetime_based_cursor_model.start_datetime
+
+        end_date_runtime_value: Optional[Union[InterpolatedString, str, MinMaxDatetime]]
+        if isinstance(datetime_based_cursor_model.end_datetime, MinMaxDatetimeModel):
+            end_date_runtime_value = self.create_min_max_datetime(model=datetime_based_cursor_model.end_datetime, config=config)
+        else:
+            end_date_runtime_value = datetime_based_cursor_model.end_datetime
+
+        interpolated_start_date = MinMaxDatetime.create(
+            interpolated_string_or_min_max_datetime=start_date_runtime_value, parameters=datetime_based_cursor_model.parameters
+        )
+        interpolated_end_date = (
+            None if not end_date_runtime_value else MinMaxDatetime.create(end_date_runtime_value, datetime_based_cursor_model.parameters)
+        )
+
+        # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
+        if not interpolated_start_date.datetime_format:
+            interpolated_start_date.datetime_format = datetime_format
+        if interpolated_end_date and not interpolated_end_date.datetime_format:
+            interpolated_end_date.datetime_format = datetime_format
+
+        start_date = interpolated_start_date.get_datetime(config=config)
+        end_date_provider = (
+            partial(interpolated_end_date.get_datetime, config) if interpolated_end_date else connector_state_converter.get_end_provider()
+        )
+
+        if (datetime_based_cursor_model.step and not datetime_based_cursor_model.cursor_granularity) or (
+            not datetime_based_cursor_model.step and datetime_based_cursor_model.cursor_granularity
+        ):
+            raise ValueError(
+                f"If step is defined, cursor_granularity should be as well and vice-versa. "
+                f"Right now, step is `{datetime_based_cursor_model.step}` and cursor_granularity is `{datetime_based_cursor_model.cursor_granularity}`"
+            )
+
+        # When step is not defined, default to a step size from the starting date to the present moment
+        step_length = datetime.timedelta.max
+        interpolated_step = (
+            InterpolatedString.create(datetime_based_cursor_model.step, parameters=datetime_based_cursor_model.parameters or {})
+            if datetime_based_cursor_model.step
+            else None
+        )
+        if interpolated_step:
+            evaluated_step = interpolated_step.eval(config)
+            if evaluated_step:
+                step_length = parse_duration(evaluated_step)
+
+        return (
+            ConcurrentCursor(
+                stream_name=stream_name,
+                stream_namespace=stream_namespace,
+                stream_state=stream_state,
+                message_repository=self._message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
+                connector_state_manager=state_manager,
+                connector_state_converter=connector_state_converter,
+                cursor_field=cursor_field,
+                slice_boundary_fields=slice_boundary_fields,
+                start=start_date,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+                end_provider=end_date_provider,  # type: ignore  # Having issues w/ inspection for GapType and CursorValueType as shown in existing tests. Confirmed functionality is working in practice
+                lookback_window=lookback_window,
+                slice_range=step_length,
+                cursor_granularity=cursor_granularity,
+            ),
+            connector_state_converter,
+        )
+
+    @staticmethod
     def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: Any) -> ConstantBackoffStrategy:
         return ConstantBackoffStrategy(
             backoff_time_in_seconds=model.backoff_time_in_seconds,
@@ -445,11 +616,20 @@ class ModelToComponentFactory:
     def create_cursor_pagination(
         self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> CursorPaginationStrategy:
-        if not isinstance(decoder, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        if isinstance(decoder, PaginationDecoderDecorator):
+            if not isinstance(decoder.decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(
+                    f"Provided decoder of {type(decoder.decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead."
+                )
+            decoder_to_use = decoder
+        else:
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
+
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
-            decoder=decoder,
+            decoder=decoder_to_use,
             page_size=model.page_size,
             stop_condition=model.stop_condition,
             config=config,
@@ -651,13 +831,14 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionWithGlobalCursor)
             if combined_slicers and not isinstance(combined_slicers, supported_slicers):
-                raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
+                raise ValueError("Unsupported Slicer is used. PerPartitionWithGlobalCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
-                "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
-                "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
+                "substream_cursor": (
+                    combined_slicers if isinstance(combined_slicers, (PerPartitionWithGlobalCursor, GlobalSubstreamCursor)) else None
+                ),
             }
 
         if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
@@ -759,11 +940,13 @@ class ModelToComponentFactory:
                 cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
                 return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
             else:
-                return PerPartitionCursor(
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return PerPartitionWithGlobalCursor(
                     cursor_factory=CursorFactory(
                         lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
                     ),
                     partition_router=stream_slicer,
+                    stream_cursor=cursor_component,
                 )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
@@ -809,14 +992,11 @@ class ModelToComponentFactory:
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         if decoder:
-            decoder_to_use = decoder
-        elif model.decoder:
-            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
         else:
-            decoder_to_use = JsonDecoder(parameters={})
-        if not isinstance(decoder_to_use, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
-
+            decoder_to_use = PaginationDecoderDecorator(decoder=JsonDecoder(parameters={}))
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
@@ -846,8 +1026,6 @@ class ModelToComponentFactory:
     ) -> DpathExtractor:
         if decoder:
             decoder_to_use = decoder
-        elif model.decoder:
-            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
         else:
             decoder_to_use = JsonDecoder(parameters={})
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
@@ -939,6 +1117,10 @@ class ModelToComponentFactory:
     @staticmethod
     def create_iterable_decoder(model: IterableDecoderModel, config: Config, **kwargs: Any) -> IterableDecoder:
         return IterableDecoder(parameters={})
+
+    @staticmethod
+    def create_xml_decoder(model: XmlDecoderModel, config: Config, **kwargs: Any) -> XmlDecoder:
+        return XmlDecoder(parameters={})
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
@@ -1051,12 +1233,20 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-        if not isinstance(decoder, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        if isinstance(decoder, PaginationDecoderDecorator):
+            if not isinstance(decoder.decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(
+                    f"Provided decoder of {type(decoder.decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead."
+                )
+            decoder_to_use = decoder
+        else:
+            if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+                raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
+            decoder_to_use = PaginationDecoderDecorator(decoder=decoder)
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
-            decoder=decoder,
+            decoder=decoder_to_use,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
@@ -1082,6 +1272,7 @@ class ModelToComponentFactory:
             config=config,
             incremental_dependency=model.incremental_dependency or False,
             parameters=model.parameters or {},
+            extra_fields=model.extra_fields,
         )
 
     @staticmethod
@@ -1101,9 +1292,9 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
-        decoder: Optional[Decoder] = None,
         *,
         transformations: List[RecordTransformation],
+        decoder: Optional[Decoder] = None,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> RecordSelector:
@@ -1315,9 +1506,11 @@ class ModelToComponentFactory:
             ),
             primary_key=None,
             name=job_download_components_name,
-            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
-            if model.download_paginator
-            else NoPagination(parameters={}),
+            paginator=(
+                self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
+                if model.download_paginator
+                else NoPagination(parameters={})
+            ),
             config=config,
             parameters={},
         )

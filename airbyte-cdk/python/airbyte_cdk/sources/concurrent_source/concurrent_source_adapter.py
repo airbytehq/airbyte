@@ -66,7 +66,9 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
 
-    def convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
+    def convert_to_concurrent_stream(
+        self, logger: logging.Logger, stream: Stream, state_manager: ConnectorStateManager, cursor: Optional[Cursor] = None
+    ) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
         managing the stream's state, and returning an updated Stream instance.
@@ -74,7 +76,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         state: MutableMapping[str, Any] = {}
 
         if cursor:
-            state = cursor.state
+            state = state_manager.get_stream_state(stream.name, stream.namespace)
 
             stream.cursor = cursor  # type: ignore[assignment]  # cursor is of type ConcurrentCursor, which inherits from Cursor
             if hasattr(stream, "parent"):
