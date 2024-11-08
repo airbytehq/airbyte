@@ -2,15 +2,6 @@ version: 6.4.0
 
 type: DeclarativeSource
 
-description: >-
-  The [Agile CRM](http://agilecrm.com/) Airbyte Connector allows you to sync and
-  transfer data seamlessly from Agile CRM into your preferred data warehouse or
-  analytics tool. With this connector, you can automate data extraction for
-  various Agile CRM entities, such as contacts, companies, deals, and tasks,
-  enabling easy integration and analysis of your CRM data in real-time. Ideal
-  for businesses looking to streamline data workflows and enhance data
-  accessibility.
-
 check:
   type: CheckStream
   stream_names:
@@ -44,16 +35,13 @@ definitions:
             field_name: cursor
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['cursor'] }}"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - cursor
+            stop_condition: "{{ not last_record.get('cursor') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,16 +72,12 @@ definitions:
             field_name: cursor
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: body_data
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['cursor'] }}"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - cursor
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -109,13 +93,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /dev/api/opportunity
           http_method: GET
+          request_headers:
+            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - collection
-              - opportunity
+            field_path: []
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -130,8 +114,6 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ last_record['cursor'] }}"
-        decoder:
-          type: XmlDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -188,6 +170,28 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tasks"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dev/api/events
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
     milestone:
       type: DeclarativeStream
       name: milestone
@@ -342,6 +346,7 @@ streams:
   - $ref: "#/definitions/streams/deals"
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/events"
   - $ref: "#/definitions/streams/milestone"
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/documents"
@@ -390,6 +395,7 @@ metadata:
     deals: true
     notes: true
     tasks: true
+    events: true
     milestone: true
     campaigns: true
     documents: true
@@ -397,40 +403,47 @@ metadata:
     tickets: true
   testedStreams:
     contacts:
-      hasRecords: true
-      streamHash: 80fac38644cf41597dfe7a5aef8c79c19a54c0c7
+      streamHash: 1b0201da1c78918956c2ce3d94852928c7dad00e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     companies:
-      hasRecords: true
-      streamHash: a2e03bf2a0bc011bd697fbea4eb56a60c757d828
+      streamHash: 44d430ecfefd3ca8505da802ceb5eda816037442
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     deals:
-      hasRecords: true
-      streamHash: 9759c5cd023a1c128cd4aae3a473e0497a345889
+      streamHash: 4b0106a1b6900cbb2d3d23691dbfd020c44fe780
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     notes:
-      hasRecords: true
-      streamHash: 7b2442bda04ea8312c15888ca45b86099ff505ef
+      streamHash: d9091a532e9546cefc842868f9c3f56b8c6709b2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    tasks:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
       streamHash: 3541439e84df3b0c998ea7b29de33a05f755df08
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 1bfa15882b66169b19a8e9865b24f0e53869a0f7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     milestone:
       hasRecords: true
       streamHash: c1f2e139ffe24486a32b8d10f39602d8ace0e462
@@ -447,7 +460,7 @@ metadata:
       responsesAreSuccessful: true
     documents:
       hasRecords: true
-      streamHash: 47eaffb88a91fee10ae80921618841cf20cf4136
+      streamHash: 4e6e164f20733a5bc21033827c2292c6bb3c4432
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -460,12 +473,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tickets:
+      hasRecords: true
       streamHash: 44bfa7a5e1c85017b13f4c02d535458b0760216d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://github.com/agilecrm/rest-api
 
@@ -966,17 +979,21 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      apply_discount:
+      description:
         type:
           - string
+          - "null"
+      apply_discount:
+        type:
+          - boolean
           - "null"
       archived:
         type:
-          - string
+          - boolean
           - "null"
       close_date:
         type:
-          - string
+          - number
           - "null"
       colorName:
         type:
@@ -984,65 +1001,69 @@ schemas:
           - "null"
       contact_ids:
         type:
-          - string
+          - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       contacts:
         type:
-          - object
+          - array
           - "null"
-        properties:
+        items:
           type:
-            type:
-              - string
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
+            - object
+            - "null"
           properties:
             type:
-              - array
-              - "null"
-            items:
               type:
-                - object
+                - string
                 - "null"
-              properties:
+            id:
+              type:
+                - number
+                - "null"
+            properties:
+              type:
+                - array
+                - "null"
+              items:
                 type:
+                  - object
+                  - "null"
+                properties:
                   type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
       created_time:
         type:
-          - string
+          - number
           - "null"
       currency_conversion_value:
         type:
-          - string
+          - number
+          - "null"
+      custom_data:
+        type:
+          - array
           - "null"
       deal_source_id:
         type:
-          - string
+          - number
           - "null"
       discount_amt:
         type:
-          - string
+          - number
           - "null"
       discount_type:
         type:
@@ -1050,7 +1071,7 @@ schemas:
           - "null"
       discount_value:
         type:
-          - string
+          - number
           - "null"
       entity_type:
         type:
@@ -1058,17 +1079,17 @@ schemas:
           - "null"
       expected_value:
         type:
-          - string
+          - number
           - "null"
       id:
-        type: string
+        type: number
       isCurrencyUpdateRequired:
         type:
-          - string
+          - boolean
           - "null"
       lost_reason_id:
         type:
-          - string
+          - number
           - "null"
       milestone:
         type:
@@ -1076,7 +1097,7 @@ schemas:
           - "null"
       milestone_changed_time:
         type:
-          - string
+          - number
           - "null"
       name:
         type:
@@ -1084,75 +1105,107 @@ schemas:
           - "null"
       note_created_time:
         type:
-          - string
+          - number
           - "null"
       note_ids:
         type:
-          - string
+          - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       notes:
         type:
-          - object
+          - array
           - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          created_time:
-            type:
-              - string
-              - "null"
-          domainOwner:
-            type:
-              - object
-              - "null"
-            properties:
-              calendar_url:
-                type:
-                  - string
-                  - "null"
-              domain:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              pic:
-                type:
-                  - string
-                  - "null"
-              schedule_id:
-                type:
-                  - string
-                  - "null"
-          entity_type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          subject:
-            type:
-              - string
-              - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            contact_ids:
+              type:
+                - array
+                - "null"
+            contacts:
+              type:
+                - array
+                - "null"
+            created_time:
+              type:
+                - number
+                - "null"
+            deal_ids:
+              type:
+                - array
+                - "null"
+            domainOwner:
+              type:
+                - object
+                - "null"
+              properties:
+                calendarURL:
+                  type:
+                    - string
+                    - "null"
+                calendar_url:
+                  type:
+                    - string
+                    - "null"
+                domain:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+                pic:
+                  type:
+                    - string
+                    - "null"
+                schedule_id:
+                  type:
+                    - string
+                    - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            subject:
+              type:
+                - string
+                - "null"
       owner:
         type:
           - object
           - "null"
         properties:
+          calendarURL:
+            type:
+              - string
+              - "null"
           calendar_url:
             type:
               - string
@@ -1167,9 +1220,13 @@ schemas:
               - "null"
           id:
             type:
-              - string
+              - number
               - "null"
           name:
+            type:
+              - string
+              - "null"
+          phone:
             type:
               - string
               - "null"
@@ -1183,23 +1240,35 @@ schemas:
               - "null"
       pipeline_id:
         type:
-          - string
+          - number
           - "null"
       probability:
         type:
-          - string
+          - number
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tagsWithTime:
+        type:
+          - array
           - "null"
       total_deal_value:
         type:
-          - string
+          - number
           - "null"
       updated_time:
         type:
-          - string
+          - number
           - "null"
       won_date:
         type:
-          - string
+          - number
           - "null"
     required:
       - id
@@ -1492,6 +1561,11 @@ schemas:
           - "null"
     required:
       - id
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
   milestone:
     type: object
     $schema: http://json-schema.org/schema#
