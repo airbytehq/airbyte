@@ -16,7 +16,7 @@ Airbyte connector for [SendPulse](https://sendpulse.com/) allows you to seamless
 | templates | id | No pagination | ✅ |  ❌  |
 | senders | email | No pagination | ✅ |  ❌  |
 | webhooks | id | No pagination | ✅ |  ❌  |
-| balance_details |  | DefaultPaginator | ✅ |  ❌  |
+| balance_details |  | No pagination | ✅ |  ❌  |
 | balance | currency | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -26,6 +26,6 @@ Airbyte connector for [SendPulse](https://sendpulse.com/) allows you to seamless
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
