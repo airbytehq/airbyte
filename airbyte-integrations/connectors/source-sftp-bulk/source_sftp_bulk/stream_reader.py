@@ -79,5 +79,17 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                     )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
+        if not self.use_file_transfer():
+            remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
+        else:
+            remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value, bufsize=262144)
+            # prefetch() works by requesting multiple blocks of data in advance,
+            # rather than waiting for one block to be retrieved before requesting the next.
+            # This is a boost for reading but can cause memory errors, should be removed
+            # when we work on https://github.com/airbytehq/airbyte-internal-issues/issues/10480
+            remote_file.prefetch(remote_file.stat().st_size)
         return remote_file
+
+    def file_size(self, file: RemoteFile):
+        file_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
+        return file_size
