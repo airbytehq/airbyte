@@ -10,8 +10,10 @@ data:
   name: End-to-End Testing (/dev/null)
   registryOverrides:
     cloud:
+      dockerImageTag: 0.7.7
       enabled: true
     oss:
+      dockerImageTag: 0.7.7
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
