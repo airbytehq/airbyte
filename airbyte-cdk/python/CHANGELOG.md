@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.5.2
+bugfix: Ensure that streams with partition router are not executed concurrently
+
 ## 6.5.1
 Add state migration workaround for legacy substreams
 
