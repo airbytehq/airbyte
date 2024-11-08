@@ -1,15 +1,6 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
-
-description: >-
-  An Airbyte connector for [Gist](https://getgist.com/) would enable data
-  syncing between Gist and various data platforms or databases. This connector
-  could pull data from key objects like contacts, tags, segments, campaigns,
-  forms, and subscription types, facilitating integration with other tools in a
-  data pipeline. By automating data extraction from Gist, users can analyze
-  customer interactions and engagement more efficiently in their preferred
-  analytics or storage environment.
 
 check:
   type: CheckStream
@@ -38,11 +29,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -67,15 +64,91 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/collections"
+    articles:
+      type: DeclarativeStream
+      name: articles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /articles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - articles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/articles"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
     tags:
       type: DeclarativeStream
       name: tags
@@ -96,11 +169,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -125,11 +204,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -154,11 +239,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -183,11 +274,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -212,11 +309,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 60
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -241,11 +344,17 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            page_size: 60
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -270,15 +379,53 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ response.get('pages', {}).get('next') is none }}"
+            type: PageIncrement
+            page_size: 60
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/teammates"
+    stores:
+      type: DeclarativeStream
+      name: stores
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ecommerce/stores
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 60
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stores"
   base_requester:
     type: HttpRequester
     url_base: https://api.getgist.com
@@ -289,6 +436,8 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/collections"
+  - $ref: "#/definitions/streams/articles"
+  - $ref: "#/definitions/streams/events"
   - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/segments"
   - $ref: "#/definitions/streams/forms"
@@ -296,6 +445,7 @@ streams:
   - $ref: "#/definitions/streams/subscription_types"
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/teammates"
+  - $ref: "#/definitions/streams/stores"
 
 spec:
   type: Spec
@@ -320,6 +470,8 @@ metadata:
   autoImportSchema:
     contacts: true
     collections: true
+    articles: true
+    events: true
     tags: true
     segments: true
     forms: true
@@ -327,65 +479,87 @@ metadata:
     subscription_types: true
     teams: true
     teammates: true
+    stores: true
   testedStreams:
     contacts:
-      streamHash: 49b9cdb8238e3f2b5dc813c044073a630b773187
+      streamHash: 2e70986deb1d74411b14ad4f0262860580920f03
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     collections:
-      streamHash: 034e8c67b7ec340ad31ba76bd1af0519a191fb78
+      streamHash: f598396d91ba4e9d0307d37f8e111668138e2637
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    articles:
+      streamHash: 780a15f4e999b4b5bd16c5aa00b146c6f796957b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 1a7306b582f339a9e8c5a33efc99205f79de6fdd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags:
-      streamHash: 3411a9921f4a5bccae4e94b5e3100e6fa476782d
+      streamHash: 1ef2f44078ba32b4002ab25203fb9caba870fc07
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     segments:
-      streamHash: 187daf256e669ec49e71b6cd7068376aa9a77bc5
+      streamHash: 42a15ed4cf923d26f9aa3ae8c5bd45e9a8135cce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     forms:
-      streamHash: 857d7d34cfb95312d7ab805f6b4f008a9fc73dc0
+      streamHash: 94fa67c973a5fe1fb3029fe74b34da90ad870aa2
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaigns:
-      streamHash: a433c7562d2dd18b809ba5ac38ae9c3084f87272
+      streamHash: 75bdc1a21039b61d9ee0a0104f4adf6129ba81ae
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     subscription_types:
+      hasRecords: true
       streamHash: 18e3eef2fa47d8b7b2ac87513b20431cf0003230
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
-      streamHash: f3390aa899f54c537fb91b67ca86a2555863dd50
+      streamHash: 039b19ff9ccdbb7f0a96c0050fac55d5f4ca51f9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teammates:
-      streamHash: 4471bfef6156ab7fe71f7935d89d15773bac6398
+      streamHash: f9c5921021ec6e5d733fd4263552ff8f6634f935
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stores:
+      streamHash: be7d949426471ae275d98fc591f92092d0cb9eb0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -431,10 +605,6 @@ schemas:
           - "null"
       id:
         type: number
-      last_name:
-        type:
-          - string
-          - "null"
       last_seen_at:
         type:
           - number
@@ -464,6 +634,19 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       unsubscribed_from_emails:
         type:
           - string
@@ -521,6 +704,16 @@ schemas:
           - "null"
     required:
       - id
+  articles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
   tags:
     type: object
     $schema: http://json-schema.org/schema#
@@ -736,3 +929,12 @@ schemas:
             - "null"
     required:
       - id
+  stores:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ecommerce_stores:
+        type:
+          - array
+          - "null"
