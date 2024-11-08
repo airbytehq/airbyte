@@ -212,9 +212,10 @@ class SourceStripe(ConcurrentSourceAdapter):
             parent=subscriptions,
             extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             slice_data_retriever=lambda record, stream_slice: {
-                "updated": stream_slice["parent"]["updated"],
                 **record,
+                "subscription_updated": stream_slice["parent"]["updated"],
             },
+            cursor_field="subscription_updated",
             use_cache=USE_CACHE,
             sub_items_attr="items",
             event_types=["customer.subscription.created", "customer.subscription.updated"],
@@ -522,6 +523,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="invoice_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
+                cursor_field="invoice_updated",
                 event_types=[
                     "invoice.created",
                     "invoice.deleted",
@@ -533,8 +535,8 @@ class SourceStripe(ConcurrentSourceAdapter):
                 sub_items_attr="lines",
                 slice_data_retriever=lambda record, stream_slice: {
                     "invoice_id": stream_slice["parent"]["id"],
-                    "created": stream_slice["parent"]["created"],
-                    "updated": stream_slice["parent"]["updated"],
+                    "invoice_created": stream_slice["parent"]["created"],
+                    "invoice_updated": stream_slice["parent"]["updated"],
                     **record,
                 },
                 **args,

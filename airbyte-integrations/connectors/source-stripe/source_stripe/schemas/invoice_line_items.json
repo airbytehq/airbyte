@@ -298,11 +298,11 @@
         }
       }
     },
-    "created": {
+    "invoice_created": {
       "description": "Timestamp for when the parent invoice was created",
       "type": ["null", "integer"]
     },
-    "updated": {
+    "invoice_updated": {
       "description": "Timestamp for when the parent invoice was last updated",
       "type": ["null", "integer"]
     }
