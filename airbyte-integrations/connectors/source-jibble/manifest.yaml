@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -15,38 +15,13 @@ check:
 
 definitions:
   streams:
-    groups:
-      type: DeclarativeStream
-      name: groups
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Groups
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - value
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/groups"
     members:
       type: DeclarativeStream
       name: members
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: $skip
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
         requester:
           $ref: "#/definitions/base_requester"
           path: /People
@@ -57,50 +32,18 @@ definitions:
             type: DpathExtractor
             field_path:
               - value
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skip
+          pagination_strategy:
+            type: OffsetIncrement
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/members"
-    schedules:
-      type: DeclarativeStream
-      name: schedules
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Schedules
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - value
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/schedules"
-    activities:
-      type: DeclarativeStream
-      name: activities
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /Activities
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - value
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/activities"
     organizations:
       type: DeclarativeStream
       name: organizations
@@ -120,6 +63,84 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organizations"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    schedules:
+      type: DeclarativeStream
+      name: schedules
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Schedules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schedules"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /Locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
   base_requester:
     type: HttpRequester
     url_base: https://workspace.prod.jibble.io/v1
@@ -139,6 +160,7 @@ streams:
   - $ref: "#/definitions/streams/activities"
   - $ref: "#/definitions/streams/schedules"
   - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/locations"
 
 spec:
   type: Spec
@@ -164,34 +186,17 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: >-
-      https://docs.api.jibble.io/?_gl=1*syn3kw*_gcl_au*NzQyMDQyMDYyLjE3MzAwOTYyNTk.*_ga*MTY3MDgzNjY1NC4xNzMwMDk2MjU5*_ga_GB6MJWXV2B*MTczMDA5NjI1OS4xLjAuMTczMDA5NjI1OS42MC4wLjExMDcwMjI3MzE.#intro
+  autoImportSchema:
+    members: true
+    organizations: true
+    activities: true
+    schedules: true
+    groups: true
+    locations: true
   testedStreams:
-    groups:
-      hasRecords: true
-      streamHash: ee2552075167c7b558e7645498a6b7413c7face8
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     members:
       hasRecords: true
-      streamHash: 67a4db40e2de78ea3dad8b951d2d8f802053fccd
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    schedules:
-      hasRecords: true
-      streamHash: d79ede8730a467134d0f4276825a46295abb05b9
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    activities:
-      hasRecords: true
-      streamHash: 23ab11db3dd676bf786361334922c6a51b4b6a55
+      streamHash: ef45ff5f0afef312985880df4ee144cb169e1b8b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -203,292 +208,49 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    groups: true
-    members: true
-    schedules: true
-    activities: true
-    organizations: true
+    activities:
+      hasRecords: true
+      streamHash: 23ab11db3dd676bf786361334922c6a51b4b6a55
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    schedules:
+      hasRecords: true
+      streamHash: d79ede8730a467134d0f4276825a46295abb05b9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: ee2552075167c7b558e7645498a6b7413c7face8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    locations:
+      hasRecords: true
+      streamHash: 7110a0e71fee869c7fa3aa798855ef50bfd5a8a5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: >-
+      https://docs.api.jibble.io/?_gl=1*syn3kw*_gcl_au*NzQyMDQyMDYyLjE3MzAwOTYyNTk.*_ga*MTY3MDgzNjY1NC4xNzMwMDk2MjU5*_ga_GB6MJWXV2B*MTczMDA5NjI1OS4xLjAuMTczMDA5NjI1OS42MC4wLjExMDcwMjI3MzE.#intro
 
 schemas:
-  groups:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      id:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      kiosks:
-        type:
-          - array
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      managers:
-        type:
-          - array
-          - "null"
-      projects:
-        type:
-          - array
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      workTypes:
-        type:
-          - array
-          - "null"
-      activities:
-        type:
-          - array
-          - "null"
-      "@odata.etag":
-        type:
-          - string
-          - "null"
-      firstApprovers:
-        type:
-          - array
-          - "null"
-      organizationId:
-        type:
-          - string
-          - "null"
-      secondApprovers:
-        type:
-          - array
-          - "null"
-      unitTimeOffPolicies:
-        type:
-          - array
-          - "null"
-      overriddenProperties:
-        type:
-          - array
-          - "null"
-      IGeneralTimeSettings/Preset:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/AllowedDevices:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      IScreenshotStorageSettings/Resolution:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/IsOfflineAllowed:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsSelfieRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/DeviceLockEnabled:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsProjectRequired:
-        type:
-          - boolean
-          - "null"
-      IScreenshotSettings/IsScreenshotRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsActivityRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsLocationRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/VerificationMethod:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/TrackLocationActivity:
-        type:
-          - boolean
-          - "null"
-      IReminderSettings/NotifyAboutTimeClockAlerts:
-        type:
-          - boolean
-          - "null"
-      IReminderSettings/NotifyAboutApprovalRequests:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsManualLocationAllowed:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsAreaRestrictionEnabled:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsEditTimeEntriesAllowed:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/UnusualBehaviourReaction:
-        type:
-          - string
-          - "null"
-      IReminderSettings/NotifyAboutSuspiciousActivity:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludeRestDays:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/AllowedDevices@odata.type:
-        type:
-          - string
-          - "null"
-      IReminderSettings/NotifyAboutTimeEntryAdjustments:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
-        type:
-          - boolean
-          - "null"
-      IReminderSettings/NotifyAboutSuspiciousLocationActivity:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/EnableAutomationByGeofence:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
   members:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      code:
-        type:
-          - string
-          - "null"
-      role:
-        type:
-          - string
-          - "null"
-      email:
-        type:
-          - string
-          - "null"
-      kiosks:
-        type:
-          - array
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      userId:
-        type:
-          - string
-          - "null"
-      pinCode:
-        type:
-          - string
-          - "null"
-      fullName:
-        type:
-          - string
-          - "null"
-      joinDate:
-        type:
-          - string
-          - "null"
-      managers:
-        type:
-          - array
-          - "null"
-      projects:
-        type:
-          - array
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      workTypes:
-        type:
-          - array
-          - "null"
       "@odata.etag":
         type:
           - string
           - "null"
-      managedUnits:
-        type:
-          - array
-          - "null"
-      hasEmbeddings:
-        type:
-          - boolean
-          - "null"
-      preferredName:
-        type:
-          - string
-          - "null"
-      workStartDate:
-        type:
-          - string
-          - "null"
-      organizationId:
-        type:
-          - string
-          - "null"
-      unitTimeOffPolicies:
-        type:
-          - array
-          - "null"
-      overriddenProperties:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      IFormatSettings/Units:
+      ICalculationSettings/TimeSheetTimeZone:
         type:
           - string
           - "null"
@@ -496,15 +258,27 @@ schemas:
         type:
           - string
           - "null"
-      IFormatSettings/TimeFormat:
-        type:
-          - string
-          - "null"
       IFaceDataSettings/Embeddings:
         type:
           - array
           - "null"
+      IFaceDataSettings/Embeddings@odata.type:
+        type:
+          - string
+          - "null"
       IFormatSettings/DurationFormat:
+        type:
+          - string
+          - "null"
+      IFormatSettings/TimeFormat:
+        type:
+          - string
+          - "null"
+      IFormatSettings/Units:
+        type:
+          - string
+          - "null"
+      ILocalizationSettings/CultureCode:
         type:
           - string
           - "null"
@@ -512,37 +286,9 @@ schemas:
         type:
           - boolean
           - "null"
-      ILocalizationSettings/CultureCode:
-        type:
-          - string
-          - "null"
       IPersonSetting/OnboardingInProgress:
         type:
           - boolean
-          - "null"
-      IReportNotificationSettings/Channels:
-        type:
-          - array
-          - "null"
-      ITimeTrackingSettings/AllowedDevices:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      IReportSettings/YourWeeklyActivityDay:
-        type:
-          - string
-          - "null"
-      IScreenshotStorageSettings/Resolution:
-        type:
-          - string
-          - "null"
-      ICalculationSettings/TimeSheetTimeZone:
-        type:
-          - string
           - "null"
       IReminderNotificationSettings/Channels:
         type:
@@ -552,43 +298,19 @@ schemas:
           type:
             - string
             - "null"
-      ITimeTrackingSettings/IsOfflineAllowed:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsSelfieRequired:
-        type:
-          - boolean
-          - "null"
-      IFaceDataSettings/Embeddings@odata.type:
+      IReminderNotificationSettings/Channels@odata.type:
         type:
           - string
           - "null"
-      ITimeTrackingSettings/DeviceLockEnabled:
+      IReminderSettings/NotifyAboutApprovalRequests:
         type:
           - boolean
           - "null"
-      ITimeTrackingSettings/IsProjectRequired:
+      IReminderSettings/NotifyAboutSuspiciousActivity:
         type:
           - boolean
           - "null"
-      IScreenshotSettings/IsScreenshotRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsActivityRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsLocationRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/VerificationMethod:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/TrackLocationActivity:
+      IReminderSettings/NotifyAboutSuspiciousLocationActivity:
         type:
           - boolean
           - "null"
@@ -596,11 +318,71 @@ schemas:
         type:
           - boolean
           - "null"
-      IReminderSettings/NotifyAboutApprovalRequests:
+      IReminderSettings/NotifyAboutTimeEntryAdjustments:
         type:
           - boolean
           - "null"
-      ITimeTrackingSettings/IsManualLocationAllowed:
+      IReportNotificationSettings/Channels:
+        type:
+          - array
+          - "null"
+      IReportNotificationSettings/Channels@odata.type:
+        type:
+          - string
+          - "null"
+      IReportNotificationSettings/LongReportExportThresholdInSec:
+        type:
+          - number
+          - "null"
+      IReportSettings/YourWeeklyActivityDay:
+        type:
+          - string
+          - "null"
+      IScreenshotSettings/IsScreenshotRequired:
+        type:
+          - boolean
+          - "null"
+      IScreenshotStorageSettings/Resolution:
+        type:
+          - string
+          - "null"
+      ITimeOffNotificationSettings/NotifyAboutMyTimeOffRequests:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/EnableAutomationByGeofence:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeRestDays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/AllowedDevices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ITimeTrackingSettings/AllowedDevices@odata.type:
+        type:
+          - string
+          - "null"
+      ITimeTrackingSettings/DeviceLockEnabled:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsActivityRequired:
         type:
           - boolean
           - "null"
@@ -612,39 +394,272 @@ schemas:
         type:
           - boolean
           - "null"
+      ITimeTrackingSettings/IsLocationRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsManualLocationAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsOfflineAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsProjectRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsSelfieRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/TrackLocationActivity:
+        type:
+          - boolean
+          - "null"
       ITimeTrackingSettings/UnusualBehaviourReaction:
         type:
           - string
           - "null"
+      ITimeTrackingSettings/VerificationMethod:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      fullName:
+        type:
+          - string
+          - "null"
+      groupId:
+        type:
+          - string
+          - "null"
+      hasEmbeddings:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      joinDate:
+        type:
+          - string
+          - "null"
+      kiosks:
+        type:
+          - array
+          - "null"
+      managedUnits:
+        type:
+          - array
+          - "null"
+      managers:
+        type:
+          - array
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      overriddenProperties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      pinCode:
+        type:
+          - string
+          - "null"
+      preferredName:
+        type:
+          - string
+          - "null"
+      projects:
+        type:
+          - array
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unitTimeOffPolicies:
+        type:
+          - array
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      workStartDate:
+        type:
+          - string
+          - "null"
+      workTypes:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      ICalculationSettings/TimeSheetTimeZone:
+        type:
+          - string
+          - "null"
+      IClientBillingSettings/CurrencyCode:
+        type:
+          - string
+          - "null"
+      ICultureSettings/TimeZone:
+        type:
+          - string
+          - "null"
+      IExportSettings/PayrollPandaFormatEnabled:
+        type:
+          - boolean
+          - "null"
+      IFaceRecognitionSettings/Version:
+        type:
+          - string
+          - "null"
+      IFormatSettings/DurationFormat:
+        type:
+          - string
+          - "null"
+      IFormatSettings/TimeFormat:
+        type:
+          - string
+          - "null"
+      IFormatSettings/Units:
+        type:
+          - string
+          - "null"
+      IGeneralTimeSettings/Preset:
+        type:
+          - string
+          - "null"
+      ILocalizationSettings/CultureCode:
+        type:
+          - string
+          - "null"
+      IOnboardingProgress/Activities:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/Completed:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/Kiosk:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/Locations:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/OrganizationProfile:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/People:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/Skipped:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/TimeTrackingRules:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/WelcomePresented:
+        type:
+          - boolean
+          - "null"
+      IOnboardingProgress/WorkSchedule:
+        type:
+          - boolean
+          - "null"
+      IOnboardingSettings/CompanySize:
+        type:
+          - string
+          - "null"
+      IOnboardingSettings/Industry:
+        type:
+          - string
+          - "null"
+      IOnboardingSettings/Objectives:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      IOnboardingSettings/Objectives@odata.type:
+        type:
+          - string
+          - "null"
+      IOnboardingSettings/Referer:
+        type:
+          - string
+          - "null"
+      IOrganizationProfileSettings/CountryCode:
+        type:
+          - string
+          - "null"
+      IOrganizationProfileSettings/FirstDayOfWeek:
+        type:
+          - string
+          - "null"
+      IOrganizationProfileSettings/FirstMonth:
+        type:
+          - string
+          - "null"
+      IOrganizationProfileSettings/PhoneNumber:
+        type:
+          - string
+          - "null"
+      IOrganizationProfileSettings/RoundClockTimes:
+        type:
+          - string
+          - "null"
+      IReminderSettings/NotifyAboutApprovalRequests:
+        type:
+          - boolean
+          - "null"
       IReminderSettings/NotifyAboutSuspiciousActivity:
-        type:
-          - boolean
-          - "null"
-      IReportNotificationSettings/Channels@odata.type:
-        type:
-          - string
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludeRestDays:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/AllowedDevices@odata.type:
-        type:
-          - string
-          - "null"
-      IReminderNotificationSettings/Channels@odata.type:
-        type:
-          - string
-          - "null"
-      IReminderSettings/NotifyAboutTimeEntryAdjustments:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
         type:
           - boolean
           - "null"
@@ -652,23 +667,106 @@ schemas:
         type:
           - boolean
           - "null"
-      ITimeOffNotificationSettings/NotifyAboutMyTimeOffRequests:
+      IReminderSettings/NotifyAboutTimeClockAlerts:
         type:
           - boolean
           - "null"
-      IReportNotificationSettings/LongReportExportThresholdInSec:
+      IReminderSettings/NotifyAboutTimeEntryAdjustments:
         type:
-          - number
+          - boolean
+          - "null"
+      IScreenshotSettings/IsScreenshotRequired:
+        type:
+          - boolean
+          - "null"
+      IScreenshotStorageSettings/Resolution:
+        type:
+          - string
+          - "null"
+      ISubscriptionSettings/TrialStarted:
+        type:
+          - boolean
           - "null"
       ITimeTrackingAutomationSettings/EnableAutomationByGeofence:
         type:
           - boolean
           - "null"
-    additionalProperties: true
-  schedules:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
+      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeRestDays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/AllowedDevices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ITimeTrackingSettings/AllowedDevices@odata.type:
+        type:
+          - string
+          - "null"
+      ITimeTrackingSettings/DeviceLockEnabled:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsActivityRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsAreaRestrictionEnabled:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsEditTimeEntriesAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsLocationRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsManualLocationAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsOfflineAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsProjectRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsSelfieRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/TrackLocationActivity:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/UnusualBehaviourReaction:
+        type:
+          - string
+          - "null"
+      ITimeTrackingSettings/VerificationMethod:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       id:
         type:
           - string
@@ -677,64 +775,85 @@ schemas:
         type:
           - string
           - "null"
-      breaks:
-        type:
-          - array
-          - "null"
-      default:
-        type:
-          - boolean
-          - "null"
-      overtime:
-        type:
-          - object
-          - "null"
-        properties:
-          endWorkDayAt:
-            type:
-              - string
-              - "null"
-          dailyOvertime:
-            type:
-              - boolean
-              - "null"
-          timeRangeStyle:
-            type:
-              - string
-              - "null"
-          weeklyOvertime:
-            type:
-              - boolean
-              - "null"
-          restDayOvertime:
-            type:
-              - boolean
-              - "null"
-          dailyDoubleOvertime:
-            type:
-              - boolean
-              - "null"
-          publicHolidayOvertime:
-            type:
-              - boolean
-              - "null"
-      createdAt:
+      status:
         type:
           - string
-          - "null"
-      locations:
-        type:
-          - array
           - "null"
       updatedAt:
         type:
           - string
           - "null"
-      breaksType:
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
         type:
           - string
           - "null"
       "@odata.etag":
+        type:
+          - string
+          - "null"
+      assignedGroups:
+        type:
+          - array
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+  schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      autoDeductions:
+        type:
+          - array
+          - "null"
+      breaks:
+        type:
+          - array
+          - "null"
+      breaksType:
+        type:
+          - string
+          - "null"
+      createdAt:
         type:
           - string
           - "null"
@@ -747,15 +866,7 @@ schemas:
             - object
             - "null"
           properties:
-            to:
-              type:
-                - string
-                - "null"
             day:
-              type:
-                - string
-                - "null"
-            from:
               type:
                 - string
                 - "null"
@@ -763,11 +874,72 @@ schemas:
               type:
                 - string
                 - "null"
-      autoDeductions:
+            from:
+              type:
+                - string
+                - "null"
+            to:
+              type:
+                - string
+                - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      excludeEarlyClockIn:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      locations:
         type:
           - array
           - "null"
+      name:
+        type:
+          - string
+          - "null"
       organizationId:
+        type:
+          - string
+          - "null"
+      overtime:
+        type:
+          - object
+          - "null"
+        properties:
+          dailyDoubleOvertime:
+            type:
+              - boolean
+              - "null"
+          dailyOvertime:
+            type:
+              - boolean
+              - "null"
+          endWorkDayAt:
+            type:
+              - string
+              - "null"
+          publicHolidayOvertime:
+            type:
+              - boolean
+              - "null"
+          restDayOvertime:
+            type:
+              - boolean
+              - "null"
+          timeRangeStyle:
+            type:
+              - string
+              - "null"
+          weeklyOvertime:
+            type:
+              - boolean
+              - "null"
+      updatedAt:
         type:
           - string
           - "null"
@@ -775,173 +947,60 @@ schemas:
         type:
           - string
           - "null"
-      excludeEarlyClockIn:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
-  activities:
+  groups:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
-      id:
-        type:
-          - string
-          - "null"
-      code:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      color:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
       "@odata.etag":
         type:
           - string
-          - "null"
-      assignedGroups:
-        type:
-          - array
-          - "null"
-      organizationId:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  organizations:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      id:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      createdAt:
-        type:
-          - string
-          - "null"
-      updatedAt:
-        type:
-          - string
-          - "null"
-      "@odata.etag":
-        type:
-          - string
-          - "null"
-      IFormatSettings/Units:
-        type:
-          - string
-          - "null"
-      ICultureSettings/TimeZone:
-        type:
-          - string
-          - "null"
-      IOnboardingProgress/Kiosk:
-        type:
-          - boolean
-          - "null"
-      IFormatSettings/TimeFormat:
-        type:
-          - string
-          - "null"
-      IOnboardingProgress/People:
-        type:
-          - boolean
           - "null"
       IGeneralTimeSettings/Preset:
         type:
           - string
           - "null"
-      IOnboardingProgress/Skipped:
+      IReminderSettings/NotifyAboutApprovalRequests:
         type:
           - boolean
           - "null"
-      IOnboardingSettings/Referer:
-        type:
-          - string
-          - "null"
-      IOnboardingSettings/Industry:
-        type:
-          - string
-          - "null"
-      IOnboardingProgress/Completed:
+      IReminderSettings/NotifyAboutSuspiciousActivity:
         type:
           - boolean
           - "null"
-      IOnboardingProgress/Locations:
+      IReminderSettings/NotifyAboutSuspiciousLocationActivity:
         type:
           - boolean
           - "null"
-      IFormatSettings/DurationFormat:
-        type:
-          - string
-          - "null"
-      IOnboardingProgress/Activities:
+      IReminderSettings/NotifyAboutTimeClockAlerts:
         type:
           - boolean
           - "null"
-      IOnboardingSettings/Objectives:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      IOnboardingSettings/CompanySize:
-        type:
-          - string
-          - "null"
-      IFaceRecognitionSettings/Version:
-        type:
-          - string
-          - "null"
-      IOnboardingProgress/WorkSchedule:
+      IReminderSettings/NotifyAboutTimeEntryAdjustments:
         type:
           - boolean
           - "null"
-      ILocalizationSettings/CultureCode:
-        type:
-          - string
-          - "null"
-      ISubscriptionSettings/TrialStarted:
+      IScreenshotSettings/IsScreenshotRequired:
         type:
           - boolean
           - "null"
-      IClientBillingSettings/CurrencyCode:
+      IScreenshotStorageSettings/Resolution:
         type:
           - string
           - "null"
-      IOnboardingProgress/WelcomePresented:
+      ITimeTrackingAutomationSettings/EnableAutomationByGeofence:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeRestDays:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
         type:
           - boolean
           - "null"
@@ -953,31 +1012,7 @@ schemas:
           type:
             - string
             - "null"
-      IOnboardingProgress/TimeTrackingRules:
-        type:
-          - boolean
-          - "null"
-      IScreenshotStorageSettings/Resolution:
-        type:
-          - string
-          - "null"
-      ICalculationSettings/TimeSheetTimeZone:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/IsOfflineAllowed:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsSelfieRequired:
-        type:
-          - boolean
-          - "null"
-      IOnboardingProgress/OrganizationProfile:
-        type:
-          - boolean
-          - "null"
-      IOrganizationProfileSettings/FirstMonth:
+      ITimeTrackingSettings/AllowedDevices@odata.type:
         type:
           - string
           - "null"
@@ -985,63 +1020,7 @@ schemas:
         type:
           - boolean
           - "null"
-      ITimeTrackingSettings/IsProjectRequired:
-        type:
-          - boolean
-          - "null"
-      IOrganizationProfileSettings/CountryCode:
-        type:
-          - string
-          - "null"
-      IOrganizationProfileSettings/PhoneNumber:
-        type:
-          - string
-          - "null"
-      IScreenshotSettings/IsScreenshotRequired:
-        type:
-          - boolean
-          - "null"
       ITimeTrackingSettings/IsActivityRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsLocationRequired:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/VerificationMethod:
-        type:
-          - string
-          - "null"
-      IExportSettings/PayrollPandaFormatEnabled:
-        type:
-          - boolean
-          - "null"
-      IOnboardingSettings/Objectives@odata.type:
-        type:
-          - string
-          - "null"
-      IOrganizationProfileSettings/FirstDayOfWeek:
-        type:
-          - string
-          - "null"
-      ITimeTrackingSettings/TrackLocationActivity:
-        type:
-          - boolean
-          - "null"
-      IOrganizationProfileSettings/RoundClockTimes:
-        type:
-          - string
-          - "null"
-      IReminderSettings/NotifyAboutTimeClockAlerts:
-        type:
-          - boolean
-          - "null"
-      IReminderSettings/NotifyAboutApprovalRequests:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/IsManualLocationAllowed:
         type:
           - boolean
           - "null"
@@ -1053,40 +1032,149 @@ schemas:
         type:
           - boolean
           - "null"
+      ITimeTrackingSettings/IsLocationRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsManualLocationAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsOfflineAllowed:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsProjectRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/IsSelfieRequired:
+        type:
+          - boolean
+          - "null"
+      ITimeTrackingSettings/TrackLocationActivity:
+        type:
+          - boolean
+          - "null"
       ITimeTrackingSettings/UnusualBehaviourReaction:
         type:
           - string
           - "null"
-      IReminderSettings/NotifyAboutSuspiciousActivity:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingAutomationSettings/ExcludeRestDays:
-        type:
-          - boolean
-          - "null"
-      ITimeTrackingSettings/AllowedDevices@odata.type:
+      ITimeTrackingSettings/VerificationMethod:
         type:
           - string
           - "null"
-      IReminderSettings/NotifyAboutTimeEntryAdjustments:
+      activities:
         type:
-          - boolean
+          - array
           - "null"
-      ITimeTrackingAutomationSettings/ExcludeTimeOffDays:
+      createdAt:
         type:
-          - boolean
+          - string
           - "null"
-      ITimeTrackingAutomationSettings/ExcludePublicHolidays:
+      firstApprovers:
         type:
-          - boolean
+          - array
           - "null"
-      IReminderSettings/NotifyAboutSuspiciousLocationActivity:
+      id:
         type:
-          - boolean
+          - string
           - "null"
-      ITimeTrackingAutomationSettings/EnableAutomationByGeofence:
+      kiosks:
         type:
-          - boolean
+          - array
           - "null"
+      managers:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      overriddenProperties:
+        type:
+          - array
+          - "null"
+      projects:
+        type:
+          - array
+          - "null"
+      secondApprovers:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      unitTimeOffPolicies:
+        type:
+          - array
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      workTypes:
+        type:
+          - array
+          - "null"
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      "@odata.etag":
+        type:
+          - string
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      schedules:
+        type:
+          - array
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+    required:
+      - id

@@ -16,6 +16,7 @@ Jibble connector  enables seamless integration between Jibble&#39;s time-trackin
 | activities |  | No pagination | ✅ |  ❌  |
 | schedules |  | No pagination | ✅ |  ❌  |
 | groups |  | No pagination | ✅ |  ❌  |
+| locations | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -24,6 +25,6 @@ Jibble connector  enables seamless integration between Jibble&#39;s time-trackin
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-28 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
