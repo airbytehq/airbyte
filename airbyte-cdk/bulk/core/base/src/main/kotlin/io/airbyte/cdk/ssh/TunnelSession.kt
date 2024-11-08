@@ -62,7 +62,8 @@ fun createTunnelSession(
         log.info { "Creating SSH client session." }
         val connectFuture: ConnectFuture =
             when (sshTunnel) {
-                SshNoTunnelMethod, null -> TODO("unreachable code")
+                SshNoTunnelMethod,
+                null -> TODO("unreachable code")
                 is SshKeyAuthTunnelMethod ->
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
                 is SshPasswordAuthTunnelMethod ->
