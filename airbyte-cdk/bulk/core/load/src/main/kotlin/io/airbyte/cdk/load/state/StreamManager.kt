@@ -140,9 +140,9 @@ class DefaultStreamManager(
     }
 
     override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
-        val stateRanges =
-            rangesState[batch.batch.state]
-                ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
+
+        rangesState[batch.batch.state]
+            ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
         // Force the ranges to overlap at their endpoints, in order to work around
         // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
@@ -152,8 +152,21 @@ class DefaultStreamManager(
         val expanded =
             batch.ranges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
 
-        stateRanges.addAll(expanded)
-        log.info { "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $stateRanges" }
+        when (batch.batch.state) {
+            Batch.State.PERSISTED -> {
+                rangesState[Batch.State.PERSISTED]?.addAll(expanded)
+            }
+            Batch.State.COMPLETE -> {
+                // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
+                rangesState[Batch.State.PERSISTED]?.addAll(expanded)
+                rangesState[Batch.State.COMPLETE]?.addAll(expanded)
+            }
+            else -> Unit
+        }
+
+        log.info {
+            "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $expanded. PERSISTED is also updated on COMPLETE."
+        }
     }
 
     /** True if all records in `[0, index)` have reached the given state. */
@@ -172,10 +185,8 @@ class DefaultStreamManager(
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 
-    /** TODO: Handle conflating PERSISTED w/ COMPLETE upstream, to allow for overlap? */
     override fun areRecordsPersistedUntil(index: Long): Boolean {
-        return isProcessingCompleteForState(index, Batch.State.PERSISTED) ||
-            isProcessingCompleteForState(index, Batch.State.COMPLETE) // complete => persisted
+        return isProcessingCompleteForState(index, Batch.State.PERSISTED)
     }
 
     override fun markSucceeded() {
