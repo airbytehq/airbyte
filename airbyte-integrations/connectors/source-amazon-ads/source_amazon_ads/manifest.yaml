@@ -374,8 +374,7 @@ definitions:
             Accept: application/vnd.sbcampaignresource.v4+json
             Content-Type: application/vnd.sbcampaignresource.v4+json
           request_body_json:
-            stateFilter:
-              include: "{{ ','.join(config['state_filter']) }}"
+            stateFilter: " {{ {'include': ','.join(config['state_filter'])} if config['state_filter'] else None }} "
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -471,8 +470,7 @@ definitions:
             Accept: application/vnd.spCampaign.v3+json
             Content-Type: application/vnd.spCampaign.v3+json
           request_body_json:
-            stateFilter:
-              include: "{{ ','.join(config['state_filter']) }}"
+            stateFilter: " {{ {'include': ','.join(config['state_filter'])} if config['state_filter'] else None }} "
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:

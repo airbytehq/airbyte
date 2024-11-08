@@ -29,10 +29,6 @@ _DEFAULT_REQUEST_BODY = json.dumps({
     "maxResults": 100
 })
 
-_DEFAULT_REQUEST_BODY_SPONSORED_BRANDS_CAMPAIGNS = json.dumps({
-                "stateFilter": {}, "maxResults": 100
-            })
-
 def _a_record(stream_name: str, data_field: str, record_id_path: str) -> RecordBuilder:
     return create_record_builder(
         find_template(stream_name, __file__),
@@ -165,7 +161,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         non_breaking_error = ErrorRecordBuilder.non_breaking_error()
         http_mocker.post(
             SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"],
-                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY_SPONSORED_BRANDS_CAMPAIGNS).build(),
+                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
             ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
         )
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
@@ -184,7 +180,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         breaking_error = ErrorRecordBuilder.breaking_error()
         http_mocker.post(
             SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"],
-                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY_SPONSORED_BRANDS_CAMPAIGNS).build(),
+                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
             ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build()
         )
         with patch('time.sleep', return_value=None):
@@ -206,7 +202,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         record_id_path = "campaignId"
 
         http_mocker.post(
-            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY_SPONSORED_BRANDS_CAMPAIGNS).build(),
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
             _a_response(stream_name, data_field, None).with_record(_a_record(stream_name, data_field, record_id_path)).build()
         )
 
@@ -225,7 +221,6 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         pagination_strategy = SponsoredCursorBasedPaginationStrategy()
 
         paginated_request_body = json.dumps({
-            "stateFilter": {},
             "nextToken": "next-page-token",
             "maxResults": 100
         })
@@ -234,7 +229,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         http_mocker.post(
             SponsoredBrandsRequestBuilder.campaigns_endpoint(self._config["client_id"], self._config["access_token"],
-                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY_SPONSORED_BRANDS_CAMPAIGNS).build(),
+                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
             _a_response(stream_name, data_field, pagination_strategy).with_record(_a_record(stream_name, data_field, record_id_path)).with_pagination().build()
         )
         http_mocker.post(
