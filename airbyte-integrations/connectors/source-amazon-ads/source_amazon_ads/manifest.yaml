@@ -1184,8 +1184,12 @@ streams:
   - $ref: "#/definitions/streams/sponsored_product_ad_group_bid_recommendations"
   - $ref: "#/definitions/streams/sponsored_product_ad_group_suggested_keywords"
 
-  # TODO: add attribution report streams
   - $ref: "#/definitions/streams/attribution_report_products"
   - $ref: "#/definitions/streams/attribution_report_performance_adgroup"
   - $ref: "#/definitions/streams/attribution_report_performance_campaign"
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
+
+# TODO: change concurrency after migration of async based reports
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
