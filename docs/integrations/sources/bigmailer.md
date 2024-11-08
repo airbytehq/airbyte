@@ -19,7 +19,7 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 | bulk_campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | transactional_campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | suppression_lists |  | DefaultPaginator | ✅ |  ❌  |
-| users | id | No pagination | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -28,6 +28,6 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

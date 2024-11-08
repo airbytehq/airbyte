@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -40,8 +40,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
       schema_loader:
@@ -71,8 +76,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -110,8 +120,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -149,8 +164,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -188,8 +208,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -227,8 +252,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -266,8 +296,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -305,8 +340,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -342,8 +382,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
+            page_size: 100
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('has_more', False) }}"
         partition_router:
@@ -375,6 +420,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('cursor', '') }}"
+            stop_condition: "{{ not response.get('has_more', False) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -435,71 +495,71 @@ metadata:
     users: true
   testedStreams:
     brands:
-      streamHash: 89d36e52ee8088566a7db5645b815d9549d65b47
+      streamHash: 55c29f943e68dc5dff935fe26623f131fb4f4eb6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 0b82e717c2cab0394489599baf038739f85b42d4
+      streamHash: a6822ab2e7c5a5da030ad2d1aa45907a7d2072bb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     lists:
-      streamHash: e0deb033378f320925e942dfff54ca0d238a9b90
+      streamHash: b896f46fb8da0aa924e9b14e63d78e0b16ede7c0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     fields:
-      streamHash: 8acdefbf7ea2d0afebc629192134c1d961307735
+      streamHash: d8ee861c6ca035d717e3b809957174336876c5fa
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     message-types:
-      streamHash: 847ed7dd42f306ca78c754eaf260d5a629a45cfc
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: e83fee5a4acef42f947ae6b5959e7c87b025bcb2
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     segments:
-      streamHash: 1c37cfd89f42030aaf86b8c00eafe240b26b7751
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a5bfb006da5f17e9d66ed11846f380d8ba54e16e
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     bulk_campaigns:
-      streamHash: 0589209b0f986d4851979364205db51737f390cf
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: e6b6776d2575c2c3bb6438e2c6af2c23c092fad1
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     transactional_campaigns:
-      streamHash: 1bc7519e66f036227779c8b5147a59ca03e7b975
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 0eeefd74a73a84f929d9c06696eda5b8c5c9f26a
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     suppression_lists:
-      streamHash: 6df25bc2592b474fcdb936183e925889280ee6d9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: db2854f007e416bd229cf0ed400d912bdfd5fb80
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
       hasRecords: true
-      streamHash: 5d9cf14a9582d6f82bbfea8de3ff599dfd914db4
+      streamHash: 43d2365a28f857145e25f2af5c7e2e6d6ea39a32
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
