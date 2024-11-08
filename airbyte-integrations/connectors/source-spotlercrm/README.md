@@ -1,7 +1,7 @@
 # SpotlerCRM
 This directory contains the manifest-only connector for `source-spotlercrm`.
 
-The Airbyte connector for Spotler CRM enables seamless data integration, allowing users to sync customer data from Spotler CRM into their data warehouses or other tools. It supports automated data extraction from Spotler CRM, making it easier to analyze and leverage customer insights across multiple platforms. With this connector, businesses can efficiently streamline their customer relationship data and maintain up-to-date records for improved decision-making and marketing efforts.
+The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless data integration, allowing users to sync customer data from Spotler CRM into their data warehouses or other tools. It supports automated data extraction from Spotler CRM, making it easier to analyze and leverage customer insights across multiple platforms. With this connector, businesses can efficiently streamline their customer relationship data and maintain up-to-date records for improved decision-making and marketing efforts.
 
 ## Usage
 There are multiple ways to use this connector:

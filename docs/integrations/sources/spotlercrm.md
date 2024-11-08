@@ -1,5 +1,5 @@
 # SpotlerCRM
-The Airbyte connector for Spotler CRM enables seamless data integration, allowing users to sync customer data from Spotler CRM into their data warehouses or other tools. It supports automated data extraction from Spotler CRM, making it easier to analyze and leverage customer insights across multiple platforms. With this connector, businesses can efficiently streamline their customer relationship data and maintain up-to-date records for improved decision-making and marketing efforts.
+The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless data integration, allowing users to sync customer data from Spotler CRM into their data warehouses or other tools. It supports automated data extraction from Spotler CRM, making it easier to analyze and leverage customer insights across multiple platforms. With this connector, businesses can efficiently streamline their customer relationship data and maintain up-to-date records for improved decision-making and marketing efforts.
 
 ## Configuration
 
@@ -12,13 +12,13 @@ The Airbyte connector for Spotler CRM enables seamless data integration, allowin
 |-------------|-------------|------------|---------------------|----------------------|
 | accounts | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | DefaultPaginator | ✅ |  ❌  |
-| opportunities | id | No pagination | ✅ |  ❌  |
+| opportunities | id | DefaultPaginator | ✅ |  ❌  |
 | documents |  | DefaultPaginator | ✅ |  ❌  |
 | campaigns | id | DefaultPaginator | ✅ |  ❌  |
 |  cases | id | DefaultPaginator | ✅ |  ❌  |
 | activities | id | DefaultPaginator | ✅ |  ❌  |
-| opportunity_histories | id | No pagination | ✅ |  ❌  |
-| opportunity_lines | id | No pagination | ✅ |  ❌  |
+| opportunity_histories | id | DefaultPaginator | ✅ |  ❌  |
+| opportunity_lines | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -27,6 +27,6 @@ The Airbyte connector for Spotler CRM enables seamless data integration, allowin
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-03 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

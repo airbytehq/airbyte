@@ -1,15 +1,15 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
 description: >-
-  The Airbyte connector for Spotler CRM enables seamless data integration,
-  allowing users to sync customer data from Spotler CRM into their data
-  warehouses or other tools. It supports automated data extraction from Spotler
-  CRM, making it easier to analyze and leverage customer insights across
-  multiple platforms. With this connector, businesses can efficiently streamline
-  their customer relationship data and maintain up-to-date records for improved
-  decision-making and marketing efforts.
+  The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless
+  data integration, allowing users to sync customer data from Spotler CRM into
+  their data warehouses or other tools. It supports automated data extraction
+  from Spotler CRM, making it easier to analyze and leverage customer insights
+  across multiple platforms. With this connector, businesses can efficiently
+  streamline their customer relationship data and maintain up-to-date records
+  for improved decision-making and marketing efforts.
 
 check:
   type: CheckStream
@@ -43,8 +43,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
+            start_from_page: 1
             page_size: 100
       schema_loader:
         type: InlineSchemaLoader
@@ -75,10 +80,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -103,6 +112,20 @@ definitions:
               - list
               - "*"
               - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -130,10 +153,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -164,10 +191,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -198,10 +229,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -232,10 +267,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: PageIncrement
-            page_size: 100
             start_from_page: 1
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -260,6 +299,20 @@ definitions:
               - list
               - "*"
               - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -283,6 +336,20 @@ definitions:
               - list
               - "*"
               - record
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -330,71 +397,71 @@ metadata:
     accounts: true
     contacts: false
     opportunities: false
-    documents: false
-    campaigns: false
-    " cases": false
-    activities: false
-    opportunity_histories: false
-    opportunity_lines: false
+    documents: true
+    campaigns: true
+    " cases": true
+    activities: true
+    opportunity_histories: true
+    opportunity_lines: true
   testedStreams:
     accounts:
-      hasRecords: true
-      streamHash: 8cf6133ee10f23aee5e684db5986a02666b58b5d
+      streamHash: 228e48ed130b9347bbe207f40fc5e69cf803658c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     contacts:
-      hasRecords: true
-      streamHash: e562a5a2d1577a4ad54079f474cd8c98e11f2b80
+      streamHash: 4b40d70440c4fb24646635e55db0e9b932d50520
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     opportunities:
-      hasRecords: true
-      streamHash: 2bd59a79b061c0a23d81dc2ee9ce365222012ebb
+      streamHash: 63348e089a396613fc2a32f9bebcee6d644c7949
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     documents:
-      hasRecords: true
-      streamHash: 76e5c7032ea6ec3c9a1827326f86740037c2c18c
+      streamHash: a6a65a975319144846413cc54a1bfee75b2f112c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     campaigns:
-      hasRecords: true
-      streamHash: 80addee359ceb099ee66d3623dcf27c61ae08256
+      streamHash: 2416e1340a7d1f01da2fef06bf5f90525632e820
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     " cases":
-      hasRecords: true
-      streamHash: c62048aa1aecd16f955ba5cdf6d70e14a6b7e56d
+      streamHash: 68481fbb96d90a65d9b2fc8fdaa06cc06485899b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     activities:
-      hasRecords: true
-      streamHash: 3a163d3ba256991e04ee28ba2926cc2f2e551326
+      streamHash: d651211072bd9a8f413d7bd4645ef294fe2f2115
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     opportunity_histories:
-      streamHash: 586a81d5561b88bc533e830095216c5b4feea858
+      streamHash: 058ddbd93020908110d973c15e3da1161f4ba1b4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     opportunity_lines:
-      streamHash: e240e898c8bd85b4b8a074a378d184b41951b7e1
+      streamHash: 20e98bbf72fc0e49eab8ee812677571b6312b7b1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -487,13 +554,92 @@ schemas:
       - id
   contacts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
+    properties:
+      accountid:
+        type:
+          - number
+          - "null"
+      addresscity:
+        type:
+          - string
+          - "null"
+      addresscountry:
+        type:
+          - string
+          - "null"
+      addresscounty/state:
+        type:
+          - string
+          - "null"
+      addresspostcode/zip:
+        type:
+          - string
+          - "null"
+      createdby:
+        type:
+          - number
+          - "null"
+      createddate:
+        type:
+          - string
+          - "null"
+      decisionmaker:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first:
+        type:
+          - string
+          - "null"
+      hold:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      jobtitle:
+        type:
+          - string
+          - "null"
+      last:
+        type:
+          - string
+          - "null"
+      leadscore:
+        type:
+          - number
+          - "null"
+      middle:
+        type:
+          - string
+          - "null"
+      modifiedby:
+        type:
+          - number
+          - "null"
+      modifieddate:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      salutation:
+        type:
+          - string
+          - "null"
+    required:
+      - id
     additionalProperties: true
-    properties: {}
   opportunities:
     type: object
     $schema: http://json-schema.org/schema#
-    additionalProperties: true
     properties:
       accountid:
         type:
@@ -551,11 +697,40 @@ schemas:
           - "null"
     required:
       - id
+    additionalProperties: true
   documents:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      createdby:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      modifiedby:
+        type:
+          - number
+          - "null"
+      opportunityid:
+        type:
+          - number
+          - "null"
+      product:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      unitprice:
+        type:
+          - number
+          - "null"
   campaigns:
     type: object
     $schema: http://json-schema.org/schema#
@@ -706,6 +881,7 @@ schemas:
   opportunity_histories:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       closedate:
         type:
@@ -739,10 +915,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   opportunity_lines:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       createdby:
         type:
@@ -772,4 +948,3 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
