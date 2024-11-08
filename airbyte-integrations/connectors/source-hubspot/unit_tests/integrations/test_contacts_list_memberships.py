@@ -6,7 +6,7 @@ from unittest import TestCase
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
