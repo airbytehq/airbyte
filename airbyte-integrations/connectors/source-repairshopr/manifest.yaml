@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -20,6 +20,8 @@ definitions:
     appointment types:
       type: DeclarativeStream
       name: appointment types
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -32,16 +34,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - appointment_types
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -63,6 +55,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - appointments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,6 +86,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - assets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -431,14 +443,14 @@ definitions:
           $ref: "#/schemas/tickets"
   base_requester:
     type: HttpRequester
-    url_base: https://airhx.repairshopr.com/api/v1/
+    url_base: https://{{ config['subdomain'] }}.repairshopr.com/api/v1/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: Authorization
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/appointment types"
@@ -463,12 +475,17 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - subdomain
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
+      subdomain:
+        type: string
+        title: subdomain
+        order: 1
     additionalProperties: true
 
 metadata:
@@ -489,98 +506,98 @@ metadata:
     tickets: true
   testedStreams:
     appointment types:
-      streamHash: 8c74d5b91b49a00a4fd3ccc1c3549b53b2e383ee
+      streamHash: 9bd524cc4dec30ae9e0026d0a319906a1f104d22
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     appointments:
-      streamHash: 5f25c73a7e7d3b9ff334b37f47f1a8260c002dec
+      streamHash: 660796a6de6114f11bc3c833bd779ba5e1f3a771
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customer assets:
-      streamHash: 2e0c207dd845f4836cb23e37108c5afc5a6bc419
+      streamHash: 58d5d6723004c6aebc2695a6c53347925a79de1a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: cf0b83dfe7fd48d8ae7a37299346fe368ef798c4
+      streamHash: 6523837fc9e9204e11daeb17ca0c4c1e6022af48
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contracts:
-      streamHash: 68d58cd34f5e119ff61a93a9e11a23bb246ea6a2
+      streamHash: 993bdf7daa2bd1f1432fc1d12391de91ac70cad4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customers:
-      streamHash: 528ac24ae824b3a2b8f69e38c6a1189cf897a751
+      streamHash: ffff51cb1124e6aecf0cfb9f9e6a48e6a942a792
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     estimates:
-      streamHash: abce447f30ef87b0a3c1151f980f8d213e7fe6ca
+      streamHash: 6432c3ec23ae8bd8fa2a256ce7b2e7270284c4a2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     invoices:
-      streamHash: cd94ebf3b0dca1c2e88f2a2bfef01f8a9d1200b2
+      streamHash: 7605e6bf794b79ae578cdf72884bb414bd5728cf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     items:
-      streamHash: 505b1c5ccae301f3180d82d2524d1730ac9b646e
+      streamHash: 04ac1d3ee76b42c5dc0cec48939997e3a3881419
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     line items:
-      streamHash: 120af5d5055c7e7f02255f635a68cf0dfbb7cd8d
+      streamHash: f7a8f45509fcb692f708e03fe8b8eeb18aada5d5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leads:
-      streamHash: f7f4a184db982dad10df3b0a34b6feaa59ac5e68
+      streamHash: bd61222bca09f154bc2537c02b63bd8294c8a906
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     payments:
-      streamHash: 7826a9b230e5e6def11c460e4120e17da59977c6
+      streamHash: 191598f1f67454557dc9c6a0c724428d77c06ebc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
-      streamHash: 26eb4cc49707f45d5892557dc68bd31964b1549c
+      streamHash: 571aa7b8a3919b9fc116b803ed6ef1b95beaaf16
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tickets:
-      streamHash: 0b70bd98b28e7860984afd9ff139d84973818037
+      streamHash: 8ce78432e0fdfa48d0468fc650faa2fbc5ffd0f4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -607,9 +624,7 @@ schemas:
           - string
           - "null"
       id:
-        type:
-          - number
-          - "null"
+        type: number
       location_hard_code:
         type:
           - string
@@ -626,6 +641,8 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - id
   appointments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -796,6 +813,10 @@ schemas:
             type:
               - string
               - "null"
+          child:
+            type:
+              - boolean
+              - "null"
           comments:
             type:
               - array
@@ -861,6 +882,10 @@ schemas:
             type:
               - number
               - "null"
+          customer_reply:
+            type:
+              - boolean
+              - "null"
           due_date:
             type:
               - string
@@ -873,6 +898,10 @@ schemas:
             type:
               - number
               - "null"
+          parent:
+            type:
+              - boolean
+              - "null"
           priority:
             type:
               - string
@@ -884,6 +913,10 @@ schemas:
           properties:
             type:
               - object
+              - "null"
+          recurring:
+            type:
+              - boolean
               - "null"
           status:
             type:
@@ -1783,6 +1816,10 @@ schemas:
           - "null"
       id:
         type: number
+      invoice_id:
+        type:
+          - number
+          - "null"
       logistic_state:
         type:
           - string
@@ -1864,6 +1901,10 @@ schemas:
           - "null"
       id:
         type: number
+      invoice_id:
+        type:
+          - number
+          - "null"
       item:
         type:
           - string
@@ -2386,6 +2427,10 @@ schemas:
         type:
           - string
           - "null"
+      child:
+        type:
+          - boolean
+          - "null"
       comments:
         type:
           - array
@@ -2451,6 +2496,10 @@ schemas:
         type:
           - number
           - "null"
+      customer_reply:
+        type:
+          - boolean
+          - "null"
       due_date:
         type:
           - string
@@ -2460,6 +2509,10 @@ schemas:
       number:
         type:
           - number
+          - "null"
+      parent:
+        type:
+          - boolean
           - "null"
       priority:
         type:
@@ -2472,6 +2525,10 @@ schemas:
       properties:
         type:
           - object
+          - "null"
+      recurring:
+        type:
+          - boolean
           - "null"
       status:
         type:

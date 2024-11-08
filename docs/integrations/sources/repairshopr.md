@@ -8,13 +8,14 @@ Docs : https://api-docs.repairshopr.com/#/
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
+| `subdomain` | `string` | subdomain.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| appointment types |  | DefaultPaginator | ✅ |  ❌  |
-| appointments | id | No pagination | ✅ |  ❌  |
-| customer assets | id | No pagination | ✅ |  ❌  |
+| appointment types | id | No pagination | ✅ |  ❌  |
+| appointments | id | DefaultPaginator | ✅ |  ❌  |
+| customer assets | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | DefaultPaginator | ✅ |  ❌  |
 | contracts | id | DefaultPaginator | ✅ |  ❌  |
 | customers | id | DefaultPaginator | ✅ |  ❌  |
@@ -34,6 +35,6 @@ Docs : https://api-docs.repairshopr.com/#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-29 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
