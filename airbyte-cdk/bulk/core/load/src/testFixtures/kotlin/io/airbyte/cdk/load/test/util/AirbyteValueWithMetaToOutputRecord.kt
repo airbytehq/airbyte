@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
 class AirbyteValueWithMetaToOutputRecord {
     fun convert(value: ObjectValue): OutputRecord {
@@ -58,6 +59,19 @@ class AirbyteValueWithMetaToOutputRecord {
                 )
         )
     }
+}
+
+fun AirbyteValue.maybeUnflatten(wasFlattened: Boolean): ObjectValue {
+    this as ObjectValue
+    if (!wasFlattened) {
+        return this
+    }
+    val (meta, data) =
+        this.values.toList().partition { DestinationRecord.Meta.COLUMN_NAMES.contains(it.first) }
+    val properties = LinkedHashMap(meta.toMap())
+    val dataObject = ObjectValue(LinkedHashMap(data.toMap()))
+    properties[DestinationRecord.Meta.COLUMN_NAME_DATA] = dataObject
+    return ObjectValue(properties)
 }
 
 fun AirbyteValue.toOutputRecord(): OutputRecord {

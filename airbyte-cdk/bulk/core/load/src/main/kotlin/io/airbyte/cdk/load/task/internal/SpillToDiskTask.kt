@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.message.StreamCompleteWrapped
+import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.Reserved
@@ -70,7 +70,7 @@ class DefaultSpillToDiskTask(
                                         flushStrategy.shouldFlush(stream, nextRange, nextSize)
                                     ReadResult(nextRange, nextSize, forceFlush = forceFlush)
                                 }
-                                is StreamCompleteWrapped -> {
+                                is StreamRecordCompleteWrapped -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
                                     ReadResult(nextRange, sizeBytes, hasReadEndOfStream = true)
                                 }

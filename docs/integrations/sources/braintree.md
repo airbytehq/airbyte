@@ -72,6 +72,7 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.21 | 2024-11-04 | [48212](https://github.com/airbytehq/airbyte/pull/48212) | Update dependencies |
 | 0.3.20 | 2024-10-21 | [47062](https://github.com/airbytehq/airbyte/pull/47062) | Update dependencies |
 | 0.3.19 | 2024-10-12 | [46849](https://github.com/airbytehq/airbyte/pull/46849) | Update dependencies |
 | 0.3.18 | 2024-10-05 | [46496](https://github.com/airbytehq/airbyte/pull/46496) | Update dependencies |
