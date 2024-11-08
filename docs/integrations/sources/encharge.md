@@ -1,5 +1,5 @@
 # Encharge
-The Airbyte connector for [Encharge](https://encharge.io/) enables seamless data integration between Encharge and your data warehouse or other destinations. With this connector, you can easily sync marketing automation data from Encharge. This allows for improved data-driven decision-making and enhanced marketing insights across platforms.
+Airbyte connector for [Encharge](https://encharge.io/) enables seamless data integration between Encharge and your data warehouse or other destinations. With this connector, you can easily sync marketing automation data from Encharge. This allows for improved data-driven decision-making and enhanced marketing insights across platforms.
 
 ## Configuration
 
@@ -11,11 +11,11 @@ The Airbyte connector for [Encharge](https://encharge.io/) enables seamless data
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | peoples | id | DefaultPaginator | ✅ |  ❌  |
-| accounts | accountId | DefaultPaginator | ✅ |  ❌  |
-| account_tags | tag | DefaultPaginator | ✅ |  ❌  |
+| accounts | accountId | No pagination | ✅ |  ❌  |
+| account_tags | tag | No pagination | ✅ |  ❌  |
 | segments | id | DefaultPaginator | ✅ |  ❌  |
-| fields | name | DefaultPaginator | ✅ |  ❌  |
-| schemas | name | DefaultPaginator | ✅ |  ❌  |
+| fields | name | No pagination | ✅ |  ❌  |
+| schemas | name | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -24,6 +24,6 @@ The Airbyte connector for [Encharge](https://encharge.io/) enables seamless data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
