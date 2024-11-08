@@ -270,7 +270,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "updated"
+      cursor_field: "{{ parameters.get('cursor_field') }}"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -306,7 +306,7 @@ definitions:
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
       path: "events"
-      cursor_field: "updated"
+      cursor_field: "datetime"
 
   # Schemas
   shared:
