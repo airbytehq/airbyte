@@ -1,7 +1,7 @@
 # Nutshell
 Nutshell is a CRM tool.
 Using this connector we can extract data from various streams such as contacts , events , products and pipelines.
-Docs : https://developers.nutshell.com/docs/getting-started
+[API Docs](https://developers.nutshell.com/docs/getting-started)
 
 ## Configuration
 
