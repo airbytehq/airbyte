@@ -130,20 +130,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - segments
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -169,6 +155,55 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/fields"
+    segment_people:
+      type: DeclarativeStream
+      name: segment_people
+      primary_key:
+        - segment_id
+        - email
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /segments/{{stream_slice.segment_id}}/people
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - people
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: segment_id
+              stream:
+                $ref: "#/definitions/streams/segments"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - segment_id
+              value: "{{ stream_slice.segment_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segment_people"
   base_requester:
     type: HttpRequester
     url_base: https://api.encharge.io/v1
@@ -187,6 +222,7 @@ streams:
   - $ref: "#/definitions/streams/segments"
   - $ref: "#/definitions/streams/fields"
   - $ref: "#/definitions/streams/schemas"
+  - $ref: "#/definitions/streams/segment_people"
 
 spec:
   type: Spec
@@ -213,44 +249,52 @@ metadata:
     account_tags: false
     segments: false
     fields: false
+    segment_people: false
   testedStreams:
     schemas:
+      hasRecords: true
       streamHash: 2074d3133d41c0aa4162fd878f2409a7bb37010b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     peoples:
-      hasRecords: true
       streamHash: f5365e1e91ec221739d2de544e1f8c84dd95bfa6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    accounts:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts:
       streamHash: cf3f394bd38e4640fff11e118da37623a42e80ca
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    account_tags:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account_tags:
       streamHash: 3290e0bc8f1a8b6d2b7e30d5206e462f7d94a2e2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    segments:
       hasRecords: true
-      streamHash: 40c4454205fd55a0ae93a068cf0fcb995a49a507
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    segments:
+      streamHash: 2302fba784ef1e1fdb5fc043f10fc48bb1668661
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    fields:
+      hasRecords: true
+      streamHash: 931e9e1ae101d51b53ac8a8884ca0330b25d2731
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    fields:
-      streamHash: 931e9e1ae101d51b53ac8a8884ca0330b25d2731
+    segment_people:
+      streamHash: 8bce993bbb51c880b2ed1c99d3023a1c9081e8f3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -263,6 +307,7 @@ schemas:
   schemas:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       associations:
         type:
@@ -382,7 +427,6 @@ schemas:
             - "null"
     required:
       - name
-    additionalProperties: true
   peoples:
     type: object
     $schema: http://json-schema.org/schema#
@@ -742,6 +786,7 @@ schemas:
   fields:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       type:
         type:
@@ -803,4 +848,8 @@ schemas:
           - "null"
     required:
       - name
+  segment_people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
+    properties: {}
