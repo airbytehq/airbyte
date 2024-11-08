@@ -1,8 +1,15 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.h2source
 
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.CdcStringMetaFieldType
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
@@ -52,6 +59,7 @@ import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
@@ -61,12 +69,39 @@ import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.sql.JDBCType
+import java.time.OffsetDateTime
 
 /** Stateless connector-specific logic for [H2Source]. */
 @Singleton
 @Requires(env = [Environment.TEST])
 @Secondary
-class H2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class H2SourceOperations :
+    JdbcMetadataQuerier.FieldTypeMapper,
+    SelectQueryGenerator,
+    JdbcAirbyteStreamFactory,
+    MetaFieldDecorator {
+
+    data object H2GlobalCursor : MetaField {
+        override val id: String = "_ab_cdc_fake_cursor"
+        override val type: FieldType = CdcStringMetaFieldType
+    }
+
+    override val globalCursor: MetaField = H2GlobalCursor
+
+    override val globalMetaFields: Set<MetaField> =
+        setOf(H2GlobalCursor, CommonMetaField.CDC_UPDATED_AT, CommonMetaField.CDC_DELETED_AT)
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {
+        recordData.putNull(H2GlobalCursor.id)
+        recordData.putNull(CommonMetaField.CDC_UPDATED_AT.id)
+        recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
+    }
+
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
