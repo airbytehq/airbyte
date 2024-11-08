@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 5.16.0
 
 type: DeclarativeSource
 
@@ -276,6 +276,26 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/employee_agreements"
+    employee:
+      type: DeclarativeStream
+      name: employee
+      primary_key:
+        - Id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/resource/Employee
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employee"
   base_requester:
     type: HttpRequester
     url_base: "{{ config[\"base_url\"] }}"
@@ -296,6 +316,7 @@ streams:
   - $ref: "#/definitions/streams/comments"
   - $ref: "#/definitions/streams/company_periods"
   - $ref: "#/definitions/streams/employee_agreements"
+  - $ref: "#/definitions/streams/employee"
 
 spec:
   type: Spec
@@ -332,6 +353,7 @@ metadata:
     comments: true
     company_periods: true
     employee_agreements: true
+    employee: true
   testedStreams:
     locations:
       hasRecords: true
@@ -341,12 +363,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     employees:
-      hasRecords: true
       streamHash: 7a7c2909cbbd0443d5465c2575bac45cbd6e669a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     award_lists:
       hasRecords: true
       streamHash: 227bf7d420b60c1c7c77ba995a36504548658c4e
@@ -362,12 +384,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     timesheets:
+      hasRecords: true
       streamHash: 9fb385d3bd75b9e488326143df36cde35822fd47
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tasks:
       hasRecords: true
       streamHash: 1a07fa7312a790952e191b42d6536f50bbcbc83d
@@ -390,28 +412,35 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     categories:
+      hasRecords: true
       streamHash: 8868489ef8e3fe57a9fa39c246b6bd5039665919
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     comments:
+      hasRecords: true
       streamHash: 9d23f04869592fd2677fbc0831ba4e9459a00e4e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     company_periods:
+      hasRecords: true
       streamHash: 3a77170b7f6f6874d5a9a5c0e3b3b58f6d549a0a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     employee_agreements:
+      hasRecords: true
       streamHash: 0b0f62833706ce6891347513c900b9e9830556d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employee:
+      streamHash: c7b8e61416e2bac7ee41e43a918d945081e92356
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -2528,6 +2557,121 @@ schemas:
       StartDate:
         type:
           - string
+          - "null"
+      _DPMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CreatorInfo:
+            type:
+              - object
+              - "null"
+            properties:
+              DisplayName:
+                type:
+                  - string
+                  - "null"
+              Employee:
+                type:
+                  - number
+                  - "null"
+              EmployeeProfile:
+                type:
+                  - number
+                  - "null"
+              Id:
+                type:
+                  - number
+                  - "null"
+              Photo:
+                type:
+                  - string
+                  - "null"
+              Pronouns:
+                type:
+                  - number
+                  - "null"
+          System:
+            type:
+              - string
+              - "null"
+    required:
+      - Id
+  employee:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Active:
+        type:
+          - boolean
+          - "null"
+      AllowAppraisal:
+        type:
+          - boolean
+          - "null"
+      Company:
+        type:
+          - number
+          - "null"
+      Contact:
+        type:
+          - number
+          - "null"
+      Created:
+        type:
+          - string
+          - "null"
+      Creator:
+        type:
+          - number
+          - "null"
+      DisplayName:
+        type:
+          - string
+          - "null"
+      FirstName:
+        type:
+          - string
+          - "null"
+      HistoryId:
+        type:
+          - number
+          - "null"
+      Id:
+        type: number
+      LastName:
+        type:
+          - string
+          - "null"
+      Modified:
+        type:
+          - string
+          - "null"
+      Photo:
+        type:
+          - number
+          - "null"
+      Pronouns:
+        type:
+          - number
+          - "null"
+      Role:
+        type:
+          - number
+          - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      StressProfile:
+        type:
+          - number
+          - "null"
+      UserId:
+        type:
+          - number
           - "null"
       _DPMetaData:
         type:
