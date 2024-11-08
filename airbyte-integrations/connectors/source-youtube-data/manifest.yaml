@@ -2,7 +2,10 @@ version: 6.4.0
 
 type: DeclarativeSource
 
-description: Youtube Data
+description: >-
+  The YouTube Data API v3 is an API that provides access to YouTube data, such as videos, playlists, channels, comments and simple stats.
+  This is a simpler version of Youtube connector, if you need more detailed reports from your channel please check
+  the [Youtube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics)
 
 check:
   type: CheckStream
@@ -14,6 +17,8 @@ definitions:
     video:
       type: DeclarativeStream
       name: video
+      primary_key:
+        - videoId
       retriever:
         type: SimpleRetriever
         requester:
@@ -21,13 +26,15 @@ definitions:
           path: videos
           http_method: GET
           request_parameters:
-            id: "{{config['video_id']}}"
-            part: snippet,contentDetails
+            part: snippet,contentDetails,statistics
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - items
+              - "*"
+              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -38,6 +45,29 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: videoId
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/videos"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - datetime
+              value: "{{ now_utc() }}"
+        - type: AddFields
+          fields:
+            - path:
+                - videoId
+              value: "{{ stream_slice.id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -54,7 +84,6 @@ definitions:
           path: channels
           http_method: GET
           request_parameters:
-            id: "{{config['channel_id']}}"
             part: snippet,contentDetails,statistics
         record_selector:
           type: RecordSelector
@@ -62,6 +91,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+              - "*"
+              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -72,6 +103,20 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.channel_ids }}"
+          cursor_field: channel_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: id
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ stream_partition.channel_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -87,47 +132,98 @@ definitions:
           http_method: GET
           request_parameters:
             part: snippet,replies
-            videoId: "{{config['video_id']}}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageToken
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('nextPageToken', '') }}"
-            stop_condition: "{{ response.get('nextPageToken') is none }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/comments"
-    popularvideos:
-      type: DeclarativeStream
-      name: popularvideos
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: videos
-          http_method: GET
-          request_parameters:
-            part: snippet,contentDetails,statistics
-            chart: mostPopular
-            regionCode: "{{config['region_code']}}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - items
+              - "*"
+              - snippet
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken', '') }}"
+            stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: videoId
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: videoId
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/videos"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    videos:
+      type: DeclarativeStream
+      name: videos
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: search
+          http_method: GET
+          request_parameters:
+            channelId: "{{ config.channel_ids }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+              - "*"
+              - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: maxResults
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.nextPageToken }}"
+            stop_condition: "{{ not response.get('nextPageToken') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos"
+    channel_comments:
+      type: DeclarativeStream
+      name: channel_comments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commentThreads
+          http_method: GET
+          request_parameters:
+            part: snippet,replies
+            allThreadsRelatedToChannelId: "{{ config.channel_ids }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+              - "*"
+              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -141,7 +237,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/popularvideos"
+          $ref: "#/schemas/channel_comments"
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
@@ -157,7 +253,8 @@ streams:
   - $ref: "#/definitions/streams/video"
   - $ref: "#/definitions/streams/channels"
   - $ref: "#/definitions/streams/comments"
-  - $ref: "#/definitions/streams/popularvideos"
+  - $ref: "#/definitions/streams/videos"
+  - $ref: "#/definitions/streams/channel_comments"
 
 spec:
   type: Spec
@@ -166,27 +263,17 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - video_id
-      - channel_id
-      - region_code
+      - channel_ids
     properties:
       api_key:
         type: string
         order: 0
         title: API Key
         airbyte_secret: true
-      video_id:
-        type: string
+      channel_ids:
+        type: array
         order: 1
-        title: video_id
-      channel_id:
-        type: string
-        order: 2
-        title: channel_id
-      region_code:
-        type: string
-        order: 3
-        title: region_code
+        title: Channel IDs
     additionalProperties: true
 
 metadata:
@@ -194,36 +281,44 @@ metadata:
     video: true
     channels: false
     comments: true
-    popularvideos: false
+    videos: true
+    channel_comments: true
   testedStreams:
     video:
-      hasRecords: true
-      streamHash: a0be22283dbcf0e7e354312a9f6eb94eefbbb2c7
+      streamHash: a3f8831f5f8a0ca3efed0972cab191cc181d2b4e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     channels:
-      hasRecords: true
-      streamHash: eb2642cbb3401c9573d7703e776cc25e728890cc
+      streamHash: 343ca32364dc855bd2f38aa2eb633c05100b5fd1
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     comments:
-      hasRecords: true
-      streamHash: 42673432bd12c4642e62a84a8899687cf615df5b
+      streamHash: 8d2176a881a0bca19e00ec1d0cfe70a823e4de85
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    popularvideos:
       hasRecords: true
-      streamHash: 63f51c5ec7e8bd993e314068b50c718670552e8b
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    videos:
+      streamHash: 9f29c51ff5dbe597fbbd7ebfab42300eb29860f8
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    channel_comments:
+      streamHash: 958a9f915e04312572380361e2b97c730c37ad29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://developers.google.com/youtube/v3/guides/implementation
 
@@ -233,242 +328,161 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      etag:
+      description:
         type:
           - string
           - "null"
-      items:
+      categoryId:
+        type:
+          - string
+          - "null"
+      channelId:
+        type:
+          - string
+          - "null"
+      channelTitle:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      defaultAudioLanguage:
+        type:
+          - string
+          - "null"
+      defaultLanguage:
+        type:
+          - string
+          - "null"
+      liveBroadcastContent:
+        type:
+          - string
+          - "null"
+      localized:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      publishedAt:
+        type:
+          - string
+          - "null"
+      tags:
         type:
           - array
           - "null"
         items:
           type:
-            - object
+            - string
             - "null"
-          properties:
-            contentDetails:
-              type:
-                - object
-                - "null"
-              properties:
-                caption:
-                  type:
-                    - string
-                    - "null"
-                contentRating:
-                  type:
-                    - object
-                    - "null"
-                definition:
-                  type:
-                    - string
-                    - "null"
-                dimension:
-                  type:
-                    - string
-                    - "null"
-                duration:
-                  type:
-                    - string
-                    - "null"
-                licensedContent:
-                  type:
-                    - boolean
-                    - "null"
-                projection:
-                  type:
-                    - string
-                    - "null"
-                regionRestriction:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    blocked:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-            etag:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            kind:
-              type:
-                - string
-                - "null"
-            snippet:
-              type:
-                - object
-                - "null"
-              properties:
-                description:
-                  type:
-                    - string
-                    - "null"
-                categoryId:
-                  type:
-                    - string
-                    - "null"
-                channelId:
-                  type:
-                    - string
-                    - "null"
-                channelTitle:
-                  type:
-                    - string
-                    - "null"
-                defaultAudioLanguage:
-                  type:
-                    - string
-                    - "null"
-                liveBroadcastContent:
-                  type:
-                    - string
-                    - "null"
-                localized:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    description:
-                      type:
-                        - string
-                        - "null"
-                    title:
-                      type:
-                        - string
-                        - "null"
-                publishedAt:
-                  type:
-                    - string
-                    - "null"
-                tags:
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - string
-                      - "null"
-                thumbnails:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    default:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        height:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        width:
-                          type:
-                            - number
-                            - "null"
-                    high:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        height:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        width:
-                          type:
-                            - number
-                            - "null"
-                    maxres:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        height:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        width:
-                          type:
-                            - number
-                            - "null"
-                    medium:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        height:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        width:
-                          type:
-                            - number
-                            - "null"
-                    standard:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        height:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        width:
-                          type:
-                            - number
-                            - "null"
-                title:
-                  type:
-                    - string
-                    - "null"
-      kind:
-        type:
-          - string
-          - "null"
-      pageInfo:
+      thumbnails:
         type:
           - object
           - "null"
         properties:
-          resultsPerPage:
+          default:
             type:
-              - number
+              - object
               - "null"
-          totalResults:
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          high:
             type:
-              - number
+              - object
               - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          maxres:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          medium:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+          standard:
+            type:
+              - object
+              - "null"
+            properties:
+              height:
+                type:
+                  - number
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+      title:
+        type:
+          - string
+          - "null"
+      videoId:
+        type: string
+    required:
+      - videoId
   channels:
     type: object
     $schema: http://json-schema.org/schema#
@@ -624,489 +638,219 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      etag:
+      canReply:
+        type:
+          - boolean
+          - "null"
+      channelId:
         type:
           - string
           - "null"
-      items:
+      isPublic:
         type:
-          - array
+          - boolean
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            etag:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            kind:
-              type:
-                - string
-                - "null"
-            replies:
-              type:
-                - object
-                - "null"
-              properties:
-                comments:
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      etag:
-                        type:
-                          - string
-                          - "null"
-                      id:
-                        type:
-                          - string
-                          - "null"
-                      kind:
-                        type:
-                          - string
-                          - "null"
-                      snippet:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          authorChannelId:
-                            type:
-                              - object
-                              - "null"
-                            properties:
-                              value:
-                                type:
-                                  - string
-                                  - "null"
-                          authorChannelUrl:
-                            type:
-                              - string
-                              - "null"
-                          authorDisplayName:
-                            type:
-                              - string
-                              - "null"
-                          authorProfileImageUrl:
-                            type:
-                              - string
-                              - "null"
-                          canRate:
-                            type:
-                              - boolean
-                              - "null"
-                          channelId:
-                            type:
-                              - string
-                              - "null"
-                          likeCount:
-                            type:
-                              - number
-                              - "null"
-                          parentId:
-                            type:
-                              - string
-                              - "null"
-                          publishedAt:
-                            type:
-                              - string
-                              - "null"
-                          textDisplay:
-                            type:
-                              - string
-                              - "null"
-                          textOriginal:
-                            type:
-                              - string
-                              - "null"
-                          updatedAt:
-                            type:
-                              - string
-                              - "null"
-                          videoId:
-                            type:
-                              - string
-                              - "null"
-                          viewerRating:
-                            type:
-                              - string
-                              - "null"
-            snippet:
-              type:
-                - object
-                - "null"
-              properties:
-                canReply:
-                  type:
-                    - boolean
-                    - "null"
-                channelId:
-                  type:
-                    - string
-                    - "null"
-                isPublic:
-                  type:
-                    - boolean
-                    - "null"
-                topLevelComment:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    etag:
-                      type:
-                        - string
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    kind:
-                      type:
-                        - string
-                        - "null"
-                    snippet:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        authorChannelId:
-                          type:
-                            - object
-                            - "null"
-                          properties:
-                            value:
-                              type:
-                                - string
-                                - "null"
-                        authorChannelUrl:
-                          type:
-                            - string
-                            - "null"
-                        authorDisplayName:
-                          type:
-                            - string
-                            - "null"
-                        authorProfileImageUrl:
-                          type:
-                            - string
-                            - "null"
-                        canRate:
-                          type:
-                            - boolean
-                            - "null"
-                        channelId:
-                          type:
-                            - string
-                            - "null"
-                        likeCount:
-                          type:
-                            - number
-                            - "null"
-                        publishedAt:
-                          type:
-                            - string
-                            - "null"
-                        textDisplay:
-                          type:
-                            - string
-                            - "null"
-                        textOriginal:
-                          type:
-                            - string
-                            - "null"
-                        updatedAt:
-                          type:
-                            - string
-                            - "null"
-                        videoId:
-                          type:
-                            - string
-                            - "null"
-                        viewerRating:
-                          type:
-                            - string
-                            - "null"
-                totalReplyCount:
-                  type:
-                    - number
-                    - "null"
-                videoId:
-                  type:
-                    - string
-                    - "null"
-      kind:
-        type:
-          - string
-          - "null"
-      nextPageToken:
-        type:
-          - string
-          - "null"
-      pageInfo:
+      topLevelComment:
         type:
           - object
           - "null"
         properties:
-          resultsPerPage:
+          etag:
             type:
-              - number
+              - string
               - "null"
-          totalResults:
+          id:
             type:
-              - number
+              - string
               - "null"
-  popularvideos:
+          kind:
+            type:
+              - string
+              - "null"
+          snippet:
+            type:
+              - object
+              - "null"
+            properties:
+              authorChannelId:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  value:
+                    type:
+                      - string
+                      - "null"
+              authorChannelUrl:
+                type:
+                  - string
+                  - "null"
+              authorDisplayName:
+                type:
+                  - string
+                  - "null"
+              authorProfileImageUrl:
+                type:
+                  - string
+                  - "null"
+              canRate:
+                type:
+                  - boolean
+                  - "null"
+              channelId:
+                type:
+                  - string
+                  - "null"
+              likeCount:
+                type:
+                  - number
+                  - "null"
+              publishedAt:
+                type:
+                  - string
+                  - "null"
+              textDisplay:
+                type:
+                  - string
+                  - "null"
+              textOriginal:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              videoId:
+                type:
+                  - string
+                  - "null"
+              viewerRating:
+                type:
+                  - string
+                  - "null"
+      totalReplyCount:
+        type:
+          - number
+          - "null"
+      videoId:
+        type:
+          - string
+          - "null"
+  videos:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      contentDetails:
-        type:
-          - object
-          - "null"
-        properties:
-          caption:
-            type:
-              - string
-              - "null"
-          contentRating:
-            type:
-              - object
-              - "null"
-          definition:
-            type:
-              - string
-              - "null"
-          dimension:
-            type:
-              - string
-              - "null"
-          duration:
-            type:
-              - string
-              - "null"
-          licensedContent:
-            type:
-              - boolean
-              - "null"
-          projection:
-            type:
-              - string
-              - "null"
-          regionRestriction:
-            type:
-              - object
-              - "null"
-            properties:
-              allowed:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-              blocked:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
-      etag:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
       kind:
         type:
           - string
           - "null"
-      snippet:
+      videoId:
+        type:
+          - string
+          - "null"
+  channel_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      canReply:
+        type:
+          - boolean
+          - "null"
+      channelId:
+        type:
+          - string
+          - "null"
+      isPublic:
+        type:
+          - boolean
+          - "null"
+      topLevelComment:
         type:
           - object
           - "null"
         properties:
-          description:
+          etag:
             type:
               - string
               - "null"
-          categoryId:
+          id:
             type:
               - string
               - "null"
-          channelId:
+          kind:
             type:
               - string
               - "null"
-          channelTitle:
-            type:
-              - string
-              - "null"
-          defaultAudioLanguage:
-            type:
-              - string
-              - "null"
-          defaultLanguage:
-            type:
-              - string
-              - "null"
-          liveBroadcastContent:
-            type:
-              - string
-              - "null"
-          localized:
+          snippet:
             type:
               - object
               - "null"
             properties:
-              description:
+              authorChannelId:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  value:
+                    type:
+                      - string
+                      - "null"
+              authorChannelUrl:
                 type:
                   - string
                   - "null"
-              title:
+              authorDisplayName:
                 type:
                   - string
                   - "null"
-          publishedAt:
-            type:
-              - string
-              - "null"
-          tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          thumbnails:
-            type:
-              - object
-              - "null"
-            properties:
-              default:
+              authorProfileImageUrl:
                 type:
-                  - object
+                  - string
                   - "null"
-                properties:
-                  height:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-              high:
+              canRate:
                 type:
-                  - object
+                  - boolean
                   - "null"
-                properties:
-                  height:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-              maxres:
+              channelId:
                 type:
-                  - object
+                  - string
                   - "null"
-                properties:
-                  height:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-              medium:
+              likeCount:
                 type:
-                  - object
+                  - number
                   - "null"
-                properties:
-                  height:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-              standard:
+              publishedAt:
                 type:
-                  - object
+                  - string
                   - "null"
-                properties:
-                  height:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-          title:
-            type:
-              - string
-              - "null"
-      statistics:
+              textDisplay:
+                type:
+                  - string
+                  - "null"
+              textOriginal:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              videoId:
+                type:
+                  - string
+                  - "null"
+              viewerRating:
+                type:
+                  - string
+                  - "null"
+      totalReplyCount:
         type:
-          - object
+          - number
           - "null"
-        properties:
-          commentCount:
-            type:
-              - string
-              - "null"
-          favoriteCount:
-            type:
-              - string
-              - "null"
-          likeCount:
-            type:
-              - string
-              - "null"
-          viewCount:
-            type:
-              - string
-              - "null"
-    required:
-      - id
+      videoId:
+        type:
+          - string
+          - "null"
