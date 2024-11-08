@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 6.2.0   | 2024-11-11 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code                                                                                |
 | 6.1.2   | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception                                                                 |
 | 6.1.1   | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams                                                                                |
 | 6.1.0   | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5                                                                                                  |
