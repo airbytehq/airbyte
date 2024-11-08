@@ -1416,3 +1416,8 @@ check:
     - board_issues
     - issues
     - sprint_issues
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 40
