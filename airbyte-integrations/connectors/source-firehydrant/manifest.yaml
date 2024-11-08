@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -43,12 +43,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -78,12 +79,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -113,12 +115,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -148,12 +151,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -183,12 +187,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -218,12 +223,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -253,12 +259,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -288,12 +295,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -315,20 +323,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -358,12 +352,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -393,12 +388,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -428,12 +424,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -463,12 +460,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -490,20 +488,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -533,12 +517,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -560,20 +545,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -603,12 +574,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -638,12 +610,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -673,12 +646,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -708,12 +682,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -743,12 +718,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -778,12 +754,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -805,20 +782,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -848,12 +811,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -883,12 +847,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -918,12 +883,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -953,12 +919,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -988,12 +955,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1023,12 +991,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       transformations:
         - type: AddFields
           fields:
@@ -1055,20 +1024,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1098,12 +1053,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1133,12 +1089,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1168,12 +1125,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1203,12 +1161,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1238,12 +1197,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1264,20 +1224,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 0
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1305,12 +1251,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1340,12 +1287,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1375,12 +1323,13 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            field_name: page_size
             inject_into: request_parameter
+            field_name: per_page
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 200
-            start_from_page: 0
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"next\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1497,274 +1446,274 @@ metadata:
     checklist_templates: true
   testedStreams:
     enviroments:
-      hasRecords: true
-      streamHash: b3899d2e1ad789f2c8426eea902763d423cc47b6
+      streamHash: 71983108f8df8f1a8b9a2ff3995dfe29414d67fe
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     services:
-      hasRecords: true
-      streamHash: d7eb24b1eb2bbac26411254a296d104e72d8f059
+      streamHash: 2f64b43f7a8b620ce891202df6b94e9501b5a428
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     functionalities:
-      hasRecords: true
-      streamHash: 33892035f28d1ca592febfe825888a448d8c139e
+      streamHash: 7c41bbb2c1962de172a812603704919911ffd889
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      hasRecords: true
-      streamHash: 491de114f944845475220e94721b41e4f34afd07
+      streamHash: 58c73deeb399b8e6b39d28cdfe24bfdcfb26c071
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     webhooks:
-      hasRecords: true
-      streamHash: 9b4b304496f7004c7d994e1fad565028aff3721f
+      streamHash: 3882e21c123275883db1ffc1a234fe9911dd7556
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     signals_on_call:
-      hasRecords: true
-      streamHash: ff9ac45078a8055231eea3ac565124eb9d5059b4
+      streamHash: d88d170a0d2cc0344845a0fb569a9947a740fcd9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     changes_events:
-      hasRecords: true
-      streamHash: e521acee40fbe741dce0e668af0541601a855fc8
+      streamHash: 1e72de329f01ba8e45411b01ea912ef3250565fb
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     changes:
-      hasRecords: true
-      streamHash: 48f2db6d0a91abd2247c1029f1affd93a2ffd11a
+      streamHash: f2b49a9b58168ddfbb01e97e4b7cc253bb315034
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     entitlements:
-      hasRecords: true
-      streamHash: e7b8c955141712bd4645975c987f51b038e8cec9
+      streamHash: e3dbda8d04c12461d39ad3f2480b0ffa75d7ac3c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incidents:
-      hasRecords: true
-      streamHash: 414f2cf71979f9fa2ed7ca45779b0cf448f5a613
+      streamHash: 42d7966e35a4b94108fcfb510b6297f3f8bc4f03
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_roles:
-      hasRecords: true
-      streamHash: 65b6e4ac3940249a12403ab254cc68a967be79dc
+      streamHash: 971b4d934016e6fccd33a297479c7753bfa1dfef
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_tags:
-      hasRecords: true
-      streamHash: b7d1231083f14c6e65f2424d0489b854cf4353e9
+      streamHash: bc18571d8105214f3f5463c543e57314a359e4b4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     incident_types:
-      hasRecords: true
-      streamHash: e4a6b484d9c8af5f5ab398966cc298f7fc8a79fe
+      streamHash: e2b355089e950aa9a7d0c18b7a39af49db1656c6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     integrations:
-      hasRecords: true
-      streamHash: 38a8fed87a39c1b6addeec6b445a7f5e0381a45a
+      streamHash: 5f836b33d2d3070e72daa4c2eb30b047ee1318a6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
-      streamHash: c9a71bb88163418714222b5a7d55fef61d3bba21
+      streamHash: 512f644060cf210bdabe36aef703de21607d1bdf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     reports:
-      hasRecords: true
-      streamHash: 8ec90f940846b949b513ebc308ed61ade4af011a
+      streamHash: d9b38bc9d3e6200cc43ef3036fa563a44b1210c0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     runbook_actions:
-      hasRecords: true
-      streamHash: bde78ed7b4a35810daaee6ebffd4c4649ebf29be
+      streamHash: cccc1c26f630fd82cdcc3238fbe6018e772a771b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     runbook_executions:
-      hasRecords: true
-      streamHash: 7bc7e31de77ef8c9ec61f95c14f3dcefcbe1dfe6
+      streamHash: 0cb2e568db0fb9744718bec9d590cce98131d152
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     runbooks:
-      hasRecords: true
-      streamHash: 47c1329189d914c0e2293dcf25204d674f6ce3e4
+      streamHash: a538bbef227d626e73f8600649903a4266db50cf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     runbook_audits:
-      hasRecords: true
-      streamHash: 180f32f7dbe04baadb1d3eeeaac56f002ed2ab06
+      streamHash: 9e563d84495affb0e47f17381f412b811f0eaa98
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     nunc_connections:
-      hasRecords: true
-      streamHash: 4381b3e65348752267bf688eda9ee0260374b7f6
+      streamHash: 3cdf85f3f6ac7ab7ccc7a618360c15a9f0d7667e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     measurement_definitions:
-      hasRecords: true
-      streamHash: 3169fbef9d5d750f297b2db9b863c40e6df02962
+      streamHash: d99db659bc2b373ab7c91b5a02e7249d81415a1d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     phases:
-      hasRecords: true
-      streamHash: bc472cc7cf6327e55f9036c5f2198b06119cba35
+      streamHash: baa1d5104f78b1c15011110b0481dad09e7a652a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     priorities:
-      hasRecords: true
-      streamHash: 9c3c971817b8a76bb80ef410e16e8156c7e98993
+      streamHash: 20a474e11a55d6cb19f38d84d7725c3d32eb402d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     severities:
-      hasRecords: true
-      streamHash: dbbe778f44f371ddae83e8d1412989190d784f2e
+      streamHash: 52af71adff9c3625346fda144e389a8fe586b8fa
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     severity_matrix_conditions:
-      hasRecords: true
-      streamHash: 00bcd43dc5ee1d1d679c83e97f2821f0a5251c4b
+      streamHash: 00f9e25630ed8e92f7826983916e3c7b1a50202a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     severity_matrix_impacts:
-      hasRecords: true
-      streamHash: fb5829e37e65751115007714453412b45a5297f8
+      streamHash: b273c982f82008bcab876d832d823f90fd2fbdc0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     scheduled_maintenances:
-      hasRecords: true
-      streamHash: 90aa81e2c5c721dc4c78ed0fe9b3f3a440ed2ba6
+      streamHash: 70dd65b2f5d1e71876c14507227ec7e72d3d943b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     infrastructures:
-      hasRecords: true
-      streamHash: d4e540637c59eb9bb23d9473559e469dd086b263
+      streamHash: 6beeecd9f04aaac754a2e24d041f39432de6bdb5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     custom_fields_definitions:
-      hasRecords: true
-      streamHash: 178a18f5a2d44852e9df91d4d73e95c2eb5490d1
+      streamHash: 4a16e02dbf2c63df3f2c8df850963e13d89b8406
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     post_mortems_reports:
-      hasRecords: true
-      streamHash: a7f44365a895956336eec6b25084fa1e8c44c40a
+      streamHash: 4057a116278a3d45e7d38a80fa702a5530ef5ed0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     post_mortems_questions:
-      hasRecords: true
-      streamHash: b12d4ac97b9b6f2346b33c35d6d9df5483039ca9
+      streamHash: 95ec2948aa1b42d8393daa0631e10eaefe5f0177
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     alerts:
-      hasRecords: true
-      streamHash: bc75050c13f968f31f15f8438c9acee2078e2210
+      streamHash: 424d96078269c237dca02d43a59152cae75b5ce2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tickets:
-      hasRecords: true
-      streamHash: 7dc70e726a4aa9ebb65bbe1e07571a02173e9327
+      streamHash: b43064e6e6c589d026f8f39d992c9cc10b85ffe5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     ticketing_projects:
-      hasRecords: true
-      streamHash: fe0b6ecbaadd4070397ad1fdeb423b5e883b1be2
+      streamHash: 339ecfe3e573f72148bdeb54ba286ac62118c52c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     ticketing_priorities:
-      hasRecords: true
-      streamHash: 885f9a15b405aac9a57e66d2c6df6c6133ae8838
+      streamHash: bbaa77a0891236d1ea132fe951370f24a75a1b6d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     ticketing_ticket_tags:
-      hasRecords: true
-      streamHash: 9f97f82fa26cfd373e4b90b447ca058b20a0be7a
+      streamHash: 015bbd4adbf50c31038e3535e31e80b556bf9aec
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     task_lists:
-      hasRecords: true
-      streamHash: d8b1a98587c6094f2e6ec569d620537d6a724525
+      streamHash: 4a56320dcfb4c9ca479d7589cdfcd75a4a9c5949
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     checklist_templates:
       hasRecords: true
-      streamHash: 077c7864e95ed554d9ec5c87455caa3988b70c9c
+      streamHash: 74d8d98c1f3e58da49564fa21cfca4828e5679fc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1835,6 +1784,52 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            checks:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
       completed_checks:
         type:
           - number
@@ -2214,6 +2209,52 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            checks:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
       owned_functionalities:
         type:
           - array
@@ -2222,10 +2263,155 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            categories:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            owner:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                created_by:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                signals_ical_url:
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+            summary:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
       owned_services:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            alert_on_add:
+              type:
+                - boolean
+                - "null"
+            auto_add_responding_team:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            labels:
+              type:
+                - object
+                - "null"
+              properties:
+                j:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+            service_tier:
+              type:
+                - number
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
       responding_services:
         type:
           - array
@@ -2234,6 +2420,56 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            alert_on_add:
+              type:
+                - boolean
+                - "null"
+            auto_add_responding_team:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            labels:
+              type:
+                - object
+                - "null"
+              properties:
+                j:
+                  type:
+                    - string
+                    - "null"
+            name:
+              type:
+                - string
+                - "null"
+            service_tier:
+              type:
+                - number
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
       signals_ical_url:
         type:
           - string
@@ -2595,6 +2831,10 @@ schemas:
             type:
               - string
               - "null"
+          old:
+            type:
+              - string
+              - "null"
       services:
         type:
           - array
@@ -2848,6 +3088,10 @@ schemas:
             - object
             - "null"
           properties:
+            description:
+              type:
+                - string
+                - "null"
             display_name:
               type:
                 - string
@@ -2888,6 +3132,19 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       field_requirements:
         type:
           - array
@@ -2905,12 +3162,102 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       id:
         type: string
       impacts:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            condition:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                position:
+                  type:
+                    - number
+                    - "null"
+            conversations:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  channel:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                  comments_url:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  resource_class:
+                    type:
+                      - string
+                      - "null"
+                  resource_id:
+                    type:
+                      - string
+                      - "null"
+            id:
+              type:
+                - string
+                - "null"
+            impact:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
       incident_channels:
         type:
           - array
@@ -2926,6 +3273,65 @@ schemas:
       labels:
         type:
           - object
+          - "null"
+      last_note:
+        type:
+          - object
+          - "null"
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          conversations:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                channel:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                comments_url:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                resource_class:
+                  type:
+                    - string
+                    - "null"
+                resource_id:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          status_pages:
+            type:
+              - array
+              - "null"
+      last_update:
+        type:
+          - string
           - "null"
       lifecycle_measurements:
         type:
@@ -3232,6 +3638,19 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       severity:
         type:
           - string
@@ -3256,6 +3675,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       team_assignments:
         type:
           - array
@@ -3624,9 +4047,16 @@ schemas:
                         - boolean
                         - "null"
                     default_value:
-                      type:
-                        - array
-                        - "null"
+                      anyOf:
+                        - type:
+                            - array
+                            - "null"
+                        - type: object
+                          properties:
+                            label:
+                              type: string
+                            value:
+                              type: string
                     is_multi:
                       type:
                         - boolean
@@ -3639,6 +4069,19 @@ schemas:
                       type:
                         - array
                         - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          label:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
                     placeholder:
                       type:
                         - string
@@ -3770,6 +4213,68 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                authorized_by:
+                  type:
+                    - string
+                    - "null"
+                authorized_by_id:
+                  type:
+                    - string
+                    - "null"
+                configuration_url:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                default_authorized_actor:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                display_name:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                integration_id:
+                  type:
+                    - string
+                    - "null"
+                integration_slug:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
           created_at:
             type:
               - string
@@ -3944,6 +4449,14 @@ schemas:
               - string
               - "null"
       status:
+        type:
+          - string
+          - "null"
+      status_reason:
+        type:
+          - string
+          - "null"
+      status_reason_message:
         type:
           - string
           - "null"
@@ -4148,6 +4661,33 @@ schemas:
         type:
           - string
           - "null"
+      attachment_rule:
+        type:
+          - object
+          - "null"
+        properties:
+          logic:
+            type:
+              - object
+              - "null"
+            properties:
+              manually:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    var:
+                      type:
+                        - string
+                        - "null"
+          user_data:
+            type:
+              - object
+              - "null"
       categories:
         type:
           - array
@@ -4166,6 +4706,60 @@ schemas:
         type:
           - string
           - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              source:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          signals_ical_url:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
       summary:
         type:
           - string
@@ -4223,6 +4817,69 @@ schemas:
               - object
               - "null"
             properties:
+              agenda:
+                type:
+                  - string
+                  - "null"
+              body:
+                type:
+                  - string
+                  - "null"
+              channel_name_format:
+                type:
+                  - string
+                  - "null"
+              channel_visibility:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              channels:
+                type:
+                  - string
+                  - "null"
+              communications_channel_enabled:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              email_address:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              record_meeting:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
               role:
                 type:
                   - object
@@ -4262,6 +4919,14 @@ schemas:
                     type:
                       - string
                       - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+              summary:
+                type:
+                  - string
+                  - "null"
               task_list:
                 type:
                   - object
@@ -4275,6 +4940,18 @@ schemas:
                     type:
                       - string
                       - "null"
+              ticket_description:
+                type:
+                  - string
+                  - "null"
+              ticket_summary:
+                type:
+                  - string
+                  - "null"
+              topic:
+                type:
+                  - string
+                  - "null"
               user:
                 type:
                   - object
@@ -4288,6 +4965,10 @@ schemas:
                     type:
                       - string
                       - "null"
+          delay_duration:
+            type:
+              - string
+              - "null"
           name:
             type:
               - string
@@ -4303,6 +4984,10 @@ schemas:
           repeats:
             type:
               - boolean
+              - "null"
+          repeats_duration:
+            type:
+              - string
               - "null"
           reruns:
             type:
@@ -4766,7 +5451,15 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - string
+                - "null"
           alert_on_add:
+            type:
+              - boolean
+              - "null"
+          auto_add_responding_team:
             type:
               - boolean
               - "null"
@@ -4782,9 +5475,22 @@ schemas:
             type:
               - string
               - "null"
+          labels:
+            type:
+              - object
+              - "null"
+            properties:
+              j:
+                type:
+                  - string
+                  - "null"
           name:
             type:
               - string
+              - "null"
+          service_tier:
+            type:
+              - number
               - "null"
           slug:
             type:
@@ -4941,6 +5647,10 @@ schemas:
                 - object
                 - "null"
               properties:
+                description:
+                  type:
+                    - string
+                    - "null"
                 display_name:
                   type:
                     - string
@@ -4981,6 +5691,19 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
           field_requirements:
             type:
               - array
@@ -4998,6 +5721,19 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
           id:
             type:
               - string
@@ -5006,6 +5742,83 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                condition:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    position:
+                      type:
+                        - number
+                        - "null"
+                conversations:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      channel:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - string
+                              - "null"
+                      comments_url:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      resource_class:
+                        type:
+                          - string
+                          - "null"
+                      resource_id:
+                        type:
+                          - string
+                          - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                impact:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
           incident_channels:
             type:
               - array
@@ -5021,6 +5834,65 @@ schemas:
           labels:
             type:
               - object
+              - "null"
+          last_note:
+            type:
+              - object
+              - "null"
+            properties:
+              body:
+                type:
+                  - string
+                  - "null"
+              conversations:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    channel:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                    comments_url:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    resource_class:
+                      type:
+                        - string
+                        - "null"
+                    resource_id:
+                      type:
+                        - string
+                        - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              status_pages:
+                type:
+                  - array
+                  - "null"
+          last_update:
+            type:
+              - string
               - "null"
           lifecycle_measurements:
             type:
@@ -5327,6 +6199,19 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
           severity:
             type:
               - string
@@ -5351,6 +6236,10 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - string
+                - "null"
           team_assignments:
             type:
               - array
@@ -5488,6 +6377,27 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            number:
+              type:
+                - number
+                - "null"
+            restricted:
+              type:
+                - boolean
+                - "null"
       integration_name:
         type:
           - string
@@ -5615,6 +6525,31 @@ schemas:
         type:
           - string
           - "null"
+      priority:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
       state:
         type:
           - string
@@ -5627,6 +6562,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       updated_at:
         type:
           - string
