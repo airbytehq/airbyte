@@ -279,9 +279,7 @@ sealed interface CheckpointMessage : DestinationMessage {
             message.destinationStats =
                 AirbyteStateStats().withRecordCount(destinationStats!!.recordCount.toDouble())
         }
-        additionalProperties.forEach { (key, value) ->
-            message.withAdditionalProperty(key, value)
-        }
+        additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
     }
 }
 
