@@ -168,12 +168,17 @@ class HttpJobRepositoryTest(TestCase):
             self._repository.update_jobs_status([job])
 
     def test_given_multiple_jobs_when_update_jobs_status_then_all_the_jobs_are_updated(self) -> None:
-        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.post(
+            HttpRequest(url=_EXPORT_URL),
+            [
+                HttpResponse(body=json.dumps({"id": _A_JOB_ID})),
+                HttpResponse(body=json.dumps({"id": _ANOTHER_JOB_ID})),
+            ],
+        )
         self._http_mocker.get(
             HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
             HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "ready"})),
         )
-        self._mock_create_response(_ANOTHER_JOB_ID)
         self._http_mocker.get(
             HttpRequest(url=f"{_EXPORT_URL}/{_ANOTHER_JOB_ID}"),
             HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "ready"})),
