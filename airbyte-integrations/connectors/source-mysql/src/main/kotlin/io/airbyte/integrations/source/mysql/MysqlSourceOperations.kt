@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
@@ -67,6 +68,7 @@ import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumOperations
 import io.airbyte.integrations.source.mysql.cdc.MySqlPosition
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
@@ -250,6 +252,8 @@ class MysqlSourceOperations :
 
     fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
 
+    private val log = KotlinLogging.logger {}
+
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
             is NoWhere -> listOf()
@@ -261,10 +265,32 @@ class MysqlSourceOperations :
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = /*column.type as LosslessJdbcFieldType<*, *>*/StringFieldType
-                listOf(SelectQuery.Binding(bindingValue, type))
+                log.info { "*** $column ${column.type} $bindingValue" }
+                val type = column.type as LosslessJdbcFieldType<*, *>
+                val v = stateValueToJsonNode(column.type, bindingValue.textValue())
+                listOf(SelectQuery.Binding(v, type))
             }
         }
+
+    private fun stateValueToJsonNode(fieldType: FieldType, stateValue: String?): JsonNode {
+        when (fieldType.airbyteSchemaType) {
+            is LeafAirbyteSchemaType ->
+                return when (fieldType.airbyteSchemaType as LeafAirbyteSchemaType) {
+                    LeafAirbyteSchemaType.INTEGER -> {
+                        Jsons.valueToTree(stateValue?.toInt())
+                    }
+                    LeafAirbyteSchemaType.NUMBER -> {
+                        Jsons.valueToTree(stateValue?.toDouble())
+                    }
+                    else -> Jsons.valueToTree(stateValue)
+                }
+            else ->
+                throw IllegalStateException(
+                    "PK field must be leaf type but is ${fieldType.airbyteSchemaType}."
+                )
+        }
+    }
+
 
     fun LimitNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
