@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.9.5
+
+Fix parsing of inlined manifest specs in `test_match_expected`
+
+## 3.9.4
+
+Upgrade to Dagger 0.13
+
 ## 3.9.3
 
 Undo failure trace message test case changes from 3.9.1
