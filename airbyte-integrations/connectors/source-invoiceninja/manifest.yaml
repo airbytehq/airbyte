@@ -47,7 +47,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -83,7 +83,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -119,7 +119,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -155,7 +155,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -191,7 +191,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -227,7 +227,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -263,7 +263,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -299,7 +299,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -335,7 +335,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -371,7 +371,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -407,7 +407,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -443,7 +443,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -479,7 +479,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -515,7 +515,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             start_from_page: 1
-            page_size: 20
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -581,91 +581,91 @@ metadata:
     bank transactions: true
   testedStreams:
     clients:
-      streamHash: 4964c7af700773b9eaed806f888e886d3c00a276
+      streamHash: 8310efaa5fe0141735b3087522f2ee0d3ac11cac
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
-      streamHash: 6b20585a42b7f3bad5b7692aae2cadc4844db1fd
+      streamHash: 5c569191df2d068ebd1ac6ac9749709c35f3d83e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     invoices:
-      streamHash: 0463ba72ffcc527d2d9bb122e457776745ca96ef
+      streamHash: a92a32994c972113dd0838fed578ae47e8917e49
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     recurring invoices:
-      streamHash: 46900a764516feba4e1024b3a313789e12cc2229
+      streamHash: cf41fe8cff4f1ad34219c77be898355a20d71501
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     payments:
-      streamHash: 8794914a8d3dcccf663ae2811ae4cd74763b2a33
+      streamHash: 1f0a2a67e3ac4a3ea1090845d39d48b1350802dd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     quotes:
-      streamHash: 53395eac8d95d789a2f9d742eccedd4a109a835a
+      streamHash: 782f358cadd7c143fbf444a08e597c38fe23361a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     credits:
-      streamHash: 7515bb9a070accfd16433b6fc145381ceff1695c
+      streamHash: dcaff60b0805a53023559885a5561ccd584c68f9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     projects:
-      streamHash: 62a7aae2d59b52267aeb6f2998d730eea94f6bd2
+      streamHash: 40dc252f04f72814150237a3bc2bd6694ea7f814
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tasks:
-      streamHash: b30af6311f79b951ed6e4822ca020dec4aa95b23
+      streamHash: fe63810ff5089997cea55d84d10a9d335b3c80a5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     vendors:
-      streamHash: 8729be47c19a7ace2771ea66ddd0dbb3597fa86a
+      streamHash: 20ccca439b51faba7ec5633066511dbcd123e7f5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     purchase_orders:
-      streamHash: bc5aa0828b3d5ebec499bcc584235f6db438fe6d
+      streamHash: d4310cd8a33cc89f922e96b51a7871f67d297d60
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     expenses:
-      streamHash: 5cda4a3d0f4cca4bcd96e3b99824c640c97dfb53
+      streamHash: 425a31d5ad1869db6dc1282046360b7ec2a1d29e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     recurring expenses:
-      streamHash: d68c7d084c80271f068b31943b3fee24ca2a6389
+      streamHash: c3dc2d7b586d09cd396bc0b5585f19ca853f297a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -673,7 +673,7 @@ metadata:
       primaryKeysAreUnique: true
     bank transactions:
       hasRecords: true
-      streamHash: 78d50e0d3be501a754ec5e5c3600844d186c222e
+      streamHash: 345dbd0e7bfdc8c943391d0572c539670b261006
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
