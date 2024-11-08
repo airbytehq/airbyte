@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -117,6 +117,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          pagination_strategy:
+            type: OffsetIncrement
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -204,12 +212,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     attribute_classes:
-      hasRecords: true
       streamHash: 2ee2f0cd95655ff33cd85043937972bd495f87c0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     identified_peoples:
       streamHash: 5bef3a1a5748d5b2f3a06b2dd740c2ab62ae1108
       hasResponse: true
@@ -218,12 +226,12 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     responses:
-      hasRecords: true
-      streamHash: 8ef2cf74154b8ade517b4a5da931be8d8925b1c5
+      streamHash: b8ed53771a51c18b206cc2ff9b73374f027780ef
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     webhooks:
       hasRecords: true
       streamHash: 80c98dada4167d2f9c3cb956d6b826878e1713fa
@@ -923,6 +931,10 @@ schemas:
           - object
           - "null"
         properties:
+          cm3zf81pymlmve85hi7buqzr:
+            type:
+              - string
+              - "null"
           pj3o8kqzpkqcz96mx8bma7lm:
             type:
               - number
@@ -996,6 +1008,11 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          plan:
+            type:
+              - string
+              - "null"
       surveyId:
         type:
           - string
@@ -1035,6 +1052,10 @@ schemas:
           - "null"
         properties:
           _total:
+            type:
+              - number
+              - "null"
+          cm3zf81pymlmve85hi7buqzr:
             type:
               - number
               - "null"

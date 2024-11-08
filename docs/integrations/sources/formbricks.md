@@ -14,7 +14,7 @@ The Airbyte connector for [Formbricks](https://www.formbricks.com/) enables seam
 | action_classes | id | No pagination | ✅ |  ❌  |
 | attribute_classes | id | No pagination | ✅ |  ❌  |
 | identified_peoples | id | No pagination | ✅ |  ❌  |
-| responses | id | No pagination | ✅ |  ❌  |
+| responses | id | DefaultPaginator | ✅ |  ❌  |
 | webhooks | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -24,6 +24,6 @@ The Airbyte connector for [Formbricks](https://www.formbricks.com/) enables seam
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
