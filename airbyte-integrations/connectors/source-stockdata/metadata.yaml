@@ -13,17 +13,17 @@ data:
       enabled: false
       packageName: airbyte-source-stockdata
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.4.0@sha256:f20270ba0ac84b315467c706232f3cbfbadab1f5565174eaf4c32cd3c5a43169
   connectorSubtype: api
   connectorType: source
-  definitionId: 451d74df-9390-4dba-aed3-ff8730b208e2
+  definitionId: 7447a026-c0ed-4187-a7eb-df87293e64e3
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-stockdata
   githubIssueLabel: source-stockdata
   icon: icon.svg
   license: MIT
-  name: Stockdata
-  releaseDate: 2024-10-26
+  name: StockData
+  releaseDate: 2024-11-08
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/stockdata

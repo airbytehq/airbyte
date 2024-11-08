@@ -1,4 +1,4 @@
-# Stockdata
+# StockData
 This directory contains the manifest-only connector for `source-stockdata`.
 
 Stockdata provides access to market news for global exchanges, and trading data for US stocks.
