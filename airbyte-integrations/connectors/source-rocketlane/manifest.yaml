@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -35,11 +35,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -64,11 +71,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -93,11 +107,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -122,11 +143,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,11 +179,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,11 +217,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -221,11 +263,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -258,11 +307,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -289,11 +345,18 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('nextPage', '') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('hasMore', False) }}"
+            page_size: 100
+            cursor_value: "{{ response.pagination.nextPageToken }}"
+            stop_condition: "{{ response.pagination.hasMore is false }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -342,9 +405,9 @@ spec:
           API key to use. Generate it from the API section in Settings of your
           Rocketlane account.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
     additionalProperties: true
 
 metadata:
@@ -360,68 +423,68 @@ metadata:
     space-documents: true
   testedStreams:
     tasks:
-      streamHash: 2766734bdb778cfd1adf37888f660d3daa5d401f
+      streamHash: f42abcda6d23be242fcdfd02fa69d7f813784337
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: 96daf541facd9acd6d6742a6acf3fe359facb3f9
+      streamHash: f1c9f61039abee9ad2a2f71a86608c4e9736e9bf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     projects:
-      streamHash: 6fcb8341840701eea6f6693ccc12d38bb1d0b570
+      streamHash: c5a42726642e82e4357b9133692ca2c02f79c64d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     fields:
-      streamHash: 99aff8eef852de31b80952c0d072077f3ce4fd10
+      streamHash: fb5daf45eae67a9eec80e7920863eeafc4c3d944
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     time-offs:
-      streamHash: a7fb1e42390f9e5dcc6fb4c7b1bfc6241101780e
+      streamHash: 634785a588835d479a1bdff8b777345649f2c5c1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     spaces:
-      streamHash: 2fc52419a013e45ab0570cbcea707df21c788509
+      streamHash: 48ca68b40d0d0a3ce547fccfb3729d6e42a791d2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     phases:
-      streamHash: 6a68ce8cda729250c241d9b8075c305039d5ab4d
+      streamHash: f58f9b3165c815b7c66273fcfc6b207c4f016add
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     time-entries:
-      streamHash: 340b92ff4671d62778d1b242808f1c37ecb8054a
+      streamHash: 3a782d94a3ca6fb1bf3aa871c1e51ae3fcb2199c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     space-documents:
-      streamHash: 05d9be219832e4d028de4cc963abb1a86429bc16
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 04ce76a7e12b2a7634b1d2f574bc4aacfdad0783
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developer.rocketlane.com/docs/overview
 
@@ -922,9 +985,84 @@ schemas:
       - timeOffId
   spaces:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      createdAt:
+        type:
+          - number
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          userId:
+            type:
+              - number
+              - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          projectId:
+            type:
+              - number
+              - "null"
+          projectName:
+            type:
+              - string
+              - "null"
+      spaceId:
+        type: number
+      spaceName:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - number
+          - "null"
+      updatedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          userId:
+            type:
+              - number
+              - "null"
+    required:
+      - spaceId
   phases:
     type: object
     $schema: http://json-schema.org/schema#
