@@ -1,7 +1,7 @@
 # Tinyemail
 Tinyemail is an email marketing tool.
 We can extract data from campaigns and contacts streams using this connector.
-Docs : https://docs.tinyemail.com/docs/tiny-email/tinyemail
+[API Docs](https://docs.tinyemail.com/docs/tiny-email/tinyemail)
 
 ## Configuration
 
@@ -14,8 +14,8 @@ Docs : https://docs.tinyemail.com/docs/tiny-email/tinyemail
 |-------------|-------------|------------|---------------------|----------------------|
 | campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | No pagination | ✅ |  ❌  |
-| sender_details |  | No pagination | ✅ |  ❌  |
-| contact_members |  | No pagination | ✅ |  ❌  |
+| sender_details | id | No pagination | ✅ |  ❌  |
+| contact_members |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
