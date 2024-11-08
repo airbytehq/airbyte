@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -22,20 +22,6 @@ definitions:
       name: forms
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms.json
@@ -57,20 +43,6 @@ definitions:
       name: users
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /users.json
@@ -92,20 +64,6 @@ definitions:
       name: reports
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports.json
@@ -127,20 +85,6 @@ definitions:
       name: form_fields
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms/{{ stream_partition.form_identifier }}/fields.json
@@ -254,20 +198,6 @@ definitions:
       name: report_fields
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/{{ stream_partition.report_identifier }}/fields.json
@@ -295,20 +225,6 @@ definitions:
       name: report_entries
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/{{ stream_partition.report_identifier }}/entries.json
@@ -338,20 +254,6 @@ definitions:
       name: report_widgets
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/{{ stream_partition.report_identifier }}/widgets.json
@@ -427,63 +329,63 @@ metadata:
   testedStreams:
     forms:
       hasRecords: true
-      streamHash: 8ca7fa490ff00652e5d00eaadb2c2f513445ab6a
+      streamHash: 3e8a6c437d8154adbcecb09841f9623e0a65cd38
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
       hasRecords: true
-      streamHash: 213e3bd304acfc6134dd1d1ac6e2c4bca0221a5c
+      streamHash: 43d9b0a10663cec6591ef6f5672fc6100aea09fb
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reports:
       hasRecords: true
-      streamHash: 1a5dcf587232d8ca4f529ce9fb18cdb6a0d1ee5b
+      streamHash: 95a82666ed200e648e146026c10cba4c126b0f37
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     form_fields:
       hasRecords: true
-      streamHash: 1ce4d51af41be313368fbf90db61647f961d5f03
+      streamHash: d0a392046a7ebdaccada984ddc2de1ff93364e99
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     form_entries:
       hasRecords: true
-      streamHash: 5ee7d462f4ef6852e5a56f07a953f101b2e5de7a
+      streamHash: e797c3eaaa6ea2ad77638b79b0381333495141e7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     form_comments:
       hasRecords: true
-      streamHash: 506f7c27c74616c3d8553965a5eafa8ff249d4b9
+      streamHash: 1450463668b30e97fa3c7f9b62e95b08bb4edec0
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     report_fields:
       hasRecords: true
-      streamHash: c4d060ebdcc6301d5c3a985fbfdf371cacb2dda4
+      streamHash: 0bc9c701da75fb8370c2a9b43a559a9331869a5c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     report_entries:
       hasRecords: true
-      streamHash: 2f6101e22f5a609176a6c8eacc7ff7bf64dc61a5
+      streamHash: 19f70fae9d42b1cfa4d0e1db1c4a38b390147d91
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     report_widgets:
       hasRecords: true
-      streamHash: 84a9eaa51bba658f1ae6d20ced9acb2941dfb75c
+      streamHash: f4239d39d63dd85c4a3ea2e1bc8bee84043c9ebc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -923,19 +825,6 @@ schemas:
         type:
           - string
           - "null"
-      Choices:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            Label:
-              type:
-                - string
-                - "null"
       ClassNames:
         type:
           - string
@@ -952,10 +841,6 @@ schemas:
         type:
           - string
           - "null"
-      HasOtherField:
-        type:
-          - boolean
-          - "null"
     additionalProperties: true
   report_entries:
     type: object
@@ -971,88 +856,8 @@ schemas:
         type:
           - string
           - "null"
-      Field3:
-        type:
-          - string
-          - "null"
-      Field4:
-        type:
-          - string
-          - "null"
-      Field5:
-        type:
-          - string
-          - "null"
-      Field6:
-        type:
-          - string
-          - "null"
-      Field7:
-        type:
-          - string
-          - "null"
-      Field8:
-        type:
-          - string
-          - "null"
-      Field9:
-        type:
-          - string
-          - "null"
       EntryId:
         type: string
-      Field10:
-        type:
-          - string
-          - "null"
-      Field11:
-        type:
-          - string
-          - "null"
-      Field12:
-        type:
-          - string
-          - "null"
-      Field13:
-        type:
-          - string
-          - "null"
-      Field14:
-        type:
-          - string
-          - "null"
-      Field15:
-        type:
-          - string
-          - "null"
-      Field16:
-        type:
-          - string
-          - "null"
-      Field17:
-        type:
-          - string
-          - "null"
-      Field18:
-        type:
-          - string
-          - "null"
-      Field19:
-        type:
-          - string
-          - "null"
-      Field20:
-        type:
-          - string
-          - "null"
-      Field21:
-        type:
-          - string
-          - "null"
-      Field22:
-        type:
-          - string
-          - "null"
       CreatedBy:
         type:
           - string

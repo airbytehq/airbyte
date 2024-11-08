@@ -11,15 +11,15 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| forms | Hash | DefaultPaginator | ✅ |  ❌  |
+| forms | Hash | No pagination | ✅ |  ❌  |
 | form_comments | CommentId | DefaultPaginator | ✅ |  ❌  |
-| form_fields |  | DefaultPaginator | ✅ |  ❌  |
+| form_fields |  | No pagination | ✅ |  ❌  |
 | form_entries | EntryId | DefaultPaginator | ✅ |  ❌  |
-| reports | Hash | DefaultPaginator | ✅ |  ❌  |
-| report_entries | EntryId | DefaultPaginator | ✅ |  ❌  |
-| report_fields |  | DefaultPaginator | ✅ |  ❌  |
-| report_widgets | Hash | DefaultPaginator | ✅ |  ❌  |
-| users | Hash | DefaultPaginator | ✅ |  ❌  |
+| reports | Hash | No pagination | ✅ |  ❌  |
+| report_entries | EntryId | No pagination | ✅ |  ❌  |
+| report_fields |  | No pagination | ✅ |  ❌  |
+| report_widgets | Hash | No pagination | ✅ |  ❌  |
+| users | Hash | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -28,6 +28,6 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
