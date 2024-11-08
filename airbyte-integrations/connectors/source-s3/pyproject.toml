@@ -22,7 +22,27 @@ wcmatch = "==8.4"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^5.7.4"}
+
+[tool.poetry.dependencies.airbyte-cdk]
+extras = ["file-based"]
+
+# ==== This section below defines the version of the CDK to use. ====
+# - If you want to build using a branch from the CDK repo, uncomment the git and branch lines.
+# - To use a local (editable) version of the CDK, uncomment the path line.
+# - CI will require you to switch to a published version of the CDK before merging.
+# - After making changes to this section, run `poetry lock` to update the lock file.
+# - The "--use-local-cdk" option is deprecated and no longer required.
+# - The airbyte-ci CLI is compatible with branch-based and published versions of the CDK.
+
+# ===== Use local (editable) version of the CDK ====
+# path = "../../../../airbyte-python-cdk-test/"
+
+# ===== Use development version of the CDK =========
+git = "https://github.com/airbytehq/airbyte-python-cdk-test.git"
+branch = "aj/feat/refactor-pendulum-and-date-utils"
+
+# ===== Use published version of the CDK ===========
+# version = "^5.7.4"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
