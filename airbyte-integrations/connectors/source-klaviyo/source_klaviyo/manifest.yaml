@@ -178,7 +178,7 @@ definitions:
         request_parameters:
           "fields[metric]": "name,created,updated,integration"
           "include": "metric"
-          "filter": "greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
+          "filter": "greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.end_time }})"
           "sort": "{{ parameters.cursor_field }}"
     schema_loader:
       type: InlineSchemaLoader
