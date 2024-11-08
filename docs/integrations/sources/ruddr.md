@@ -22,7 +22,7 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 | workspace members |  | DefaultPaginator | ✅ |  ❌  |
 | opportunity_stages | id | DefaultPaginator | ✅ |  ❌  |
 | invoices | id | DefaultPaginator | ✅ |  ❌  |
-| holidays | id | No pagination | ✅ |  ❌  |
+| holidays | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -31,6 +31,6 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-29 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

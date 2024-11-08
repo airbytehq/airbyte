@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -38,11 +38,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -71,11 +74,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -104,11 +110,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -137,11 +146,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -170,11 +182,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -203,11 +218,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -236,11 +254,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -269,11 +290,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -302,11 +326,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -332,11 +359,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -365,11 +395,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -398,11 +431,14 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ response.get('results', [])[-1].get('id') if
-              response.get('results') else None }}
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
             stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -425,6 +461,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startingAfter
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not response.get('hasMore', False) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -488,90 +539,90 @@ metadata:
   testedStreams:
     clients:
       hasRecords: true
-      streamHash: 0dbc85cdc22e4d90e88f4105a8268738a54164a3
+      streamHash: d7206bb2a9ad7cce15d43b31687a019f79fc239c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     projects:
-      hasRecords: true
-      streamHash: b285d74a23e654130dfdbf544b5ddb9ad2c658c2
+      streamHash: 5aad516081ec65cdd3bf3b2c79e604b2e01abea9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     project_members:
-      hasRecords: true
-      streamHash: c0047434606932ef68f95ae09595228037a390c2
+      streamHash: e09568cf09727d066c1743fc464033f59d269c69
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     project_tasks:
-      hasRecords: true
-      streamHash: 20e5c758981bc4f3d86e27213a29d1c17bf507aa
+      streamHash: 5afca7a8466e35bd552966fd99d25de2876a9ef1
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     expense_reports:
-      hasRecords: true
-      streamHash: 63851b54f880ea6a692b515e76be601d0db64ee4
+      streamHash: 2e9256559152503a60f8225ca4304f302ef56a4f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     expense_items:
-      hasRecords: true
-      streamHash: ba620d377018e71f7c4d98c18bb1e43301408e9c
+      streamHash: 39f7c16617da1c6d9cd5cbc05a06e9ba3b00f3eb
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     expense_categories:
-      hasRecords: true
-      streamHash: e126a7d9745117094ad0b4fcaeb19495e7e06ef5
+      streamHash: 1adead20f712af318ed9aab10d9567a69102f686
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     project_expense:
-      hasRecords: true
-      streamHash: df65fba540c6eb0abc9c7269acdae1b565da6a0a
+      streamHash: 3ad86157361c59c1e8bcd6d7baa60e8c7db5ee46
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     project_budget_expenses:
-      hasRecords: true
-      streamHash: d4800b37477c16c1b6f378babe2222717bad3545
+      streamHash: a18fe92c139cacb1b8e4dd76e8c416a7a13837f2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     workspace members:
-      hasRecords: true
-      streamHash: 6e42a14f1099704b6a339fae46e4c71b12fce55b
+      streamHash: 3399f8bbd6125bbfa1defc38ef3d9ebe68525b20
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     opportunity_stages:
-      hasRecords: true
-      streamHash: 5805c3cfbac00244498b1186816656ede28d18f2
+      streamHash: d673b9f52d2e25a4cf933749311caf54d1496cfe
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     invoices:
-      hasRecords: true
-      streamHash: 852db3395953957782f6991ec52427668a347310
+      streamHash: 7b2e25709fe845c1f988073f0f11fe930fc99338
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     holidays:
-      streamHash: 9d8cd065b7610a0431928ed53dc53e2885b61707
+      streamHash: 8f154ff1c0caa11ee1fc59870ea2f1ab07dad225
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1073,6 +1124,10 @@ schemas:
           - number
           - "null"
       createdAt:
+        type:
+          - string
+          - "null"
+      currency:
         type:
           - string
           - "null"
