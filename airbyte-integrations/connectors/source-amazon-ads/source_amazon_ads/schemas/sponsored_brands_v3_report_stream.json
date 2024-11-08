@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "profileId": { "type": ["null", "integer"] },
+    "recordType": { "type": ["null", "string"] },
+    "reportDate": { "type": ["null", "string"] },
+    "recordId": { "type": ["null", "string"] },
+    "metric": {
+      "type": ["object", "null"],
+      "properties": {
+        "attributionType": { "type": ["null", "string"] },
+        "campaignName": { "type": ["null", "string"] },
+        "newToBrandSales14d": { "type": ["null", "string"] },
+        "orders14d": { "type": ["null", "string"] },
+        "productName": { "type": ["null", "string"] },
+        "sales14d": { "type": ["null", "string"] },
+        "newToBrandPurchasesPercentage14d": { "type": ["null", "string"] },
+        "purchasedAsin": { "type": ["null", "string"] },
+        "newToBrandSalesPercentage14d": { "type": ["null", "string"] },
+        "productCategory": { "type": ["null", "string"] },
+        "newToBrandPurchases14d": { "type": ["null", "string"] },
+        "newToBrandUnitsSoldPercentage14d": { "type": ["null", "string"] },
+        "unitsSold14d": { "type": ["null", "string"] },
+        "adGroupName": { "type": ["null", "string"] },
+        "newToBrandUnitsSold14d": { "type": ["null", "string"] },
+        "campaignBudgetCurrencyCode": { "type": ["null", "string"] }
+      }
+    }
+  },
+  "title": "sponsored_brands_v3_report_stream",
+  "type": ["null", "object"]
+}

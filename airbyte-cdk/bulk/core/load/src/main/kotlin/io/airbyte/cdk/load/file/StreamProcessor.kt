@@ -5,9 +5,10 @@
 package io.airbyte.cdk.load.file
 
 import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 import java.util.zip.GZIPOutputStream
 
-interface StreamProcessor<T> {
+interface StreamProcessor<T : OutputStream> {
     val wrapper: (ByteArrayOutputStream) -> T
     val partFinisher: T.() -> Unit
     val extension: String?
