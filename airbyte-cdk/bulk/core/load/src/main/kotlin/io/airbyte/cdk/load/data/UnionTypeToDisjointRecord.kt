@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
-
 class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     override fun mapUnion(schema: UnionType): AirbyteType {
         if (schema.options.size < 2) {
@@ -46,7 +44,7 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     }
 }
 
-class UnionValueToDisjointRecord(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,

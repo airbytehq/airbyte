@@ -76,7 +76,7 @@ class AirbyteValueToJsonTest {
                             ),
                             false
                         ),
-                    "union" to FieldType(UnionType(listOf(StringType, IntegerType)), true),
+                    "union" to FieldType(UnionType.of(StringType, IntegerType), true),
                     "combined_denormalized" to
                         FieldType(
                             ObjectType(linkedMapOf("name" to FieldType(StringType, true))),
@@ -84,7 +84,7 @@ class AirbyteValueToJsonTest {
                         ),
                     "union_array" to
                         FieldType(
-                            ArrayType(FieldType(UnionType(listOf(StringType, IntegerType)), true)),
+                            ArrayType(FieldType(UnionType.of(StringType, IntegerType), true)),
                             true
                         ),
                     "date" to FieldType(DateType, false),
