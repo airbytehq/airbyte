@@ -5,13 +5,18 @@ source-blogger
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
 | `blog_id` | `string` | BLOG_ID.  |  |
+| `post_id` | `string` | post_id.  |  |
+| `client_id` | `string` | Client ID.  |  |
+| `client_secret` | `string` | Client secret.  |  |
+| `client_refresh_token` | `string` | Refresh token.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| blog |  | DefaultPaginator | ✅ |  ❌  |
+| users |  | DefaultPaginator | ✅ |  ❌  |
+| blogposts | items | DefaultPaginator | ✅ |  ❌  |
+| posts |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -20,6 +25,6 @@ source-blogger
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-01 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>

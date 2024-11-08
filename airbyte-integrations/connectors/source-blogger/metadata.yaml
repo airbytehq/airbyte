@@ -13,17 +13,17 @@ data:
       enabled: false
       packageName: airbyte-source-blogger
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.5.0@sha256:2e0e1ffb8df7da6e7b0f94404927bbec101a391a8e2bb68c0172ca712c29cbdb
   connectorSubtype: api
   connectorType: source
-  definitionId: f95f4306-bacb-4d11-a6e5-8dcec798185e
+  definitionId: 34cd2cad-1cab-4a84-8638-6fc1593ed6d3
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-blogger
   githubIssueLabel: source-blogger
   icon: icon.svg
   license: MIT
   name: Blogger
-  releaseDate: 2024-11-01
+  releaseDate: 2024-11-08
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/blogger
