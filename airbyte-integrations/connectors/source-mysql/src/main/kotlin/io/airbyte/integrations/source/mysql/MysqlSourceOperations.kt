@@ -252,8 +252,6 @@ class MysqlSourceOperations :
 
     fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
 
-    private val log = KotlinLogging.logger {}
-
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
             is NoWhere -> listOf()
@@ -265,10 +263,8 @@ class MysqlSourceOperations :
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                log.info { "*** $column ${column.type} $bindingValue" }
                 val type = column.type as LosslessJdbcFieldType<*, *>
-                val v = stateValueToJsonNode(column.type, bindingValue.textValue())
-                listOf(SelectQuery.Binding(v, type))
+                listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
 
