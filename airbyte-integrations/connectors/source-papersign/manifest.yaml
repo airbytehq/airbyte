@@ -1,14 +1,15 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
 description: >-
-  The Airbyte connector for Papersign enables seamless integration between
-  Airbyte and Papersign, allowing automated data syncs between your Papersign
-  documents and other platforms. This connector facilitates the extraction,
-  transformation, and loading of e-signature data, document statuses, and user
-  interactions, streamlining workflows and ensuring your e-signature data is
-  easily accessible across systems.
+  The Airbyte connector for
+  [Papersign](https://paperform.co/products/papersign/) enables seamless
+  integration between Airbyte and Papersign, allowing automated data syncs
+  between your Papersign documents and other platforms. This connector
+  facilitates the extraction, transformation, and loading of e-signature data,
+  document statuses, and user interactions, streamlining workflows and ensuring
+  your e-signature data is easily accessible across systems.
 
 check:
   type: CheckStream
@@ -41,6 +42,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
@@ -67,16 +72,6 @@ definitions:
             field_path:
               - results
               - folders
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -99,16 +94,6 @@ definitions:
             field_path:
               - results
               - spaces
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -131,16 +116,6 @@ definitions:
             field_path:
               - results
               - webhooks
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -193,28 +168,28 @@ metadata:
     webhooks: true
   testedStreams:
     documents:
-      streamHash: d4db9bbb6183ef7350502883d70ce030a30142d4
+      streamHash: a59e7aff6341401663261c4dfa54fa0d64aabdb9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     folders:
-      streamHash: 8e4a2cebdf457e61726ed6807d6902e0c84ef49d
+      streamHash: 4c2adb17d08b637fa0ebdad93ca1052403353a3b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     spaces:
-      streamHash: 05ee15636cf6e0ad4233b2763ac797fde3d92420
+      streamHash: 212fa07c2680bd48e6f635aa1f86e75f35727043
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     webhooks:
-      streamHash: 0fcc3b2f6e402795b02963e1fdaa52d2f0a864c4
+      streamHash: c7677b1788e9080c894e3e42cda63df94e057f60
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -334,6 +309,10 @@ schemas:
       name:
         type:
           - string
+          - "null"
+      parent_id:
+        type:
+          - number
           - "null"
       space_id:
         type:

@@ -1,7 +1,7 @@
 # Papersign
 This directory contains the manifest-only connector for `source-papersign`.
 
-The Airbyte connector for Papersign enables seamless integration between Airbyte and Papersign, allowing automated data syncs between your Papersign documents and other platforms. This connector facilitates the extraction, transformation, and loading of e-signature data, document statuses, and user interactions, streamlining workflows and ensuring your e-signature data is easily accessible across systems.
+The Airbyte connector for [Papersign](https://paperform.co/products/papersign/) enables seamless integration between Airbyte and Papersign, allowing automated data syncs between your Papersign documents and other platforms. This connector facilitates the extraction, transformation, and loading of e-signature data, document statuses, and user interactions, streamlining workflows and ensuring your e-signature data is easily accessible across systems.
 
 ## Usage
 There are multiple ways to use this connector:
