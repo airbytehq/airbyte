@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -7,6 +7,8 @@ description: >-
 
   With this connector we can extract data from price data , financial statements
   and company info streams .
+
+  Docs https://simfin.readme.io/reference/getting-started-1
 
 check:
   type: CheckStream
@@ -94,21 +96,166 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Price Data"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    common_shares_outstanding:
+      type: DeclarativeStream
+      name: common_shares_outstanding
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/common-shares-outstanding
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/common_shares_outstanding"
+    weighted_shares_outstanding:
+      type: DeclarativeStream
+      name: weighted_shares_outstanding
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/weighted-shares-outstanding
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/weighted_shares_outstanding"
+    filings_by_company:
+      type: DeclarativeStream
+      name: filings_by_company
+      primary_key:
+        - filingIdentifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filings/by-company
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filings_by_company"
+    filings_list:
+      type: DeclarativeStream
+      name: filings_list
+      primary_key:
+        - filingIdentifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filings/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per-page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filings_list"
   base_requester:
     type: HttpRequester
     url_base: https://backend.simfin.com/api/v3/
     authenticator:
       type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
-        inject_into: header
         field_name: Authorization
-      api_token: "{{ config[\"api_key\"] }}"
+        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/Company Info "
   - $ref: "#/definitions/streams/Financial Statements"
   - $ref: "#/definitions/streams/Price Data"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/common_shares_outstanding"
+  - $ref: "#/definitions/streams/weighted_shares_outstanding"
+  - $ref: "#/definitions/streams/filings_by_company"
+  - $ref: "#/definitions/streams/filings_list"
 
 spec:
   type: Spec
@@ -120,9 +267,9 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
     additionalProperties: true
 
 metadata:
@@ -130,23 +277,63 @@ metadata:
     "Company Info ": true
     Financial Statements: true
     Price Data: true
+    companies: true
+    common_shares_outstanding: true
+    weighted_shares_outstanding: true
+    filings_by_company: true
+    filings_list: true
   testedStreams:
     "Company Info ":
+      hasRecords: true
       streamHash: 9e726c6019d4e63cb31fbfe032148c1fc2c10686
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Financial Statements:
+      hasRecords: true
       streamHash: 357824c43d7efbc949979761302521bde147930e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Price Data:
+      hasRecords: true
+      streamHash: 71296e2297941f727e87526862586d1ebcdf86fd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      streamHash: 20ea91a757a266dd3d6d43000d3d2f20aa9a39ed
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Price Data:
-      streamHash: 71296e2297941f727e87526862586d1ebcdf86fd
+    common_shares_outstanding:
+      streamHash: 2ad66097feb064e4b52190d057083a791a238a20
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    weighted_shares_outstanding:
+      streamHash: e5dc0ebf850f05a23a3d4557f6a5c00fd976125d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filings_by_company:
+      streamHash: 3478504d337269c01e6ebdf9c2902849216949f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filings_list:
+      streamHash: 42b5d87568d79b3a55a518f9e3ed0997405bd482
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -948,3 +1135,206 @@ schemas:
         type:
           - number
           - "null"
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      industryName:
+        type:
+          - string
+          - "null"
+      isin:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sectorCode:
+        type:
+          - number
+          - "null"
+      sectorName:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+  common_shares_outstanding:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      endDate:
+        type:
+          - string
+          - "null"
+      pid:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  weighted_shares_outstanding:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      basic:
+        type:
+          - number
+          - "null"
+      diluted:
+        type:
+          - number
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      pid:
+        type:
+          - number
+          - "null"
+  filings_by_company:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          industryName:
+            type:
+              - string
+              - "null"
+          isin:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sectorCode:
+            type:
+              - number
+              - "null"
+          sectorName:
+            type:
+              - string
+              - "null"
+          ticker:
+            type:
+              - string
+              - "null"
+      filingDate:
+        type:
+          - string
+          - "null"
+      filingIdentifier:
+        type: string
+      filingType:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      sourceLink:
+        type:
+          - string
+          - "null"
+    required:
+      - filingIdentifier
+  filings_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          industryName:
+            type:
+              - string
+              - "null"
+          isin:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sectorCode:
+            type:
+              - number
+              - "null"
+          sectorName:
+            type:
+              - string
+              - "null"
+          ticker:
+            type:
+              - string
+              - "null"
+      filingDate:
+        type:
+          - string
+          - "null"
+      filingIdentifier:
+        type: string
+      filingType:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      sourceLink:
+        type:
+          - string
+          - "null"
+    required:
+      - filingIdentifier

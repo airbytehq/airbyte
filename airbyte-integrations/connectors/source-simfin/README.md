@@ -3,6 +3,7 @@ This directory contains the manifest-only connector for `source-simfin`.
 
 Simfin provides financial data .
 With this connector we can extract data from price data , financial statements and company info streams .
+Docs https://simfin.readme.io/reference/getting-started-1
 
 ## Usage
 There are multiple ways to use this connector:
