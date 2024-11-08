@@ -589,6 +589,7 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
     should_checkpoint = False
     _state_cursor_field: str = "_ab_updated_at"
     _most_recently_updated_record: Mapping[str, Any] = None
+    _oldest_record_updated: Mapping[str, Any] = None
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -611,13 +612,23 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
                 if not self._most_recently_updated_record or updated_at > self._most_recently_updated_record[self.cursor_field]:
                     self._most_recently_updated_record = record
                 yield record
+            elif updated_at < self._start_date:
+                if not self._oldest_record_updated or updated_at < self._oldest_record_updated[self.cursor_field]:
+                    self._oldest_record_updated = record
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
 
         meta = response.json().get("meta", {}) if response.content else {}
-        return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
+
+        cursor_before_start_date = self._oldest_record_updated and self._oldest_record_updated[self.cursor_field] < self._start_date
+
+        if meta.get("has_more") and not cursor_before_start_date:
+            return {"page[after]": meta.get("after_cursor")}
+        else:
+            return None
 
     def _get_updated_state(self, current_stream_state: Mapping[str, Any], latest_record: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
         if self._most_recently_updated_record:
