@@ -1,9 +1,9 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
 description: >-
-  The [Agile CRM](http://agilecrm.com) Airbyte Connector allows you to sync and
+  The [Agile CRM](http://agilecrm.com/) Airbyte Connector allows you to sync and
   transfer data seamlessly from Agile CRM into your preferred data warehouse or
   analytics tool. With this connector, you can automate data extraction for
   various Agile CRM entities, such as contacts, companies, deals, and tasks,
@@ -18,13 +18,93 @@ check:
 
 definitions:
   streams:
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dev/api/contacts
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['cursor'] }}"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - cursor
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dev/api/contacts/companies/list
+          http_method: POST
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_data
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: body_data
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['cursor'] }}"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - cursor
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
     deals:
       type: DeclarativeStream
       name: deals
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        decoder:
-          type: XmlDecoder
         requester:
           $ref: "#/definitions/base_requester"
           path: /dev/api/opportunity
@@ -36,8 +116,22 @@ definitions:
             field_path:
               - collection
               - opportunity
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['cursor'] }}"
+        decoder:
+          type: XmlDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -45,48 +139,16 @@ definitions:
     notes:
       type: DeclarativeStream
       name: notes
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        decoder:
-          type: XmlDecoder
         requester:
           $ref: "#/definitions/base_requester"
           path: /dev/api/contacts/{{ stream_partition.contact_id }}/notes
           http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-              - note
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/contacts"
-              parent_key: id
-              partition_field: contact_id
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/notes"
-    tickets:
-      type: DeclarativeStream
-      name: tickets
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /dev/api/tickets/filter
-          http_method: GET
           request_headers:
             Accept: application/json
-          request_parameters:
-            filter_id: "{{ stream_partition.filter_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,65 +158,99 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/ticket_filters"
               parent_key: id
-              partition_field: filter_id
+              partition_field: contact_id
+              stream:
+                $ref: "#/definitions/streams/contacts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tickets"
-    contacts:
+          $ref: "#/schemas/notes"
+    tasks:
       type: DeclarativeStream
-      name: contacts
+      name: tasks
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        decoder:
-          type: XmlDecoder
         requester:
           $ref: "#/definitions/base_requester"
-          path: /dev/api/contacts
+          path: /dev/api/tasks
           http_method: GET
+          request_headers:
+            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - collection
-              - contact
-      primary_key:
-        - id
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/contacts"
-    companies:
+          $ref: "#/schemas/tasks"
+    milestone:
       type: DeclarativeStream
-      name: companies
+      name: milestone
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        decoder:
-          type: XmlDecoder
         requester:
           $ref: "#/definitions/base_requester"
-          path: /dev/api/contacts/companies/list
-          http_method: POST
+          path: /dev/api/milestone/pipelines
+          http_method: GET
+          request_headers:
+            Accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - collection
-              - contact
-      primary_key:
-        - id
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/companies"
+          $ref: "#/schemas/milestone"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dev/api/workflows
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['cursor'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
     documents:
       type: DeclarativeStream
       name: documents
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -172,39 +268,19 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/contacts"
               parent_key: id
               partition_field: contact_id
-      primary_key:
-        - id
+              stream:
+                $ref: "#/definitions/streams/contacts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/documents"
-    milestone:
-      type: DeclarativeStream
-      name: milestone
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /dev/api/milestone/pipelines
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/milestone"
     ticket_filters:
       type: DeclarativeStream
       name: ticket_filters
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -218,12 +294,40 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ticket_filters"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dev/api/tickets/filter
+          http_method: GET
+          request_parameters:
+            filter_id: "{{ stream_partition.filter_id }}"
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: filter_id
+              stream:
+                $ref: "#/definitions/streams/ticket_filters"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}.agilecrm.com
@@ -237,7 +341,9 @@ streams:
   - $ref: "#/definitions/streams/companies"
   - $ref: "#/definitions/streams/deals"
   - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/tasks"
   - $ref: "#/definitions/streams/milestone"
+  - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/documents"
   - $ref: "#/definitions/streams/ticket_filters"
   - $ref: "#/definitions/streams/tickets"
@@ -278,54 +384,70 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://github.com/agilecrm/rest-api
+  autoImportSchema:
+    contacts: true
+    companies: true
+    deals: true
+    notes: true
+    tasks: true
+    milestone: true
+    campaigns: true
+    documents: true
+    ticket_filters: true
+    tickets: true
   testedStreams:
-    deals:
-      hasRecords: true
-      streamHash: 9446c64f24ba1a178793c2883c9fd7bf64bd6381
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    notes:
-      hasRecords: true
-      streamHash: 9d05877e6d0a3fb498ca05a235a83afe405b09e0
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    tickets:
-      hasRecords: true
-      streamHash: 44bfa7a5e1c85017b13f4c02d535458b0760216d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     contacts:
       hasRecords: true
-      streamHash: c946f92781e9e589eb4228948304d9f64df6eaf7
+      streamHash: 80fac38644cf41597dfe7a5aef8c79c19a54c0c7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     companies:
       hasRecords: true
-      streamHash: 51bdaa1d1c3cc7f95d16ba17b668abc9aff7e0f2
+      streamHash: a2e03bf2a0bc011bd697fbea4eb56a60c757d828
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    documents:
+    deals:
       hasRecords: true
-      streamHash: cb6fcde18dc70feeabe8375889fce2597ac53bf1
+      streamHash: 9759c5cd023a1c128cd4aae3a473e0497a345889
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      hasRecords: true
+      streamHash: 7b2442bda04ea8312c15888ca45b86099ff505ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tasks:
+      hasRecords: true
+      streamHash: 3541439e84df3b0c998ea7b29de33a05f755df08
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     milestone:
       hasRecords: true
-      streamHash: 64c41e00e90663e423f2ee1d0ec4453264e4e9f2
+      streamHash: c1f2e139ffe24486a32b8d10f39602d8ace0e462
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 56c9e0ece277e19d7cc83c2038e6e5abd4da30e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    documents:
+      hasRecords: true
+      streamHash: 47eaffb88a91fee10ae80921618841cf20cf4136
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -337,55 +459,143 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    deals: true
-    notes: true
-    tickets: true
-    contacts: true
-    companies: true
-    documents: true
-    milestone: true
-    ticket_filters: true
+    tickets:
+      streamHash: 44bfa7a5e1c85017b13f4c02d535458b0760216d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://github.com/agilecrm/rest-api
 
 schemas:
-  deals:
+  contacts:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      name:
+      type:
         type:
           - string
+          - "null"
+      browserId:
+        type:
+          - array
+          - "null"
+      campaignStatus:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            campaign_id:
+              type:
+                - string
+                - "null"
+            campaign_name:
+              type:
+                - string
+                - "null"
+            end_time:
+              type:
+                - number
+                - "null"
+            start_time:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      concurrent_save_allowed:
+        type:
+          - boolean
+          - "null"
+      contact_company_id:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - number
+          - "null"
+      emailBounceStatus:
+        type:
+          - array
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      formId:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_client_import:
+        type:
+          - boolean
+          - "null"
+      is_duplicate_existed:
+        type:
+          - boolean
+          - "null"
+      is_duplicate_verification_failed:
+        type:
+          - boolean
+          - "null"
+      is_lead_converted:
+        type:
+          - boolean
+          - "null"
+      klout_score:
+        type:
+          - string
+          - "null"
+      last_called:
+        type:
+          - number
+          - "null"
+      last_campaign_emaild:
+        type:
+          - number
+          - "null"
+      last_contacted:
+        type:
+          - number
+          - "null"
+      last_emailed:
+        type:
+          - number
+          - "null"
+      lead_converted_time:
+        type:
+          - number
+          - "null"
+      lead_score:
+        type:
+          - number
+          - "null"
+      lead_source_id:
+        type:
+          - number
+          - "null"
+      lead_status_id:
+        type:
+          - number
           - "null"
       owner:
         type:
           - object
           - "null"
         properties:
-          id:
-            type:
-              - string
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
-          schedule_id:
+          calendarURL:
             type:
               - string
               - "null"
@@ -393,15 +603,374 @@ schemas:
             type:
               - string
               - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
+      properties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            subtype:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      restored_time:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      star_value:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tagsWithTime:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            availableCount:
+              type:
+                - number
+                - "null"
+            createdTime:
+              type:
+                - number
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            tag:
+              type:
+                - string
+                - "null"
+      trashed_time:
+        type:
+          - number
+          - "null"
+      unsubscribeStatus:
+        type:
+          - array
+          - "null"
+      updated_time:
+        type:
+          - number
+          - "null"
+      viewed:
+        type:
+          - object
+          - "null"
+        properties:
+          viewed_time:
+            type:
+              - number
+              - "null"
+          viewer_id:
+            type:
+              - number
+              - "null"
+      viewed_time:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      browserId:
+        type:
+          - array
+          - "null"
+      campaignStatus:
+        type:
+          - array
+          - "null"
+      concurrent_save_allowed:
+        type:
+          - boolean
+          - "null"
+      created_time:
+        type:
+          - number
+          - "null"
+      emailBounceStatus:
+        type:
+          - array
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      formId:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_client_import:
+        type:
+          - boolean
+          - "null"
+      is_duplicate_existed:
+        type:
+          - boolean
+          - "null"
+      is_duplicate_verification_failed:
+        type:
+          - boolean
+          - "null"
+      is_lead_converted:
+        type:
+          - boolean
+          - "null"
+      klout_score:
+        type:
+          - string
+          - "null"
+      last_called:
+        type:
+          - number
+          - "null"
+      last_campaign_emaild:
+        type:
+          - number
+          - "null"
+      last_contacted:
+        type:
+          - number
+          - "null"
+      last_emailed:
+        type:
+          - number
+          - "null"
+      lead_converted_time:
+        type:
+          - number
+          - "null"
+      lead_score:
+        type:
+          - number
+          - "null"
+      lead_source_id:
+        type:
+          - number
+          - "null"
+      lead_status_id:
+        type:
+          - number
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          calendarURL:
+            type:
+              - string
+              - "null"
+          calendar_url:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
+      properties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            subtype:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      restored_time:
+        type:
+          - number
+          - "null"
+      star_value:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tagsWithTime:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            availableCount:
+              type:
+                - number
+                - "null"
+            createdTime:
+              type:
+                - number
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            tag:
+              type:
+                - string
+                - "null"
+      trashed_time:
+        type:
+          - number
+          - "null"
+      unsubscribeStatus:
+        type:
+          - array
+          - "null"
+      updated_time:
+        type:
+          - number
+          - "null"
+      viewed:
+        type:
+          - object
+          - "null"
+        properties:
+          viewed_time:
+            type:
+              - number
+              - "null"
+          viewer_id:
+            type:
+              - number
+              - "null"
+      viewed_time:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      apply_discount:
+        type:
+          - string
+          - "null"
       archived:
-        type:
-          - string
-          - "null"
-      colorName:
-        type:
-          - string
-          - "null"
-      milestone:
         type:
           - string
           - "null"
@@ -409,88 +978,11 @@ schemas:
         type:
           - string
           - "null"
-      entity_type:
+      colorName:
         type:
           - string
           - "null"
-      pipeline_id:
-        type:
-          - string
-          - "null"
-      probability:
-        type:
-          - string
-          - "null"
-      created_time:
-        type:
-          - string
-          - "null"
-      discount_amt:
-        type:
-          - string
-          - "null"
-      updated_time:
-        type:
-          - string
-          - "null"
-      discount_type:
-        type:
-          - string
-          - "null"
-      apply_discount:
-        type:
-          - string
-          - "null"
-      deal_source_id:
-        type:
-          - string
-          - "null"
-      discount_value:
-        type:
-          - string
-          - "null"
-      expected_value:
-        type:
-          - string
-          - "null"
-      lost_reason_id:
-        type:
-          - string
-          - "null"
-      total_deal_value:
-        type:
-          - string
-          - "null"
-      note_created_time:
-        type:
-          - string
-          - "null"
-      milestone_changed_time:
-        type:
-          - string
-          - "null"
-      isCurrencyUpdateRequired:
-        type:
-          - string
-          - "null"
-      currency_conversion_value:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  notes:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: string
-      count:
-        type:
-          - string
-          - "null"
-      subject:
+      contact_ids:
         type:
           - string
           - "null"
@@ -503,6 +995,10 @@ schemas:
             type:
               - string
               - "null"
+          first_name:
+            type:
+              - string
+              - "null"
           id:
             type:
               - string
@@ -511,10 +1007,6 @@ schemas:
             type:
               - string
               - "null"
-          first_name:
-            type:
-              - string
-              - "null"
           properties:
             type:
               - array
@@ -536,343 +1028,87 @@ schemas:
                   type:
                     - string
                     - "null"
-      contact_ids:
-        type:
-          - string
-          - "null"
-      domainOwner:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
-          schedule_id:
-            type:
-              - string
-              - "null"
-          calendar_url:
-            type:
-              - string
-              - "null"
-      entity_type:
-        type:
-          - string
-          - "null"
       created_time:
         type:
           - string
           - "null"
-    additionalProperties: true
-  tickets:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      type:
+      currency_conversion_value:
+        type:
+          - string
+          - "null"
+      deal_source_id:
+        type:
+          - string
+          - "null"
+      discount_amt:
+        type:
+          - string
+          - "null"
+      discount_type:
+        type:
+          - string
+          - "null"
+      discount_value:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      expected_value:
         type:
           - string
           - "null"
       id:
-        type:
-          - number
-          - "null"
-      dueOn:
+        type: string
+      isCurrencyUpdateRequired:
         type:
           - string
           - "null"
-      group:
+      lost_reason_id:
+        type:
+          - string
+          - "null"
+      milestone:
+        type:
+          - string
+          - "null"
+      milestone_changed_time:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note_created_time:
+        type:
+          - string
+          - "null"
+      note_ids:
+        type:
+          - string
+          - "null"
+      notes:
         type:
           - object
           - "null"
         properties:
-          id:
-            type:
-              - number
-              - "null"
-          group_name:
-            type:
-              - string
-              - "null"
-          group_email:
-            type:
-              - string
-              - "null"
-      labels:
-        type:
-          - array
-          - "null"
-      source:
-        type:
-          - string
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      contact:
-        type:
-          - object
-          - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - number
-              - "null"
-          properties:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-      groupID:
-        type:
-          - number
-          - "null"
-      is_spam:
-        type:
-          - boolean
-          - "null"
-      subject:
-        type:
-          - string
-          - "null"
-      assignee:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
-          calendarURL:
-            type:
-              - string
-              - "null"
-          schedule_id:
-            type:
-              - string
-              - "null"
-          calendar_url:
-            type:
-              - string
-              - "null"
-      closedOn:
-        type:
-          - string
-          - "null"
-      priority:
-        type:
-          - string
-          - "null"
-      cc_emails:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      contactID:
-        type:
-          - number
-          - "null"
-      createdOn:
-        type:
-          - string
-          - "null"
-      html_text:
-        type:
-          - string
-          - "null"
-      isPrivate:
-        type:
-          - boolean
-          - "null"
-      assigneeID:
-        type:
-          - number
-          - "null"
-      created_by:
-        type:
-          - string
-          - "null"
-      sourceFrom:
-        type:
-          - string
-          - "null"
-      statusName:
-        type:
-          - string
-          - "null"
-      contact_ids:
-        type:
-          - array
-          - "null"
-      entity_type:
-        type:
-          - string
-          - "null"
-      is_favorite:
-        type:
-          - boolean
-          - "null"
-      created_time:
-        type:
-          - number
-          - "null"
-      priorityName:
-        type:
-          - string
-          - "null"
-      assigned_time:
-        type:
-          - number
-          - "null"
-      is_compressed:
-        type:
-          - boolean
-          - "null"
-      lastUpdatedOn:
-        type:
-          - string
-          - "null"
-      no_of_reopens:
-        type:
-          - number
-          - "null"
-      requester_name:
-        type:
-          - string
-          - "null"
-      stringTicketID:
-        type:
-          - string
-          - "null"
-      last_reply_text:
-        type:
-          - string
-          - "null"
-      last_updated_by:
-        type:
-          - string
-          - "null"
-      requester_email:
-        type:
-          - string
-          - "null"
-      attachments_list:
-        type:
-          - array
-          - "null"
-      first_notes_text:
-        type:
-          - string
-          - "null"
-      assigned_to_group:
-        type:
-          - boolean
-          - "null"
-      is_favoriteString:
-        type:
-          - string
-          - "null"
-      last_ticket_notes:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - number
-              - "null"
-          plain_text:
+          description:
             type:
               - string
               - "null"
           created_time:
             type:
-              - number
+              - string
               - "null"
-          ticket_notes_assinee:
+          domainOwner:
             type:
               - object
               - "null"
             properties:
-              id:
-                type:
-                  - number
-                  - "null"
-              pic:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-              phone:
+              calendar_url:
                 type:
                   - string
                   - "null"
@@ -880,7 +1116,19 @@ schemas:
                 type:
                   - string
                   - "null"
-              calendarURL:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              pic:
                 type:
                   - string
                   - "null"
@@ -888,89 +1136,146 @@ schemas:
                 type:
                   - string
                   - "null"
-              calendar_url:
+          entity_type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          subject:
+            type:
+              - string
+              - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          calendar_url:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
+      pipeline_id:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - string
+          - "null"
+      total_deal_value:
+        type:
+          - string
+          - "null"
+      updated_time:
+        type:
+          - string
+          - "null"
+      won_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      contact_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            properties:
+              type:
+                - array
+                - "null"
+              items:
                 type:
-                  - string
+                  - object
                   - "null"
-      last_updated_time:
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      count:
         type:
           - number
           - "null"
-      attachments_exists:
-        type:
-          - boolean
-          - "null"
-      first_replied_time:
+      created_time:
         type:
           - number
           - "null"
-      user_replies_count:
+      deal_ids:
         type:
-          - number
+          - array
           - "null"
-      last_requester_name:
-        type:
-          - string
-          - "null"
-      requester_ip_address:
-        type:
-          - string
-          - "null"
-      last_agent_replied_time:
-        type:
-          - number
-          - "null"
-      attachments_existsString:
-        type:
-          - string
-          - "null"
-      last_customer_replied_time:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  contacts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      tags:
-        type:
-          - string
-          - "null"
-      owner:
+      domainOwner:
         type:
           - object
           - "null"
         properties:
-          id:
-            type:
-              - string
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
-          schedule_id:
+          calendarURL:
             type:
               - string
               - "null"
@@ -978,216 +1283,7 @@ schemas:
             type:
               - string
               - "null"
-      formId:
-        type:
-          - string
-          - "null"
-      viewed:
-        type:
-          - object
-          - "null"
-        properties:
-          viewed_time:
-            type:
-              - string
-              - "null"
-      last_name:
-        type:
-          - string
-          - "null"
-      first_name:
-        type:
-          - string
-          - "null"
-      lastCalled:
-        type:
-          - string
-          - "null"
-      lead_score:
-        type:
-          - string
-          - "null"
-      properties:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-            subtype:
-              type:
-                - string
-                - "null"
-      star_value:
-        type:
-          - string
-          - "null"
-      entity_type:
-        type:
-          - string
-          - "null"
-      forceSearch:
-        type:
-          - string
-          - "null"
-      lastEmailed:
-        type:
-          - string
-          - "null"
-      last_called:
-        type:
-          - string
-          - "null"
-      viewed_time:
-        type:
-          - string
-          - "null"
-      created_time:
-        type:
-          - string
-          - "null"
-      last_emailed:
-        type:
-          - string
-          - "null"
-      tagsWithTime:
-        type:
-          - object
-          - "null"
-        properties:
-          tag:
-            type:
-              - string
-              - "null"
-          createdTime:
-            type:
-              - string
-              - "null"
-          entity_type:
-            type:
-              - string
-              - "null"
-          availableCount:
-            type:
-              - string
-              - "null"
-      trashed_time:
-        type:
-          - string
-          - "null"
-      updated_time:
-        type:
-          - string
-          - "null"
-      lastContacted:
-        type:
-          - string
-          - "null"
-      restored_time:
-        type:
-          - string
-          - "null"
-      last_contacted:
-        type:
-          - string
-          - "null"
-      lead_source_id:
-        type:
-          - string
-          - "null"
-      lead_status_id:
-        type:
-          - string
-          - "null"
-      schema_version:
-        type:
-          - string
-          - "null"
-      is_client_import:
-        type:
-          - string
-          - "null"
-      is_lead_converted:
-        type:
-          - string
-          - "null"
-      contact_company_id:
-        type:
-          - string
-          - "null"
-      lastCampaignEmailed:
-        type:
-          - string
-          - "null"
-      lead_converted_time:
-        type:
-          - string
-          - "null"
-      is_duplicate_existed:
-        type:
-          - string
-          - "null"
-      last_campaign_emaild:
-        type:
-          - string
-          - "null"
-      concurrent_save_allowed:
-        type:
-          - string
-          - "null"
-      is_duplicate_verification_failed:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  companies:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      name:
-        type:
-          - string
-          - "null"
-      tags:
-        type:
-          - string
-          - "null"
-      owner:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
-            type:
-              - string
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
+          domain:
             type:
               - string
               - "null"
@@ -1195,7 +1291,19 @@ schemas:
             type:
               - string
               - "null"
-          domain:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
             type:
               - string
               - "null"
@@ -1203,198 +1311,77 @@ schemas:
             type:
               - string
               - "null"
-          calendar_url:
-            type:
-              - string
-              - "null"
-      formId:
-        type:
-          - string
-          - "null"
-      viewed:
-        type:
-          - object
-          - "null"
-        properties:
-          viewed_time:
-            type:
-              - string
-              - "null"
-      lastCalled:
-        type:
-          - string
-          - "null"
-      lead_score:
-        type:
-          - string
-          - "null"
-      properties:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-            subtype:
-              type:
-                - string
-                - "null"
-      star_value:
-        type:
-          - string
-          - "null"
       entity_type:
         type:
           - string
           - "null"
-      forceSearch:
-        type:
-          - string
-          - "null"
-      lastEmailed:
-        type:
-          - string
-          - "null"
-      last_called:
-        type:
-          - string
-          - "null"
-      viewed_time:
-        type:
-          - string
-          - "null"
-      created_time:
-        type:
-          - string
-          - "null"
-      last_emailed:
-        type:
-          - string
-          - "null"
-      tagsWithTime:
-        type:
-          - object
-          - "null"
-        properties:
-          tag:
-            type:
-              - string
-              - "null"
-          createdTime:
-            type:
-              - string
-              - "null"
-          entity_type:
-            type:
-              - string
-              - "null"
-          availableCount:
-            type:
-              - string
-              - "null"
-      trashed_time:
-        type:
-          - string
-          - "null"
-      updated_time:
-        type:
-          - string
-          - "null"
-      lastContacted:
-        type:
-          - string
-          - "null"
-      restored_time:
-        type:
-          - string
-          - "null"
-      last_contacted:
-        type:
-          - string
-          - "null"
-      lead_source_id:
-        type:
-          - string
-          - "null"
-      lead_status_id:
-        type:
-          - string
-          - "null"
-      schema_version:
-        type:
-          - string
-          - "null"
-      is_client_import:
-        type:
-          - string
-          - "null"
-      is_lead_converted:
-        type:
-          - string
-          - "null"
-      lastCampaignEmailed:
-        type:
-          - string
-          - "null"
-      lead_converted_time:
-        type:
-          - string
-          - "null"
-      is_duplicate_existed:
-        type:
-          - string
-          - "null"
-      last_campaign_emaild:
-        type:
-          - string
-          - "null"
-      concurrent_save_allowed:
-        type:
-          - string
-          - "null"
-      is_duplicate_verification_failed:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  documents:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
       id:
         type: number
-      url:
+      subject:
         type:
           - string
           - "null"
-      name:
+    required:
+      - id
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
         type:
           - string
           - "null"
-      size:
+      contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            properties:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+      created_time:
         type:
           - number
           - "null"
-      text:
+      deal_ids:
         type:
-          - string
+          - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       deals:
         type:
           - array
@@ -1412,40 +1399,54 @@ schemas:
               type:
                 - string
                 - "null"
-      owner:
+      due:
+        type:
+          - number
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_complete:
+        type:
+          - boolean
+          - "null"
+      note_ids:
+        type:
+          - array
+          - "null"
+      notes:
+        type:
+          - array
+          - "null"
+      priority_type:
+        type:
+          - string
+          - "null"
+      progress:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      taskDescription:
+        type:
+          - string
+          - "null"
+      taskOwner:
         type:
           - object
           - "null"
         properties:
-          id:
-            type:
-              - number
-              - "null"
-          pic:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          domain:
-            type:
-              - string
-              - "null"
           calendarURL:
-            type:
-              - string
-              - "null"
-          schedule_id:
             type:
               - string
               - "null"
@@ -1453,14 +1454,217 @@ schemas:
             type:
               - string
               - "null"
-      update:
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
+      task_completed_time:
         type:
           - number
           - "null"
+      task_start_time:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  milestone:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      deals_exist:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      lost_milestone:
+        type:
+          - string
+          - "null"
+      milestones:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      won_milestone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_level:
+        type:
+          - number
+          - "null"
+      backupExists:
+        type:
+          - boolean
+          - "null"
+      category:
+        type:
+          - number
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      created_time:
+        type:
+          - number
+          - "null"
+      creatorName:
+        type:
+          - string
+          - "null"
+      domainUserId:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_disabled:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      rules:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - object
+          - "null"
+        properties:
+          campaign:
+            type:
+              - string
+              - "null"
+          contactFilter:
+            type:
+              - string
+              - "null"
+          email_tracking_type:
+            type:
+              - string
+              - "null"
+          event_owner_id:
+            type:
+              - string
+              - "null"
+          event_type:
+            type:
+              - string
+              - "null"
+          is_disabled:
+            type:
+              - boolean
+              - "null"
+          new_email_trigger_run_on_new_contacts:
+            type:
+              - boolean
+              - "null"
+          trigger_run_on_new_contacts:
+            type:
+              - boolean
+              - "null"
+      unsubscribe:
+        type:
+          - object
+          - "null"
+        properties:
+          action:
+            type:
+              - string
+              - "null"
+          is_unsubscribe_email_disabled:
+            type:
+              - boolean
+              - "null"
+          tag:
+            type:
+              - string
+              - "null"
+          unsubscribe_email:
+            type:
+              - string
+              - "null"
+          unsubscribe_name:
+            type:
+              - string
+              - "null"
+          unsubscribe_subject:
+            type:
+              - string
+              - "null"
+      updated_time:
+        type:
+          - number
+          - "null"
+      updated_time_update:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       case_ids:
         type:
           - array
           - "null"
+      contact_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       contacts:
         type:
           - array
@@ -1507,6 +1711,23 @@ schemas:
           type:
             - string
             - "null"
+      deals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       doc_type:
         type:
           - string
@@ -1515,15 +1736,13 @@ schemas:
         type:
           - string
           - "null"
-      contact_ids:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
       entity_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
         type:
           - string
           - "null"
@@ -1531,14 +1750,47 @@ schemas:
         type:
           - string
           - "null"
-      template_type:
+      owner:
         type:
-          - string
+          - object
           - "null"
-      uploaded_time:
-        type:
-          - number
-          - "null"
+        properties:
+          calendarURL:
+            type:
+              - string
+              - "null"
+          calendar_url:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
       relatedContacts:
         type:
           - array
@@ -1552,52 +1804,121 @@ schemas:
               type:
                 - string
                 - "null"
-            id:
+            browserId:
               type:
-                - number
+                - array
                 - "null"
-            tags:
+            campaignStatus:
               type:
                 - array
                 - "null"
               items:
                 type:
-                  - string
+                  - object
                   - "null"
+                properties:
+                  campaign_id:
+                    type:
+                      - string
+                      - "null"
+                  campaign_name:
+                    type:
+                      - string
+                      - "null"
+                  end_time:
+                    type:
+                      - number
+                      - "null"
+                  start_time:
+                    type:
+                      - number
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+            concurrent_save_allowed:
+              type:
+                - boolean
+                - "null"
+            created_time:
+              type:
+                - number
+                - "null"
+            emailBounceStatus:
+              type:
+                - array
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            formId:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            is_client_import:
+              type:
+                - boolean
+                - "null"
+            is_duplicate_existed:
+              type:
+                - boolean
+                - "null"
+            is_duplicate_verification_failed:
+              type:
+                - boolean
+                - "null"
+            is_lead_converted:
+              type:
+                - boolean
+                - "null"
+            klout_score:
+              type:
+                - string
+                - "null"
+            last_called:
+              type:
+                - number
+                - "null"
+            last_campaign_emaild:
+              type:
+                - number
+                - "null"
+            last_contacted:
+              type:
+                - number
+                - "null"
+            last_emailed:
+              type:
+                - number
+                - "null"
+            lead_converted_time:
+              type:
+                - number
+                - "null"
+            lead_score:
+              type:
+                - number
+                - "null"
+            lead_source_id:
+              type:
+                - number
+                - "null"
+            lead_status_id:
+              type:
+                - number
+                - "null"
             owner:
               type:
                 - object
                 - "null"
               properties:
-                id:
-                  type:
-                    - number
-                    - "null"
-                pic:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                email:
-                  type:
-                    - string
-                    - "null"
-                phone:
-                  type:
-                    - string
-                    - "null"
-                domain:
-                  type:
-                    - string
-                    - "null"
                 calendarURL:
-                  type:
-                    - string
-                    - "null"
-                schedule_id:
                   type:
                     - string
                     - "null"
@@ -1605,31 +1926,34 @@ schemas:
                   type:
                     - string
                     - "null"
-            formId:
-              type:
-                - number
-                - "null"
-            viewed:
-              type:
-                - object
-                - "null"
-              properties:
-                viewer_id:
+                domain:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                id:
                   type:
                     - number
                     - "null"
-                viewed_time:
+                name:
                   type:
-                    - number
+                    - string
                     - "null"
-            browserId:
-              type:
-                - array
-                - "null"
-            lead_score:
-              type:
-                - number
-                - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+                pic:
+                  type:
+                    - string
+                    - "null"
+                schedule_id:
+                  type:
+                    - string
+                    - "null"
             properties:
               type:
                 - array
@@ -1647,42 +1971,30 @@ schemas:
                     type:
                       - string
                       - "null"
-                  value:
-                    type:
-                      - string
-                      - "null"
                   subtype:
                     type:
                       - string
                       - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+            restored_time:
+              type:
+                - number
+                - "null"
             star_value:
               type:
                 - number
                 - "null"
-            entity_type:
+            tags:
               type:
-                - string
+                - array
                 - "null"
-            klout_score:
-              type:
-                - string
-                - "null"
-            last_called:
-              type:
-                - number
-                - "null"
-            viewed_time:
-              type:
-                - number
-                - "null"
-            created_time:
-              type:
-                - number
-                - "null"
-            last_emailed:
-              type:
-                - number
-                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
             tagsWithTime:
               type:
                 - array
@@ -1692,9 +2004,9 @@ schemas:
                   - object
                   - "null"
                 properties:
-                  tag:
+                  availableCount:
                     type:
-                      - string
+                      - number
                       - "null"
                   createdTime:
                     type:
@@ -1704,124 +2016,70 @@ schemas:
                     type:
                       - string
                       - "null"
-                  availableCount:
+                  tag:
                     type:
-                      - number
+                      - string
                       - "null"
             trashed_time:
               type:
                 - number
                 - "null"
-            updated_time:
-              type:
-                - number
-                - "null"
-            restored_time:
-              type:
-                - number
-                - "null"
-            campaignStatus:
-              type:
-                - array
-                - "null"
-            last_contacted:
-              type:
-                - number
-                - "null"
-            lead_source_id:
-              type:
-                - number
-                - "null"
-            lead_status_id:
-              type:
-                - number
-                - "null"
-            is_client_import:
-              type:
-                - boolean
-                - "null"
-            emailBounceStatus:
-              type:
-                - array
-                - "null"
-            is_lead_converted:
-              type:
-                - boolean
-                - "null"
             unsubscribeStatus:
               type:
                 - array
                 - "null"
-            lead_converted_time:
+            updated_time:
               type:
                 - number
                 - "null"
-            is_duplicate_existed:
+            viewed:
               type:
-                - boolean
+                - object
                 - "null"
-            last_campaign_emaild:
+              properties:
+                viewed_time:
+                  type:
+                    - number
+                    - "null"
+                viewer_id:
+                  type:
+                    - number
+                    - "null"
+            viewed_time:
               type:
                 - number
                 - "null"
-            concurrent_save_allowed:
-              type:
-                - boolean
-                - "null"
-            is_duplicate_verification_failed:
-              type:
-                - boolean
-                - "null"
-    additionalProperties: true
-  milestone:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      isDefault:
-        type:
-          - boolean
-          - "null"
-      milestones:
-        type:
-          - string
-          - "null"
-      deals_exist:
-        type:
-          - boolean
-          - "null"
-      won_milestone:
-        type:
-          - string
-          - "null"
-      lost_milestone:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  ticket_filters:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - id
-    properties:
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-      owner_id:
+      size:
         type:
           - number
           - "null"
+      template_type:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      update:
+        type:
+          - number
+          - "null"
+      uploaded_time:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ticket_filters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       conditions:
         type:
           - array
@@ -1831,6 +2089,10 @@ schemas:
             - object
             - "null"
           properties:
+            CONDITION:
+              type:
+                - string
+                - "null"
             LHS:
               type:
                 - string
@@ -1839,10 +2101,20 @@ schemas:
               type:
                 - string
                 - "null"
-            CONDITION:
-              type:
-                - string
-                - "null"
+      id:
+        type: number
+      is_default_filter:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - number
+          - "null"
       ticketGroups:
         type:
           - array
@@ -1851,8 +2123,352 @@ schemas:
         type:
           - number
           - "null"
-      is_default_filter:
+    required:
+      - id
+  tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      assigned_time:
+        type:
+          - number
+          - "null"
+      assigned_to_group:
         type:
           - boolean
           - "null"
-    additionalProperties: true
+      assignee:
+        type:
+          - object
+          - "null"
+        properties:
+          calendarURL:
+            type:
+              - string
+              - "null"
+          calendar_url:
+            type:
+              - string
+              - "null"
+          domain:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          pic:
+            type:
+              - string
+              - "null"
+          schedule_id:
+            type:
+              - string
+              - "null"
+      assigneeID:
+        type:
+          - number
+          - "null"
+      attachments_exists:
+        type:
+          - boolean
+          - "null"
+      attachments_existsString:
+        type:
+          - string
+          - "null"
+      attachments_list:
+        type:
+          - array
+          - "null"
+      cc_emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      closedOn:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          properties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+      contactID:
+        type:
+          - number
+          - "null"
+      contact_ids:
+        type:
+          - array
+          - "null"
+      createdOn:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_time:
+        type:
+          - number
+          - "null"
+      dueOn:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      first_notes_text:
+        type:
+          - string
+          - "null"
+      first_replied_time:
+        type:
+          - number
+          - "null"
+      group:
+        type:
+          - object
+          - "null"
+        properties:
+          group_email:
+            type:
+              - string
+              - "null"
+          group_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      groupID:
+        type:
+          - number
+          - "null"
+      html_text:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      isPrivate:
+        type:
+          - boolean
+          - "null"
+      is_compressed:
+        type:
+          - boolean
+          - "null"
+      is_favorite:
+        type:
+          - boolean
+          - "null"
+      is_favoriteString:
+        type:
+          - string
+          - "null"
+      is_spam:
+        type:
+          - boolean
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      lastUpdatedOn:
+        type:
+          - string
+          - "null"
+      last_agent_replied_time:
+        type:
+          - number
+          - "null"
+      last_customer_replied_time:
+        type:
+          - number
+          - "null"
+      last_reply_text:
+        type:
+          - string
+          - "null"
+      last_requester_name:
+        type:
+          - string
+          - "null"
+      last_ticket_notes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_time:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          plain_text:
+            type:
+              - string
+              - "null"
+          ticket_notes_assinee:
+            type:
+              - object
+              - "null"
+            properties:
+              calendarURL:
+                type:
+                  - string
+                  - "null"
+              calendar_url:
+                type:
+                  - string
+                  - "null"
+              domain:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              pic:
+                type:
+                  - string
+                  - "null"
+              schedule_id:
+                type:
+                  - string
+                  - "null"
+      last_updated_by:
+        type:
+          - string
+          - "null"
+      last_updated_time:
+        type:
+          - number
+          - "null"
+      no_of_reopens:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      priorityName:
+        type:
+          - string
+          - "null"
+      requester_email:
+        type:
+          - string
+          - "null"
+      requester_ip_address:
+        type:
+          - string
+          - "null"
+      requester_name:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      sourceFrom:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusName:
+        type:
+          - string
+          - "null"
+      stringTicketID:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      user_replies_count:
+        type:
+          - number
+          - "null"

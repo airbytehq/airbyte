@@ -1,5 +1,5 @@
 # AgileCRM
-The [Agile CRM](http://agilecrm.com) Airbyte Connector allows you to sync and transfer data seamlessly from Agile CRM into your preferred data warehouse or analytics tool. With this connector, you can automate data extraction for various Agile CRM entities, such as contacts, companies, deals, and tasks, enabling easy integration and analysis of your CRM data in real-time. Ideal for businesses looking to streamline data workflows and enhance data accessibility.
+The [Agile CRM](http://agilecrm.com/) Airbyte Connector allows you to sync and transfer data seamlessly from Agile CRM into your preferred data warehouse or analytics tool. With this connector, you can automate data extraction for various Agile CRM entities, such as contacts, companies, deals, and tasks, enabling easy integration and analysis of your CRM data in real-time. Ideal for businesses looking to streamline data workflows and enhance data accessibility.
 
 ## Configuration
 
@@ -12,11 +12,13 @@ The [Agile CRM](http://agilecrm.com) Airbyte Connector allows you to sync and tr
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| contacts | id | No pagination | ✅ |  ❌  |
-| companies | id | No pagination | ✅ |  ❌  |
-| deals | id | No pagination | ✅ |  ❌  |
+| contacts | id | DefaultPaginator | ✅ |  ❌  |
+| companies | id | DefaultPaginator | ✅ |  ❌  |
+| deals | id | DefaultPaginator | ✅ |  ❌  |
 | notes | id | No pagination | ✅ |  ❌  |
+| tasks | id | No pagination | ✅ |  ❌  |
 | milestone | id | No pagination | ✅ |  ❌  |
+| campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | documents | id | No pagination | ✅ |  ❌  |
 | ticket_filters | id | No pagination | ✅ |  ❌  |
 | tickets |  | No pagination | ✅ |  ❌  |
@@ -28,6 +30,6 @@ The [Agile CRM](http://agilecrm.com) Airbyte Connector allows you to sync and tr
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
