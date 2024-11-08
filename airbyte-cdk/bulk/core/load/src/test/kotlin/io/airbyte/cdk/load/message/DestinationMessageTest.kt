@@ -76,7 +76,7 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("sneaky_undocumented_id", 1234L)
+                        .withAdditionalProperty("id", 1234L)
                 )
 
         val parsedMessage =
@@ -112,7 +112,7 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
-                        .withAdditionalProperty("sneaky_undocumented_id", 1234L)
+                        .withAdditionalProperty("id", 1234L)
                 )
 
         val parsedMessage =

@@ -143,7 +143,6 @@ class InputConsumerTaskTest {
                     JsonNodeFactory.instance.objectNode()
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            additionalProperties = emptyMap()
         )
     }
 
