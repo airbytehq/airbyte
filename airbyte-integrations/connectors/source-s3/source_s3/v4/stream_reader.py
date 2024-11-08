@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from io import IOBase
 from os import getenv, makedirs, path
-from typing import Iterable, List, Optional, Set, cast
+from typing import Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
@@ -188,21 +188,33 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return result
 
     @override
-    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger):
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+        """
+        Downloads a file from an S3 bucket to a specified local directory.
+
+        Args:
+            file (RemoteFile): The remote file object containing URI and metadata.
+            local_directory (str): The local directory path where the file will be downloaded.
+            logger (logging.Logger): Logger for logging information and errors.
+
+        Returns:
+            dict: A dictionary containing the following:
+                - "file_url" (str): The absolute path of the downloaded file.
+                - "bytes" (int): The file size in bytes.
+                - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
+                this a mounted volume in the pod container.
+
+        Raises:
+            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+        """
         file_size = self.file_size(file)
         # I'm putting this check here so we can remove the safety wheels per connector when ready.
         if file_size > self.FILE_SIZE_LIMIT:
             message = "File size exceeds the 1 GB limit."
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
-        # Remove left slashes from source path format to make relative path for writing locally
-        file_relative_path = file.uri.lstrip("/")
-        local_file_path = path.join(local_directory, file_relative_path)
+        file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
-        # Ensure the local directory exists
-        makedirs(path.dirname(local_file_path), exist_ok=True)
-
-        absolute_file_path = path.abspath(local_file_path)
         logger.info(
             f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
         )
@@ -211,6 +223,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         self.s3_client.download_file(self.config.bucket, file.uri, local_file_path)
         write_duration = time.time() - start_download_time
         logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
+
         return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
 
     @override
