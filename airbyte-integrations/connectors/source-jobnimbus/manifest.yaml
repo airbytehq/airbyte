@@ -1,0 +1,1274 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The JobNimbus Airbyte connector enables seamless integration between
+  JobNimbus, a popular CRM and project management tool, and your data pipeline.
+  This connector allows you to automatically sync data from JobNimbus, including
+  contacts records, task information, and more, into your preferred destination.
+  It simplifies data extraction and helps you streamline workflows, enabling
+  efficient analysis and reporting for enhanced business insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - jobs
+
+definitions:
+  streams:
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      primary_key:
+        - jnid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /jobs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/jobs"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - jnid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - jnid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - jnid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activity
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - jnid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - files
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: size
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.jobnimbus.com/api1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/files"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it by logging into your JobNimbus account,
+          navigating to settings, and creating a new API key under the API
+          section.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    jobs: true
+    contacts: true
+    tasks: true
+    activities: true
+    files: true
+  testedStreams:
+    jobs:
+      streamHash: bca8871c147fef7f6d0f77bfce826a62427599f3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 252325bb77028aaf0376b4576d2cf10e3ab87481
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: efb1562d11b177ff66e9d91bb3cf1ba1bcb74709
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activities:
+      streamHash: d1ae5b85712261b52cae2a375adaf139c96978fd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    files:
+      hasRecords: true
+      streamHash: 8a69c7b1902db69e4a5549ec3c52e587fd48d85d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://documenter.getpostman.com/view/3919598/S11PpG4x
+
+schemas:
+  jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      actual_time:
+        type:
+          - number
+          - "null"
+      address_line1:
+        type:
+          - string
+          - "null"
+      address_line2:
+        type:
+          - string
+          - "null"
+      all_day:
+        type:
+          - boolean
+          - "null"
+      all_day_end_date:
+        type:
+          - string
+          - "null"
+      all_day_start_date:
+        type:
+          - string
+          - "null"
+      approved_estimate_total:
+        type:
+          - number
+          - "null"
+      approved_invoice_due:
+        type:
+          - number
+          - "null"
+      approved_invoice_total:
+        type:
+          - number
+          - "null"
+      attachment_count:
+        type:
+          - number
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - number
+          - "null"
+      date_end:
+        type:
+          - number
+          - "null"
+      date_start:
+        type:
+          - number
+          - "null"
+      date_status_change:
+        type:
+          - number
+          - "null"
+      date_updated:
+        type:
+          - number
+          - "null"
+      estimated_time:
+        type:
+          - number
+          - "null"
+      geo:
+        type:
+          - object
+          - "null"
+        properties:
+          lat:
+            type:
+              - number
+              - "null"
+          lon:
+            type:
+              - number
+              - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      jnid:
+        type: string
+      last_budget_gross_margin:
+        type:
+          - number
+          - "null"
+      last_budget_gross_profit:
+        type:
+          - number
+          - "null"
+      last_budget_revenue:
+        type:
+          - number
+          - "null"
+      last_estimate:
+        type:
+          - number
+          - "null"
+      last_estimate_date_created:
+        type:
+          - number
+          - "null"
+      last_estimate_date_estimate:
+        type:
+          - number
+          - "null"
+      last_invoice:
+        type:
+          - number
+          - "null"
+      last_invoice_date_created:
+        type:
+          - number
+          - "null"
+      last_invoice_date_invoice:
+        type:
+          - number
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      owners:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      parent_approved_estimate_total:
+        type:
+          - number
+          - "null"
+      parent_approved_invoice_due:
+        type:
+          - number
+          - "null"
+      parent_approved_invoice_total:
+        type:
+          - number
+          - "null"
+      parent_fax_number:
+        type:
+          - string
+          - "null"
+      parent_home_phone:
+        type:
+          - string
+          - "null"
+      parent_last_estimate:
+        type:
+          - number
+          - "null"
+      parent_last_invoice:
+        type:
+          - number
+          - "null"
+      parent_mobile_phone:
+        type:
+          - string
+          - "null"
+      parent_work_phone:
+        type:
+          - string
+          - "null"
+      primary:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+      recid:
+        type:
+          - number
+          - "null"
+      record_type:
+        type:
+          - number
+          - "null"
+      record_type_name:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+      sales_rep:
+        type:
+          - string
+          - "null"
+      sales_rep_name:
+        type:
+          - string
+          - "null"
+      state_text:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      status_name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      task_count:
+        type:
+          - number
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - jnid
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      actual_time:
+        type:
+          - number
+          - "null"
+      address_line1:
+        type:
+          - string
+          - "null"
+      address_line2:
+        type:
+          - string
+          - "null"
+      approved_estimate_total:
+        type:
+          - number
+          - "null"
+      approved_invoice_due:
+        type:
+          - number
+          - "null"
+      approved_invoice_total:
+        type:
+          - number
+          - "null"
+      attachment_count:
+        type:
+          - number
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - number
+          - "null"
+      date_end:
+        type:
+          - number
+          - "null"
+      date_start:
+        type:
+          - number
+          - "null"
+      date_status_change:
+        type:
+          - number
+          - "null"
+      date_updated:
+        type:
+          - number
+          - "null"
+      disable_auto_text:
+        type:
+          - boolean
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      estimated_time:
+        type:
+          - number
+          - "null"
+      fax_number:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      geo:
+        type:
+          - object
+          - "null"
+        properties:
+          lat:
+            type:
+              - number
+              - "null"
+          lon:
+            type:
+              - number
+              - "null"
+      home_phone:
+        type:
+          - string
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_sub_contractor:
+        type:
+          - boolean
+          - "null"
+      is_user:
+        type:
+          - boolean
+          - "null"
+      jnid:
+        type: string
+      last_budget_gross_margin:
+        type:
+          - number
+          - "null"
+      last_budget_gross_profit:
+        type:
+          - number
+          - "null"
+      last_budget_revenue:
+        type:
+          - number
+          - "null"
+      last_estimate:
+        type:
+          - number
+          - "null"
+      last_estimate_date_created:
+        type:
+          - number
+          - "null"
+      last_estimate_date_estimate:
+        type:
+          - number
+          - "null"
+      last_invoice:
+        type:
+          - number
+          - "null"
+      last_invoice_date_created:
+        type:
+          - number
+          - "null"
+      last_invoice_date_invoice:
+        type:
+          - number
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      mobile_phone:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      owners:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      recid:
+        type:
+          - number
+          - "null"
+      record_type:
+        type:
+          - number
+          - "null"
+      record_type_name:
+        type:
+          - string
+          - "null"
+      sales_rep:
+        type:
+          - string
+          - "null"
+      sales_rep_name:
+        type:
+          - string
+          - "null"
+      state_text:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      status_name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      task_count:
+        type:
+          - number
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      work_phone:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - jnid
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      actual_time:
+        type:
+          - number
+          - "null"
+      all_day:
+        type:
+          - boolean
+          - "null"
+      all_day_end_date:
+        type:
+          - string
+          - "null"
+      all_day_start_date:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - number
+          - "null"
+      date_end:
+        type:
+          - number
+          - "null"
+      date_start:
+        type:
+          - number
+          - "null"
+      date_updated:
+        type:
+          - number
+          - "null"
+      estimated_time:
+        type:
+          - number
+          - "null"
+      hide_from_calendarview:
+        type:
+          - boolean
+          - "null"
+      hide_from_tasklist:
+        type:
+          - boolean
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      jnid:
+        type: string
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      number:
+        type:
+          - string
+          - "null"
+      owners:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      recid:
+        type:
+          - number
+          - "null"
+      record_type:
+        type:
+          - number
+          - "null"
+      record_type_name:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - jnid
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - number
+          - "null"
+      date_updated:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_archived:
+        type:
+          - boolean
+          - "null"
+      is_editable:
+        type:
+          - boolean
+          - "null"
+      is_status_change:
+        type:
+          - boolean
+          - "null"
+      jnid:
+        type: string
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      note:
+        type:
+          - string
+          - "null"
+      owners:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      primary:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          new_status:
+            type:
+              - number
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+      record_type:
+        type:
+          - number
+          - "null"
+      record_type_name:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            new_status:
+              type:
+                - number
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+      sales_rep:
+        type:
+          - string
+          - "null"
+      sales_rep_name:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+    required:
+      - jnid
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_name:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      date_created:
+        type:
+          - number
+          - "null"
+      date_file_created:
+        type:
+          - number
+          - "null"
+      date_updated:
+        type:
+          - number
+          - "null"
+      exif:
+        type:
+          - array
+          - "null"
+      filename:
+        type:
+          - string
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      jnid:
+        type: string
+      md5:
+        type:
+          - string
+          - "null"
+      owners:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      primary:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      record_type:
+        type:
+          - number
+          - "null"
+      record_type_name:
+        type:
+          - string
+          - "null"
+      related:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      size:
+        type:
+          - number
+          - "null"
+    required:
+      - jnid
