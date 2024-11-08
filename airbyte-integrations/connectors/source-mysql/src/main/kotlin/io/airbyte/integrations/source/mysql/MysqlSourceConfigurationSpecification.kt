@@ -35,8 +35,7 @@ import jakarta.inject.Singleton
  */
 @JsonSchemaTitle("Mysql Source Spec")
 @JsonPropertyOrder(
-    value =
-        ["host", "port", "database", "username", "tunnel_method", "ssl_mode", "replication_method"],
+    value = ["host", "port", "database", "username", "replication_method"],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -102,7 +101,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
         "The encryption method with is used when communicating with the database.",
     )
     @JsonSchemaInject(json = """{"order":8}""")
-    fun getEncryptionValue(): Encryption = encryptionJson ?: encryption.asEncryption()
+    fun getEncryptionValue(): Encryption? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
@@ -122,7 +121,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
             "and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":9}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
@@ -159,7 +158,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13,"display_type":"check"}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
