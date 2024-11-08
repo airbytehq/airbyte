@@ -14,3 +14,7 @@ fun JsonNode.serializeToString(): String {
 fun String.deserializeToNode(): JsonNode {
     return Jsons.readTree(this)
 }
+
+fun Any.serializeToJsonBytes(): ByteArray {
+    return Jsons.writeValueAsBytes(this)
+}

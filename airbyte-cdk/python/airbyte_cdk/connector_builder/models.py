@@ -39,6 +39,8 @@ class StreamReadSlices:
 class LogMessage:
     message: str
     level: str
+    internal_message: Optional[str] = None
+    stacktrace: Optional[str] = None
 
 
 @dataclass
