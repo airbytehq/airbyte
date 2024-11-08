@@ -226,11 +226,9 @@ class MysqlJdbcPartitionFactory(
         } else {
             val sv: MysqlJdbcStreamStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
-            println("sv: $sv")
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                println("pkval: ${sv.pkValue}, upperBound: ${upperBound.asText()}")
                 if (sv.pkValue == upperBound.asText()) {
                     return null
                 }

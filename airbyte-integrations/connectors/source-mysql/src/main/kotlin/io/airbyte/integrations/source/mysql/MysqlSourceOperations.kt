@@ -261,7 +261,7 @@ class MysqlSourceOperations :
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = column.type as LosslessJdbcFieldType<*, *>
+                val type = /*column.type as LosslessJdbcFieldType<*, *>*/StringFieldType
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
