@@ -4,25 +4,26 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 
 
 
+
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `exchanges` | `string` | Exchanges.  | NASDAQ |
-| `from` | `string` | From.  |  |
 | `to` | `string` | To.  |  |
 | `symbols` | `array` | Symbols.  |  |
-| `industries` | `string` | Industries. Specify the industries of entities which have been identified within the article. |  |
+| `industries` | `array` | Industries. Specify the industries of entities which have been identified within the article. |  |
 | `filter_entities` | `boolean` | Filter Entities.  | false |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Stock Search |  | DefaultPaginator | ✅ |  ❌  |
-| News Feeds | uuid | DefaultPaginator | ✅ |  ❌  |
-| EOD Data |  | No pagination | ✅ |  ✅  |
-| Intraday Unadjusted Data | date.ticker | No pagination | ✅ |  ✅  |
+| symbols_news_feeds | uuid | DefaultPaginator | ✅ |  ✅  |
+| eod_data |  | No pagination | ✅ |  ✅  |
+| intraday_unadjusted_data | date.ticker | No pagination | ✅ |  ✅  |
+| industries_news_feeds | uuid | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 

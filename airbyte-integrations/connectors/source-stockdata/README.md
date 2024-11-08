@@ -6,6 +6,8 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 
 
 
+
+
 ## Usage
 There are multiple ways to use this connector:
 - You can use this connector as any other connector in Airbyte Marketplace.
