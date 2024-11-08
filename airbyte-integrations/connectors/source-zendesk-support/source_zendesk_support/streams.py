@@ -616,7 +616,6 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
                 if not self._oldest_record_updated or updated_at < self._oldest_record_updated[self.cursor_field]:
                     self._oldest_record_updated = record
 
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self._ignore_pagination:
             return None
