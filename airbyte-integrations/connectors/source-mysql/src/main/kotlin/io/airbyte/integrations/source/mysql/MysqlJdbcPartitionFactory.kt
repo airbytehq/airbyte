@@ -21,7 +21,6 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
@@ -128,7 +127,7 @@ class MysqlJdbcPartitionFactory(
             cursorUpperBound = null,
         )
     }
-    private val log = KotlinLogging.logger {}
+
     /**
      * Flowchart:
      * 1. If the input state is null - using coldstart.
@@ -204,7 +203,6 @@ class MysqlJdbcPartitionFactory(
 
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
-                log.info { "*** $pkChosenFromCatalog $pkField ${sv.pkVal} $pkLowerBound" }
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
                     if (sv.pkVal == upperBound.asText()) {
@@ -252,9 +250,7 @@ class MysqlJdbcPartitionFactory(
 
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
-                log.info { "*** $pkChosenFromCatalog $pkField ${sv.pkValue} $pkLowerBound" }
 
-//                val pkLowerBound: JsonNode = Jsons.valueToTree(sv.pkValue)
                 val cursorChosenFromCatalog: Field =
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
