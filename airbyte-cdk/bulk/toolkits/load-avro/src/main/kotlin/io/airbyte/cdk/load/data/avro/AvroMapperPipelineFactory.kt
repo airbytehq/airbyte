@@ -13,11 +13,7 @@ import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.SchemalessTypesToJson
 import io.airbyte.cdk.load.data.SchemalessValuesToJson
 import io.airbyte.cdk.load.data.TimeStringToInteger
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 
-@Singleton
-@Secondary
 class AvroMapperPipelineFactory : MapperPipelineFactory {
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(

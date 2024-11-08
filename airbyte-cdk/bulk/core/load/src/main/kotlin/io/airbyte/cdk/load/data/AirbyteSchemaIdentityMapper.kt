@@ -49,7 +49,7 @@ interface AirbyteSchemaIdentityMapper : AirbyteSchemaMapper {
     fun mapObjectWithoutSchema(schema: ObjectTypeWithoutSchema): AirbyteType = schema
     fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType = schema
     fun mapUnion(schema: UnionType): AirbyteType {
-        return UnionType(schema.options.map { map(it) })
+        return UnionType.of(schema.options.map { map(it) })
     }
     fun mapDate(schema: DateType): AirbyteType = schema
     fun mapTimeTypeWithTimezone(schema: TimeTypeWithTimezone): AirbyteType = schema

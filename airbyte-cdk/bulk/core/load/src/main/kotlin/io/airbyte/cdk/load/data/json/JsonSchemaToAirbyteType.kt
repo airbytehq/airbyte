@@ -38,13 +38,13 @@ class JsonSchemaToAirbyteType {
                 // {"type": [...], ...}
                 unionFromCombinedTypes(schemaType.toList(), schema)
             } else {
-                UnknownType("unsupported type for 'type' field: $schemaType")
+                UnknownType(schema)
             }
         } else if (schema.isObject) {
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
             val options = schema.get("oneOf") ?: schema.get("anyOf") ?: schema.get("allOf")
             return if (options != null) {
-                optionsToUnionOrSingleType(options.mapNotNull { convertInner(it as ObjectNode) })
+                UnionType.of(options.mapNotNull { convertInner(it as ObjectNode) })
             } else {
                 // Default to object if no type and not a union type
                 convertInner((schema as ObjectNode).put("type", "object"))
@@ -54,12 +54,9 @@ class JsonSchemaToAirbyteType {
             val typeSchema = JsonNodeFactory.instance.objectNode().put("type", schema.asText())
             return convertInner(typeSchema)
         } else {
-            return UnknownType("Unknown schema type: $schema")
+            return UnknownType(schema)
         }
-    } // catch (t: Throwable) {
-    //  return UnknownType(t.message ?: "Unknown error")
-    // }
-    // }
+    }
 
     private fun fromString(schema: ObjectNode): AirbyteType =
         when (schema.get("format")?.asText()) {
@@ -98,8 +95,7 @@ class JsonSchemaToAirbyteType {
             if (items.isEmpty) {
                 return ArrayTypeWithoutSchema
             }
-            val itemOptions = UnionType(items.mapNotNull { convertInner(it) })
-            val itemType = optionsToUnionOrSingleType(itemOptions.options)
+            val itemType = UnionType.of(items.mapNotNull { convertInner(it) })
             return ArrayType(FieldType(itemType, true))
         }
         return ArrayType(fieldFromSchema(items as ObjectNode))
@@ -122,8 +118,7 @@ class JsonSchemaToAirbyteType {
     private fun fieldFromSchema(
         fieldSchema: ObjectNode,
     ): FieldType {
-        val airbyteType =
-            convertInner(fieldSchema) ?: UnknownType("Illegal null type as field type")
+        val airbyteType = convertInner(fieldSchema) ?: UnknownType(fieldSchema)
         return FieldType(airbyteType, nullable = true)
     }
 
@@ -143,15 +138,6 @@ class JsonSchemaToAirbyteType {
                     convertInner(it)
                 }
             }
-        return optionsToUnionOrSingleType(unionOptions)
+        return UnionType.of(unionOptions)
     }
-
-    private fun optionsToUnionOrSingleType(options: List<AirbyteType>): AirbyteType =
-        if (options.isEmpty()) {
-            UnionType(listOf(UnknownType("No valid options in union")))
-        } else if (options.size == 1) {
-            options.first()
-        } else {
-            UnionType(options)
-        }
 }

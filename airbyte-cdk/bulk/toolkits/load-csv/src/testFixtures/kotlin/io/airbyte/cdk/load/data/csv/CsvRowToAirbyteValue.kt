@@ -81,7 +81,9 @@ class CsvRowToAirbyteValue {
                     .fields()
                     .asSequence()
                     .map { entry ->
-                        val type = field.properties[entry.key]?.type ?: UnknownType("unknown")
+                        val type =
+                            field.properties[entry.key]?.type
+                                ?: UnknownType(value.deserializeToNode())
                         entry.key to entry.value.toAirbyteValue(type)
                     }
                     .toMap(properties)
@@ -110,7 +112,7 @@ class CsvRowToAirbyteValue {
             TimeTypeWithoutTimezone -> TimeValue(value)
             TimestampTypeWithTimezone,
             TimestampTypeWithoutTimezone -> TimestampValue(value)
-            is UnknownType -> UnknownValue(value)
+            is UnknownType -> UnknownValue(value.deserializeToNode())
         }
     }
 }

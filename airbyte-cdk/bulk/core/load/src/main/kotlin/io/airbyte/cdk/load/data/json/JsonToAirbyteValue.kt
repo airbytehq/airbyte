@@ -117,7 +117,8 @@ class JsonToAirbyteValue {
         }
         val objectProperties = LinkedHashMap<String, AirbyteValue>()
         json.fields().forEach { (key, value) ->
-            val type = schema.properties[key]?.type ?: UnknownType("undeclared field")
+            // TODO: Would it be more correct just to pass undeclared fields through as unknowns?
+            val type = schema.properties[key]?.type ?: UnknownType(value)
             objectProperties[key] = convert(value, type)
         }
 
@@ -139,15 +140,7 @@ class JsonToAirbyteValue {
         )
     }
 
-    private fun toNull(json: JsonNode): NullValue {
-        if (!json.isNull) {
-            throw IllegalArgumentException("Null types must be null (not $json)")
-        }
-
-        return NullValue
-    }
-
-    private fun toUnion(json: JsonNode, options: List<AirbyteType>): AirbyteValue {
+    private fun toUnion(json: JsonNode, options: Set<AirbyteType>): AirbyteValue {
         val option =
             options.find { matchesStrictly(it, json) }
                 ?: options.find { matchesPermissively(it, json) }
@@ -173,7 +166,7 @@ class JsonToAirbyteValue {
                         .toMap(LinkedHashMap())
                 )
             json.isNull -> NullValue
-            else -> UnknownValue("From unrecognized json: $json")
+            else -> UnknownValue(json)
         }
     }
 

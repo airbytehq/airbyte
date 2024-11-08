@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
@@ -1507,7 +1508,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "time_without_timezone" to
                             FieldType(TimeTypeWithoutTimezone, nullable = true),
                         "date" to FieldType(DateType, nullable = true),
-                        "unknown" to FieldType(UnknownType("test"), nullable = true),
+                        "unknown" to
+                            FieldType(
+                                UnknownType(JsonNodeFactory.instance.textNode("test")),
+                                nullable = true
+                            ),
                     )
                 ),
                 generationId = 42,
@@ -1981,22 +1986,20 @@ abstract class BasicFunctionalityIntegrationTest(
                         // {oneOf: [{type: string}, {type: int}]}
                         // Our AirbyteType treats them identically, so we don't need two test cases.
                         "combined_type" to
-                            FieldType(UnionType(listOf(StringType, IntegerType)), nullable = true),
+                            FieldType(UnionType.of(StringType, IntegerType), nullable = true),
                         "union_of_objects_with_properties_identical" to
                             FieldType(
-                                UnionType(
-                                    listOf(
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(IntegerType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
-                                        ),
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(IntegerType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
                                         )
                                     )
                                 ),
@@ -2004,20 +2007,17 @@ abstract class BasicFunctionalityIntegrationTest(
                             ),
                         "union_of_objects_with_properties_overlapping" to
                             FieldType(
-                                UnionType(
-                                    listOf(
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(IntegerType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
-                                        ),
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "name" to FieldType(StringType, nullable = true),
-                                                "flagged" to
-                                                    FieldType(BooleanType, nullable = true),
-                                            )
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "name" to FieldType(StringType, nullable = true),
+                                            "flagged" to FieldType(BooleanType, nullable = true),
                                         )
                                     )
                                 ),
@@ -2025,21 +2025,17 @@ abstract class BasicFunctionalityIntegrationTest(
                             ),
                         "union_of_objects_with_properties_nonoverlapping" to
                             FieldType(
-                                UnionType(
-                                    listOf(
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(IntegerType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
-                                        ),
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "flagged" to
-                                                    FieldType(BooleanType, nullable = true),
-                                                "description" to
-                                                    FieldType(StringType, nullable = true),
-                                            )
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "flagged" to FieldType(BooleanType, nullable = true),
+                                            "description" to FieldType(StringType, nullable = true),
                                         )
                                     )
                                 ),
@@ -2047,19 +2043,17 @@ abstract class BasicFunctionalityIntegrationTest(
                             ),
                         "union_of_objects_with_properties_contradicting" to
                             FieldType(
-                                UnionType(
-                                    listOf(
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(IntegerType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
-                                        ),
-                                        ObjectType(
-                                            linkedMapOf(
-                                                "id" to FieldType(StringType, nullable = true),
-                                                "name" to FieldType(StringType, nullable = true),
-                                            )
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(StringType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
                                         )
                                     )
                                 ),

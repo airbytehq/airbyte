@@ -32,5 +32,5 @@ class SchemalessValuesToJson : AirbyteValueIdentityMapper() {
         path: List<String>
     ): AirbyteValue = value.toJson().serializeToString().let(::StringValue)
     override fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue =
-        StringValue(value.what)
+        value.value.serializeToString().let(::StringValue)
 }
