@@ -1,15 +1,15 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
 description: >-
-  The Airbyte connector for Flexmail enables seamless data integration from
-  Flexmail, a comprehensive email marketing platform, into various data
-  warehouses and analytics tools. With this connector, users can efficiently
-  synchronize Flexmail data—such as campaign details, subscriber information,
-  and engagement metrics—allowing for unified insights and advanced reporting
-  across platforms. Perfect for businesses aiming to centralize their marketing
-  data for enhanced visibility and decision-making.
+  The Airbyte connector for [Flexmail](https://flexmail.be/) enables seamless
+  data integration from Flexmail, a comprehensive email marketing platform, into
+  various data warehouses and analytics tools. With this connector, users can
+  efficiently synchronize Flexmail data—such as campaign details, subscriber
+  information, and engagement metrics—allowing for unified insights and advanced
+  reporting across platforms. Perfect for businesses aiming to centralize their
+  marketing data for enhanced visibility and decision-making.
 
 check:
   type: CheckStream
@@ -48,7 +48,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 100
+            page_size: 500
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -71,19 +71,6 @@ definitions:
             field_path:
               - _embedded
               - item
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -106,19 +93,6 @@ definitions:
             field_path:
               - _embedded
               - item
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -141,19 +115,6 @@ definitions:
             field_path:
               - _embedded
               - item
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -188,7 +149,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 100
+            page_size: 500
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -207,19 +168,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -278,47 +226,47 @@ metadata:
     webhook_events: true
   testedStreams:
     contacts:
-      hasRecords: true
-      streamHash: 05073c0c8a3d44817e77afe390386927682f0262
+      streamHash: 9697aafc0c43eacbdf5543a0866bb1711eb7a99c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     custom_fields:
-      hasRecords: true
-      streamHash: 30670368fb34ce097d11d6496d8e34f270b7dbd3
+      streamHash: 8e9130174f724b68eac023f7754ad4d7750820f3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     interests:
-      hasRecords: true
-      streamHash: 69e0700b43faacf930b664ef067450c742106037
+      streamHash: c58d821de8774fffbfa15514e93452676449b542
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     segments:
-      hasRecords: true
-      streamHash: 8026435264b62e1d7976e37dc86c8eb7f127b889
+      streamHash: 22bb7e1a7abfacb36b8fa22c0c21175f098842a7
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sources:
-      hasRecords: true
-      streamHash: 4b573ba01e2716981f62cd20143904746408ebeb
+      streamHash: 505704b58a5f5e7a6e532635df6dbb61e9f2b416
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     webhook_events:
-      hasRecords: true
-      streamHash: bb14e24d72f2be408ed7d5cdd4e5a34166d79199
+      streamHash: 5ff0384abc63be781b90d10dd38dc652f7037c4a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://api.flexmail.eu/documentation
 
@@ -351,6 +299,11 @@ schemas:
                 type:
                   - string
                   - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+        properties: {}
       email:
         type:
           - string

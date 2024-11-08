@@ -1,5 +1,5 @@
 # Flexmail
-The Airbyte connector for Flexmail enables seamless data integration from Flexmail, a comprehensive email marketing platform, into various data warehouses and analytics tools. With this connector, users can efficiently synchronize Flexmail data—such as campaign details, subscriber information, and engagement metrics—allowing for unified insights and advanced reporting across platforms. Perfect for businesses aiming to centralize their marketing data for enhanced visibility and decision-making.
+The Airbyte connector for [Flexmail](https://flexmail.be/) enables seamless data integration from Flexmail, a comprehensive email marketing platform, into various data warehouses and analytics tools. With this connector, users can efficiently synchronize Flexmail data—such as campaign details, subscriber information, and engagement metrics—allowing for unified insights and advanced reporting across platforms. Perfect for businesses aiming to centralize their marketing data for enhanced visibility and decision-making.
 
 ## Configuration
 
@@ -12,11 +12,11 @@ The Airbyte connector for Flexmail enables seamless data integration from Flexma
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | contacts | id | DefaultPaginator | ✅ |  ❌  |
-| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
-| interests | id | DefaultPaginator | ✅ |  ❌  |
-| segments | id | DefaultPaginator | ✅ |  ❌  |
+| custom_fields | id | No pagination | ✅ |  ❌  |
+| interests | id | No pagination | ✅ |  ❌  |
+| segments | id | No pagination | ✅ |  ❌  |
 | sources | id | DefaultPaginator | ✅ |  ❌  |
-| webhook_events |  | DefaultPaginator | ✅ |  ❌  |
+| webhook_events |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -25,6 +25,6 @@ The Airbyte connector for Flexmail enables seamless data integration from Flexma
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
