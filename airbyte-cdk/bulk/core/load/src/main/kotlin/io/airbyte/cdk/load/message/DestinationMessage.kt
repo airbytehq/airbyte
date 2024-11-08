@@ -277,8 +277,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         }
         if (destinationStats != null) {
             message.destinationStats =
-                AirbyteStateStats()
-                    .withRecordCount(destinationStats!!.recordCount.toDouble())
+                AirbyteStateStats().withRecordCount(destinationStats!!.recordCount.toDouble())
         }
         if (stateMessageId != null) {
             message.withAdditionalProperty("id", stateMessageId)
@@ -310,8 +309,7 @@ data class StreamCheckpoint(
         stateMessageId,
     )
 
-    override fun withDestinationStats(stats: Stats) =
-        copy(destinationStats = stats)
+    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -340,8 +338,7 @@ data class GlobalCheckpoint(
         Stats(sourceRecordCount),
         stateMessageId = stateMessageId,
     )
-    override fun withDestinationStats(stats: Stats) =
-        copy(destinationStats = stats)
+    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
