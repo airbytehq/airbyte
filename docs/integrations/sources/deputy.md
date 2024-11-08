@@ -15,8 +15,8 @@ You can learn more about the API here https://developer.deputy.com/deputy-docs/r
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `base_url` | `string` | Base URL. The base url for your deputy account to make API requests. Example: `https://my890.as.deputy.com` |  |
 | `api_key` | `string` | API Key.  |  |
-| `base_url` | `string` | Base URL. The base url for your deputy account to make API requests |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -28,6 +28,12 @@ You can learn more about the API here https://developer.deputy.com/deputy-docs/r
 | timesheets | Id | No pagination | ✅ |  ❌  |
 | tasks | Id | No pagination | ✅ |  ❌  |
 | news_feed | Id | No pagination | ✅ |  ❌  |
+| addresses | Id | No pagination | ✅ |  ❌  |
+| categories | Id | No pagination | ✅ |  ❌  |
+| comments | Id | No pagination | ✅ |  ❌  |
+| company_periods | Id | No pagination | ✅ |  ❌  |
+| employee_agreements | Id | No pagination | ✅ |  ❌  |
+| employee | Id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
