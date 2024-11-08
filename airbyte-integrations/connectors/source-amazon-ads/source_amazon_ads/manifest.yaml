@@ -764,7 +764,7 @@ definitions:
           path: /sp/targets/bid/recommendations
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['parent']['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_slice.parent_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spthemebasedbidrecommendation.v4+json
             Content-Type: application/vnd.spthemebasedbidrecommendation.v4+json
@@ -776,6 +776,7 @@ definitions:
               - type: COMPLEMENTS
             adGroupId: '{{ stream_slice["adGroupId"] }}'
             campaignId: '{{ stream_slice.extra_fields["campaignId"] }}'
+            recommendationType: BIDS_FOR_EXISTING_AD_GROUP
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -804,6 +805,13 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.nextToken }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["adGroupId"]
+              value: '{{ stream_slice["adGroupId"] }}'
+            - path: ["campaignId"]
+              value: '{{ stream_slice.extra_fields["campaignId"] }}'
 
     sponsored_product_ad_group_suggested_keywords:
       type: DeclarativeStream
@@ -817,7 +825,7 @@ definitions:
           path: "v2/sp/adGroups/{{ stream_slice['adGroupId'] }}/suggested/keywords"
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['parent']['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_slice.parent_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_params:
             maxNumSuggestions: 100
@@ -834,7 +842,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [""]
+            field_path: []
         paginator:
           type: NoPagination
 
@@ -1157,6 +1165,7 @@ streams:
   - $ref: "#/definitions/streams/portfolios"
 
   - $ref: "#/definitions/streams/sponsored_display_campaigns"
+  - $ref: "#/definitions/streams/sponsored_display_ad_groups"
   - $ref: "#/definitions/streams/sponsored_display_product_ads"
   - $ref: "#/definitions/streams/sponsored_display_targetings"
   - $ref: "#/definitions/streams/sponsored_display_creatives"
