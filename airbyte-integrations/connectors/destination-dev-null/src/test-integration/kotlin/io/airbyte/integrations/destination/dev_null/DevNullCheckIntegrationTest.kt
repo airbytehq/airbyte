@@ -15,14 +15,14 @@ class DevNullCheckIntegrationTest :
         DevNullSpecificationOss::class.java,
         successConfigFilenames =
             listOf(
-                CheckTestConfig(DevNullTestUtils.LOGGING_CONFIG_PATH),
+                CheckTestConfig(DevNullTestUtils.loggingConfigPath),
             ),
         failConfigFilenamesAndFailureReasons =
             mapOf(
                 // cloud doesn't support logging mode, so this should fail
                 // when trying to parse the config
                 CheckTestConfig(
-                    DevNullTestUtils.LOGGING_CONFIG_PATH,
+                    DevNullTestUtils.loggingConfigPath,
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 ) to Pattern.compile("Value 'LOGGING' is not defined in the schema")
             ),
