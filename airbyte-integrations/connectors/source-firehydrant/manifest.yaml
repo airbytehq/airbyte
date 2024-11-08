@@ -43,8 +43,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -79,8 +79,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -115,8 +115,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -151,8 +151,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -187,8 +187,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -223,8 +223,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -259,8 +259,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -295,8 +295,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -352,8 +352,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -388,8 +388,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -424,8 +424,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -460,8 +460,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -517,8 +517,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -574,8 +574,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -610,8 +610,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -646,8 +646,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -682,8 +682,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -718,8 +718,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -754,8 +754,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -811,8 +811,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -847,8 +847,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -883,8 +883,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -919,8 +919,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -955,8 +955,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -991,8 +991,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1053,8 +1053,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1089,8 +1089,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1125,8 +1125,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1161,8 +1161,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1197,8 +1197,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1228,9 +1228,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ticketing_priorities"
-    ticketing_ticket_tags:
+    ticket_tags:
       type: DeclarativeStream
-      name: ticketing_ticket_tags
+      name: ticket_tags
+      primary_key:
+        - name
       retriever:
         type: SimpleRetriever
         requester:
@@ -1251,8 +1253,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1261,7 +1263,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ticketing_ticket_tags"
+          $ref: "#/schemas/ticket_tags"
     task_lists:
       type: DeclarativeStream
       name: task_lists
@@ -1287,8 +1289,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1323,8 +1325,8 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1378,7 +1380,7 @@ streams:
   - $ref: "#/definitions/streams/tickets"
   - $ref: "#/definitions/streams/ticketing_projects"
   - $ref: "#/definitions/streams/ticketing_priorities"
-  - $ref: "#/definitions/streams/ticketing_ticket_tags"
+  - $ref: "#/definitions/streams/ticket_tags"
   - $ref: "#/definitions/streams/task_lists"
   - $ref: "#/definitions/streams/checklist_templates"
 
@@ -1441,276 +1443,276 @@ metadata:
     tickets: true
     ticketing_projects: true
     ticketing_priorities: true
-    ticketing_ticket_tags: true
+    ticket_tags: true
     task_lists: true
     checklist_templates: true
   testedStreams:
     enviroments:
+      hasRecords: true
       streamHash: 71983108f8df8f1a8b9a2ff3995dfe29414d67fe
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     services:
+      hasRecords: true
       streamHash: 2f64b43f7a8b620ce891202df6b94e9501b5a428
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     functionalities:
+      hasRecords: true
       streamHash: 7c41bbb2c1962de172a812603704919911ffd889
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
+      hasRecords: true
       streamHash: 58c73deeb399b8e6b39d28cdfe24bfdcfb26c071
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     webhooks:
+      hasRecords: true
       streamHash: 3882e21c123275883db1ffc1a234fe9911dd7556
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     signals_on_call:
+      hasRecords: true
       streamHash: d88d170a0d2cc0344845a0fb569a9947a740fcd9
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     changes_events:
+      hasRecords: true
       streamHash: 1e72de329f01ba8e45411b01ea912ef3250565fb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     changes:
+      hasRecords: true
       streamHash: f2b49a9b58168ddfbb01e97e4b7cc253bb315034
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     entitlements:
+      hasRecords: true
       streamHash: e3dbda8d04c12461d39ad3f2480b0ffa75d7ac3c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     incidents:
+      hasRecords: true
       streamHash: 42d7966e35a4b94108fcfb510b6297f3f8bc4f03
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     incident_roles:
+      hasRecords: true
       streamHash: 971b4d934016e6fccd33a297479c7753bfa1dfef
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     incident_tags:
+      hasRecords: true
       streamHash: bc18571d8105214f3f5463c543e57314a359e4b4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     incident_types:
+      hasRecords: true
       streamHash: e2b355089e950aa9a7d0c18b7a39af49db1656c6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     integrations:
+      hasRecords: true
       streamHash: 5f836b33d2d3070e72daa4c2eb30b047ee1318a6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
+      hasRecords: true
       streamHash: 512f644060cf210bdabe36aef703de21607d1bdf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     reports:
+      hasRecords: true
       streamHash: d9b38bc9d3e6200cc43ef3036fa563a44b1210c0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     runbook_actions:
+      hasRecords: true
       streamHash: cccc1c26f630fd82cdcc3238fbe6018e772a771b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     runbook_executions:
+      hasRecords: true
       streamHash: 0cb2e568db0fb9744718bec9d590cce98131d152
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     runbooks:
+      hasRecords: true
       streamHash: a538bbef227d626e73f8600649903a4266db50cf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     runbook_audits:
+      hasRecords: true
       streamHash: 9e563d84495affb0e47f17381f412b811f0eaa98
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     nunc_connections:
+      hasRecords: true
       streamHash: 3cdf85f3f6ac7ab7ccc7a618360c15a9f0d7667e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     measurement_definitions:
+      hasRecords: true
       streamHash: d99db659bc2b373ab7c91b5a02e7249d81415a1d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     phases:
+      hasRecords: true
       streamHash: baa1d5104f78b1c15011110b0481dad09e7a652a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     priorities:
+      hasRecords: true
       streamHash: 20a474e11a55d6cb19f38d84d7725c3d32eb402d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     severities:
+      hasRecords: true
       streamHash: 52af71adff9c3625346fda144e389a8fe586b8fa
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     severity_matrix_conditions:
+      hasRecords: true
       streamHash: 00f9e25630ed8e92f7826983916e3c7b1a50202a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     severity_matrix_impacts:
+      hasRecords: true
       streamHash: b273c982f82008bcab876d832d823f90fd2fbdc0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     scheduled_maintenances:
+      hasRecords: true
       streamHash: 70dd65b2f5d1e71876c14507227ec7e72d3d943b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     infrastructures:
+      hasRecords: true
       streamHash: 6beeecd9f04aaac754a2e24d041f39432de6bdb5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     custom_fields_definitions:
+      hasRecords: true
       streamHash: 4a16e02dbf2c63df3f2c8df850963e13d89b8406
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     post_mortems_reports:
+      hasRecords: true
       streamHash: 4057a116278a3d45e7d38a80fa702a5530ef5ed0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     post_mortems_questions:
+      hasRecords: true
       streamHash: 95ec2948aa1b42d8393daa0631e10eaefe5f0177
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     alerts:
+      hasRecords: true
       streamHash: 424d96078269c237dca02d43a59152cae75b5ce2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tickets:
+      hasRecords: true
       streamHash: b43064e6e6c589d026f8f39d992c9cc10b85ffe5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     ticketing_projects:
+      hasRecords: true
       streamHash: 339ecfe3e573f72148bdeb54ba286ac62118c52c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     ticketing_priorities:
+      hasRecords: true
       streamHash: bbaa77a0891236d1ea132fe951370f24a75a1b6d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    ticketing_ticket_tags:
-      streamHash: 015bbd4adbf50c31038e3535e31e80b556bf9aec
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ticket_tags:
+      streamHash: 26d058b7451618c9b13c6a3c034443ade678e09f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     task_lists:
+      hasRecords: true
       streamHash: 4a56320dcfb4c9ca479d7589cdfcd75a4a9c5949
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     checklist_templates:
       hasRecords: true
       streamHash: 74d8d98c1f3e58da49564fa21cfca4828e5679fc
@@ -6614,15 +6616,15 @@ schemas:
           - "null"
     required:
       - id
-  ticketing_ticket_tags:
+  ticket_tags:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       name:
-        type:
-          - string
-          - "null"
+        type: string
+    required:
+      - name
   task_lists:
     type: object
     $schema: http://json-schema.org/schema#

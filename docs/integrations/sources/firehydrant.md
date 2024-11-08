@@ -46,7 +46,7 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | tickets | id | DefaultPaginator | ✅ |  ❌  |
 | ticketing_projects | id | DefaultPaginator | ✅ |  ❌  |
 | ticketing_priorities | id | No pagination | ✅ |  ❌  |
-| ticketing_ticket_tags |  | DefaultPaginator | ✅ |  ❌  |
+| ticket_tags | name | DefaultPaginator | ✅ |  ❌  |
 | task_lists | id | DefaultPaginator | ✅ |  ❌  |
 | checklist_templates | id | DefaultPaginator | ✅ |  ❌  |
 
