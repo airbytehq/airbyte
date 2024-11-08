@@ -371,6 +371,21 @@ class DestinationMessageFactory(
     @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
+        fun toLong(value: Any?, name: String): Long? {
+            return value?.let {
+                when (it) {
+                    // you can't cast java.lang.Integer -> java.lang.Long
+                    // so instead we have to do this manual pattern match
+                    is Int -> it.toLong()
+                    is Long -> it
+                    else ->
+                        throw IllegalArgumentException(
+                            "Unexpected value for $name: $it (${it::class.qualifiedName})"
+                        )
+                }
+            }
+        }
+
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {
                 val stream =
@@ -387,11 +402,19 @@ class DestinationMessageFactory(
                             DestinationFile.AirbyteRecordMessageFile(
                                 fileUrl =
                                     message.record.additionalProperties["file_url"] as String?,
-                                bytes = message.record.additionalProperties["bytes"] as Long?,
+                                bytes =
+                                    toLong(
+                                        message.record.additionalProperties["bytes"],
+                                        "message.record.bytes"
+                                    ),
                                 fileRelativePath =
                                     message.record.additionalProperties["file_relative_path"]
                                         as String?,
-                                modified = message.record.additionalProperties["modified"] as Long?,
+                                modified =
+                                    toLong(
+                                        message.record.additionalProperties["modified"],
+                                        "message.record.modified"
+                                    ),
                                 sourceFileUrl =
                                     message.record.additionalProperties["source_file_url"]
                                         as String?
@@ -461,7 +484,8 @@ class DestinationMessageFactory(
                 }
             }
             AirbyteMessage.Type.STATE -> {
-                val stateMessageId = message.state.additionalProperties["id"] as Long?
+                val stateMessageId =
+                    toLong(message.state.additionalProperties["id"], "message.state.id")
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM ->
                         StreamCheckpoint(
