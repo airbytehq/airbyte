@@ -36,6 +36,7 @@ extras = ["file-based"]
 
 # ===== Use local (editable) version of the CDK ====
 # path = "../../../../airbyte-python-cdk-test/"
+# develop = true
 
 # ===== Use development version of the CDK =========
 git = "https://github.com/airbytehq/airbyte-python-cdk-test.git"
