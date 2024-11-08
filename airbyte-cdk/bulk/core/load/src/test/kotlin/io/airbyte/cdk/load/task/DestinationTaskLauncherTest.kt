@@ -9,7 +9,6 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
-import io.airbyte.cdk.load.file.DefaultLocalFile
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.state.SyncManager
@@ -354,11 +353,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
         taskLauncher.handleNewSpilledFile(
             MockDestinationCatalogFactory.stream1,
-            SpilledRawMessagesLocalFile(
-                DefaultLocalFile(Path("not/a/real/file")),
-                100L,
-                Range.singleton(0)
-            )
+            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0))
         )
 
         processRecordsTaskFactory.hasRun.receive()
@@ -372,12 +367,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         launch {
             taskLauncher.handleNewSpilledFile(
                 MockDestinationCatalogFactory.stream1,
-                SpilledRawMessagesLocalFile(
-                    DefaultLocalFile(Path("not/a/real/file")),
-                    100L,
-                    Range.singleton(0),
-                    true
-                )
+                SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0), true)
             )
         }
 

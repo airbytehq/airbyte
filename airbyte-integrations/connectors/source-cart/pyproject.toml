@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.6"
+version = "0.3.7"
 name = "source-cart"
 description = "Source implementation for Cart."
 authors = [ "Airbyte <contact@airbyte.io>",]

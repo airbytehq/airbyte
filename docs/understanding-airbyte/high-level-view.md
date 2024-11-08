@@ -22,7 +22,7 @@ flowchart LR
     S[fa:fa-server Config API Server]
     D[(fa:fa-table Config & Jobs)]
     L[(fa:fa-server Launcher)]
-    O[(fa:fa-superpowers Orchestrator)]
+    OP[(fa:fa-superpowers Operation pod)]
     Q[(fa:fa-superpowers Queue)]
     T(fa:fa-calendar Temporal/Scheduler)
     W2[1..n Airbyte Workers]
@@ -36,23 +36,21 @@ flowchart LR
     W2 -->|creates job| WL
     WL -->|queues workload| Q
     Q  -->|reads from| L
-    L -->|launches| O
-    O -->|launches/reads from| Source
-    O -->|launches/reads from/writes to| Destination
+    L -->|launches| OP
     O -->|reports status to| WL
 ```
 
-- **Web App/UI** [`airbyte-webapp`, `airbyte-proxy`]: An easy-to-use graphical interface for interacting with the Airbyte API.
-- **Config API Server** [`airbyte-server`, `airbyte-server-api`]: Handles connection between UI and API. Airbyte's main control plane. All operations in Airbyte such as creating sources, destinations, connections, managing configurations, etc.. are configured and invoked from the API.
-- **Database Config & Jobs** [`airbyte-db`]: Stores all the connections information \(credentials, frequency...\).
-- **Temporal Service** [`airbyte-temporal`]: Manages the task queue and workflows.
-- **Worker** [`airbyte-worker`]: The worker connects to a source connector, pulls the data and writes it to a destination.
-- **Workload API** [`airbyte-workload-api-server`]: Manages workloads, Airbyte's internal job abstraction.
-- **Launcher** [`airbyte-workload-launcher`]: Launches workloads.
+- **Web App/UI** [`airbyte-webapp`]: An easy-to-use graphical interface for interacting with the Airbyte Server.
+- **Config API Server** [`airbyte-server`, `airbyte-server-api`]: Airbyte's main controller. All operations in Airbyte such as creating sources, destinations, connections, managing configurations, etc.. are configured and invoked from the API.
+- **Database Config & Jobs** [`airbyte-db`]: Stores all the configuration \(credentials, frequency...\) and job history.
+- **Temporal Service** [`airbyte-temporal`]: Manages the scheduling and sequencing task queues and workflows.
+- **Worker** [`airbyte-worker`]: Reads from the task queues and executes the connection scheduling and sequencing logic, making calls to the workload API.
+- **Workload API** [`airbyte-workload-api-server`]: The HTTP interface for enqueuing workloads — the discrete pods that run the connector operations.
+- **Launcher** [`airbyte-workload-launcher`]: Consumes events from the workload API and interfaces with k8s to launch workloads.
 
 The diagram shows the steady-state operation of Airbyte, there are components not described you'll see in your deployment:
 
-- **Cron** [`airbyte-cron`]: Clean the server and sync logs (when using local logs). Regularly updates connector definitions and sweeps old workloads.
+- **Cron** [`airbyte-cron`]: Clean the server and sync logs (when using local logs). Regularly updates connector definitions and sweeps old workloads ensuring eventual consenus.
 - **Bootloader** [`airbyte-bootloader`]: Upgrade and Migrate the Database tables and confirm the enviroment is ready to work.
 
 This is a holistic high-level description of each component. For Airbyte deployed in Kubernetes the structure is very similar with a few changes.
