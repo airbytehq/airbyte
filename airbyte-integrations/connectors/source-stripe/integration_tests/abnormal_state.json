@@ -37,14 +37,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 10000000000 },
+      "stream_state": { "invoice_updated": 10000000000 },
       "stream_descriptor": { "name": "invoice_line_items" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 10000000000 },
+      "stream_state": { "subscription_updated": 10000000000 },
       "stream_descriptor": { "name": "subscription_items" }
     }
   },
