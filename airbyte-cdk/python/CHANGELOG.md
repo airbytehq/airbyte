@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.5.0
+Low-code: Add jinja macros today_with_timezone
+
 ## 6.4.0
 Adding parity to concurrent CDK from declarative and fixing composite primary key
 
