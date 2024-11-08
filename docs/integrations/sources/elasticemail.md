@@ -7,16 +7,17 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `from` | `string` | From.  |  |
 | `api_key` | `string` | API Key.  |  |
 | `scope_type` | `string` | scope type.  |  |
+| `from` | `string` | From.  |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| campaigns |  | DefaultPaginator | ✅ |  ❌  |
-| contacts |  | DefaultPaginator | ✅ |  ❌  |
-| events |  | DefaultPaginator | ✅ |  ❌  |
+| campaigns | Name | DefaultPaginator | ✅ |  ❌  |
+| contacts | Email | DefaultPaginator | ✅ |  ❌  |
+| events |  | DefaultPaginator | ✅ |  ✅  |
 | files |  | DefaultPaginator | ✅ |  ❌  |
 | inboundroute |  | No pagination | ✅ |  ❌  |
 | lists |  | DefaultPaginator | ✅ |  ❌  |
@@ -31,6 +32,6 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
