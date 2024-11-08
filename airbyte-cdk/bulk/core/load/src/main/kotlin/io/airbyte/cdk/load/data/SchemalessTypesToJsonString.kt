@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.data.json.toJson
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
 
 class SchemalessTypesToJsonString : AirbyteSchemaIdentityMapper {
@@ -15,8 +14,7 @@ class SchemalessTypesToJsonString : AirbyteSchemaIdentityMapper {
     override fun mapArrayWithoutSchema(schema: ArrayTypeWithoutSchema): AirbyteType = StringType
 }
 
-class SchemalessValuesToJsonString(meta: DestinationRecord.Meta) :
-    AirbyteValueIdentityMapper(meta) {
+class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: ObjectValue,
         schema: ObjectTypeWithoutSchema,

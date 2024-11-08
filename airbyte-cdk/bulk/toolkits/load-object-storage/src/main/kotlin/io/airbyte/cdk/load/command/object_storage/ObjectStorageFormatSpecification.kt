@@ -36,8 +36,18 @@ interface ObjectStorageFormatSpecificationProvider {
 
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
-            is JsonFormatSpecification -> JsonFormatConfiguration()
-            is CSVFormatSpecification -> CSVFormatConfiguration()
+            is JsonFormatSpecification ->
+                JsonFormatConfiguration(
+                    rootLevelFlattening =
+                        (format as JsonFormatSpecification).flattening ==
+                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
+                )
+            is CSVFormatSpecification ->
+                CSVFormatConfiguration(
+                    rootLevelFlattening =
+                        (format as CSVFormatSpecification).flattening ==
+                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
+                )
             is AvroFormatSpecification ->
                 AvroFormatConfiguration(
                     avroCompressionConfiguration =
@@ -95,14 +105,28 @@ sealed class ObjectStorageFormatSpecification(
     }
 }
 
+interface FlatteningSpecificationProvider {
+    @get:JsonSchemaTitle("Flattening") @get:JsonProperty("flattening") val flattening: Flattening?
+
+    enum class Flattening(@get:JsonValue val flatteningName: String) {
+        NO_FLATTENING("No Flattening"),
+        ROOT_LEVEL_FLATTENING("Root level flattening")
+    }
+}
+
 /** JSONL */
 @JsonSchemaTitle("JSON Lines: Newline-delimited JSON")
 class JsonFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL
-) : ObjectStorageFormatSpecification(formatType), ObjectStorageCompressionSpecificationProvider {
+) :
+    ObjectStorageFormatSpecification(formatType),
+    ObjectStorageCompressionSpecificationProvider,
+    FlatteningSpecificationProvider {
     override val compression: ObjectStorageCompressionSpecification = NoCompressionSpecification()
+    override val flattening: FlatteningSpecificationProvider.Flattening? =
+        FlatteningSpecificationProvider.Flattening.NO_FLATTENING
 }
 
 /** CSV */
@@ -111,8 +135,13 @@ class CSVFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.CSV
-) : ObjectStorageFormatSpecification(formatType), ObjectStorageCompressionSpecificationProvider {
+) :
+    ObjectStorageFormatSpecification(formatType),
+    ObjectStorageCompressionSpecificationProvider,
+    FlatteningSpecificationProvider {
     override val compression: ObjectStorageCompressionSpecification = NoCompressionSpecification()
+    override val flattening: FlatteningSpecificationProvider.Flattening? =
+        FlatteningSpecificationProvider.Flattening.NO_FLATTENING
 }
 
 /** AVRO */
@@ -196,23 +225,32 @@ interface OutputFormatConfigurationProvider {
 
 sealed interface ObjectStorageFormatConfiguration {
     val extension: String
+    val rootLevelFlattening: Boolean
 }
 
-data class JsonFormatConfiguration(override val extension: String = "jsonl") :
-    ObjectStorageFormatConfiguration
+data class JsonFormatConfiguration(
+    override val extension: String = "jsonl",
+    override val rootLevelFlattening: Boolean = false
+) : ObjectStorageFormatConfiguration {}
 
-data class CSVFormatConfiguration(override val extension: String = "csv") :
-    ObjectStorageFormatConfiguration
+data class CSVFormatConfiguration(
+    override val extension: String = "csv",
+    override val rootLevelFlattening: Boolean = false
+) : ObjectStorageFormatConfiguration {}
 
 data class AvroFormatConfiguration(
     override val extension: String = "avro",
     override val avroCompressionConfiguration: AvroCompressionConfiguration,
-) : ObjectStorageFormatConfiguration, AvroCompressionConfigurationProvider
+) : ObjectStorageFormatConfiguration, AvroCompressionConfigurationProvider {
+    override val rootLevelFlattening: Boolean = true // Always flatten avro
+}
 
 data class ParquetFormatConfiguration(
     override val extension: String = "parquet",
     override val parquetWriterConfiguration: ParquetWriterConfiguration
-) : ObjectStorageFormatConfiguration, ParquetWriterConfigurationProvider
+) : ObjectStorageFormatConfiguration, ParquetWriterConfigurationProvider {
+    override val rootLevelFlattening: Boolean = true // Always flatten parquet
+}
 
 interface ObjectStorageFormatConfigurationProvider {
     val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration

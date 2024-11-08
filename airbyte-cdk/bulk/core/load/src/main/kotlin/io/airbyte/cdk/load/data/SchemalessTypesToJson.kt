@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.data.json.toJson
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
 
 class SchemalessTypesToJson : AirbyteSchemaIdentityMapper {
@@ -13,9 +12,10 @@ class SchemalessTypesToJson : AirbyteSchemaIdentityMapper {
     override fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType =
         StringType
     override fun mapArrayWithoutSchema(schema: ArrayTypeWithoutSchema): AirbyteType = StringType
+    override fun mapUnknown(schema: UnknownType): AirbyteType = StringType
 }
 
-class SchemalessValuesToJson(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class SchemalessValuesToJson : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: ObjectValue,
         schema: ObjectTypeWithoutSchema,
@@ -31,4 +31,6 @@ class SchemalessValuesToJson(meta: DestinationRecord.Meta) : AirbyteValueIdentit
         schema: ArrayTypeWithoutSchema,
         path: List<String>
     ): AirbyteValue = value.toJson().serializeToString().let(::StringValue)
+    override fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue =
+        value.value.serializeToString().let(::StringValue)
 }
