@@ -1,14 +1,14 @@
 # Repairshopr
 Repairshopr is a CRM and an integrated marketing platform.
 With this connector we can extract data from various streams such as customers , invoices and payments.
-Docs : https://api-docs.repairshopr.com/#/
+[API Documentation](https://api-docs.repairshopr.com/)
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `subdomain` | `string` | subdomain.  |  |
+| `subdomain` | `string` | Sub Domain.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
