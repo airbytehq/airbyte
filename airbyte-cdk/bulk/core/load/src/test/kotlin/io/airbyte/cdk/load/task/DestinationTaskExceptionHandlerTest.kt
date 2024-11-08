@@ -133,7 +133,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
 
     @Suppress("UNCHECKED_CAST")
     @Test
-    fun testSyncFailureBlocksSyncTasks(
+    fun testSyncFailureDoesNotBlockSyncTasks(
         mockFailSyncTaskFactory: MockFailSyncTaskFactory,
         syncManager: SyncManager,
         catalog: DestinationCatalog
@@ -153,8 +153,18 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         syncManager.markFailed(RuntimeException("dummy failure"))
         wrappedTask.execute()
         delay(1000)
-        Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure)
-        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+        // We do not execute the failure task, because that's triggered outside of the
+        // TaskWrapper stuff
+        Assertions.assertTrue(
+            mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure,
+            "fail sync task should not have executed",
+        )
+        // And we do execute the sync task, because we want to finish any pending work
+        // even if the sync has overall failed.
+        Assertions.assertFalse(
+            innerTaskRan.tryReceive().isFailure,
+            "mock task should have executed",
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -181,7 +191,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
 
     @Suppress("UNCHECKED_CAST")
     @Test
-    fun testStreamFailureBlocksStreamTasks(
+    fun testStreamFailureDoesNotBlockStreamTasks(
         mockFailStreamTaskFactory: MockFailStreamTaskFactory,
         syncManager: SyncManager
     ) = runTest {
@@ -201,8 +211,19 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         manager.markFailed(RuntimeException("dummy failure"))
         launch { wrappedTask.execute() }
         delay(1000)
-        Assertions.assertTrue(mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure)
-        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+        // similar to testSyncFailureDoesNotBlockSyncTasks:
+        // We do not execute the failure task, because that's triggered outside of the
+        // TaskWrapper stuff
+        Assertions.assertTrue(
+            mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure,
+            "fail stream task should execute",
+        )
+        // And we do execute the stream task, because we want to finish any pending work
+        // even if the stream has overall failed.
+        Assertions.assertFalse(
+            innerTaskRan.tryReceive().isFailure,
+            "inner task should have executed",
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
