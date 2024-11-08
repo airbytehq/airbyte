@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.StreamCompleteWrapped
+import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.MemoryManager
@@ -84,7 +84,9 @@ class SpillToDiskTaskTest {
                 )
             )
         }
-        queue.publish(memoryManager.reserveBlocking(0L, StreamCompleteWrapped(index = maxRecords)))
+        queue.publish(
+            memoryManager.reserveBlocking(0L, StreamRecordCompleteWrapped(index = maxRecords))
+        )
         return bytesReserved
     }
 

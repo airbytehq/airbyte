@@ -1,0 +1,296 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - meta_fields_stream
+
+definitions:
+  streams:
+    custom_reports_stream:
+      type: DeclarativeStream
+      name: custom_reports_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reports/custom
+          http_method: POST
+          request_headers:
+            Accept: application/json
+          request_body_json:
+            title: Airbyte
+            fields: list(self.schema["properties"].keys())
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+      schema_loader:
+        type: CustomSchemaLoader
+        class_name: source_declarative_manifest.components.CustomReportsSchemaLoader
+    employees_directory_stream:
+      type: DeclarativeStream
+      name: employees_directory_stream
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: employees/directory
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - employees
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees_directory_stream"
+    meta_fields_stream:
+      type: DeclarativeStream
+      name: meta_fields_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/fields
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meta_fields_stream"
+    time_off_requests_stream:
+      type: DeclarativeStream
+      name: time_off_requests_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time_off/requests/
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        lookback_window: P60D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_requests_stream"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: x
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/custom_reports_stream"
+  - $ref: "#/definitions/streams/employees_directory_stream"
+  - $ref: "#/definitions/streams/meta_fields_stream"
+  - $ref: "#/definitions/streams/time_off_requests_stream"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+    properties:
+      api_key:
+        type: string
+        description: Api key of bamboo hr
+        order: 0
+        title: api_key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: Sub Domain of bamboo hr
+        order: 1
+        title: subdomain
+      custom_reports_fields:
+        type: string
+        description: Comma-separated list of fields to include in custom reports.
+        order: 2
+        title: custom_reports_fields
+      custom_reports_include_default_fields:
+        type: boolean
+        description: >-
+          If true, the custom reports endpoint will include the default fields
+          defined here:
+          https://documentation.bamboohr.com/docs/list-of-field-names.
+        title: custom_reports_include_default_fields
+        default: true
+        order: 3
+      start_date:
+        type: string
+        order: 4
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    custom_reports_stream: false
+    employees_directory_stream: false
+    meta_fields_stream: false
+    time_off_requests_stream: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  employees_directory_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  meta_fields_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      alias:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  time_off_requests_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      actions:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      amount:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      created:
+        type:
+          - "null"
+          - string
+      dates:
+        type:
+          - "null"
+          - string
+      employeeId:
+        type:
+          - "null"
+          - string
+      end:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      start:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
