@@ -14,6 +14,7 @@ Airbyte connector for [Encharge](https://encharge.io/) enables seamless data int
 | accounts | accountId | No pagination | ✅ |  ❌  |
 | account_tags | tag | No pagination | ✅ |  ❌  |
 | segments | id | DefaultPaginator | ✅ |  ❌  |
+| segment_people | id | DefaultPaginator | ✅ |  ❌  |
 | fields | name | No pagination | ✅ |  ❌  |
 | schemas | name | No pagination | ✅ |  ❌  |
 
