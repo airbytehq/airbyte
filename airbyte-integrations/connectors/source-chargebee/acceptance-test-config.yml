@@ -45,7 +45,7 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
-        validate_state_messages: False
+        validate_state_messages: false
         fail_on_extra_columns: true
   incremental:
     tests:

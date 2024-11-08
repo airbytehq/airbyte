@@ -41,19 +41,19 @@ Organization-wide permissions and each set of workspace permissions each count a
   "companyGroup1": [
     {
       "scope": "workspace",
-      "scopeId": "workspace1",
+      "scopeId": "11111111-11111111-11111111-11111111",
       "permissionType": "workspace_admin"
     },
     {
       "scope": "workspace",
-      "scopeId": "workspace2",
+      "scopeId": "22222222-22222222-22222222-22222222",
       "permissionType": "workspace_reader"
     }
   ],
   "companyGroup2": [
     {
       "scope": "workspace",
-      "scopeId": "workspace1",
+      "scopeId": "33333333-33333333-33333333-33333333",
       "permissionType": "workspace_reader"
     }
   ]
@@ -61,6 +61,7 @@ Organization-wide permissions and each set of workspace permissions each count a
 ```
 Notes:
 - `scope` must be set to either 'workspace' or 'organization'.
+- `scopeId` must the identifier of scope access is granted for. It is a GUID and for organization scope is always '00000000-00000000-00000000-00000000'. For workspace, refer to the UI and the output of a list workspace to identify your workspaceId.
 - `permissionType` must be set to a valid value, e.g. 'workspace_admin', 'workspace_reader', 'organization_admin', etc. All valid values are listed [here](https://github.com/airbytehq/airbyte-api-python-sdk/blob/main/src/airbyte_api/models/publicpermissiontype.py).
 
 ### Complete Python Script
