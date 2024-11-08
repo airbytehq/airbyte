@@ -12,8 +12,10 @@ Docs : https://docs.tinyemail.com/docs/tiny-email/tinyemail
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| campaigns | id | No pagination | ✅ |  ❌  |
+| campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | id | No pagination | ✅ |  ❌  |
+| sender_details |  | No pagination | ✅ |  ❌  |
+| contact_members |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -22,6 +24,6 @@ Docs : https://docs.tinyemail.com/docs/tiny-email/tinyemail
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-08 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
