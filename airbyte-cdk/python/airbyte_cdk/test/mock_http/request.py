@@ -85,3 +85,13 @@ class HttpRequest:
 
     def __repr__(self) -> str:
         return f"HttpRequest(request={self._parsed_url}, headers={self._headers}, body={self._body!r})"
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, HttpRequest):
+            return (
+                self._parsed_url == other._parsed_url
+                and self._query_params == other._query_params
+                and self._headers == other._headers
+                and self._body == other._body
+            )
+        return False

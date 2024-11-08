@@ -5,10 +5,9 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, FailureType
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
 from airbyte_cdk.sources.streams.http.http import HttpStatusErrorHandler
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import Status
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuotaBase
 from source_google_analytics_data_api.source import GoogleAnalyticsDatApiErrorHandler, MetadataDescriptor

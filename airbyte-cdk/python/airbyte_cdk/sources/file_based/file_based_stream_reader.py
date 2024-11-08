@@ -92,6 +92,16 @@ class AbstractFileBasedStreamReader(ABC):
                     seen.add(file.uri)
                     yield file
 
+    @abstractmethod
+    def file_size(self, file: RemoteFile) -> int:
+        """Utility method to get size of the remote file.
+
+        This is required for connectors that will support writing to
+        files. If the connector does not support writing files, then the
+        subclass can simply `return 0`.
+        """
+        ...
+
     @staticmethod
     def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:
         # Use the GLOBSTAR flag to enable recursive ** matching
@@ -105,3 +115,11 @@ class AbstractFileBasedStreamReader(ABC):
         """
         prefixes = {glob.split("*")[0] for glob in globs}
         return set(filter(lambda x: bool(x), prefixes))
+
+    def use_file_transfer(self) -> bool:
+        if self.config:
+            use_file_transfer = (
+                hasattr(self.config.delivery_method, "delivery_type") and self.config.delivery_method.delivery_type == "use_file_transfer"
+            )
+            return use_file_transfer
+        return False
