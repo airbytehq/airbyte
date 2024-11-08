@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
@@ -266,26 +265,6 @@ class MysqlSourceOperations :
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
-
-    private fun stateValueToJsonNode(fieldType: FieldType, stateValue: String?): JsonNode {
-        when (fieldType.airbyteSchemaType) {
-            is LeafAirbyteSchemaType ->
-                return when (fieldType.airbyteSchemaType as LeafAirbyteSchemaType) {
-                    LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toInt())
-                    }
-                    LeafAirbyteSchemaType.NUMBER -> {
-                        Jsons.valueToTree(stateValue?.toDouble())
-                    }
-                    else -> Jsons.valueToTree(stateValue)
-                }
-            else ->
-                throw IllegalStateException(
-                    "PK field must be leaf type but is ${fieldType.airbyteSchemaType}."
-                )
-        }
-    }
-
 
     fun LimitNode.bindings(): List<SelectQuery.Binding> =
         when (this) {

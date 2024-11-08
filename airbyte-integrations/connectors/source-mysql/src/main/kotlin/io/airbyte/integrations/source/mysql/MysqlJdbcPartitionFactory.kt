@@ -200,9 +200,9 @@ class MysqlJdbcPartitionFactory(
             } else {
                 // This branch indicates snapshot is incomplete. We need to resume based on previous
                 // snapshot state.
-
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
+
                 if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                     val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
                     if (sv.pkVal == upperBound.asText()) {
@@ -247,7 +247,6 @@ class MysqlJdbcPartitionFactory(
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
-
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
 
