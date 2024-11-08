@@ -6,6 +6,7 @@ import http.client
 import logging
 import re
 import sys
+from math import ceil
 from typing import Any
 
 import backoff
@@ -67,7 +68,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             and exc.api_error_message() in error_patterns
         ):
             # reduce the existing request `limit` param by a quarter and retry
-            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 4)
+            details["kwargs"]["params"]["limit"] = ceil(int(details["kwargs"]["params"]["limit"]) / 4)
             # set the flag to the api class that the last api call failed
             details.get("args")[0].last_api_call_is_successfull = False
             # set the flag to the api class that the `limit` param was reduced

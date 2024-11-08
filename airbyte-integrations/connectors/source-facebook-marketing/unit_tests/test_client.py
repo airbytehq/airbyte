@@ -286,10 +286,10 @@ class TestBackoff:
         except AirbyteTracedException:
             assert [x.qs.get("limit")[0] for x in res.request_history] == [
                 "100",
-                "50",
                 "25",
-                "12",
-                "6",
+                "7",
+                "2",
+                "1",
             ]
 
     def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
@@ -341,9 +341,10 @@ class TestBackoff:
         except FacebookRequestError:
             assert [x.qs.get("limit")[0] for x in res.request_history] == [
                 "100",
-                "50",
-                "100",
-                "50",
+                "25",
+                "7",
+                "2",
+                "1",
             ]
 
     def test_start_date_not_provided(self, requests_mock, api, account_id):
@@ -422,8 +423,8 @@ class TestBackoff:
             assert [x.qs.get("limit")[0] for x in res.request_history] == [
                 "100",
                 "100",
-                "50",
                 "25",
-                "12",
                 "6",
+                "1",
+                "1",
             ]
