@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -34,6 +34,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,6 +133,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - activities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -265,6 +295,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -328,6 +373,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - contacts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -370,6 +430,15 @@ definitions:
             type: DpathExtractor
             field_path:
               - events
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,6 +481,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - notes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[page]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[limit]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 1000
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -568,8 +652,8 @@ definitions:
     url_base: https://app.nutshell.com/rest/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
       password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -609,14 +693,14 @@ spec:
     properties:
       username:
         type: string
-        title: Username
         order: 0
+        title: Username
       password:
         type: string
+        order: 1
         title: API Token
         always_show: true
         airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -649,187 +733,187 @@ metadata:
     users: true
   testedStreams:
     accounts:
-      streamHash: f5090b1a714bdb3c75618e9edc90374391cb6f3b
+      streamHash: 96176c8138e2947189c8248d0e107c45e2213c1d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     accounts_list_items:
+      hasRecords: true
       streamHash: 950a82a5cb97a96275f458afab995a8b7f7f4253
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     account_types:
+      hasRecords: true
       streamHash: 3971bad17989f52be26760bf32361dada60abffb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     industries:
+      hasRecords: true
       streamHash: 090308ee3fd98e1d63726112a68f5603c6a640ab
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     activities:
-      streamHash: 0ded79a7f0e0f156848689448ac375d2fbb2d840
+      streamHash: 9ecc362e2ccb01a394d8b7b896dd08c05348038f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     activity_types:
+      hasRecords: true
       streamHash: 75d8067582013231d6422857b1809e33a988dc79
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     audiences:
+      hasRecords: true
       streamHash: 1740633999bd89071ff1cd5815596cbc54ae992e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     competitors:
+      hasRecords: true
       streamHash: f228a19770cc2cd56bdc0ae29ff514b5004ed1ca
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     competitor_maps:
+      hasRecords: true
       streamHash: 9c9a560b8998b245b53e489926b82bf88eb0ac65
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads_custom_fields:
+      hasRecords: true
       streamHash: efc120a9dd34396060e67db65ce8d30c87909fc0
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads_list_items:
+      hasRecords: true
       streamHash: 3ccca9e30beaefb65eb56df09e2c4071661f2571
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads:
-      streamHash: aa3b1fec18e4e6ef7de07d370733724f16567e47
+      streamHash: 713b65b5d2b685ca04263fc807932e804b4207d3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leads_report:
+      hasRecords: true
       streamHash: 8fada2e36796f20d464127fe1cbb8db5bbd4bec1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts_custom_fields:
+      hasRecords: true
       streamHash: 5ce848d74dc68b2437021e5ef54dce4b21152e80
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
-      streamHash: 06efb4f4ef758e6f1184bcbb48301d01dbd60e31
+      streamHash: 57a95ebdcdd0abb5d0cc85d688cd483dca929c11
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts_list_items:
+      hasRecords: true
       streamHash: 3acd42b55b54243d6fd283f8797d3d5922f82b29
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     events:
-      streamHash: a35b4a345eadedd275d8e2169a6f22443a6ccbe7
+      streamHash: f0ce38f5cbaf8b080683b37903d431cdd473d600
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     filters:
+      hasRecords: true
       streamHash: c421400c7d79583d7cdf23b502009ee9d50a7efb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     notes:
-      streamHash: 3b4511dc1543fa7cf1f526e654cd623e655cabc1
+      streamHash: d8b92a0d1132bad5d95d178bcd4d02718f07634b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
+      hasRecords: true
       streamHash: 2ff96073d3e16d854f41423cd115d5bf2103cea6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     lead_products:
+      hasRecords: true
       streamHash: a4f6eb55ac384e9ff0c3d6520f3a58f057413c1a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sources:
+      hasRecords: true
       streamHash: 50b294bf440887aebdbe3649ddf763a08f5e113e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stages:
+      hasRecords: true
       streamHash: 7d4571033d422d8bece1b991415e857e035ee259
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pipelines:
+      hasRecords: true
       streamHash: 05a244867424c123a2ff84728827bd623b4190ef
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
+      hasRecords: true
       streamHash: e9314e64ff51a372efe7cb64cf5ad72e6007f15f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users:
+      hasRecords: true
       streamHash: 9715618f1ce6e97522d9f18503982a8547fe6933
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -944,19 +1028,11 @@ schemas:
               type:
                 - string
                 - "null"
-          creator:
-            type:
-              - string
-              - "null"
           files:
             type:
               - array
               - "null"
           industry:
-            type:
-              - string
-              - "null"
-          owner:
             type:
               - string
               - "null"
@@ -3104,12 +3180,27 @@ schemas:
           - type: array
           - type: object
             properties:
+              1-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              10-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
               11-accounts:
                 type: object
                 properties:
                   title:
                     type: "null"
               12-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              13-accounts:
                 type: object
                 properties:
                   title:
@@ -3129,7 +3220,27 @@ schemas:
                 properties:
                   title:
                     type: "null"
+              17-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              18-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              19-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
               2-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              20-accounts:
                 type: object
                 properties:
                   title:
@@ -3144,6 +3255,16 @@ schemas:
                 properties:
                   title:
                     type: "null"
+              23-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              24-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
               25-accounts:
                 type: object
                 properties:
@@ -3154,12 +3275,67 @@ schemas:
                 properties:
                   title:
                     type: "null"
+              27-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              28-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              29-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              3-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
               30-accounts:
                 type: object
                 properties:
                   title:
                     type: "null"
-              83-accounts:
+              31-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              32-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              4-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              5-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              6-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              7-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              8-accounts:
+                type: object
+                properties:
+                  title:
+                    type: "null"
+              9-accounts:
                 type: object
                 properties:
                   title:
@@ -3181,21 +3357,9 @@ schemas:
               type:
                 - string
                 - "null"
-          creator:
-            type:
-              - string
-              - "null"
           files:
             type:
               - array
-              - "null"
-          owner:
-            type:
-              - string
-              - "null"
-          recurringTask:
-            type:
-              - string
               - "null"
           relatedFiles:
             type:
@@ -3244,10 +3408,6 @@ schemas:
                     - string
                     - "null"
                 countryCodeAndNumber:
-                  type:
-                    - string
-                    - "null"
-                extension:
                   type:
                     - string
                     - "null"
@@ -4740,9 +4900,7 @@ schemas:
                       type: number
             oldValue:
               anyOf:
-                - type:
-                    - "null"
-                    - string
+                - type: string
                 - type: object
                   properties:
                     type:
