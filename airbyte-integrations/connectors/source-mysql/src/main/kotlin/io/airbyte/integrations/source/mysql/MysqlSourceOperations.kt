@@ -68,7 +68,6 @@ import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumOperations
 import io.airbyte.integrations.source.mysql.cdc.MySqlPosition
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
