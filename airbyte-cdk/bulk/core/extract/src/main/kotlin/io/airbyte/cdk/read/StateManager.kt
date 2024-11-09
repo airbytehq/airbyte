@@ -230,8 +230,10 @@ class StateManager(
     ) : BaseStateManager<Stream>(stream, initialState) {
         fun checkpoint(): AirbyteStateMessage? {
             val streamStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
-            if (streamStateForCheckpoint is Stale
-                || streamStateForCheckpoint.opaqueStateValue == null) {
+            if (
+                streamStateForCheckpoint is Stale ||
+                    streamStateForCheckpoint.opaqueStateValue == null
+            ) {
                 return null
             }
             val airbyteStreamState =
