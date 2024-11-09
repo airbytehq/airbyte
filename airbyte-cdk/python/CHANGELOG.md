@@ -1,5 +1,38 @@
 # Changelog
 
+## 6.5.2
+bugfix: Ensure that streams with partition router are not executed concurrently
+
+## 6.5.1
+Add state migration workaround for legacy substreams
+
+## 6.5.0
+Low-code: Add jinja macros today_with_timezone
+
+## 6.4.0
+Adding parity to concurrent CDK from declarative and fixing composite primary key
+
+## 6.3.0
+ add clear method to HttpMocker
+
+## 6.2.0
+Support multiple input datetime formats as part of the concurrent cursor
+
+## 6.1.1
+fix streams discover
+
+## 6.1.0
+Add option to File Transfer for File-Bases sources
+
+## 6.0.0
+Introduce support for low-code incremental streams to be run within the concurrent CDK framework
+
+## 5.17.0
+Add Per Partition with Global fallback Cursor 
+
+## 5.16.0
+Better structured error log messages in connector_builder module, with message / internal_message / stacktrace split into separate fields
+
 ## 5.15.0
 Add new Error:
 No DBURL given
