@@ -1,9 +1,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 """
-# Welcome to the Airbyte CDK!
+# Welcome to the Airbyte Python CDK!
 
-The Airbyte CDK is a Python library that provides a set of tools to help you build connectors for
-the Airbyte platform.
+The Airbyte Python CDK is a Python library that provides a set of tools to help you build
+connectors for the Airbyte platform.
 
 ## Building Source Connectors
 
@@ -42,27 +42,39 @@ API Reference
 
 from importlib import metadata
 
-from .destinations import Destination
-from .models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type, FailureType, AirbyteStream, AdvancedAuth, DestinationSyncMode, ConnectorSpecification, OAuthConfigSpecification, OrchestratorType, ConfiguredAirbyteStream, SyncMode, AirbyteLogMessage, Level, AirbyteRecordMessage
-
-from .sources import Source
 from .config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from .connector import BaseConnector, Connector
-
-from .entrypoint import launch, AirbyteEntrypoint
-
+from .destinations import Destination
+from .entrypoint import AirbyteEntrypoint, launch
 from .logger import AirbyteLogFormatter, init_logger
-from .sources import AbstractSource
+from .models import (
+    AdvancedAuth,
+    AirbyteConnectionStatus,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    Level,
+    OAuthConfigSpecification,
+    OrchestratorType,
+    Status,
+    SyncMode,
+    Type,
+)
+from .sources import AbstractSource, Source
 from .sources.concurrent_source.concurrent_source import ConcurrentSource
 from .sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from .sources.config import BaseConfig
-from .sources.types import Config, Record, StreamSlice
 from .sources.connector_state_manager import ConnectorStateManager
 from .sources.declarative.auth import DeclarativeOauth2Authenticator
-from .sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from .sources.declarative.auth.declarative_authenticator import NoAuth
+from .sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from .sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
-from .sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, ApiKeyAuthenticator
+from .sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from .sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from .sources.declarative.declarative_stream import DeclarativeStream
 from .sources.declarative.decoders import Decoder, JsonDecoder
@@ -71,48 +83,60 @@ from .sources.declarative.extractors import DpathExtractor, RecordSelector
 from .sources.declarative.extractors.record_extractor import RecordExtractor
 from .sources.declarative.extractors.record_filter import RecordFilter
 from .sources.declarative.incremental import DatetimeBasedCursor
-from .sources.declarative.interpolation import InterpolatedString, InterpolatedBoolean
+from .sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
 from .sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from .sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
-
 from .sources.declarative.partition_routers import CartesianProductStreamSlicer, SinglePartitionRouter, SubstreamPartitionRouter
 from .sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from .sources.declarative.requesters import Requester, HttpRequester
-
+from .sources.declarative.requesters import HttpRequester, Requester
 from .sources.declarative.requesters.error_handlers import BackoffStrategy
 from .sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
-from .sources.declarative.requesters.paginators.strategies import OffsetIncrement, CursorPaginationStrategy, PageIncrement, StopConditionPaginationStrategyDecorator
-
+from .sources.declarative.requesters.paginators.strategies import (
+    CursorPaginationStrategy,
+    OffsetIncrement,
+    PageIncrement,
+    StopConditionPaginationStrategyDecorator,
+)
 from .sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-
 from .sources.declarative.requesters.request_options.default_request_options_provider import DefaultRequestOptionsProvider
 from .sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from .sources.declarative.requesters.requester import HttpMethod
 from .sources.declarative.retrievers import SimpleRetriever
 from .sources.declarative.schema import JsonFileSchemaLoader
-from .sources.declarative.transformations.add_fields import AddFields, AddedFieldDefinition
+from .sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
 from .sources.declarative.transformations.transformation import RecordTransformation
 from .sources.declarative.types import FieldPointer
 from .sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from .sources.message import InMemoryMessageRepository, MessageRepository
 from .sources.source import TState
 from .sources.streams.availability_strategy import AvailabilityStrategy
-from .sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, CachedLimiterSession, LimiterSession
+from .sources.streams.call_rate import (
+    AbstractAPIBudget,
+    CachedLimiterSession,
+    HttpAPIBudget,
+    HttpRequestMatcher,
+    LimiterSession,
+    MovingWindowCallRatePolicy,
+    Rate,
+)
 from .sources.streams.checkpoint import Cursor as LegacyCursor
 from .sources.streams.checkpoint import ResumableFullRefreshCursor
 from .sources.streams.concurrent.adapters import StreamFacade
-from .sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
-from .sources.streams.concurrent.cursor import Cursor
-from .sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter, IsoMillisConcurrentStreamStateConverter
-from .sources.streams.core import Stream, IncrementalMixin, package_name_from_class
+from .sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, CursorField, FinalStateCursor
+from .sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    EpochValueConcurrentStreamStateConverter,
+    IsoMillisConcurrentStreamStateConverter,
+)
+from .sources.streams.core import IncrementalMixin, Stream, package_name_from_class
 from .sources.streams.http import HttpStream, HttpSubStream
 from .sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from .sources.streams.http.exceptions import BaseBackoffException, DefaultBackoffException, UserDefinedBackoffException
 from .sources.streams.http.rate_limiting import default_backoff_handler
-from .sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator, SingleUseRefreshTokenOauth2Authenticator
+from .sources.streams.http.requests_native_auth import Oauth2Authenticator, SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator
 from .sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from .sources.types import Config, Record, StreamSlice
 from .sources.utils import casing
-from .sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit, split_config, expand_refs
+from .sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit, expand_refs, split_config
 from .sources.utils.transform import TransformConfig, TypeTransformer
 from .utils import AirbyteTracedException, is_cloud_environment
 from .utils.constants import ENV_REQUEST_CACHE_PATH
@@ -120,7 +144,6 @@ from .utils.event_timing import create_timer
 from .utils.oneof_option_config import OneOfOptionConfig
 from .utils.spec_schema_transformations import resolve_refs
 from .utils.stream_status_utils import as_airbyte_message
-
 
 __all__ = [
     # Submodules (for pdoc)
