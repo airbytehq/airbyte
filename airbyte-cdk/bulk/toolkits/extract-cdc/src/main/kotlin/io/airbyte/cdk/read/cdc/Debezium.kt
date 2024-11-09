@@ -25,7 +25,10 @@ value class DebeziumRecordKey(val wrapped: JsonNode) {
 @JvmInline
 value class DebeziumRecordValue(val wrapped: JsonNode) {
 
-    /** True if this is a Debezium heartbeat event. These aren't passed to [DebeziumConsumer]. */
+    /**
+     * True if this is a Debezium heartbeat event, or the equivalent thereof. In any case, such
+     * events are only used for their position value and for triggering timeouts.
+     */
     val isHeartbeat: Boolean
         get() = source.isNull
 
