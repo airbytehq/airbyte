@@ -146,18 +146,6 @@ from .utils.spec_schema_transformations import resolve_refs
 from .utils.stream_status_utils import as_airbyte_message
 
 __all__ = [
-    # Submodules (for pdoc)
-    "config_observation",
-    "connector",
-    "destinations",
-    "entrypoint",
-    "exception_handler",
-    "logger",
-    "models",
-    "sources",
-    "sql",
-    "test",
-    "utils",
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
