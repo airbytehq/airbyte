@@ -48,6 +48,6 @@ async def with_installed_pipx_package(
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"])
+    container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"], use_entrypoint=True)
 
     return container

@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -67,7 +67,7 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     config = {"response_override": "stop_if_you_see_me"}
     parameters = {"parameters_field": "data", "created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
-    stream_slice = {"last_seen": "06-10-21"}
+    stream_slice = StreamSlice(partition={}, cursor_slice={"last_seen": "06-10-21"})
     next_page_token = {"last_seen_id": 14}
     schema = create_schema()
     first_transformation = Mock(spec=RecordTransformation)

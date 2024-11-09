@@ -3,6 +3,7 @@
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Google Sheets](https://developers.google.com/sheets) source connector.
+
 </HideInUI>
 
 :::info

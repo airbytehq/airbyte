@@ -279,6 +279,18 @@ def test_macros_examples(template_string, expected_value):
     assert now_utc == expected_value
 
 
+@freeze_time("2021-09-01 12:00:00", tz_offset=5)
+@pytest.mark.parametrize(
+    "template_string, expected_value",
+    [
+        pytest.param("{{ today_with_timezone('Pacific/Kiritimati') }}", "2021-09-02", id="test_today_timezone_pacific"),
+    ],
+)
+def test_macros_timezone(template_string: str, expected_value: str):
+    interpolated_string = interpolation.eval(template_string, {})
+    assert interpolated_string == expected_value
+
+
 def test_interpolation_private_partition_attribute():
     inner_partition = StreamSlice(partition={}, cursor_slice={})
     expected_output = "value"
