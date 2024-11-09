@@ -11,11 +11,11 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| customers | customerId | No pagination | ✅ |  ❌  |
-| contacts | contactId | No pagination | ✅ |  ❌  |
+| customers | customerId | DefaultPaginator | ✅ |  ❌  |
+| contacts | contactId | DefaultPaginator | ✅ |  ❌  |
 | cases |  | No pagination | ✅ |  ❌  |
-| leads | id | No pagination | ✅ |  ❌  |
-| opportunities | opportunityId | No pagination | ✅ |  ❌  |
+| leads | id | DefaultPaginator | ✅ |  ❌  |
+| opportunities | opportunityId | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -24,6 +24,6 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

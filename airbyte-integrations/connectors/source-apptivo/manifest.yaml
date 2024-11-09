@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -28,14 +28,28 @@ definitions:
           path: /app/dao/v6/customers
           http_method: GET
           request_parameters:
-            accessKey: "{{ config['access_key'] }}"
             a: getAll
+            accessKey: "{{ config['access_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            field_name: numRecords
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -52,14 +66,27 @@ definitions:
           path: /app/dao/v6/contacts
           http_method: GET
           request_parameters:
-            accessKey: "{{ config[\"access_key\"] }}"
             a: getAll
+            accessKey: "{{ config[\"access_key\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -97,14 +124,27 @@ definitions:
           path: /app/dao/v6/leads
           http_method: GET
           request_parameters:
-            accessKey: "{{ config[\"access_key\"] }}"
             a: getAll
+            accessKey: "{{ config[\"access_key\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -129,6 +169,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: startIndex
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: numRecords
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -166,14 +219,14 @@ spec:
           API key to use. Find it in your Apptivo account under Business
           Settings -> API Access.
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       access_key:
         type: string
+        order: 1
         title: Access Key
         airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -185,35 +238,35 @@ metadata:
     opportunities: true
   testedStreams:
     customers:
-      streamHash: 6f243623fb6850c2c91cdb7320a3bd2b05f97ff4
+      streamHash: fd3012cf32a546a143d4db55a6936e5cd2695ff7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 8a16d114e0d854170d3f265d8f03861e5384de83
+      streamHash: 60a5d3b5a5140f0077da15685ede08fba1a3aa6e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     cases:
+      hasRecords: true
       streamHash: f06a577d96be781ad8edf87c672e9d56dd233520
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads:
-      streamHash: 963ab8b2b4250df5fb676479c3e3158259448180
+      streamHash: bfcf2924569717b33757ead4ff677ea44f5f4f81
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     opportunities:
-      streamHash: 2389f0b47dc3ca985bb3ae3c3a35abc43e34a783
+      streamHash: 4e76f40c2c7803ec2abf0f5593e5651efe32afd1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -499,6 +552,48 @@ schemas:
         type:
           - boolean
           - "null"
+      removeEmailAddresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            emailType:
+              type:
+                - string
+                - "null"
+            emailTypeCode:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+      removePhoneNumbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            phoneType:
+              type:
+                - string
+                - "null"
+            phoneTypeCode:
+              type:
+                - string
+                - "null"
       segmentName:
         type:
           - string
@@ -539,6 +634,14 @@ schemas:
         type:
           - string
           - "null"
+      toObjectIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
       twitterURL:
         type:
           - string
