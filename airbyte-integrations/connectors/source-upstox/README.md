@@ -1,7 +1,7 @@
 # upstox
 This directory contains the manifest-only connector for `source-upstox`.
 
-upstox source
+Upstox is a leading online brokerage platform in India that offers a seamless way to trade and invest in stocks, commodities, currencies, and mutual funds. Known for its user-friendly interface and affordable pricing, Upstox provides advanced charting tools, real-time market data, and analytics to help investors and traders make informed decisions.
 
 ## Usage
 There are multiple ways to use this connector:

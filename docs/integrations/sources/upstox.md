@@ -1,28 +1,21 @@
 # upstox
-upstox source
+Upstox is a leading online brokerage platform in India that offers a seamless way to trade and invest in stocks, commodities, currencies, and mutual funds. Known for its user-friendly interface and affordable pricing, Upstox provides advanced charting tools, real-time market data, and analytics to help investors and traders make informed decisions.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `instrument_key` | `string` | instrument_key.  |  |
-| `expiry_date` | `string` | expiry_date.  |  |
-| `quote_interval` | `string` | quote_interval.  |  |
-| `end_date` | `string` | end_date.  |  |
-| `start_date` | `string` | start_date.  |  |
-| `candle_interval` | `string` | candle_interval.  |  |
+| `to_date` | `string` | to_date.  |  |
+| `interval` | `string` | interval.  |  |
+| `from_date` | `string` | from_date.  |  |
+| `instrumentKey` | `array` | instrumentKey.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| marketholidays |  | No pagination | ✅ |  ❌  |
-| option_chain |  | No pagination | ✅ |  ❌  |
-| fullmarketquotes |  | No pagination | ✅ |  ❌  |
-| ohlcquotes |  | No pagination | ✅ |  ❌  |
-| ltpquotes |  | No pagination | ✅ |  ❌  |
-| holdings |  | No pagination | ✅ |  ❌  |
-| orderdetails |  | No pagination | ✅ |  ❌  |
+| marketholidays | date | No pagination | ✅ |  ❌  |
+| historicalcandle |  | No pagination | ✅ |  ❌  |
+| intradaycandle |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -31,6 +24,6 @@ upstox source
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-08 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
