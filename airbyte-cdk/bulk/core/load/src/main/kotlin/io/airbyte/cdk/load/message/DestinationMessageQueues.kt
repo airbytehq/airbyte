@@ -55,7 +55,7 @@ data class StreamFileCompleteWrapped(
 class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
 
 /**
- * A supplier of message queues to which ([MemoryManager.reserveBlocking]'d) @
+ * A supplier of message queues to which ([MemoryManager.reserve]'d) @
  * [DestinationRecordWrapped] messages can be published on a @ [DestinationStream] key. The queues
  * themselves do not manage memory.
  */
