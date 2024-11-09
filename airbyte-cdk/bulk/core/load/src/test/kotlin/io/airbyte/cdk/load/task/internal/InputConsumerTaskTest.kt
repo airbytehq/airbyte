@@ -150,7 +150,8 @@ class InputConsumerTaskTest {
         return GlobalCheckpoint(
             state = JsonNodeFactory.instance.objectNode(),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            checkpoints = emptyList()
+            checkpoints = emptyList(),
+            additionalProperties = emptyMap(),
         )
     }
 

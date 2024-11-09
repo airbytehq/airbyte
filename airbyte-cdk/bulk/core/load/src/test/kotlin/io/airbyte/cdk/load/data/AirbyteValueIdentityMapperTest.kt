@@ -39,9 +39,9 @@ class AirbyteValueIdentityMapperTest {
                 .build()
 
         val mapper = AirbyteValueIdentityMapper()
-        val values = mapper.map(inputValues, inputSchema)
+        val (values, changes) = mapper.map(inputValues, inputSchema)
         Assertions.assertEquals(expectedValues, values)
-        Assertions.assertTrue(mapper.collectedChanges.isEmpty())
+        Assertions.assertTrue(changes.isEmpty())
     }
 
     @Test
@@ -57,10 +57,9 @@ class AirbyteValueIdentityMapperTest {
                 )
                 .build()
         val mapper = AirbyteValueIdentityMapper()
-        val values = mapper.map(inputValues, inputSchema) as ObjectValue
-        val changes = mapper.collectedChanges
+        val (values, changes) = mapper.map(inputValues, inputSchema)
         Assertions.assertTrue(changes.isNotEmpty())
-        Assertions.assertTrue(values.values["bad"] is NullValue)
+        Assertions.assertTrue((values as ObjectValue).values["bad"] is NullValue)
         Assertions.assertTrue(changes[0].field == "bad")
         Assertions.assertTrue(changes[0].change == AirbyteRecordMessageMetaChange.Change.NULLED)
         Assertions.assertTrue(
