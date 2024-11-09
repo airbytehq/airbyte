@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -164,8 +164,13 @@ definitions:
     type: HttpRequester
     url_base: https://api.quora.com/ads/v0
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      type: OAuthAuthenticator
+      refresh_request_body: {}
+      token_refresh_endpoint: https://www.quora.com/_/oauth/token
+      grant_type: refresh_token
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/current_user"
@@ -180,21 +185,33 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - client_id
+      - client_secret
+      - client_refresh_token
     properties:
-      api_key:
-        type: string
-        order: 0
-        title: API Key
-        airbyte_secret: true
       campaign_id:
         type: string
+        order: 0
         title: Campaign Id
-        order: 1
       ad_sets:
         type: string
+        order: 1
         title: adsets
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
         order: 2
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 3
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 4
     additionalProperties: true
 
 metadata:
@@ -206,40 +223,40 @@ metadata:
     adsets: false
   testedStreams:
     current_user:
-      streamHash: 3b11010c04f0988bd77e34ebe8646323d8d86f5b
+      streamHash: 76b3154f334e0830e6ce0dbb8801520bab0e1251
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     accounts:
-      streamHash: c511ef9b8008171fc3e1735b1bdfd540da1e96b5
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: b3761ea2053ba0f5ec0c6200b34eb38d8603d737
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leadgenforms:
-      streamHash: 6e4140150529081091e90513c386f123dd485acc
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 73f516408ceca0068d0563fe6706156b436ef5db
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     campagins:
-      streamHash: 52a57887892dbb5402a86e04c2b9604911184ff5
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 2e1e9b2a4907b942d9422f33e8f2ab34c2a19e77
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adsets:
-      streamHash: d0881a118c1c21cf4417bf148f4b732628ea307c
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 0b2c41d1c266582cbcda11dc7cfb1528b5607e56
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: >-
       https://www.quora.com/ads/api9169a6d6e9b42452d500a61717d87d15d5fa49ec5b53030741178130
@@ -248,6 +265,7 @@ schemas:
   current_user:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -262,10 +280,10 @@ schemas:
             type:
               - string
               - "null"
-    additionalProperties: true
   accounts:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       accountId:
         type: number
@@ -275,10 +293,10 @@ schemas:
           - "null"
     required:
       - accountId
-    additionalProperties: true
   leadgenforms:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -297,10 +315,10 @@ schemas:
               type:
                 - string
                 - "null"
-    additionalProperties: true
   campagins:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       data:
         type:
@@ -335,10 +353,10 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
   adsets:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       accountId:
         type:
@@ -356,4 +374,3 @@ schemas:
         type:
           - number
           - "null"
-    additionalProperties: true

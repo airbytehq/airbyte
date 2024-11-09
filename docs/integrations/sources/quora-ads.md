@@ -5,9 +5,11 @@ Quora Ads API Connector allows you to sync advertising data between Quora Ads an
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
 | `campaign_id` | `string` | Campaign Id.  |  |
 | `ad_sets` | `string` | adsets.  |  |
+| `client_id` | `string` | Client ID.  |  |
+| `client_secret` | `string` | Client secret.  |  |
+| `client_refresh_token` | `string` | Refresh token.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -25,6 +27,6 @@ Quora Ads API Connector allows you to sync advertising data between Quora Ads an
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-22 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
