@@ -1,7 +1,7 @@
 # Pretix
 This directory contains the manifest-only connector for `source-pretix`.
 
-The Airbyte connector for Pretix enables seamless data integration with the Pretix event ticketing platform, allowing users to sync ticket sales, attendee information, event data, and other metrics directly into their data warehouse or analytics tools. This connector supports automated data extraction for efficient, reporting and data-driven insights across events managed in Pretix.
+[Pretix](https://pretix.eu/about/en/) connector enables seamless data integration with the Pretix event ticketing platform, allowing users to sync ticket sales, attendee information, event data, and other metrics directly into their data warehouse or analytics tools. This connector supports automated data extraction for efficient, reporting and data-driven insights across events managed in Pretix.
 
 ## Usage
 There are multiple ways to use this connector:
