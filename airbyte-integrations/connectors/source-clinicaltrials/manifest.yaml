@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -26,12 +26,29 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: studies
           http_method: GET
+          request_parameters:
+            query.cond: "{{ config['conditions_or_disease'] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - studies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -125,7 +142,11 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required: []
-    properties: {}
+    properties:
+      conditions_or_disease:
+        type: string
+        title: Conditions or disease
+        order: 0
     additionalProperties: true
 
 metadata:
@@ -137,40 +158,40 @@ metadata:
     stats_field_sizes: true
   testedStreams:
     studies:
-      streamHash: 5d9410d9305b47c92765a4de0dce91ec9584f78a
+      streamHash: c11625708804917d5b4c87c5c6d651c7859749df
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     metadata_studies:
+      hasRecords: true
       streamHash: 9d49bd1bfbf6a4cef90afec12fc2c8be1d706a15
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stats:
+      hasRecords: true
       streamHash: 872630ba804cf7f46d5f7c3d09e486f039ff1987
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stats_field_values:
+      hasRecords: true
       streamHash: 045cf9a211d3e3cea115f48bd587af42ec63b05f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     stats_field_sizes:
+      hasRecords: true
       streamHash: cc7c43fabe41d78285e56f8441616fb1a49068c2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -179,6 +200,46 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      annotationSection:
+        type:
+          - object
+          - "null"
+        properties:
+          annotationModule:
+            type:
+              - object
+              - "null"
+            properties:
+              unpostedAnnotation:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  unpostedEvents:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        date:
+                          type:
+                            - string
+                            - "null"
+                        dateUnknown:
+                          type:
+                            - boolean
+                            - "null"
+                  unpostedResponsibleParty:
+                    type:
+                      - string
+                      - "null"
       derivedSection:
         type:
           - object
@@ -351,10 +412,129 @@ schemas:
               - object
               - "null"
             properties:
+              removedCountries:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              submissionTracking:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  estimatedResultsFirstSubmitDate:
+                    type:
+                      - string
+                      - "null"
+                  firstMcpInfo:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      postDateStruct:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          date:
+                            type:
+                              - string
+                              - "null"
+                  submissionInfos:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        mcpReleaseN:
+                          type:
+                            - number
+                            - "null"
+                        releaseDate:
+                          type:
+                            - string
+                            - "null"
+                        resetDate:
+                          type:
+                            - string
+                            - "null"
+                        unreleaseDate:
+                          type:
+                            - string
+                            - "null"
+                        unreleaseDateUnknown:
+                          type:
+                            - boolean
+                            - "null"
               versionHolder:
                 type:
                   - string
                   - "null"
+      documentSection:
+        type:
+          - object
+          - "null"
+        properties:
+          largeDocumentModule:
+            type:
+              - object
+              - "null"
+            properties:
+              largeDocs:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    filename:
+                      type:
+                        - string
+                        - "null"
+                    hasIcf:
+                      type:
+                        - boolean
+                        - "null"
+                    hasProtocol:
+                      type:
+                        - boolean
+                        - "null"
+                    hasSap:
+                      type:
+                        - boolean
+                        - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - number
+                        - "null"
+                    typeAbbrev:
+                      type:
+                        - string
+                        - "null"
+                    uploadDate:
+                      type:
+                        - string
+                        - "null"
       hasResults:
         type:
           - boolean
@@ -482,6 +662,10 @@ schemas:
                       type:
                         - string
                         - "null"
+                    phoneExt:
+                      type:
+                        - string
+                        - "null"
                     role:
                       type:
                         - string
@@ -517,6 +701,10 @@ schemas:
                               - string
                               - "null"
                           phone:
+                            type:
+                              - string
+                              - "null"
+                          phoneExt:
                             type:
                               - string
                               - "null"
@@ -672,6 +860,23 @@ schemas:
                     type:
                       - number
                       - "null"
+              expandedAccessTypes:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  individual:
+                    type:
+                      - boolean
+                      - "null"
+                  intermediate:
+                    type:
+                      - boolean
+                      - "null"
+              nPtrsToThisExpAccNctId:
+                type:
+                  - number
+                  - "null"
               patientRegistry:
                 type:
                   - boolean
@@ -688,6 +893,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              targetDuration:
+                type:
+                  - string
+                  - "null"
           eligibilityModule:
             type:
               - object
@@ -700,6 +909,10 @@ schemas:
               genderBased:
                 type:
                   - boolean
+                  - "null"
+              genderDescription:
+                type:
+                  - string
                   - "null"
               healthyVolunteers:
                 type:
@@ -750,6 +963,14 @@ schemas:
                 type:
                   - string
                   - "null"
+              nctIdAliases:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
               officialTitle:
                 type:
                   - string
@@ -759,7 +980,15 @@ schemas:
                   - object
                   - "null"
                 properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
                   id:
+                    type:
+                      - string
+                      - "null"
+                  link:
                     type:
                       - string
                       - "null"
@@ -830,11 +1059,36 @@ schemas:
                 type:
                   - string
                   - "null"
+              url:
+                type:
+                  - string
+                  - "null"
           outcomesModule:
             type:
               - object
               - "null"
             properties:
+              otherOutcomes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    measure:
+                      type:
+                        - string
+                        - "null"
+                    timeFrame:
+                      type:
+                        - string
+                        - "null"
               primaryOutcomes:
                 type:
                   - array
@@ -890,6 +1144,10 @@ schemas:
                 type:
                   - boolean
                   - "null"
+              isUnapprovedDevice:
+                type:
+                  - boolean
+                  - "null"
               isUsExport:
                 type:
                   - boolean
@@ -903,6 +1161,23 @@ schemas:
               - object
               - "null"
             properties:
+              availIpds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
               references:
                 type:
                   - array
@@ -997,6 +1272,14 @@ schemas:
                     type:
                       - string
                       - "null"
+                  oldNameTitle:
+                    type:
+                      - string
+                      - "null"
+                  oldOrganization:
+                    type:
+                      - string
+                      - "null"
           statusModule:
             type:
               - object
@@ -1015,6 +1298,27 @@ schemas:
                     type:
                       - string
                       - "null"
+              dispFirstPostDateStruct:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              dispFirstSubmitDate:
+                type:
+                  - string
+                  - "null"
+              dispFirstSubmitQcDate:
+                type:
+                  - string
+                  - "null"
               expandedAccessInfo:
                 type:
                   - object
@@ -1023,6 +1327,14 @@ schemas:
                   hasExpandedAccess:
                     type:
                       - boolean
+                      - "null"
+                  nctId:
+                    type:
+                      - string
+                      - "null"
+                  statusForNctId:
+                    type:
+                      - string
                       - "null"
               lastKnownStatus:
                 type:
@@ -1201,6 +1513,10 @@ schemas:
                       type:
                         - string
                         - "null"
+                    notes:
+                      type:
+                        - string
+                        - "null"
                     organSystem:
                       type:
                         - string
@@ -1227,6 +1543,10 @@ schemas:
                               - number
                               - "null"
                           numAtRisk:
+                            type:
+                              - number
+                              - "null"
+                          numEvents:
                             type:
                               - number
                               - "null"
@@ -1247,6 +1567,10 @@ schemas:
                       type:
                         - string
                         - "null"
+                    notes:
+                      type:
+                        - string
+                        - "null"
                     organSystem:
                       type:
                         - string
@@ -1273,6 +1597,10 @@ schemas:
                               - number
                               - "null"
                           numAtRisk:
+                            type:
+                              - number
+                              - "null"
+                          numEvents:
                             type:
                               - number
                               - "null"
@@ -1349,6 +1677,14 @@ schemas:
                     - object
                     - "null"
                   properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    calculatePct:
+                      type:
+                        - boolean
+                        - "null"
                     classes:
                       type:
                         - array
@@ -1380,6 +1716,18 @@ schemas:
                                         type:
                                           - string
                                           - "null"
+                                      lowerLimit:
+                                        type:
+                                          - string
+                                          - "null"
+                                      spread:
+                                        type:
+                                          - string
+                                          - "null"
+                                      upperLimit:
+                                        type:
+                                          - string
+                                          - "null"
                                       value:
                                         type:
                                           - string
@@ -1388,85 +1736,41 @@ schemas:
                                   type:
                                     - string
                                     - "null"
+                          denoms:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                counts:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      groupId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      value:
+                                        type:
+                                          - string
+                                          - "null"
+                                units:
+                                  type:
+                                    - string
+                                    - "null"
                           title:
                             type:
                               - string
                               - "null"
-                    paramType:
-                      type:
-                        - string
-                        - "null"
-                    title:
-                      type:
-                        - string
-                        - "null"
-                    unitOfMeasure:
-                      type:
-                        - string
-                        - "null"
-          moreInfoModule:
-            type:
-              - object
-              - "null"
-            properties:
-              certainAgreement:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  piSponsorEmployee:
-                    type:
-                      - boolean
-                      - "null"
-              limitationsAndCaveats:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  description:
-                    type:
-                      - string
-                      - "null"
-              pointOfContact:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  organization:
-                    type:
-                      - string
-                      - "null"
-                  phone:
-                    type:
-                      - string
-                      - "null"
-                  title:
-                    type:
-                      - string
-                      - "null"
-          outcomeMeasuresModule:
-            type:
-              - object
-              - "null"
-            properties:
-              outcomeMeasures:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    type:
-                      type:
-                        - string
-                        - "null"
-                    description:
+                    denomUnitsSelected:
                       type:
                         - string
                         - "null"
@@ -1500,6 +1804,336 @@ schemas:
                             type:
                               - string
                               - "null"
+                    dispersionType:
+                      type:
+                        - string
+                        - "null"
+                    paramType:
+                      type:
+                        - string
+                        - "null"
+                    populationDescription:
+                      type:
+                        - string
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    unitOfMeasure:
+                      type:
+                        - string
+                        - "null"
+              populationDescription:
+                type:
+                  - string
+                  - "null"
+              typeUnitsAnalyzed:
+                type:
+                  - string
+                  - "null"
+          moreInfoModule:
+            type:
+              - object
+              - "null"
+            properties:
+              certainAgreement:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  otherDetails:
+                    type:
+                      - string
+                      - "null"
+                  piSponsorEmployee:
+                    type:
+                      - boolean
+                      - "null"
+                  restrictionType:
+                    type:
+                      - string
+                      - "null"
+                  restrictiveAgreement:
+                    type:
+                      - boolean
+                      - "null"
+              limitationsAndCaveats:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+              pointOfContact:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  organization:
+                    type:
+                      - string
+                      - "null"
+                  phone:
+                    type:
+                      - string
+                      - "null"
+                  phoneExt:
+                    type:
+                      - string
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+          outcomeMeasuresModule:
+            type:
+              - object
+              - "null"
+            properties:
+              outcomeMeasures:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    analyses:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          ciLowerLimit:
+                            type:
+                              - string
+                              - "null"
+                          ciNumSides:
+                            type:
+                              - string
+                              - "null"
+                          ciPctValue:
+                            type:
+                              - string
+                              - "null"
+                          ciUpperLimit:
+                            type:
+                              - string
+                              - "null"
+                          dispersionType:
+                            type:
+                              - string
+                              - "null"
+                          dispersionValue:
+                            type:
+                              - string
+                              - "null"
+                          estimateComment:
+                            type:
+                              - string
+                              - "null"
+                          groupDescription:
+                            type:
+                              - string
+                              - "null"
+                          groupIds:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                          nonInferiorityComment:
+                            type:
+                              - string
+                              - "null"
+                          nonInferiorityType:
+                            type:
+                              - string
+                              - "null"
+                          otherAnalysisDescription:
+                            type:
+                              - string
+                              - "null"
+                          pValue:
+                            type:
+                              - string
+                              - "null"
+                          pValueComment:
+                            type:
+                              - string
+                              - "null"
+                          paramType:
+                            type:
+                              - string
+                              - "null"
+                          paramValue:
+                            type:
+                              - string
+                              - "null"
+                          statisticalComment:
+                            type:
+                              - string
+                              - "null"
+                          statisticalMethod:
+                            type:
+                              - string
+                              - "null"
+                          testedNonInferiority:
+                            type:
+                              - boolean
+                              - "null"
+                    anticipatedPostingDate:
+                      type:
+                        - string
+                        - "null"
+                    classes:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          categories:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                measurements:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      comment:
+                                        type:
+                                          - string
+                                          - "null"
+                                      groupId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      lowerLimit:
+                                        type:
+                                          - string
+                                          - "null"
+                                      spread:
+                                        type:
+                                          - string
+                                          - "null"
+                                      upperLimit:
+                                        type:
+                                          - string
+                                          - "null"
+                                      value:
+                                        type:
+                                          - string
+                                          - "null"
+                                title:
+                                  type:
+                                    - string
+                                    - "null"
+                          denoms:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                counts:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      groupId:
+                                        type:
+                                          - string
+                                          - "null"
+                                      value:
+                                        type:
+                                          - string
+                                          - "null"
+                                units:
+                                  type:
+                                    - string
+                                    - "null"
+                          title:
+                            type:
+                              - string
+                              - "null"
+                    denomUnitsSelected:
+                      type:
+                        - string
+                        - "null"
+                    denoms:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          counts:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                groupId:
+                                  type:
+                                    - string
+                                    - "null"
+                                value:
+                                  type:
+                                    - string
+                                    - "null"
+                          units:
+                            type:
+                              - string
+                              - "null"
+                    dispersionType:
+                      type:
+                        - string
+                        - "null"
                     groups:
                       type:
                         - array
@@ -1521,6 +2155,10 @@ schemas:
                             type:
                               - string
                               - "null"
+                    paramType:
+                      type:
+                        - string
+                        - "null"
                     populationDescription:
                       type:
                         - string
@@ -1534,6 +2172,10 @@ schemas:
                         - string
                         - "null"
                     title:
+                      type:
+                        - string
+                        - "null"
+                    unitOfMeasure:
                       type:
                         - string
                         - "null"
@@ -1624,6 +2266,10 @@ schemas:
                                 - object
                                 - "null"
                               properties:
+                                comment:
+                                  type:
+                                    - string
+                                    - "null"
                                 groupId:
                                   type:
                                     - string
@@ -1632,6 +2278,14 @@ schemas:
                                   type:
                                     - string
                                     - "null"
+                                numUnits:
+                                  type:
+                                    - string
+                                    - "null"
+                          comment:
+                            type:
+                              - string
+                              - "null"
                     title:
                       type:
                         - string
@@ -1641,6 +2295,10 @@ schemas:
                   - string
                   - "null"
               recruitmentDetails:
+                type:
+                  - string
+                  - "null"
+              typeUnitsAnalyzed:
                 type:
                   - string
                   - "null"

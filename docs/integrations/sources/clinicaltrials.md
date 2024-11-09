@@ -7,11 +7,12 @@ Docs : https://clinicaltrials.gov/data-api/api
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `conditions_or_disease` | `string` | Conditions or disease.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| studies |  | No pagination | ✅ |  ❌  |
+| studies |  | DefaultPaginator | ✅ |  ❌  |
 | metadata_studies |  | No pagination | ✅ |  ❌  |
 | stats |  | No pagination | ✅ |  ❌  |
 | stats_field_values |  | No pagination | ✅ |  ❌  |
@@ -24,6 +25,6 @@ Docs : https://clinicaltrials.gov/data-api/api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-01 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
