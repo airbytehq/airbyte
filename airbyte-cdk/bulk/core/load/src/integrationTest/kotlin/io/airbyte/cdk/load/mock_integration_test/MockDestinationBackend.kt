@@ -78,6 +78,23 @@ object MockDestinationBackend {
         }
     }
 
+    fun commitFrom(srcFilename: String, dstFilename: String) {
+        val src = getFile(srcFilename)
+        insert(dstFilename, *src.toTypedArray())
+        src.clear()
+    }
+
+    fun commitAndDedupeFrom(
+        srcFilename: String,
+        dstFilename: String,
+        primaryKey: List<List<String>>,
+        cursor: List<String>,
+    ) {
+        val src = getFile(srcFilename)
+        upsert(dstFilename, primaryKey, cursor, *src.toTypedArray())
+        src.clear()
+    }
+
     fun readFile(filename: String): List<OutputRecord> {
         return getFile(filename)
     }

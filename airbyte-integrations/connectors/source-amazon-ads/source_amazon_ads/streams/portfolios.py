@@ -4,7 +4,6 @@
 
 from typing import Any, Iterable, Mapping, MutableMapping
 
-from source_amazon_ads.schemas import Portfolio
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 
@@ -15,7 +14,6 @@ class Portfolios(AmazonAdsStream):
     """
 
     primary_key = "portfolioId"
-    model = Portfolio
 
     def path(self, **kwargs) -> str:
         return "v2/portfolios/extended"
@@ -25,7 +23,7 @@ class Portfolios(AmazonAdsStream):
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
-            self._current_profile_id = profile.profileId
+            self._current_profile_id = profile["profileId"]
             yield from super().read_records(*args, **kwargs)
 
     def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
