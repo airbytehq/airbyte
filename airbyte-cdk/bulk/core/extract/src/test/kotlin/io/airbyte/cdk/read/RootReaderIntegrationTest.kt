@@ -3,10 +3,13 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -17,6 +20,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.RuntimeException
 import java.time.Duration
+import java.time.OffsetDateTime
 import kotlin.random.Random
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +122,7 @@ class RootReaderIntegrationTest {
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
+                NoOpMetaFieldDecorator,
                 listOf(
                     TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
                 ),
@@ -163,6 +168,7 @@ class RootReaderIntegrationTest {
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
+                NoOpMetaFieldDecorator,
                 listOf(
                     TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
                 ),
@@ -210,6 +216,7 @@ class RootReaderIntegrationTest {
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
+                NoOpMetaFieldDecorator,
                 listOf(
                     ConfigErrorThrowingGlobalPartitionsCreatorFactory(
                         Semaphore(CONSTRAINED),
@@ -259,7 +266,7 @@ data class TestCase(
     val stream: Stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("test")),
-            fields = listOf(),
+            schema = emptySet(),
             configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
@@ -273,6 +280,7 @@ data class TestCase(
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
+                NoOpMetaFieldDecorator,
                 listOf(TestPartitionsCreatorFactory(Semaphore(resource), this)),
             )
         try {
@@ -623,18 +631,15 @@ open class TestPartitionsCreatorFactory(
 ) : PartitionsCreatorFactory {
     private val log = KotlinLogging.logger {}
 
-    override fun make(
-        stateQuerier: StateQuerier,
-        feed: Feed,
-    ): PartitionsCreator {
-        if (feed is Global) {
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
+        if (feedBootstrap !is StreamFeedBootstrap) {
             return makeGlobalPartitionsCreator()
         }
         // For a stream feed, pick the CreatorCase in the corresponding TestCase
         // which is the successor of the one whose corresponding state is in the StateQuerier.
-        val testCase: TestCase = testCases.find { it.name == (feed as Stream).name }!!
+        val testCase: TestCase = testCases.find { it.name == feedBootstrap.feed.name }!!
         val checkpointedPartitionCreatorID: Long =
-            when (val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)) {
+            when (val opaqueStateValue: OpaqueStateValue? = feedBootstrap.currentState) {
                 null -> 0L
                 is ArrayNode -> opaqueStateValue.get(0).asLong()
                 else -> TODO("unreachable code")
@@ -682,6 +687,20 @@ class ConfigErrorThrowingGlobalPartitionsCreatorFactory(
             override fun releaseResources() {}
         }
     }
+}
+
+data object NoOpMetaFieldDecorator : MetaFieldDecorator {
+
+    override val globalCursor: MetaField? = null
+
+    override val globalMetaFields: Set<MetaField> = emptySet()
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {}
 }
 
 /** Tests should succeed and not timeout. */
