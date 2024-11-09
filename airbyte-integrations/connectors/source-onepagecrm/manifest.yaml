@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -20,6 +20,8 @@ definitions:
     contacts:
       type: DeclarativeStream
       name: contacts
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -33,6 +35,8 @@ definitions:
             field_path:
               - data
               - contacts
+              - "*"
+              - contact
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -41,12 +45,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -55,6 +59,8 @@ definitions:
     users:
       type: DeclarativeStream
       name: users
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -67,6 +73,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+              - "*"
+              - user
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -75,12 +83,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -89,6 +97,8 @@ definitions:
     bootstrap:
       type: DeclarativeStream
       name: bootstrap
+      primary_key:
+        - user_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -109,12 +119,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -123,6 +133,8 @@ definitions:
     companies:
       type: DeclarativeStream
       name: companies
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -136,6 +148,8 @@ definitions:
             field_path:
               - data
               - companies
+              - "*"
+              - company
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -144,12 +158,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -158,6 +172,8 @@ definitions:
     actions:
       type: DeclarativeStream
       name: actions
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -171,6 +187,8 @@ definitions:
             field_path:
               - data
               - actions
+              - "*"
+              - action
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -179,12 +197,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -206,6 +224,8 @@ definitions:
             field_path:
               - data
               - contacts
+              - "*"
+              - contact
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -214,12 +234,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -241,6 +261,8 @@ definitions:
             field_path:
               - data
               - contacts
+              - "*"
+              - contact
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -249,12 +271,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -263,6 +285,8 @@ definitions:
     deals:
       type: DeclarativeStream
       name: deals
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -276,6 +300,8 @@ definitions:
             field_path:
               - data
               - deals
+              - "*"
+              - deal
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -284,12 +310,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -298,6 +324,8 @@ definitions:
     notes:
       type: DeclarativeStream
       name: notes
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -311,6 +339,8 @@ definitions:
             field_path:
               - data
               - notes
+              - "*"
+              - note
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -319,12 +349,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -333,6 +363,8 @@ definitions:
     relationship_types:
       type: DeclarativeStream
       name: relationship_types
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -346,6 +378,8 @@ definitions:
             field_path:
               - data
               - relationship_types
+              - "*"
+              - relationship_type
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -354,12 +388,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -368,6 +402,8 @@ definitions:
     pipelines:
       type: DeclarativeStream
       name: pipelines
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -381,6 +417,8 @@ definitions:
             field_path:
               - data
               - pipelines
+              - "*"
+              - pipeline
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -389,12 +427,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -403,6 +441,8 @@ definitions:
     statuses:
       type: DeclarativeStream
       name: statuses
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -415,6 +455,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+              - "*"
+              - status
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -423,12 +465,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -459,12 +501,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -473,6 +515,8 @@ definitions:
     filters:
       type: DeclarativeStream
       name: filters
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -486,6 +530,8 @@ definitions:
             field_path:
               - data
               - filters
+              - "*"
+              - filter
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -494,12 +540,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -508,6 +554,8 @@ definitions:
     predefined_actions:
       type: DeclarativeStream
       name: predefined_actions
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -521,6 +569,8 @@ definitions:
             field_path:
               - data
               - predefined_actions
+              - "*"
+              - predefined_action
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -529,12 +579,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -566,12 +616,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -580,6 +630,8 @@ definitions:
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -593,6 +645,8 @@ definitions:
             field_path:
               - data
               - custom_fields
+              - "*"
+              - custom_field
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -601,12 +655,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -615,6 +669,8 @@ definitions:
     calls:
       type: DeclarativeStream
       name: calls
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -628,6 +684,8 @@ definitions:
             field_path:
               - data
               - calls
+              - "*"
+              - call
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -636,12 +694,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -650,6 +708,8 @@ definitions:
     meetings:
       type: DeclarativeStream
       name: meetings
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -663,6 +723,8 @@ definitions:
             field_path:
               - data
               - meetings
+              - "*"
+              - meeting
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -671,12 +733,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -687,8 +749,8 @@ definitions:
     url_base: https://app.onepagecrm.com/api/v3/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
       password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/contacts"
@@ -722,15 +784,15 @@ spec:
       username:
         type: string
         description: Enter the user ID of your API app
-        title: Username
         order: 0
+        title: Username
       password:
         type: string
         description: Enter your API Key of your API app
+        order: 1
         title: Password
         always_show: true
         airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -756,84 +818,84 @@ metadata:
     meetings: true
   testedStreams:
     contacts:
-      streamHash: 4403957f668ed28f3fb82902f0fbe29d82d25a50
+      streamHash: 06ce92bcf6d640369df5eaf8da3ef346abf2d64e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: 7289d10fb988aa963940d54058d2193c9af94327
+      streamHash: 22003c3855db928ae3f867eb7f28fc94a8a6525d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     bootstrap:
-      streamHash: cac517685816c0c991df5b26551e5866b9e7f5a5
+      streamHash: fc6dd707cd79cf754316e18c1d340d1c2e1f021d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     companies:
-      streamHash: 9dd59470f88367f01c7a7318c49da0219410f7c1
+      streamHash: 7312a2a979698dbbfb0686984760edf3795bcb84
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     actions:
-      streamHash: 2295d2375adf9ecd6e5de2d1b7041c0872df0fa5
+      streamHash: 64f7c9c02fc042a6b0643370f11b2d87ec1ebfc6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     action_stream:
-      streamHash: 81c35a24a2ac53d0b987285119718af8a2b284be
+      streamHash: ceecc67cb97e8167c9d89afffe004554d67f5359
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     team_stream:
-      streamHash: d4262ad184d907eb1ab093d179d4afbccd30ef37
+      streamHash: 1cd192c8d4f707e3b038e669eb591a1a5ec00209
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     deals:
-      streamHash: 08483e9d684d8888d4207b49c3ed10f524a301c6
+      streamHash: bc7f9772f5687078b8781913a103217c076d695d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     notes:
-      streamHash: 626b2c7ae1a4060f937ca19ed33b5c1daa7a560e
+      streamHash: a4bb26f23939d0d65f8d6873e888d31234273a12
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     relationship_types:
-      streamHash: acccaa84deb02be0a1d4da2fd4214e50c7fe573c
+      streamHash: e6b42d0d6fcbb51b53a8eb83fbdec5aa4fc94219
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     pipelines:
-      streamHash: 3b00bcc08d035365a452db585377e26b920c3d8b
+      streamHash: 20bb29598673e65aa51983595285d23be9162fd1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     statuses:
-      streamHash: 95c65c0e420d7052d7367849abb21cc50b56eab0
+      streamHash: c95e4f28ee436dd7dd585dac4642648b9684b1d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -847,14 +909,14 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     filters:
-      streamHash: 8addeee65d9b2b3b72ebcd5b1de2f821161b1b62
+      streamHash: 4d212113b76a91e37a36d29b0bb85a1e81474865
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     predefined_actions:
-      streamHash: a4c0fdd9be7684bf8045bbfcdc24c2d6880e334c
+      streamHash: 732b1dc7a6784428916470b67feb9bdb7b8dfbd4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -868,21 +930,21 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     custom_fields:
-      streamHash: 53c1da4af5a6f79ed782cca08bca22c5cb2acfcd
+      streamHash: 409703f19317a646c520d9a8ec3a59a68aac16e5
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     calls:
-      streamHash: 1c6bc8a5e950009d382174cbfac0c3ab9da6d5bc
+      streamHash: b74fae76c231a845ce35a39e0bad1cfc894dfde7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     meetings:
-      streamHash: 01d87937a78e31faba64c8f80d66f35cf22808c9
+      streamHash: f394ab61c4daf7bec64b718c2f10b6f949aefeea
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -896,352 +958,7 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      company:
-        type:
-          - object
-          - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          address:
-            type:
-              - object
-              - "null"
-            properties: {}
-          company_fields:
-            type:
-              - array
-              - "null"
-          contacts_count:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          syncing_status:
-            type:
-              - boolean
-              - "null"
-          syncing_tags:
-            type:
-              - boolean
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-      contact:
-        type:
-          - object
-          - "null"
-        properties:
-          address_list:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                address:
-                  type:
-                    - string
-                    - "null"
-                city:
-                  type:
-                    - string
-                    - "null"
-                country_code:
-                  type:
-                    - string
-                    - "null"
-                state:
-                  type:
-                    - string
-                    - "null"
-                zip_code:
-                  type:
-                    - string
-                    - "null"
-          background:
-            type:
-              - string
-              - "null"
-          closed_sales:
-            type:
-              - array
-              - "null"
-          company_id:
-            type:
-              - string
-              - "null"
-          company_name:
-            type:
-              - string
-              - "null"
-          company_size:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          custom_fields:
-            type:
-              - array
-              - "null"
-          email_sync_available:
-            type:
-              - boolean
-              - "null"
-          email_sync_enabled:
-            type:
-              - boolean
-              - "null"
-          emails:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          enhanceable:
-            type:
-              - boolean
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          job_title:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          lead_source:
-            type:
-              - string
-              - "null"
-          lead_source_id:
-            type:
-              - string
-              - "null"
-          letter:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          owner_id:
-            type:
-              - string
-              - "null"
-          pending_deal:
-            type:
-              - boolean
-              - "null"
-          phones:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          photo_url:
-            type:
-              - string
-              - "null"
-          sales_closed_for:
-            type:
-              - array
-              - "null"
-          starred:
-            type:
-              - boolean
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          status_id:
-            type:
-              - string
-              - "null"
-          tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          total_deals_count:
-            type:
-              - number
-              - "null"
-          total_pendings:
-            type:
-              - number
-              - "null"
-          urls:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-      most_urgent_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action_conflicts:
-        type:
-          - array
-          - "null"
-      next_actions:
+      address_list:
         type:
           - array
           - "null"
@@ -1250,104 +967,250 @@ schemas:
             - object
             - "null"
           properties:
-            assignee_id:
+            type:
               type:
                 - string
                 - "null"
-            contact_id:
+            address:
               type:
                 - string
                 - "null"
-            created_at:
+            city:
               type:
                 - string
                 - "null"
-            date:
+            country_code:
               type:
                 - string
                 - "null"
-            done:
-              type:
-                - boolean
-                - "null"
-            id:
+            state:
               type:
                 - string
                 - "null"
-            modified_at:
+            zip_code:
               type:
                 - string
                 - "null"
-            status:
-              type:
-                - string
-                - "null"
-            text:
-              type:
-                - string
-                - "null"
-      queued_actions:
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
         type:
           - array
           - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+    required:
+      - id
   users:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      user:
+      account_rights:
         type:
-          - object
+          - array
           - "null"
-        properties:
-          account_rights:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          account_role:
-            type:
-              - string
-              - "null"
-          bcc_email:
-            type:
-              - string
-              - "null"
-          company_name:
-            type:
-              - string
-              - "null"
-          country_code:
-            type:
-              - string
-              - "null"
-          email:
-            type:
-              - string
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          photo_url:
-            type:
-              - string
-              - "null"
-          virtual_group_id:
-            type:
-              - string
-              - "null"
+        items:
+          type:
+            - string
+            - "null"
+      account_role:
+        type:
+          - string
+          - "null"
+      bcc_email:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_name:
+        type:
+          - string
+          - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      virtual_group_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   bootstrap:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1841,9 +1704,7 @@ schemas:
                   - string
                   - "null"
       user_id:
-        type:
-          - string
-          - "null"
+        type: string
       virtual_groups:
         type:
           - array
@@ -1865,330 +1726,41 @@ schemas:
               type:
                 - string
                 - "null"
+    required:
+      - user_id
   companies:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      company:
+      description:
+        type:
+          - string
+          - "null"
+      address:
         type:
           - object
           - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          address:
-            type:
-              - object
-              - "null"
-            properties: {}
-          company_fields:
-            type:
-              - array
-              - "null"
-          contacts:
-            type:
-              - array
-              - "null"
-            items:
+        properties: {}
+      company_fields:
+        type:
+          - array
+          - "null"
+      contacts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            contact:
               type:
                 - object
                 - "null"
               properties:
-                contact:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    address_list:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          type:
-                            type:
-                              - string
-                              - "null"
-                          address:
-                            type:
-                              - string
-                              - "null"
-                          city:
-                            type:
-                              - string
-                              - "null"
-                          country_code:
-                            type:
-                              - string
-                              - "null"
-                          state:
-                            type:
-                              - string
-                              - "null"
-                          zip_code:
-                            type:
-                              - string
-                              - "null"
-                    background:
-                      type:
-                        - string
-                        - "null"
-                    closed_sales:
-                      type:
-                        - array
-                        - "null"
-                    company_id:
-                      type:
-                        - string
-                        - "null"
-                    company_name:
-                      type:
-                        - string
-                        - "null"
-                    company_size:
-                      type:
-                        - number
-                        - "null"
-                    created_at:
-                      type:
-                        - string
-                        - "null"
-                    custom_fields:
-                      type:
-                        - array
-                        - "null"
-                    email_sync_available:
-                      type:
-                        - boolean
-                        - "null"
-                    email_sync_enabled:
-                      type:
-                        - boolean
-                        - "null"
-                    emails:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          type:
-                            type:
-                              - string
-                              - "null"
-                          value:
-                            type:
-                              - string
-                              - "null"
-                    enhanceable:
-                      type:
-                        - boolean
-                        - "null"
-                    first_name:
-                      type:
-                        - string
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    job_title:
-                      type:
-                        - string
-                        - "null"
-                    last_name:
-                      type:
-                        - string
-                        - "null"
-                    lead_source:
-                      type:
-                        - string
-                        - "null"
-                    lead_source_id:
-                      type:
-                        - string
-                        - "null"
-                    letter:
-                      type:
-                        - string
-                        - "null"
-                    modified_at:
-                      type:
-                        - string
-                        - "null"
-                    owner_id:
-                      type:
-                        - string
-                        - "null"
-                    pending_deal:
-                      type:
-                        - boolean
-                        - "null"
-                    phones:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          type:
-                            type:
-                              - string
-                              - "null"
-                          value:
-                            type:
-                              - string
-                              - "null"
-                    photo_url:
-                      type:
-                        - string
-                        - "null"
-                    sales_closed_for:
-                      type:
-                        - array
-                        - "null"
-                    starred:
-                      type:
-                        - boolean
-                        - "null"
-                    status:
-                      type:
-                        - string
-                        - "null"
-                    status_id:
-                      type:
-                        - string
-                        - "null"
-                    tags:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    total_deals_count:
-                      type:
-                        - number
-                        - "null"
-                    total_pendings:
-                      type:
-                        - number
-                        - "null"
-                    urls:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          type:
-                            type:
-                              - string
-                              - "null"
-                          value:
-                            type:
-                              - string
-                              - "null"
-                most_urgent_action:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    assignee_id:
-                      type:
-                        - string
-                        - "null"
-                    contact_id:
-                      type:
-                        - string
-                        - "null"
-                    created_at:
-                      type:
-                        - string
-                        - "null"
-                    date:
-                      type:
-                        - string
-                        - "null"
-                    done:
-                      type:
-                        - boolean
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    modified_at:
-                      type:
-                        - string
-                        - "null"
-                    status:
-                      type:
-                        - string
-                        - "null"
-                    text:
-                      type:
-                        - string
-                        - "null"
-                next_action:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    assignee_id:
-                      type:
-                        - string
-                        - "null"
-                    contact_id:
-                      type:
-                        - string
-                        - "null"
-                    created_at:
-                      type:
-                        - string
-                        - "null"
-                    date:
-                      type:
-                        - string
-                        - "null"
-                    done:
-                      type:
-                        - boolean
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    modified_at:
-                      type:
-                        - string
-                        - "null"
-                    status:
-                      type:
-                        - string
-                        - "null"
-                    text:
-                      type:
-                        - string
-                        - "null"
-                next_action_conflicts:
-                  type:
-                    - array
-                    - "null"
-                next_actions:
+                address_list:
                   type:
                     - array
                     - "null"
@@ -2197,1256 +1769,47 @@ schemas:
                       - object
                       - "null"
                     properties:
-                      assignee_id:
+                      type:
                         type:
                           - string
                           - "null"
-                      contact_id:
+                      address:
                         type:
                           - string
                           - "null"
-                      created_at:
+                      city:
                         type:
                           - string
                           - "null"
-                      date:
+                      country_code:
                         type:
                           - string
                           - "null"
-                      done:
-                        type:
-                          - boolean
-                          - "null"
-                      id:
+                      state:
                         type:
                           - string
                           - "null"
-                      modified_at:
+                      zip_code:
                         type:
                           - string
                           - "null"
-                      status:
-                        type:
-                          - string
-                          - "null"
-                      text:
-                        type:
-                          - string
-                          - "null"
-                queued_actions:
+                background:
+                  type:
+                    - string
+                    - "null"
+                closed_sales:
                   type:
                     - array
                     - "null"
-          contacts_count:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          pending_deals:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                deal:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    amount:
-                      type:
-                        - number
-                        - "null"
-                    attachments:
-                      type:
-                        - array
-                        - "null"
-                    author:
-                      type:
-                        - string
-                        - "null"
-                    commission:
-                      type:
-                        - number
-                        - "null"
-                    commission_base:
-                      type:
-                        - string
-                        - "null"
-                    commission_percentage:
-                      type:
-                        - number
-                        - "null"
-                    commission_type:
-                      type:
-                        - string
-                        - "null"
-                    contact_id:
-                      type:
-                        - string
-                        - "null"
-                    contact_info:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        company:
-                          type:
-                            - string
-                            - "null"
-                        contact_name:
-                          type:
-                            - string
-                            - "null"
-                        contact_owner_id:
-                          type:
-                            - string
-                            - "null"
-                    cost:
-                      type:
-                        - number
-                        - "null"
-                    created_at:
-                      type:
-                        - string
-                        - "null"
-                    date:
-                      type:
-                        - string
-                        - "null"
-                    deal_fields:
-                      type:
-                        - array
-                        - "null"
-                    deal_items:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - object
-                          - "null"
-                        properties:
-                          description:
-                            type:
-                              - string
-                              - "null"
-                          amount:
-                            type:
-                              - number
-                              - "null"
-                          cost:
-                            type:
-                              - number
-                              - "null"
-                          created_at:
-                            type:
-                              - string
-                              - "null"
-                          deal_id:
-                            type:
-                              - string
-                              - "null"
-                          id:
-                            type:
-                              - string
-                              - "null"
-                          modified_at:
-                            type:
-                              - string
-                              - "null"
-                          name:
-                            type:
-                              - string
-                              - "null"
-                          position:
-                            type:
-                              - number
-                              - "null"
-                          predefined_item_id:
-                            type:
-                              - string
-                              - "null"
-                          price:
-                            type:
-                              - number
-                              - "null"
-                          qty:
-                            type:
-                              - number
-                              - "null"
-                    expected_close_date:
-                      type:
-                        - string
-                        - "null"
-                    has_deal_items:
-                      type:
-                        - boolean
-                        - "null"
-                    has_related_notes:
-                      type:
-                        - boolean
-                        - "null"
-                    id:
-                      type:
-                        - string
-                        - "null"
-                    margin:
-                      type:
-                        - number
-                        - "null"
-                    modified_at:
-                      type:
-                        - string
-                        - "null"
-                    months:
-                      type:
-                        - number
-                        - "null"
-                    name:
-                      type:
-                        - string
-                        - "null"
-                    owner:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        email:
-                          type:
-                            - string
-                            - "null"
-                        id:
-                          type:
-                            - string
-                            - "null"
-                        name:
-                          type:
-                            - string
-                            - "null"
-                    owner_id:
-                      type:
-                        - string
-                        - "null"
-                    pipeline_id:
-                      type:
-                        - string
-                        - "null"
-                    stage:
-                      type:
-                        - number
-                        - "null"
-                    status:
-                      type:
-                        - string
-                        - "null"
-                    text:
-                      type:
-                        - string
-                        - "null"
-                    total_amount:
-                      type:
-                        - number
-                        - "null"
-                    total_cost:
-                      type:
-                        - number
-                        - "null"
-          pending_deals_count:
-            type:
-              - number
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          syncing_status:
-            type:
-              - boolean
-              - "null"
-          syncing_tags:
-            type:
-              - boolean
-              - "null"
-          total_pending_amount:
-            type:
-              - number
-              - "null"
-          total_won_amount:
-            type:
-              - number
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-          won_deals_count:
-            type:
-              - number
-              - "null"
-  actions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          done_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-  action_stream:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      company:
-        type:
-          - object
-          - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          address:
-            type:
-              - object
-              - "null"
-            properties: {}
-          company_fields:
-            type:
-              - array
-              - "null"
-          contacts_count:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          syncing_status:
-            type:
-              - boolean
-              - "null"
-          syncing_tags:
-            type:
-              - boolean
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-      contact:
-        type:
-          - object
-          - "null"
-        properties:
-          address_list:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
+                company_id:
                   type:
                     - string
                     - "null"
-                address:
+                company_name:
                   type:
                     - string
                     - "null"
-                city:
-                  type:
-                    - string
-                    - "null"
-                country_code:
-                  type:
-                    - string
-                    - "null"
-                state:
-                  type:
-                    - string
-                    - "null"
-                zip_code:
-                  type:
-                    - string
-                    - "null"
-          background:
-            type:
-              - string
-              - "null"
-          closed_sales:
-            type:
-              - array
-              - "null"
-          company_id:
-            type:
-              - string
-              - "null"
-          company_name:
-            type:
-              - string
-              - "null"
-          company_size:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          custom_fields:
-            type:
-              - array
-              - "null"
-          email_sync_available:
-            type:
-              - boolean
-              - "null"
-          email_sync_enabled:
-            type:
-              - boolean
-              - "null"
-          emails:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          enhanceable:
-            type:
-              - boolean
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          job_title:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          lead_source:
-            type:
-              - string
-              - "null"
-          lead_source_id:
-            type:
-              - string
-              - "null"
-          letter:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          owner_id:
-            type:
-              - string
-              - "null"
-          pending_deal:
-            type:
-              - boolean
-              - "null"
-          phones:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          photo_url:
-            type:
-              - string
-              - "null"
-          sales_closed_for:
-            type:
-              - array
-              - "null"
-          starred:
-            type:
-              - boolean
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          status_id:
-            type:
-              - string
-              - "null"
-          tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          total_deals_count:
-            type:
-              - number
-              - "null"
-          total_pendings:
-            type:
-              - number
-              - "null"
-          urls:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-      most_urgent_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action_conflicts:
-        type:
-          - array
-          - "null"
-      next_actions:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            assignee_id:
-              type:
-                - string
-                - "null"
-            contact_id:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            date:
-              type:
-                - string
-                - "null"
-            done:
-              type:
-                - boolean
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            modified_at:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-            text:
-              type:
-                - string
-                - "null"
-      queued_actions:
-        type:
-          - array
-          - "null"
-  team_stream:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      company:
-        type:
-          - object
-          - "null"
-        properties:
-          description:
-            type:
-              - string
-              - "null"
-          address:
-            type:
-              - object
-              - "null"
-            properties: {}
-          company_fields:
-            type:
-              - array
-              - "null"
-          contacts_count:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          syncing_status:
-            type:
-              - boolean
-              - "null"
-          syncing_tags:
-            type:
-              - boolean
-              - "null"
-          url:
-            type:
-              - string
-              - "null"
-      contact:
-        type:
-          - object
-          - "null"
-        properties:
-          address_list:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                address:
-                  type:
-                    - string
-                    - "null"
-                city:
-                  type:
-                    - string
-                    - "null"
-                country_code:
-                  type:
-                    - string
-                    - "null"
-                state:
-                  type:
-                    - string
-                    - "null"
-                zip_code:
-                  type:
-                    - string
-                    - "null"
-          background:
-            type:
-              - string
-              - "null"
-          closed_sales:
-            type:
-              - array
-              - "null"
-          company_id:
-            type:
-              - string
-              - "null"
-          company_name:
-            type:
-              - string
-              - "null"
-          company_size:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          custom_fields:
-            type:
-              - array
-              - "null"
-          email_sync_available:
-            type:
-              - boolean
-              - "null"
-          email_sync_enabled:
-            type:
-              - boolean
-              - "null"
-          emails:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          enhanceable:
-            type:
-              - boolean
-              - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          job_title:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          lead_source:
-            type:
-              - string
-              - "null"
-          lead_source_id:
-            type:
-              - string
-              - "null"
-          letter:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          owner_id:
-            type:
-              - string
-              - "null"
-          pending_deal:
-            type:
-              - boolean
-              - "null"
-          phones:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-          photo_url:
-            type:
-              - string
-              - "null"
-          sales_closed_for:
-            type:
-              - array
-              - "null"
-          starred:
-            type:
-              - boolean
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          status_id:
-            type:
-              - string
-              - "null"
-          tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          total_deals_count:
-            type:
-              - number
-              - "null"
-          total_pendings:
-            type:
-              - number
-              - "null"
-          urls:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
-      most_urgent_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action:
-        type:
-          - object
-          - "null"
-        properties:
-          assignee_id:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          done:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-      next_action_conflicts:
-        type:
-          - array
-          - "null"
-      next_actions:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            assignee_id:
-              type:
-                - string
-                - "null"
-            contact_id:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            date:
-              type:
-                - string
-                - "null"
-            done:
-              type:
-                - boolean
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            modified_at:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-            text:
-              type:
-                - string
-                - "null"
-      queued_actions:
-        type:
-          - array
-          - "null"
-  deals:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      deal:
-        type:
-          - object
-          - "null"
-        properties:
-          amount:
-            type:
-              - number
-              - "null"
-          attachments:
-            type:
-              - array
-              - "null"
-          author:
-            type:
-              - string
-              - "null"
-          close_date:
-            type:
-              - string
-              - "null"
-          commission:
-            type:
-              - number
-              - "null"
-          commission_base:
-            type:
-              - string
-              - "null"
-          commission_percentage:
-            type:
-              - number
-              - "null"
-          commission_type:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          contact_info:
-            type:
-              - object
-              - "null"
-            properties:
-              company:
-                type:
-                  - string
-                  - "null"
-              contact_name:
-                type:
-                  - string
-                  - "null"
-              contact_owner_id:
-                type:
-                  - string
-                  - "null"
-          cost:
-            type:
-              - number
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          deal_fields:
-            type:
-              - array
-              - "null"
-          deal_items:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                description:
-                  type:
-                    - string
-                    - "null"
-                amount:
-                  type:
-                    - number
-                    - "null"
-                cost:
+                company_size:
                   type:
                     - number
                     - "null"
@@ -3454,9 +1817,173 @@ schemas:
                   type:
                     - string
                     - "null"
-                deal_id:
+                custom_fields:
+                  type:
+                    - array
+                    - "null"
+                email_sync_available:
+                  type:
+                    - boolean
+                    - "null"
+                email_sync_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                emails:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                enhanceable:
+                  type:
+                    - boolean
+                    - "null"
+                first_name:
                   type:
                     - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                job_title:
+                  type:
+                    - string
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                lead_source:
+                  type:
+                    - string
+                    - "null"
+                lead_source_id:
+                  type:
+                    - string
+                    - "null"
+                letter:
+                  type:
+                    - string
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                owner_id:
+                  type:
+                    - string
+                    - "null"
+                pending_deal:
+                  type:
+                    - boolean
+                    - "null"
+                phones:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                photo_url:
+                  type:
+                    - string
+                    - "null"
+                sales_closed_for:
+                  type:
+                    - array
+                    - "null"
+                starred:
+                  type:
+                    - boolean
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                status_id:
+                  type:
+                    - string
+                    - "null"
+                tags:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                total_deals_count:
+                  type:
+                    - number
+                    - "null"
+                total_pendings:
+                  type:
+                    - number
+                    - "null"
+                urls:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+            most_urgent_action:
+              type:
+                - object
+                - "null"
+              properties:
+                assignee_id:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                done:
+                  type:
+                    - boolean
                     - "null"
                 id:
                   type:
@@ -3466,228 +1993,316 @@ schemas:
                   type:
                     - string
                     - "null"
-                name:
+                status:
                   type:
                     - string
                     - "null"
-                position:
-                  type:
-                    - number
-                    - "null"
-                predefined_item_id:
+                text:
                   type:
                     - string
                     - "null"
-                price:
-                  type:
-                    - number
-                    - "null"
-                qty:
-                  type:
-                    - number
-                    - "null"
-          expected_close_date:
-            type:
-              - string
-              - "null"
-          has_deal_items:
-            type:
-              - boolean
-              - "null"
-          has_related_notes:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          margin:
-            type:
-              - number
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          months:
-            type:
-              - number
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          owner:
-            type:
-              - object
-              - "null"
-            properties:
-              email:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-          owner_id:
-            type:
-              - string
-              - "null"
-          pipeline_id:
-            type:
-              - string
-              - "null"
-          stage:
-            type:
-              - number
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-          total_amount:
-            type:
-              - number
-              - "null"
-          total_cost:
-            type:
-              - number
-              - "null"
-  notes:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      note:
-        type:
-          - object
-          - "null"
-        properties:
-          attachments:
-            type:
-              - array
-              - "null"
-          author:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          date:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          linked_deal_id:
-            type:
-              - string
-              - "null"
-          linked_deal_name:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-  relationship_types:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      relationship_type:
-        type:
-          - object
-          - "null"
-        properties:
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          relationship_variants:
-            type:
-              - array
-              - "null"
-            items:
+            next_action:
               type:
                 - object
                 - "null"
               properties:
+                assignee_id:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                done:
+                  type:
+                    - boolean
+                    - "null"
                 id:
                   type:
                     - string
                     - "null"
-                name:
+                modified_at:
                   type:
                     - string
                     - "null"
-          symmetrical:
-            type:
-              - boolean
-              - "null"
-  pipelines:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      pipeline:
+                status:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+            next_action_conflicts:
+              type:
+                - array
+                - "null"
+            next_actions:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  assignee_id:
+                    type:
+                      - string
+                      - "null"
+                  contact_id:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+                  done:
+                    type:
+                      - boolean
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  modified_at:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+            queued_actions:
+              type:
+                - array
+                - "null"
+      contacts_count:
         type:
-          - object
+          - number
           - "null"
-        properties:
-          default:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          stages:
-            type:
-              - array
-              - "null"
-            items:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pending_deals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            deal:
               type:
                 - object
                 - "null"
               properties:
-                label:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                attachments:
+                  type:
+                    - array
+                    - "null"
+                author:
+                  type:
+                    - string
+                    - "null"
+                commission:
+                  type:
+                    - number
+                    - "null"
+                commission_base:
+                  type:
+                    - string
+                    - "null"
+                commission_percentage:
+                  type:
+                    - number
+                    - "null"
+                commission_type:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                contact_info:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    company:
+                      type:
+                        - string
+                        - "null"
+                    contact_name:
+                      type:
+                        - string
+                        - "null"
+                    contact_owner_id:
+                      type:
+                        - string
+                        - "null"
+                cost:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                deal_fields:
+                  type:
+                    - array
+                    - "null"
+                deal_items:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      cost:
+                        type:
+                          - number
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      deal_id:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      modified_at:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      position:
+                        type:
+                          - number
+                          - "null"
+                      predefined_item_id:
+                        type:
+                          - string
+                          - "null"
+                      price:
+                        type:
+                          - number
+                          - "null"
+                      qty:
+                        type:
+                          - number
+                          - "null"
+                expected_close_date:
+                  type:
+                    - string
+                    - "null"
+                has_deal_items:
+                  type:
+                    - boolean
+                    - "null"
+                has_related_notes:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                margin:
+                  type:
+                    - number
+                    - "null"
+                modified_at:
+                  type:
+                    - string
+                    - "null"
+                months:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                owner:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                owner_id:
+                  type:
+                    - string
+                    - "null"
+                pipeline_id:
                   type:
                     - string
                     - "null"
@@ -3695,73 +2310,898 @@ schemas:
                   type:
                     - number
                     - "null"
-          won_column_enabled:
-            type:
-              - boolean
-              - "null"
-          won_column_name:
-            type:
-              - string
-              - "null"
-  statuses:
+                status:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+                total_amount:
+                  type:
+                    - number
+                    - "null"
+                total_cost:
+                  type:
+                    - number
+                    - "null"
+      pending_deals_count:
+        type:
+          - number
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      syncing_status:
+        type:
+          - boolean
+          - "null"
+      syncing_tags:
+        type:
+          - boolean
+          - "null"
+      total_pending_amount:
+        type:
+          - number
+          - "null"
+      total_won_amount:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      won_deals_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  actions:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      assignee_id:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      done:
+        type:
+          - boolean
+          - "null"
+      done_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
       status:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  action_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            zip_code:
+              type:
+                - string
+                - "null"
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
+        type:
+          - array
+          - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+  team_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            zip_code:
+              type:
+                - string
+                - "null"
+      background:
+        type:
+          - string
+          - "null"
+      closed_sales:
+        type:
+          - array
+          - "null"
+      company_id:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_size:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      email_sync_available:
+        type:
+          - boolean
+          - "null"
+      email_sync_enabled:
+        type:
+          - boolean
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      enhanceable:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      job_title:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lead_source:
+        type:
+          - string
+          - "null"
+      lead_source_id:
+        type:
+          - string
+          - "null"
+      letter:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      owner_id:
+        type:
+          - string
+          - "null"
+      pending_deal:
+        type:
+          - boolean
+          - "null"
+      phones:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      photo_url:
+        type:
+          - string
+          - "null"
+      sales_closed_for:
+        type:
+          - array
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_id:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      total_deals_count:
+        type:
+          - number
+          - "null"
+      total_pendings:
+        type:
+          - number
+          - "null"
+      urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+  deals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - number
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      close_date:
+        type:
+          - string
+          - "null"
+      commission:
+        type:
+          - number
+          - "null"
+      commission_base:
+        type:
+          - string
+          - "null"
+      commission_percentage:
+        type:
+          - number
+          - "null"
+      commission_type:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      contact_info:
         type:
           - object
           - "null"
         properties:
-          description:
+          company:
             type:
               - string
               - "null"
-          action_stream_count:
-            type:
-              - number
-              - "null"
-          color:
+          contact_name:
             type:
               - string
               - "null"
-          counts:
+          contact_owner_id:
             type:
-              - number
+              - string
+              - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      deal_fields:
+        type:
+          - array
+          - "null"
+      deal_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            cost:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            deal_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            modified_at:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            predefined_item_id:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            qty:
+              type:
+                - number
+                - "null"
+      expected_close_date:
+        type:
+          - string
+          - "null"
+      has_deal_items:
+        type:
+          - boolean
+          - "null"
+      has_related_notes:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      margin:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      months:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
               - "null"
           id:
             type:
               - string
               - "null"
-          status:
+          name:
             type:
               - string
               - "null"
-          team_counts:
-            type:
-              - array
-              - "null"
-            items:
+      owner_id:
+        type:
+          - string
+          - "null"
+      pipeline_id:
+        type:
+          - string
+          - "null"
+      stage:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      total_amount:
+        type:
+          - number
+          - "null"
+      total_cost:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      linked_deal_id:
+        type:
+          - string
+          - "null"
+      linked_deal_name:
+        type:
+          - string
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  relationship_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      relationship_variants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
               type:
-                - object
+                - string
                 - "null"
-              properties:
-                counts:
-                  type:
-                    - number
-                    - "null"
-                user_id:
-                  type:
-                    - string
-                    - "null"
-          text:
-            type:
-              - string
-              - "null"
-          total_count:
-            type:
-              - number
-              - "null"
+            name:
+              type:
+                - string
+                - "null"
+      symmetrical:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            stage:
+              type:
+                - number
+                - "null"
+      won_column_enabled:
+        type:
+          - boolean
+          - "null"
+      won_column_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      action_stream_count:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      counts:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      team_counts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            counts:
+              type:
+                - number
+                - "null"
+            user_id:
+              type:
+                - string
+                - "null"
+      text:
+        type:
+          - string
+          - "null"
+      total_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
   lead_sources:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3809,61 +3249,51 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      filter:
+      conditions:
         type:
-          - object
+          - array
           - "null"
-        properties:
-          conditions:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-          id:
+        items:
+          type:
+            - array
+            - "null"
+          items:
             type:
               - string
               - "null"
-          name:
-            type:
-              - string
-              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   predefined_actions:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      predefined_action:
+      action_group_id:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          action_group_id:
-            type:
-              - string
-              - "null"
-          days:
-            type:
-              - number
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          position:
-            type:
-              - number
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
+      days:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      position:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   predefined_items:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3898,144 +3328,129 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      custom_field:
+      type:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          type:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          mandatory:
-            type:
-              - boolean
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          position:
-            type:
-              - number
-              - "null"
-          reminder_days:
-            type:
-              - number
-              - "null"
+      id:
+        type: string
+      mandatory:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      reminder_days:
+        type:
+          - number
+          - "null"
+    required:
+      - id
   calls:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      call:
+      attachments:
         type:
-          - object
+          - array
           - "null"
-        properties:
-          attachments:
-            type:
-              - array
-              - "null"
-          author:
-            type:
-              - string
-              - "null"
-          call_result:
-            type:
-              - string
-              - "null"
-          call_time_int:
-            type:
-              - number
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          index:
-            type:
-              - number
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          phone_number:
-            type:
-              - string
-              - "null"
-          recording_link:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
-          via:
-            type:
-              - string
-              - "null"
+      author:
+        type:
+          - string
+          - "null"
+      call_result:
+        type:
+          - string
+          - "null"
+      call_time_int:
+        type:
+          - number
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      index:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      recording_link:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      via:
+        type:
+          - string
+          - "null"
+    required:
+      - id
   meetings:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      meeting:
+      attachments:
         type:
-          - object
+          - array
           - "null"
-        properties:
-          attachments:
-            type:
-              - array
-              - "null"
-          author:
-            type:
-              - string
-              - "null"
-          contact_id:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          index:
-            type:
-              - number
-              - "null"
-          meeting_time_int:
-            type:
-              - number
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          place:
-            type:
-              - string
-              - "null"
-          text:
-            type:
-              - string
-              - "null"
+      author:
+        type:
+          - string
+          - "null"
+      contact_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      index:
+        type:
+          - number
+          - "null"
+      meeting_time_int:
+        type:
+          - number
+          - "null"
+      modified_at:
+        type:
+          - string
+          - "null"
+      place:
+        type:
+          - string
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+    required:
+      - id

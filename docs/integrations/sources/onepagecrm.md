@@ -13,25 +13,25 @@ Docs : https://developer.onepagecrm.com/api/
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| contacts |  | DefaultPaginator | ✅ |  ❌  |
-| users |  | DefaultPaginator | ✅ |  ❌  |
-| bootstrap |  | DefaultPaginator | ✅ |  ❌  |
-| companies |  | DefaultPaginator | ✅ |  ❌  |
-| actions |  | DefaultPaginator | ✅ |  ❌  |
+| contacts | id | DefaultPaginator | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| bootstrap | user_id | DefaultPaginator | ✅ |  ❌  |
+| companies | id | DefaultPaginator | ✅ |  ❌  |
+| actions | id | DefaultPaginator | ✅ |  ❌  |
 | action_stream |  | DefaultPaginator | ✅ |  ❌  |
 | team_stream |  | DefaultPaginator | ✅ |  ❌  |
-| deals |  | DefaultPaginator | ✅ |  ❌  |
-| notes |  | DefaultPaginator | ✅ |  ❌  |
-| relationship_types |  | DefaultPaginator | ✅ |  ❌  |
-| pipelines |  | DefaultPaginator | ✅ |  ❌  |
-| statuses |  | DefaultPaginator | ✅ |  ❌  |
+| deals | id | DefaultPaginator | ✅ |  ❌  |
+| notes | id | DefaultPaginator | ✅ |  ❌  |
+| relationship_types | id | DefaultPaginator | ✅ |  ❌  |
+| pipelines | id | DefaultPaginator | ✅ |  ❌  |
+| statuses | id | DefaultPaginator | ✅ |  ❌  |
 | lead_sources | id | DefaultPaginator | ✅ |  ❌  |
-| filters |  | DefaultPaginator | ✅ |  ❌  |
-| predefined_actions |  | DefaultPaginator | ✅ |  ❌  |
+| filters | id | DefaultPaginator | ✅ |  ❌  |
+| predefined_actions | id | DefaultPaginator | ✅ |  ❌  |
 | predefined_items | id | DefaultPaginator | ✅ |  ❌  |
-| custom_fields |  | DefaultPaginator | ✅ |  ❌  |
-| calls |  | DefaultPaginator | ✅ |  ❌  |
-| meetings |  | DefaultPaginator | ✅ |  ❌  |
+| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
+| calls | id | DefaultPaginator | ✅ |  ❌  |
+| meetings | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -40,6 +40,6 @@ Docs : https://developer.onepagecrm.com/api/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
