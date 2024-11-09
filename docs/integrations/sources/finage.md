@@ -16,24 +16,35 @@ This connector can be used to extract data from various APIs such as symbol-list
 | `period` | `string` | Period. Time period. Default is 10 |  |
 | `multiply` | `string` | Multiply. Time multiplier | 1 |
 | `time_aggregates` | `string` | Time aggregates. Size of the time | day |
-| `symbols` | `string` | Symbols. List of symbols separated by commas  |  |
+| `symbols` | `array` | Symbols. List of symbols  |  |
+| `time_period` | `string` | Time Period. Time Period for cash flow stmts |  |
+| `stmt_limit` | `string` | Statement Limit.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Symbol List |  | DefaultPaginator | ✅ |  ❌  |
-| Market News |  | No pagination | ✅ |  ❌  |
-| Most Active US Stocks | symbol | No pagination | ✅ |  ❌  |
-| Technical Indicators |  | No pagination | ✅ |  ❌  |
+| market_news |  | No pagination | ✅ |  ❌  |
+| most_active_us_stocks | symbol | No pagination | ✅ |  ❌  |
+| technical_indicators |  | No pagination | ✅ |  ❌  |
 | us_stocks_previous_close |  | No pagination | ✅ |  ❌  |
-| us_stocks_snapshot | s | No pagination | ✅ |  ❌  |
-| forex_last_quote |  | No pagination | ✅ |  ❌  |
-| forex_last_trade |  | No pagination | ✅ |  ❌  |
-| forex_aggregates |  | No pagination | ✅ |  ❌  |
-| forex_previous_close |  | No pagination | ✅ |  ❌  |
-| crypto_aggregates |  | No pagination | ✅ |  ❌  |
-|  crypto_last_trade |  | No pagination | ✅ |  ❌  |
-| crypto_snapshot | s | No pagination | ✅ |  ❌  |
+| market_status |  | No pagination | ✅ |  ❌  |
+| economic_calendar |  | No pagination | ✅ |  ❌  |
+| earning_calendar |  | No pagination | ✅ |  ❌  |
+| delisted_companies | symbol | No pagination | ✅ |  ❌  |
+| ipo_calendar | symbol | No pagination | ✅ |  ❌  |
+| stocks_split |  | No pagination | ✅ |  ❌  |
+| historical_stock_split  |  | No pagination | ✅ |  ❌  |
+| dividends_calendar |  | No pagination | ✅ |  ❌  |
+| historical_dividends_calendar |  | No pagination | ✅ |  ❌  |
+| cash_flow_statements | date.symbol | No pagination | ✅ |  ❌  |
+| balance_sheet_statements | date.symbol | No pagination | ✅ |  ❌  |
+| income_statement | date.symbol | No pagination | ✅ |  ❌  |
+| institutional_holders | holder | No pagination | ✅ |  ❌  |
+| mutual_fund_holder |  | No pagination | ✅ |  ❌  |
+| most_gainers | symbol | No pagination | ✅ |  ❌  |
+| most_losers | symbol | No pagination | ✅ |  ❌  |
+| sector_performance | sector | No pagination | ✅ |  ❌  |
+| shares_float |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -42,6 +53,6 @@ This connector can be used to extract data from various APIs such as symbol-list
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-05 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

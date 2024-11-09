@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -11,53 +11,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Symbol List
+    - market_news
 
 definitions:
   streams:
-    Symbol List:
+    market_news:
       type: DeclarativeStream
-      name: Symbol List
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: symbol-list/{{ config['market_type'] }}
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 404
-                    error_message: Please enter the type of market
-                    error_message_contains: Cannot GET /symbol-list/
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - symbols
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          pagination_strategy:
-            type: PageIncrement
-            start_from_page: 1
-            inject_on_first_request: true
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/Symbol List"
-    Market News:
-      type: DeclarativeStream
-      name: Market News
+      name: market_news
       retriever:
         type: SimpleRetriever
         requester:
@@ -66,6 +26,8 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "{{ config['limit'] }}"
+          request_headers:
+            Accept-Encoding: Gzip
         record_selector:
           type: RecordSelector
           extractor:
@@ -73,20 +35,16 @@ definitions:
             field_path:
               - news
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Market News"
-    Most Active US Stocks:
+          $ref: "#/schemas/market_news"
+    most_active_us_stocks:
       type: DeclarativeStream
-      name: Most Active US Stocks
+      name: most_active_us_stocks
       primary_key:
         - symbol
       retriever:
@@ -103,10 +61,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Most Active US Stocks"
-    Technical Indicators:
+          $ref: "#/schemas/most_active_us_stocks"
+    technical_indicators:
       type: DeclarativeStream
-      name: Technical Indicators
+      name: technical_indicators
       retriever:
         type: SimpleRetriever
         requester:
@@ -123,17 +81,13 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Technical Indicators"
+          $ref: "#/schemas/technical_indicators"
     us_stocks_previous_close:
       type: DeclarativeStream
       name: us_stocks_previous_close
@@ -150,46 +104,145 @@ definitions:
             field_path:
               - results
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/us_stocks_previous_close"
-    us_stocks_snapshot:
+    market_status:
       type: DeclarativeStream
-      name: us_stocks_snapshot
-      primary_key:
-        - s
+      name: market_status
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: snapshot/stock
+          path: marketstatus
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - lastQuotes
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/us_stocks_snapshot"
-    forex_last_quote:
+          $ref: "#/schemas/market_status"
+    economic_calendar:
       type: DeclarativeStream
-      name: forex_last_quote
+      name: economic_calendar
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: last/forex/{{ stream_partition.symbol }}
+          path: fnd/economic-calendar
+          http_method: GET
+          request_parameters:
+            to: "{{ config[\"to\"] }}"
+            from: "{{ config[\"from\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/economic_calendar"
+    earning_calendar:
+      type: DeclarativeStream
+      name: earning_calendar
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fnd/earning-calendar
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/earning_calendar"
+    delisted_companies:
+      type: DeclarativeStream
+      name: delisted_companies
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fnd/delisted-companies/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config[\"limit\"] }}"
+            period: annual
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/delisted_companies"
+    ipo_calendar:
+      type: DeclarativeStream
+      name: ipo_calendar
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/ipo-calendar
+          http_method: GET
+          request_parameters:
+            to: "{{ config[\"to\"] }}"
+            from: "{{ config[\"from\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ipo_calendar"
+    stocks_split:
+      type: DeclarativeStream
+      name: stocks_split
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/stock-split-calendar
+          http_method: GET
+          request_parameters:
+            to: "{{ config[\"to\"] }}"
+            from: "{{ config[\"from\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stocks_split"
+    "historical_stock_split ":
+      type: DeclarativeStream
+      name: "historical_stock_split "
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/historical-stock-splits/{{ stream_partition.symbol }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -197,25 +250,42 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/forex_last_quote"
-    forex_last_trade:
+          $ref: "#/schemas/historical_stock_split "
+    dividends_calendar:
       type: DeclarativeStream
-      name: forex_last_trade
+      name: dividends_calendar
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: last/trade/forex/{{ stream_partition.symbol }}
+          path: fnd/dividend-calendar
+          http_method: GET
+          request_parameters:
+            to: "{{ config[\"to\"] }}"
+            from: "{{ config[\"from\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dividends_calendar"
+    historical_dividends_calendar:
+      type: DeclarativeStream
+      name: historical_dividends_calendar
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/historical-dividends/{{ stream_partition.symbol }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -223,154 +293,231 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/forex_last_trade"
-    forex_aggregates:
+          $ref: "#/schemas/historical_dividends_calendar"
+    cash_flow_statements:
       type: DeclarativeStream
-      name: forex_aggregates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            agg/forex/{{ stream_partition.symbol }}/{{ config['multiply'] }}/{{
-            config["time_aggregates"] }}/{{ config["from"] }}/{{ config["to"] }}
-          http_method: GET
-          request_parameters:
-            limit: "1000"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/forex_aggregates"
-    forex_previous_close:
-      type: DeclarativeStream
-      name: forex_previous_close
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: agg/forex/prev-close/{{ stream_partition.symbol }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/forex_previous_close"
-    crypto_aggregates:
-      type: DeclarativeStream
-      name: crypto_aggregates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: >-
-            agg/crypto/{{ stream_partition.symbol }}/{{ config['multiply'] }}/{{
-            config["time_aggregates"] }}/{{ config["from"] }}/{{ config["to"] }}
-          http_method: GET
-          request_parameters:
-            limit: "1000"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/crypto_aggregates"
-    " crypto_last_trade":
-      type: DeclarativeStream
-      name: " crypto_last_trade"
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: agg/crypto/prev-close/{{ stream_partition.symbol }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: symbol
-              partition_field: symbol
-              stream:
-                $ref: "#/definitions/streams/Symbol List"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ crypto_last_trade"
-    crypto_snapshot:
-      type: DeclarativeStream
-      name: crypto_snapshot
+      name: cash_flow_statements
       primary_key:
-        - s
+        - date
+        - symbol
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: snapshot/crypto
+          path: fnd/cash-flow-statement/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+            period: "{{ config['time_period'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cash_flow_statements"
+    balance_sheet_statements:
+      type: DeclarativeStream
+      name: balance_sheet_statements
+      primary_key:
+        - date
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/balance-sheet-statements/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+            period: "{{ config['time_period'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance_sheet_statements"
+    income_statement:
+      type: DeclarativeStream
+      name: income_statement
+      primary_key:
+        - date
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/income-statement/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+            period: "{{ config['time_period'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/income_statement"
+    institutional_holders:
+      type: DeclarativeStream
+      name: institutional_holders
+      primary_key:
+        - holder
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/funds/institutional-holder/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/institutional_holders"
+    mutual_fund_holder:
+      type: DeclarativeStream
+      name: mutual_fund_holder
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/funds/mutual-fund-holder/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mutual_fund_holder"
+    most_gainers:
+      type: DeclarativeStream
+      name: most_gainers
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/market-information/us/most-gainers
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - lastQuotes
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/crypto_snapshot"
+          $ref: "#/schemas/most_gainers"
+    most_losers:
+      type: DeclarativeStream
+      name: most_losers
+      primary_key:
+        - symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/market-information/us/most-losers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/most_losers"
+    sector_performance:
+      type: DeclarativeStream
+      name: sector_performance
+      primary_key:
+        - sector
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/market-information/us/sector-performance
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sector_performance"
+    shares_float:
+      type: DeclarativeStream
+      name: shares_float
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fnd/shares-float/{{ stream_partition.symbol }}
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['stmt_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symbol
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shares_float"
   base_requester:
     type: HttpRequester
     url_base: https://api.finage.co.uk/
@@ -383,19 +530,28 @@ definitions:
         inject_into: request_parameter
 
 streams:
-  - $ref: "#/definitions/streams/Symbol List"
-  - $ref: "#/definitions/streams/Market News"
-  - $ref: "#/definitions/streams/Most Active US Stocks"
-  - $ref: "#/definitions/streams/Technical Indicators"
+  - $ref: "#/definitions/streams/market_news"
+  - $ref: "#/definitions/streams/most_active_us_stocks"
+  - $ref: "#/definitions/streams/technical_indicators"
   - $ref: "#/definitions/streams/us_stocks_previous_close"
-  - $ref: "#/definitions/streams/us_stocks_snapshot"
-  - $ref: "#/definitions/streams/forex_last_quote"
-  - $ref: "#/definitions/streams/forex_last_trade"
-  - $ref: "#/definitions/streams/forex_aggregates"
-  - $ref: "#/definitions/streams/forex_previous_close"
-  - $ref: "#/definitions/streams/crypto_aggregates"
-  - $ref: "#/definitions/streams/ crypto_last_trade"
-  - $ref: "#/definitions/streams/crypto_snapshot"
+  - $ref: "#/definitions/streams/market_status"
+  - $ref: "#/definitions/streams/economic_calendar"
+  - $ref: "#/definitions/streams/earning_calendar"
+  - $ref: "#/definitions/streams/delisted_companies"
+  - $ref: "#/definitions/streams/ipo_calendar"
+  - $ref: "#/definitions/streams/stocks_split"
+  - $ref: "#/definitions/streams/historical_stock_split "
+  - $ref: "#/definitions/streams/dividends_calendar"
+  - $ref: "#/definitions/streams/historical_dividends_calendar"
+  - $ref: "#/definitions/streams/cash_flow_statements"
+  - $ref: "#/definitions/streams/balance_sheet_statements"
+  - $ref: "#/definitions/streams/income_statement"
+  - $ref: "#/definitions/streams/institutional_holders"
+  - $ref: "#/definitions/streams/mutual_fund_holder"
+  - $ref: "#/definitions/streams/most_gainers"
+  - $ref: "#/definitions/streams/most_losers"
+  - $ref: "#/definitions/streams/sector_performance"
+  - $ref: "#/definitions/streams/shares_float"
 
 spec:
   type: Spec
@@ -404,6 +560,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - symbols
     properties:
       type:
         type: string
@@ -491,136 +648,207 @@ spec:
         title: Time aggregates
         default: day
       symbols:
-        type: string
-        description: "List of symbols separated by commas "
+        type: array
+        description: "List of symbols "
         order: 10
         title: Symbols
+      time_period:
+        type: string
+        description: Time Period for cash flow stmts
+        enum:
+          - annual
+          - quarter
+        order: 11
+        title: Time Period
+      stmt_limit:
+        type: string
+        order: 12
+        title: Statement Limit
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    Symbol List: true
-    Market News: true
-    Most Active US Stocks: true
-    Technical Indicators: true
+    market_news: true
+    most_active_us_stocks: true
+    technical_indicators: true
     us_stocks_previous_close: true
-    us_stocks_snapshot: true
-    forex_last_quote: true
-    forex_last_trade: true
-    forex_aggregates: true
-    forex_previous_close: true
-    crypto_aggregates: true
-    " crypto_last_trade": true
-    crypto_snapshot: true
+    market_status: true
+    economic_calendar: true
+    earning_calendar: true
+    delisted_companies: true
+    ipo_calendar: true
+    stocks_split: true
+    "historical_stock_split ": true
+    dividends_calendar: true
+    historical_dividends_calendar: true
+    cash_flow_statements: true
+    balance_sheet_statements: true
+    income_statement: true
+    institutional_holders: true
+    mutual_fund_holder: true
+    most_gainers: true
+    most_losers: true
+    sector_performance: true
+    shares_float: true
   testedStreams:
-    Symbol List:
+    market_news:
       hasRecords: true
-      streamHash: a8083d3df255176d93a930f52020e8408aefa194
+      streamHash: eb1fe3e4ec35335dcb1bce365b3edcd752d08e9b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    Market News:
-      hasRecords: true
-      streamHash: b69662b49ba9cbb5a51b0a215052a7d798050416
+    most_active_us_stocks:
+      streamHash: fc3814218b304c4876b2250132b4f1196a139c3f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    Most Active US Stocks:
       hasRecords: true
-      streamHash: 08425464ea169646929ce9305b96d1c55220f3e1
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    technical_indicators:
+      streamHash: 7afb738bc989bb6e1e1eb85b21c5e000dec46410
+      hasResponse: true
       responsesAreSuccessful: true
-    Technical Indicators:
       hasRecords: true
-      streamHash: ebb28d7894415b1f8eab85d56ee3c2778890aa58
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     us_stocks_previous_close:
       hasRecords: true
-      streamHash: 6361be74a879c1a586d0493d776394afc99ba7e2
+      streamHash: 56776562f5bf2647dc66c6fd11ccca2c94dda6b5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    us_stocks_snapshot:
+    market_status:
       hasRecords: true
-      streamHash: 8bc84ac868ad94cb04679da5393dcafe1bfb6499
+      streamHash: 98dfb0e561febe9c19f9a4355d3270ae73c5feb4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    forex_last_quote:
+    economic_calendar:
       hasRecords: true
-      streamHash: 7c0dff5ef7f731c778a04f16e8e5402d166f4450
+      streamHash: 8a302a96b7b92d5b3cf5723ade9a12cef5c2cda5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    forex_last_trade:
+    earning_calendar:
+      streamHash: 78b4604379752654184349eb4b2c2c30ceead9a0
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: true
-      streamHash: 0075d8fff8c73c3ffbbf6cbda95a68b609376490
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    delisted_companies:
+      streamHash: 52575125c3712a80d897318d54be577c07fde14f
+      hasResponse: true
       responsesAreSuccessful: true
-    forex_aggregates:
       hasRecords: true
-      streamHash: 1b50cd4a187fccc33a594ccea9c1b95afb8741ab
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ipo_calendar:
+      streamHash: 83685a7d5ca73e61e8ff9348a47d75fdd8d3ece6
+      hasResponse: true
       responsesAreSuccessful: true
-    forex_previous_close:
       hasRecords: true
-      streamHash: 0fbd9c9711aa403ebf5eb79cc6f3b448f5967dda
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stocks_split:
+      streamHash: 87780029c2088e63432533bdc4f35e70084c0bce
+      hasResponse: true
       responsesAreSuccessful: true
-    crypto_aggregates:
       hasRecords: true
-      streamHash: 9a7d547c2c61d102c540b291914534989657c380
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    " crypto_last_trade":
+      primaryKeysAreUnique: true
+    "historical_stock_split ":
       hasRecords: true
-      streamHash: d3f05f71712e9245c3a81c0467cd045db7f5b989
+      streamHash: 6fe8da58cfec43c7a641b63d5b560c1e872f3c8e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    crypto_snapshot:
+    dividends_calendar:
       hasRecords: true
-      streamHash: 9f55663127ca1b8a685f4b3259057bd97f301674
+      streamHash: 3058a55fddf4da5f30711bc85dbf5197a6b3be39
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    historical_dividends_calendar:
+      hasRecords: true
+      streamHash: 4f0cc4391de713ccb1c4c86ce9867da216ee74d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    cash_flow_statements:
+      hasRecords: true
+      streamHash: 5d0ccbb77b52dbc65c4f22948e181a5f58654e39
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    balance_sheet_statements:
+      hasRecords: true
+      streamHash: c05ed7d285961055ecfeaa9c361b51286d4f8427
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    income_statement:
+      hasRecords: true
+      streamHash: 7cb5715063d180a206444ccb47cbee443e2cfed4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    institutional_holders:
+      hasRecords: true
+      streamHash: f377693f15558dedf4b3943d622018917eced2aa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    mutual_fund_holder:
+      streamHash: 462a215951e39e2fbab2ecdf4324ef65839be97c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    most_gainers:
+      hasRecords: true
+      streamHash: b8466e76f06b4e5f974ecc99059e16a13f927fc4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    most_losers:
+      hasRecords: true
+      streamHash: 6080fd432659e5ce8034a9ba27ccb3606768023f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sector_performance:
+      hasRecords: true
+      streamHash: 4c0c6e98044910ffc67b4cb4b098fd2c2b9f8ca1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    shares_float:
+      streamHash: 47b13945057a2a035c83e1d45ef28bd76a998ac1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
-  Symbol List:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      name:
-        type:
-          - string
-          - "null"
-      symbol:
-        type:
-          - string
-          - "null"
-  Market News:
+  market_news:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -645,7 +873,7 @@ schemas:
         type:
           - string
           - "null"
-  Most Active US Stocks:
+  most_active_us_stocks:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -670,7 +898,7 @@ schemas:
         type: string
     required:
       - symbol
-  Technical Indicators:
+  technical_indicators:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -736,45 +964,116 @@ schemas:
         type:
           - number
           - "null"
-  us_stocks_snapshot:
+  market_status:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      a:
+      country:
         type:
-          - number
+          - string
           - "null"
-      asz:
+      currencies:
         type:
-          - number
+          - object
           - "null"
-      b:
+        properties:
+          crypto:
+            type:
+              - string
+              - "null"
+          fx:
+            type:
+              - string
+              - "null"
+      exchanges:
         type:
-          - number
+          - object
           - "null"
-      bsz:
+        properties:
+          nasdaq:
+            type:
+              - string
+              - "null"
+          nyse:
+            type:
+              - string
+              - "null"
+          otc:
+            type:
+              - string
+              - "null"
+      market:
         type:
-          - number
+          - string
           - "null"
-      s:
-        type: string
-      t:
+      timezone:
         type:
-          - number
+          - string
           - "null"
-    required:
-      - s
-  forex_last_quote:
+  economic_calendar:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      ask:
+      actual:
         type:
           - number
           - "null"
-      bid:
+      change:
+        type:
+          - number
+          - "null"
+      changePercentage:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      countryFlag:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      event:
+        type:
+          - string
+          - "null"
+      previous:
+        type:
+          - number
+          - "null"
+  earning_calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      eps:
+        type:
+          - number
+          - "null"
+      estimated_eps:
+        type:
+          - number
+          - "null"
+      estimated_revenue:
+        type:
+          - number
+          - "null"
+      revenue:
         type:
           - number
           - "null"
@@ -782,169 +1081,775 @@ schemas:
         type:
           - string
           - "null"
-      timestamp:
+      time:
         type:
-          - number
+          - string
           - "null"
-  forex_last_trade:
+  delisted_companies:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      company_name:
+        type:
+          - string
+          - "null"
+      delisted_date:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      ipo_date:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  ipo_calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      exchange:
+        type:
+          - string
+          - "null"
+      market_cap:
+        type:
+          - number
+          - "null"
+      price_range:
+        type:
+          - string
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  stocks_split:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      denominator_factor:
+        type:
+          - number
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      numerator_factor:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  "historical_stock_split ":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      denominator_factor:
+        type:
+          - number
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      numerator_factor:
+        type:
+          - number
+          - "null"
+  dividends_calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+  historical_dividends_calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adj_dividend:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      declaration_date:
+        type:
+          - string
+          - "null"
+      dividend:
+        type:
+          - number
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      payment_date:
+        type:
+          - string
+          - "null"
+      record_date:
+        type:
+          - string
+          - "null"
+  cash_flow_statements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptedDate:
+        type:
+          - string
+          - "null"
+      accountsPayables:
+        type:
+          - number
+          - "null"
+      accountsReceivables:
+        type:
+          - number
+          - "null"
+      acquisitionsNet:
+        type:
+          - number
+          - "null"
+      capitalExpenditure:
+        type:
+          - number
+          - "null"
+      cashAtBeginningOfPeriod:
+        type:
+          - number
+          - "null"
+      cashAtEndOfPeriod:
+        type:
+          - number
+          - "null"
+      changeInWorkingCapital:
+        type:
+          - number
+          - "null"
+      commonStockIssued:
+        type:
+          - number
+          - "null"
+      commonStockRepurchased:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      debtRepayment:
+        type:
+          - number
+          - "null"
+      deferredIncomeTax:
+        type:
+          - number
+          - "null"
+      depreciationAndAmortization:
+        type:
+          - number
+          - "null"
+      dividendsPaid:
+        type:
+          - number
+          - "null"
+      effectOfForexChangesOnCash:
+        type:
+          - number
+          - "null"
+      fillingDate:
+        type:
+          - string
+          - "null"
+      finalLink:
+        type:
+          - string
+          - "null"
+      freeCashFlow:
+        type:
+          - number
+          - "null"
+      inventory:
+        type:
+          - number
+          - "null"
+      investmentsInPropertyPlantAndEquipment:
+        type:
+          - number
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      netCashProvidedByOperatingActivities:
+        type:
+          - number
+          - "null"
+      netCashUsedForInvestingActivites:
+        type:
+          - number
+          - "null"
+      netCashUsedProvidedByFinancingActivities:
+        type:
+          - number
+          - "null"
+      netChangeInCash:
+        type:
+          - number
+          - "null"
+      netIncome:
+        type:
+          - number
+          - "null"
+      operatingCashFlow:
+        type:
+          - number
+          - "null"
+      otherFinancingActivites:
+        type:
+          - number
+          - "null"
+      otherInvestingActivites:
+        type:
+          - number
+          - "null"
+      otherNonCashItems:
+        type:
+          - number
+          - "null"
+      otherWorkingCapital:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      purchasesOfInvestments:
+        type:
+          - number
+          - "null"
+      salesMaturitiesOfInvestments:
+        type:
+          - number
+          - "null"
+      stockBasedCompensation:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+    required:
+      - date
+      - symbol
+  balance_sheet_statements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptedDate:
+        type:
+          - string
+          - "null"
+      accountPayables:
+        type:
+          - number
+          - "null"
+      accumulatedOtherComprehensiveIncomeLoss:
+        type:
+          - number
+          - "null"
+      cashAndCashEquivalents:
+        type:
+          - number
+          - "null"
+      cashAndShortTermInvestments:
+        type:
+          - number
+          - "null"
+      commonStock:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      deferredRevenue:
+        type:
+          - number
+          - "null"
+      deferredRevenueNonCurrent:
+        type:
+          - number
+          - "null"
+      deferredTaxLiabilitiesNonCurrent:
+        type:
+          - number
+          - "null"
+      fillingDate:
+        type:
+          - string
+          - "null"
+      finalLink:
+        type:
+          - string
+          - "null"
+      goodwill:
+        type:
+          - number
+          - "null"
+      goodwillAndIntangibleAssets:
+        type:
+          - number
+          - "null"
+      intangibleAssets:
+        type:
+          - number
+          - "null"
+      inventory:
+        type:
+          - number
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      longTermDebt:
+        type:
+          - number
+          - "null"
+      longTermInvestments:
+        type:
+          - number
+          - "null"
+      netDebt:
+        type:
+          - number
+          - "null"
+      netReceivables:
+        type:
+          - number
+          - "null"
+      otherAssets:
+        type:
+          - number
+          - "null"
+      otherCurrentAssets:
+        type:
+          - number
+          - "null"
+      otherCurrentLiabilities:
+        type:
+          - number
+          - "null"
+      otherLiabilities:
+        type:
+          - number
+          - "null"
+      otherNonCurrentAssets:
+        type:
+          - number
+          - "null"
+      otherNonCurrentLiabilities:
+        type:
+          - number
+          - "null"
+      othertotalStockholdersEquity:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      propertyPlantEquipmentNet:
+        type:
+          - number
+          - "null"
+      retainedEarnings:
+        type:
+          - number
+          - "null"
+      shortTermDebt:
+        type:
+          - number
+          - "null"
+      shortTermInvestments:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+      taxAssets:
+        type:
+          - number
+          - "null"
+      taxPayables:
+        type:
+          - number
+          - "null"
+      totalAssets:
+        type:
+          - number
+          - "null"
+      totalCurrentAssets:
+        type:
+          - number
+          - "null"
+      totalCurrentLiabilities:
+        type:
+          - number
+          - "null"
+      totalDebt:
+        type:
+          - number
+          - "null"
+      totalInvestments:
+        type:
+          - number
+          - "null"
+      totalLiabilities:
+        type:
+          - number
+          - "null"
+      totalLiabilitiesAndStockholdersEquity:
+        type:
+          - number
+          - "null"
+      totalNonCurrentAssets:
+        type:
+          - number
+          - "null"
+      totalNonCurrentLiabilities:
+        type:
+          - number
+          - "null"
+      totalStockholdersEquity:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+      - symbol
+  income_statement:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      acceptedDate:
+        type:
+          - string
+          - "null"
+      costAndExpenses:
+        type:
+          - number
+          - "null"
+      costOfRevenue:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      depreciationAndAmortization:
+        type:
+          - number
+          - "null"
+      ebitda:
+        type:
+          - number
+          - "null"
+      ebitdaRatio:
+        type:
+          - number
+          - "null"
+      eps:
+        type:
+          - number
+          - "null"
+      epsDiluted:
+        type:
+          - number
+          - "null"
+      fillingDate:
+        type:
+          - string
+          - "null"
+      finalLink:
+        type:
+          - string
+          - "null"
+      generalAndAdministrativeExpenses:
+        type:
+          - number
+          - "null"
+      grossProfit:
+        type:
+          - number
+          - "null"
+      grossProfitRatio:
+        type:
+          - number
+          - "null"
+      incomeBeforeTax:
+        type:
+          - number
+          - "null"
+      incomeBeforeTaxRatio:
+        type:
+          - number
+          - "null"
+      incomeTaxExpense:
+        type:
+          - number
+          - "null"
+      interestExpense:
+        type:
+          - number
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      netIncome:
+        type:
+          - number
+          - "null"
+      netIncomeRatio:
+        type:
+          - number
+          - "null"
+      operatingExpenses:
+        type:
+          - number
+          - "null"
+      operatingIncome:
+        type:
+          - number
+          - "null"
+      operatingIncomeRatio:
+        type:
+          - number
+          - "null"
+      otherExpenses:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      researchAndDevelopmentExpenses:
+        type:
+          - number
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      sellingAndMarketingExpenses:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+      totalOtherIncomeExpensesNet:
+        type:
+          - number
+          - "null"
+      weightedAverageShsOut:
+        type:
+          - number
+          - "null"
+      weightedAverageShsOutDil:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+      - symbol
+  institutional_holders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - number
+          - "null"
+      holder:
+        type: string
+      report_date:
+        type:
+          - string
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+    required:
+      - holder
+  mutual_fund_holder:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - number
+          - "null"
+      holder:
+        type:
+          - string
+          - "null"
+      report_date:
+        type:
+          - string
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      weight_percentage:
+        type:
+          - string
+          - "null"
+  most_gainers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - string
+          - "null"
+      change_percentage:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
       price:
         type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  most_losers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change:
+        type:
+          - string
+          - "null"
+      change_percentage:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      symbol:
+        type: string
+    required:
+      - symbol
+  sector_performance:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      change_percentage:
+        type:
+          - string
+          - "null"
+      sector:
+        type: string
+    required:
+      - sector
+  shares_float:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      outstanding_shares:
+        type:
+          - number
+          - "null"
+      public_float:
+        type:
+          - number
+          - "null"
+      stock_float:
+        type:
           - number
           - "null"
       symbol:
         type:
           - string
           - "null"
-      timestamp:
-        type:
-          - number
-          - "null"
-  forex_aggregates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      c:
-        type:
-          - number
-          - "null"
-      h:
-        type:
-          - number
-          - "null"
-      l:
-        type:
-          - number
-          - "null"
-      o:
-        type:
-          - number
-          - "null"
-      t:
-        type:
-          - number
-          - "null"
-      v:
-        type:
-          - number
-          - "null"
-  forex_previous_close:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      c:
-        type:
-          - number
-          - "null"
-      h:
-        type:
-          - number
-          - "null"
-      l:
-        type:
-          - number
-          - "null"
-      o:
-        type:
-          - number
-          - "null"
-      t:
-        type:
-          - number
-          - "null"
-      v:
-        type:
-          - number
-          - "null"
-  crypto_aggregates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      c:
-        type:
-          - number
-          - "null"
-      h:
-        type:
-          - number
-          - "null"
-      l:
-        type:
-          - number
-          - "null"
-      o:
-        type:
-          - number
-          - "null"
-      t:
-        type:
-          - number
-          - "null"
-      v:
-        type:
-          - number
-          - "null"
-  " crypto_last_trade":
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      c:
-        type:
-          - number
-          - "null"
-      h:
-        type:
-          - number
-          - "null"
-      l:
-        type:
-          - number
-          - "null"
-      o:
-        type:
-          - number
-          - "null"
-      t:
-        type:
-          - number
-          - "null"
-      v:
-        type:
-          - number
-          - "null"
-  crypto_snapshot:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      a:
-        type:
-          - number
-          - "null"
-      asz:
-        type:
-          - number
-          - "null"
-      b:
-        type:
-          - number
-          - "null"
-      bsz:
-        type:
-          - number
-          - "null"
-      s:
-        type: string
-      t:
-        type:
-          - number
-          - "null"
-    required:
-      - s
