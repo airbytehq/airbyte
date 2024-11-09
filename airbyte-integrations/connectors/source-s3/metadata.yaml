@@ -39,6 +39,7 @@ data:
         message: Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`
         upgradeDeadline: "2023-10-18"
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:python-file-based
