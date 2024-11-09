@@ -8,34 +8,20 @@ Docs : https://apps.fas.usda.gov/opendatawebV2/#/home
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
 | `market_year` | `integer` | Market Year.  | 2023 |
-| `year` | `integer` | Year.  | 2023 |
-| `month` | `integer` | Month.  | 01 |
+| `country_codes` | `array` | ESR Country Codes.  |  |
+| `commodities_codes` | `array` | ESR Commodities Codes.  |  |
+| `gats_reporter_codes` | `array` | GATS Reporter Codes.  |  |
+| `psd_commodities_codes` | `array` | PSD Commodities Codes.  |  |
+| `psd_country_codes` | `array` | PSD Country Codes.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| esr_regions | regionId | No pagination | ✅ |  ❌  |
-| esr_countries | countryCode | No pagination | ✅ |  ❌  |
-| esr_commodities | commodityCode | No pagination | ✅ |  ❌  |
-| esr_unitsofmeasure | unitId | No pagination | ✅ |  ❌  |
-| esr_datareleasedates |  | No pagination | ✅ |  ❌  |
-| gats_export_data_releasedates |  | No pagination | ✅ |  ❌  |
-| gats_import_data_releasedates |  | No pagination | ✅ |  ❌  |
-| gats_untrade_data_exports_data_releasedates |  | No pagination | ✅ |  ❌  |
-| gats_untrade_data_imports_data_releasedates |  | No pagination | ✅ |  ❌  |
-| gats_regions | regionCode | No pagination | ✅ |  ❌  |
-| gats_countries | countryCode | No pagination | ✅ |  ❌  |
-| gats_commodities |  | No pagination | ✅ |  ❌  |
-| gats_hs6commodities | hS6Code | No pagination | ✅ |  ❌  |
-| gats_unitsOfMeasure |  | No pagination | ✅ |  ❌  |
-| gats_customsdistricts |  | No pagination | ✅ |  ❌  |
-| commodity_import_data |  | No pagination | ✅ |  ❌  |
-| commodity_export_data |  | No pagination | ✅ |  ❌  |
-| psd_regions | regionCode | No pagination | ✅ |  ❌  |
-| psd_countries | countryCode | No pagination | ✅ |  ❌  |
-| psd_commodities | commodityCode | No pagination | ✅ |  ❌  |
-| psd_unitsOfMeasure | unitId | No pagination | ✅ |  ❌  |
-| psd_commodityAttributes | attributeId | No pagination | ✅ |  ❌  |
+| gats_commodity_import_data |  | No pagination | ✅ |  ❌  |
+| gats_commodity_export_data |  | No pagination | ✅ |  ❌  |
+| esr_export_data |  | No pagination | ✅ |  ❌  |
+| psd_forcecastnumber |  | No pagination | ✅ |  ❌  |
+| psd_forecastnumber_commodity |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -44,6 +30,6 @@ Docs : https://apps.fas.usda.gov/opendatawebV2/#/home
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-01 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

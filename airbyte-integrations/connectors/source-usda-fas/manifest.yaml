@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -12,311 +12,19 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - esr_regions
+    - gats_commodity_import_data
 
 definitions:
   streams:
-    esr_regions:
+    gats_commodity_import_data:
       type: DeclarativeStream
-      name: esr_regions
-      primary_key:
-        - regionId
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: esr/regions
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/esr_regions"
-    esr_countries:
-      type: DeclarativeStream
-      name: esr_countries
-      primary_key:
-        - countryCode
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: esr/countries
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/esr_countries"
-    esr_commodities:
-      type: DeclarativeStream
-      name: esr_commodities
-      primary_key:
-        - commodityCode
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: esr/commodities
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/esr_commodities"
-    esr_unitsofmeasure:
-      type: DeclarativeStream
-      name: esr_unitsofmeasure
-      primary_key:
-        - unitId
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: esr/unitsofmeasure
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/esr_unitsofmeasure"
-    esr_datareleasedates:
-      type: DeclarativeStream
-      name: esr_datareleasedates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: esr/datareleasedates
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/esr_datareleasedates"
-    gats_export_data_releasedates:
-      type: DeclarativeStream
-      name: gats_export_data_releasedates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/census/data/exports/dataReleaseDates
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: commodityCode
-              partition_field: commodityCode
-              stream:
-                $ref: "#/definitions/streams/esr_commodities"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_export_data_releasedates"
-    gats_import_data_releasedates:
-      type: DeclarativeStream
-      name: gats_import_data_releasedates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/census/data/imports/dataReleaseDates
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_import_data_releasedates"
-    gats_untrade_data_exports_data_releasedates:
-      type: DeclarativeStream
-      name: gats_untrade_data_exports_data_releasedates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/UNTrade/data/exports/dataReleaseDates
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_untrade_data_exports_data_releasedates"
-    gats_untrade_data_imports_data_releasedates:
-      type: DeclarativeStream
-      name: gats_untrade_data_imports_data_releasedates
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/UNTrade/data/imports/dataReleaseDates
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_untrade_data_imports_data_releasedates"
-    gats_regions:
-      type: DeclarativeStream
-      name: gats_regions
-      primary_key:
-        - regionCode
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/regions
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_regions"
-    gats_countries:
-      type: DeclarativeStream
-      name: gats_countries
-      primary_key:
-        - countryCode
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/countries
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_countries"
-    gats_commodities:
-      type: DeclarativeStream
-      name: gats_commodities
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/commodities
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_commodities"
-    gats_hs6commodities:
-      type: DeclarativeStream
-      name: gats_hs6commodities
-      primary_key:
-        - hS6Code
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/HS6Commodities
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_hs6commodities"
-    gats_unitsOfMeasure:
-      type: DeclarativeStream
-      name: gats_unitsOfMeasure
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/unitsOfMeasure
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_unitsOfMeasure"
-    gats_customsdistricts:
-      type: DeclarativeStream
-      name: gats_customsdistricts
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: gats/customsDistricts
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/gats_customsdistricts"
-    commodity_import_data:
-      type: DeclarativeStream
-      name: commodity_import_data
+      name: gats_commodity_import_data
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            gats/UNTradeImports/reporterCode/{{stream_partition.countryCode}}/year/{{
+            gats/UNTradeImports/reporterCode/{{stream_partition.reporterCode}}/year/{{
             config['year'] }}
           http_method: GET
           request_headers:
@@ -327,26 +35,22 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: countryCode
-              partition_field: countryCode
-              stream:
-                $ref: "#/definitions/streams/gats_countries"
+          type: ListPartitionRouter
+          values: "{{ config[\"gats_reporter_codes\"] }}"
+          cursor_field: reporterCode
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/commodity_import_data"
-    commodity_export_data:
+          $ref: "#/schemas/gats_commodity_import_data"
+    gats_commodity_export_data:
       type: DeclarativeStream
-      name: commodity_export_data
+      name: gats_commodity_export_data
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            gats/UNTradeExports/reporterCode/{{stream_partition.countryCode}}/year/{{
+            gats/UNTradeExports/reporterCode/{{stream_partition.reporterCode}}/year/{{
             config['year'] }}
           http_method: GET
         record_selector:
@@ -355,117 +59,96 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: countryCode
-              partition_field: countryCode
-              stream:
-                $ref: "#/definitions/streams/gats_countries"
+          type: ListPartitionRouter
+          values: "{{ config[\"gats_reporter_codes\"] }}"
+          cursor_field: reporterCode
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/commodity_export_data"
-    psd_regions:
+          $ref: "#/schemas/gats_commodity_export_data"
+    esr_export_data:
       type: DeclarativeStream
-      name: psd_regions
-      primary_key:
-        - regionCode
+      name: esr_export_data
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: psd/regions
+          path: >-
+            /esr/exports/commodityCode/{{ stream_partition.commodity_code
+            }}/countryCode/{{ stream_partition.country_code }}/marketYear/{{
+            config["market_year"] }}
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"country_codes\"] }}"
+            cursor_field: country_code
+          - type: ListPartitionRouter
+            values: "{{ config[\"commodities_codes\"] }}"
+            cursor_field: commodity_code
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/psd_regions"
-    psd_countries:
+          $ref: "#/schemas/esr_export_data"
+    psd_forcecastnumber:
       type: DeclarativeStream
-      name: psd_countries
-      primary_key:
-        - countryCode
+      name: psd_forcecastnumber
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: psd/countries
+          path: >-
+            psd/commodity/{{ stream_partition.commodityCode }}/country/{{
+            stream_partition.countryCode}}/year/{{ config["market_year"] }}
           http_method: GET
+          request_headers:
+            accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config['psd_commodities_codes'] }}"
+            cursor_field: commodityCode
+          - type: ListPartitionRouter
+            values: "{{ config['psd_country_codes'] }}"
+            cursor_field: countryCode
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/psd_countries"
-    psd_commodities:
+          $ref: "#/schemas/psd_forcecastnumber"
+    psd_forecastnumber_commodity:
       type: DeclarativeStream
-      name: psd_commodities
-      primary_key:
-        - commodityCode
+      name: psd_forecastnumber_commodity
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: psd/commodities
+          path: >-
+            psd/commodity/{{ stream_partition.commodityCode }}/world/year/{{
+            config["market_year"] }}
           http_method: GET
+          request_headers:
+            accept: application/json
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['psd_commodities_codes'] }}"
+          cursor_field: commodityCode
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/psd_commodities"
-    psd_unitsOfMeasure:
-      type: DeclarativeStream
-      name: psd_unitsOfMeasure
-      primary_key:
-        - unitId
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: psd/unitsOfMeasure
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/psd_unitsOfMeasure"
-    psd_commodityAttributes:
-      type: DeclarativeStream
-      name: psd_commodityAttributes
-      primary_key:
-        - attributeId
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: psd/commodityAttributes
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/psd_commodityAttributes"
+          $ref: "#/schemas/psd_forecastnumber_commodity"
   base_requester:
     type: HttpRequester
     url_base: https://api.fas.usda.gov/api/
@@ -478,28 +161,11 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: "#/definitions/streams/esr_regions"
-  - $ref: "#/definitions/streams/esr_countries"
-  - $ref: "#/definitions/streams/esr_commodities"
-  - $ref: "#/definitions/streams/esr_unitsofmeasure"
-  - $ref: "#/definitions/streams/esr_datareleasedates"
-  - $ref: "#/definitions/streams/gats_export_data_releasedates"
-  - $ref: "#/definitions/streams/gats_import_data_releasedates"
-  - $ref: "#/definitions/streams/gats_untrade_data_exports_data_releasedates"
-  - $ref: "#/definitions/streams/gats_untrade_data_imports_data_releasedates"
-  - $ref: "#/definitions/streams/gats_regions"
-  - $ref: "#/definitions/streams/gats_countries"
-  - $ref: "#/definitions/streams/gats_commodities"
-  - $ref: "#/definitions/streams/gats_hs6commodities"
-  - $ref: "#/definitions/streams/gats_unitsOfMeasure"
-  - $ref: "#/definitions/streams/gats_customsdistricts"
-  - $ref: "#/definitions/streams/commodity_import_data"
-  - $ref: "#/definitions/streams/commodity_export_data"
-  - $ref: "#/definitions/streams/psd_regions"
-  - $ref: "#/definitions/streams/psd_countries"
-  - $ref: "#/definitions/streams/psd_commodities"
-  - $ref: "#/definitions/streams/psd_unitsOfMeasure"
-  - $ref: "#/definitions/streams/psd_commodityAttributes"
+  - $ref: "#/definitions/streams/gats_commodity_import_data"
+  - $ref: "#/definitions/streams/gats_commodity_export_data"
+  - $ref: "#/definitions/streams/esr_export_data"
+  - $ref: "#/definitions/streams/psd_forcecastnumber"
+  - $ref: "#/definitions/streams/psd_forecastnumber_commodity"
 
 spec:
   type: Spec
@@ -519,192 +185,66 @@ spec:
         order: 1
         title: Market Year
         default: "2023"
-      year:
-        type: integer
+      country_codes:
+        type: array
         order: 2
-        title: Year
-        default: "2023"
-      month:
-        type: integer
+        title: ESR Country Codes
+      commodities_codes:
+        type: array
         order: 3
-        title: Month
-        default: "01"
+        title: ESR Commodities Codes
+      gats_reporter_codes:
+        type: array
+        order: 4
+        title: GATS Reporter Codes
+      psd_commodities_codes:
+        type: array
+        order: 5
+        title: PSD Commodities Codes
+      psd_country_codes:
+        type: array
+        title: PSD Country Codes
+        order: 6
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    esr_regions: true
-    esr_countries: true
-    esr_commodities: true
-    esr_unitsofmeasure: true
-    esr_datareleasedates: true
-    gats_export_data_releasedates: true
-    gats_import_data_releasedates: true
-    gats_untrade_data_exports_data_releasedates: true
-    gats_untrade_data_imports_data_releasedates: true
-    gats_regions: true
-    gats_countries: true
-    gats_commodities: true
-    gats_hs6commodities: true
-    gats_unitsOfMeasure: true
-    gats_customsdistricts: true
-    commodity_import_data: true
-    commodity_export_data: true
-    psd_regions: true
-    psd_countries: true
-    psd_commodities: true
-    psd_unitsOfMeasure: true
-    psd_commodityAttributes: true
+    gats_commodity_import_data: true
+    gats_commodity_export_data: true
+    esr_export_data: true
+    psd_forcecastnumber: true
+    psd_forecastnumber_commodity: true
   testedStreams:
-    esr_regions:
+    gats_commodity_import_data:
       hasRecords: true
-      streamHash: 6273193bdfc96e43cbb4f81a42416aeeb9329fa3
+      streamHash: 9e22b6c322e7f6e0f16b3141958b2683e35c73dd
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    esr_countries:
+    gats_commodity_export_data:
       hasRecords: true
-      streamHash: 6e26e491a85e7d0fc0b7307be874d687cdf9cd5d
+      streamHash: 2f8cc81397913a1546641383273abf8acae9a684
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    esr_commodities:
+    esr_export_data:
       hasRecords: true
-      streamHash: 92be45d0f6e1e2b95ac9fa5c4095a8bad74f9ec6
+      streamHash: 946998097fe5b38c38d51e686f16e0c5399d090c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    esr_unitsofmeasure:
-      hasRecords: true
-      streamHash: 77f4e6b1f16bb4d8c77a006cc1ee2a762678a456
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    esr_datareleasedates:
-      hasRecords: true
-      streamHash: ee4a191bf08e14db16a648b0dd597d1c6bea4cf5
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_export_data_releasedates:
-      hasRecords: true
-      streamHash: af27e687cd605593e7c563c3a4cacf0e3c570a92
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_import_data_releasedates:
-      hasRecords: true
-      streamHash: 35d7f661a044551b5bc0669732ca2040fc447113
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_untrade_data_exports_data_releasedates:
-      hasRecords: true
-      streamHash: 319b8efe79db2b3ac261f35eff92925a40330005
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_untrade_data_imports_data_releasedates:
-      hasRecords: true
-      streamHash: 51b0a0b0d38cc2a80b6ed3f176649775039e64ce
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_regions:
-      hasRecords: true
-      streamHash: 47cce3a94917e1359ad21d74befe436c33b303b0
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_countries:
-      hasRecords: true
-      streamHash: 7f6af34760fcb7188494497fe721483e2d56d0ff
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_commodities:
-      hasRecords: true
-      streamHash: cc6c039359f6292bb628310e9d2cbffba3e7ceaf
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_hs6commodities:
-      hasRecords: true
-      streamHash: 98f8f96b55cec4504eb421ec7e1c01d784d6fd96
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_unitsOfMeasure:
-      hasRecords: true
-      streamHash: af0a7fd3b5f83180560617b812e3eb4756de6463
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    gats_customsdistricts:
-      hasRecords: true
-      streamHash: 6ba4106f8ca776804c6371b396ee3389434c5aaa
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    commodity_import_data:
-      hasRecords: true
-      streamHash: f023e254e359a3a53814b536a60d4590cb324806
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    commodity_export_data:
-      hasRecords: true
-      streamHash: 1746e3515b095f65f0a3633f4f7b8727e3c47ccb
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    psd_regions:
-      streamHash: dc9627dcc956eea8b45a112b00235297b402eddd
+    psd_forcecastnumber:
+      streamHash: 0d6b6ce185099bea596eebb31d00c40964390501
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    psd_countries:
-      streamHash: ebc75a440ad9f156702d0e4b6ac12a5d829e2787
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    psd_commodities:
-      streamHash: d9967c27af7c3a7687fc30c093f39d806e8d45ca
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    psd_unitsOfMeasure:
-      streamHash: c2b21318975f701df89a96d4aabefa483cb2d0e4
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    psd_commodityAttributes:
-      streamHash: 7b30e006d9a0d505a3663ad7923d9b2a24633662
+    psd_forecastnumber_commodity:
+      streamHash: 4be3e4f3f56d3f44a62d2d32fd2bc5f5b11e5a8d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -713,350 +253,7 @@ metadata:
   assist: {}
 
 schemas:
-  esr_regions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      regionId:
-        type: number
-      regionName:
-        type:
-          - string
-          - "null"
-    required:
-      - regionId
-  esr_countries:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      countryCode:
-        type: number
-      countryDescription:
-        type:
-          - string
-          - "null"
-      countryName:
-        type:
-          - string
-          - "null"
-      gencCode:
-        type:
-          - string
-          - "null"
-      regionId:
-        type:
-          - number
-          - "null"
-    required:
-      - countryCode
-  esr_commodities:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      commodityCode:
-        type: number
-      commodityName:
-        type:
-          - string
-          - "null"
-      unitId:
-        type:
-          - number
-          - "null"
-    required:
-      - commodityCode
-  esr_unitsofmeasure:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      unitId:
-        type: number
-      unitNames:
-        type:
-          - string
-          - "null"
-    required:
-      - unitId
-  esr_datareleasedates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      commodityCode:
-        type:
-          - number
-          - "null"
-      marketYear:
-        type:
-          - number
-          - "null"
-      marketYearEnd:
-        type:
-          - string
-          - "null"
-      marketYearStart:
-        type:
-          - string
-          - "null"
-      releaseTimeStamp:
-        type:
-          - string
-          - "null"
-  gats_export_data_releasedates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      productType:
-        type:
-          - string
-          - "null"
-      releaseTimeStamp:
-        type:
-          - string
-          - "null"
-      reporterCode:
-        type:
-          - string
-          - "null"
-      statisticalYearMonth:
-        type:
-          - string
-          - "null"
-  gats_import_data_releasedates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      productType:
-        type:
-          - string
-          - "null"
-      releaseTimeStamp:
-        type:
-          - string
-          - "null"
-      reporterCode:
-        type:
-          - string
-          - "null"
-      statisticalYearMonth:
-        type:
-          - string
-          - "null"
-  gats_untrade_data_exports_data_releasedates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      productType:
-        type:
-          - string
-          - "null"
-      releaseTimeStamp:
-        type:
-          - string
-          - "null"
-      reporterCode:
-        type:
-          - string
-          - "null"
-      statisticalYear:
-        type:
-          - string
-          - "null"
-  gats_untrade_data_imports_data_releasedates:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      productType:
-        type:
-          - string
-          - "null"
-      releaseTimeStamp:
-        type:
-          - string
-          - "null"
-      reporterCode:
-        type:
-          - string
-          - "null"
-      statisticalYear:
-        type:
-          - string
-          - "null"
-  gats_regions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      regionCode:
-        type: string
-      regionName:
-        type:
-          - string
-          - "null"
-    required:
-      - regionCode
-  gats_countries:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      countryCode:
-        type: string
-      countryName:
-        type:
-          - string
-          - "null"
-      countryParentCode:
-        type:
-          - string
-          - "null"
-      discontinuedOn:
-        type:
-          - string
-          - "null"
-      gencCode:
-        type:
-          - string
-          - "null"
-      isO3Code:
-        type:
-          - string
-          - "null"
-      regionCode:
-        type:
-          - string
-          - "null"
-    required:
-      - countryCode
-  gats_commodities:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      censusUOMId1:
-        type:
-          - number
-          - "null"
-      censusUOMId2:
-        type:
-          - number
-          - "null"
-      commodityDescription:
-        type:
-          - string
-          - "null"
-      commodityName:
-        type:
-          - string
-          - "null"
-      fasConvertedUOMId:
-        type:
-          - number
-          - "null"
-      fasNonConvertedUOMId:
-        type:
-          - number
-          - "null"
-      hS10Code:
-        type:
-          - string
-          - "null"
-      isAgCommodity:
-        type:
-          - boolean
-          - "null"
-      productType:
-        type:
-          - string
-          - "null"
-      startDate:
-        type:
-          - string
-          - "null"
-  gats_hs6commodities:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      censusUOMId1:
-        type:
-          - number
-          - "null"
-      censusUOMId2:
-        type:
-          - number
-          - "null"
-      commodityDescription:
-        type:
-          - string
-          - "null"
-      commodityName:
-        type:
-          - string
-          - "null"
-      fasConvertedUOMId:
-        type:
-          - number
-          - "null"
-      fasNonConvertedUOMId:
-        type:
-          - number
-          - "null"
-      hS6Code:
-        type: string
-    required:
-      - hS6Code
-  gats_unitsOfMeasure:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      unitOfMeasureCode:
-        type:
-          - string
-          - "null"
-      unitOfMeasureDescription:
-        type:
-          - string
-          - "null"
-      unitOfMeasureId:
-        type:
-          - number
-          - "null"
-      unitOfMeasureName:
-        type:
-          - string
-          - "null"
-  gats_customsdistricts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      customsDistrictId:
-        type:
-          - number
-          - "null"
-      customsDistrictName:
-        type:
-          - string
-          - "null"
-      customsDistrictRegionCode:
-        type:
-          - string
-          - "null"
-      customsDistrictRegionName:
-        type:
-          - string
-          - "null"
-  commodity_import_data:
+  gats_commodity_import_data:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1105,7 +302,7 @@ schemas:
         type:
           - string
           - "null"
-  commodity_export_data:
+  gats_commodity_export_data:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1154,76 +351,130 @@ schemas:
         type:
           - string
           - "null"
-  psd_regions:
+  esr_export_data:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      regionCode:
-        type: string
-      regionName:
+      accumulatedExports:
         type:
-          - string
+          - number
           - "null"
-    required:
-      - regionCode
-  psd_countries:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      countryCode:
-        type: string
-      countryName:
-        type:
-          - string
-          - "null"
-      gencCode:
-        type:
-          - string
-          - "null"
-      regionCode:
-        type:
-          - string
-          - "null"
-    required:
-      - countryCode
-  psd_commodities:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
       commodityCode:
-        type: string
-      commodityName:
         type:
-          - string
+          - number
           - "null"
-    required:
-      - commodityCode
-  psd_unitsOfMeasure:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      unitDescription:
+      countryCode:
         type:
-          - string
+          - number
+          - "null"
+      currentMYNetSales:
+        type:
+          - number
+          - "null"
+      currentMYTotalCommitment:
+        type:
+          - number
+          - "null"
+      grossNewSales:
+        type:
+          - number
+          - "null"
+      nextMYNetSales:
+        type:
+          - number
+          - "null"
+      nextMYOutstandingSales:
+        type:
+          - number
+          - "null"
+      outstandingSales:
+        type:
+          - number
           - "null"
       unitId:
-        type: number
-    required:
-      - unitId
-  psd_commodityAttributes:
+        type:
+          - number
+          - "null"
+      weekEndingDate:
+        type:
+          - string
+          - "null"
+      weeklyExports:
+        type:
+          - number
+          - "null"
+  psd_forcecastnumber:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributeId:
-        type: number
-      attributeName:
+        type:
+          - number
+          - "null"
+      calendarYear:
         type:
           - string
           - "null"
-    required:
-      - attributeId
+      commodityCode:
+        type:
+          - string
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      marketYear:
+        type:
+          - string
+          - "null"
+      month:
+        type:
+          - string
+          - "null"
+      unitId:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  psd_forecastnumber_commodity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributeId:
+        type:
+          - number
+          - "null"
+      calendarYear:
+        type:
+          - string
+          - "null"
+      commodityCode:
+        type:
+          - string
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      marketYear:
+        type:
+          - string
+          - "null"
+      month:
+        type:
+          - string
+          - "null"
+      unitId:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
