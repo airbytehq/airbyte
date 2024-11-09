@@ -3,7 +3,7 @@
 connector_image: airbyte/source-us-census:dev
 tests:
   spec:
-    - spec_path: "source_us_census/spec.json"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 import requests
 import responses
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
@@ -204,7 +205,7 @@ def test_streams_campaigns_pagination_403_error(mocker, status_code, config, pro
     streams = source.streams(config)
     campaigns_stream = get_stream_by_name(streams, "sponsored_display_campaigns")
 
-    with pytest.raises(requests.exceptions.HTTPError):
+    with pytest.raises(AirbyteTracedException):
         get_all_stream_records(campaigns_stream)
 
 
