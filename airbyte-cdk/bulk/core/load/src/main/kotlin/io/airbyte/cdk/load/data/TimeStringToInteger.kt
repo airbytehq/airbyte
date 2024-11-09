@@ -29,9 +29,9 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
             )
     }
 
-    override fun mapDate(value: DateValue, path: List<String>): AirbyteValue {
+    override fun mapDate(value: DateValue, context: Context): Pair<AirbyteValue, Context> {
         val epochDay = LocalDate.parse(value.value, DATE_TIME_FORMATTER).toEpochDay()
-        return IntValue(epochDay.toInt())
+        return IntValue(epochDay.toInt()) to context
     }
 
     private fun toMicrosOfDayWithTimezone(timeString: String): Long {
@@ -52,11 +52,15 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
         }
     }
 
-    override fun mapTimeWithTimezone(value: TimeValue, path: List<String>): AirbyteValue =
-        IntegerValue(toMicrosOfDay(value.value))
+    override fun mapTimeWithTimezone(
+        value: TimeValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = IntegerValue(toMicrosOfDay(value.value)) to context
 
-    override fun mapTimeWithoutTimezone(value: TimeValue, path: List<String>): AirbyteValue =
-        IntegerValue(toMicrosOfDay(value.value))
+    override fun mapTimeWithoutTimezone(
+        value: TimeValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = IntegerValue(toMicrosOfDay(value.value)) to context
 
     private fun toEpochMicrosWithTimezone(timestampString: String): Long {
         val zdt = ZonedDateTime.parse(timestampString, DATE_TIME_FORMATTER)
@@ -78,10 +82,12 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
         }
     }
 
-    override fun mapTimestampWithTimezone(value: TimestampValue, path: List<String>): AirbyteValue =
-        IntegerValue(toEpochMicros(value.value))
+    override fun mapTimestampWithTimezone(
+        value: TimestampValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = IntegerValue(toEpochMicros(value.value)) to context
     override fun mapTimestampWithoutTimezone(
         value: TimestampValue,
-        path: List<String>
-    ): AirbyteValue = IntegerValue(toEpochMicros(value.value))
+        context: Context
+    ): Pair<AirbyteValue, Context> = IntegerValue(toEpochMicros(value.value)) to context
 }
