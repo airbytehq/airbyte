@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.5.2@sha256:3c89340fc033aab28e7ba7402a4a7c98cd9ca8eefa1503d23d3ea336c9a6e92b
   connectorSubtype: api
   connectorType: source
-  definitionId: eb31390a-af83-49e9-b436-2bfa6df2306c
+  definitionId: c467c637-359a-45f5-b892-acae21b342ac
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-clinicaltrials
   githubIssueLabel: source-clinicaltrials
