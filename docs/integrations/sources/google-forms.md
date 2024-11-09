@@ -8,7 +8,7 @@ Google Forms is a free online tool from Google that allows users to create custo
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `formId` | `string` | Form Id.  |  |
+| `form_id` | `array` | form_id.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -23,6 +23,6 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-24 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>

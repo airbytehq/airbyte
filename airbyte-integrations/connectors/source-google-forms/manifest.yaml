@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -25,13 +25,17 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{config[\"formId\"]}}"
+          path: forms/{{ stream_partition.formid }}
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['form_id'] }}"
+          cursor_field: formid
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -45,7 +49,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ config['formId'] }}/responses"
+          path: forms/{{ stream_partition.formid }}/responses
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -63,13 +67,17 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['form_id'] }}"
+          cursor_field: formid
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/form_responses"
   base_requester:
     type: HttpRequester
-    url_base: https://forms.googleapis.com/v1/forms/
+    url_base: https://forms.googleapis.com/v1/
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config[\"client_id\"] }}"
@@ -92,7 +100,7 @@ spec:
       - client_id
       - client_secret
       - client_refresh_token
-      - formId
+      - form_id
     properties:
       client_id:
         type: string
@@ -109,10 +117,10 @@ spec:
         order: 2
         title: Refresh token
         airbyte_secret: true
-      formId:
-        type: string
-        title: Form Id
+      form_id:
+        type: array
         order: 3
+        title: form_id
     additionalProperties: true
 
 metadata:
@@ -121,14 +129,14 @@ metadata:
     form_responses: false
   testedStreams:
     forms:
-      streamHash: 718f32f974cb535fbc07d45be4749c6d8f242336
+      streamHash: 5ef19a0392984fc2363de94820d88ef8511811b4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     form_responses:
-      streamHash: 449338ba7b011a287e9f909a6204004be1395dcf
+      streamHash: 690303fa58627d1353bbfc4d0f7ad69f7911e5cf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -245,12 +253,40 @@ schemas:
   form_responses:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       answers:
         type:
           - object
           - "null"
         properties:
+          0027c4cd:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
           137cf025:
             type:
               - object
@@ -305,7 +341,88 @@ schemas:
                           type:
                             - string
                             - "null"
+          3447475e:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
           346c97bf:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          54ea9b24:
+            type:
+              - object
+              - "null"
+            properties:
+              questionId:
+                type:
+                  - string
+                  - "null"
+              textAnswers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  answers:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - string
+                            - "null"
+          594bba3a:
             type:
               - object
               - "null"
@@ -398,4 +515,3 @@ schemas:
         type: string
     required:
       - responseId
-    additionalProperties: true
