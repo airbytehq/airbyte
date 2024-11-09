@@ -8,9 +8,9 @@
     "additionalProperties": true,
     "properties": {
       "motherduck_api_key": {
-        "title": "MotherDuck API Key",
+        "title": "MotherDuck Access Token",
         "type": "string",
-        "description": "API key to use for authentication to a MotherDuck database.",
+        "description": "API access token to use for authentication to a MotherDuck database.",
         "airbyte_secret": true
       },
       "destination_path": {
