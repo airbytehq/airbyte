@@ -573,6 +573,28 @@ class ConcurrentCursorStateTest(TestCase):
             _A_CURSOR_FIELD_KEY: 7
         }
 
+    @freezegun.freeze_time(time_to_freeze=datetime.fromtimestamp(10, timezone.utc))
+    def test_given_overflowing_slice_gap_when_generate_slices_then_cap_upper_bound_to_end_provider(self) -> None:
+        a_very_big_slice_range = timedelta.max
+        cursor = ConcurrentCursor(
+            _A_STREAM_NAME,
+            _A_STREAM_NAMESPACE,
+            {_A_CURSOR_FIELD_KEY: 0},
+            self._message_repository,
+            self._state_manager,
+            EpochValueConcurrentStreamStateConverter(False),
+            CursorField(_A_CURSOR_FIELD_KEY),
+            _SLICE_BOUNDARY_FIELDS,
+            None,
+            EpochValueConcurrentStreamStateConverter.get_end_provider(),
+            _NO_LOOKBACK_WINDOW,
+            slice_range=a_very_big_slice_range,
+        )
+
+        slices = list(cursor.generate_slices())
+
+        assert slices == [(datetime.fromtimestamp(0, timezone.utc), datetime.fromtimestamp(10, timezone.utc))]
+
 
 @freezegun.freeze_time(time_to_freeze=datetime(2024, 4, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
 @pytest.mark.parametrize(

@@ -549,6 +549,187 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
             [
                 # Fetch the first page of posts
                 (
+                    "https://api.example.com/community/posts?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {
+                        "posts": [{"id": 1, "updated_at": "2024-01-30T00:00:00Z"}, {"id": 2, "updated_at": "2024-01-29T00:00:00Z"}],
+                        "next_page": "https://api.example.com/community/posts?per_page=100&start_time=2024-01-02T00:00:00Z&page=2",
+                    },
+                ),
+                # Fetch the second page of posts
+                (
+                    "https://api.example.com/community/posts?per_page=100&start_time=2024-01-02T00:00:00Z&page=2",
+                    {"posts": [{"id": 3, "updated_at": "2024-01-28T00:00:00Z"}]},
+                ),
+                # Fetch the first page of comments for post 1
+                (
+                    "https://api.example.com/community/posts/1/comments?per_page=100",
+                    {
+                        "comments": [
+                            {"id": 9, "post_id": 1, "updated_at": "2023-01-01T00:00:00Z"},
+                            {"id": 10, "post_id": 1, "updated_at": "2024-01-25T00:00:00Z"},
+                            {"id": 11, "post_id": 1, "updated_at": "2024-01-24T00:00:00Z"},
+                        ],
+                        "next_page": "https://api.example.com/community/posts/1/comments?per_page=100&page=2",
+                    },
+                ),
+                # Fetch the second page of comments for post 1
+                (
+                    "https://api.example.com/community/posts/1/comments?per_page=100&page=2",
+                    {"comments": [{"id": 12, "post_id": 1, "updated_at": "2024-01-23T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 10 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {
+                        "votes": [{"id": 100, "comment_id": 10, "created_at": "2024-01-15T00:00:00Z"}],
+                        "next_page": "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-02T00:00:00Z",
+                    },
+                ),
+                # Fetch the second page of votes for comment 10 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-02T00:00:00Z",
+                    {"votes": [{"id": 101, "comment_id": 10, "created_at": "2024-01-14T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 11 of post 1
+                (
+                    "https://api.example.com/community/posts/1/comments/11/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {"votes": [{"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 12 of post 1
+                ("https://api.example.com/community/posts/1/comments/12/votes?per_page=100&start_time=2024-01-02T00:00:00Z", {"votes": []}),
+                # Fetch the first page of comments for post 2
+                (
+                    "https://api.example.com/community/posts/2/comments?per_page=100",
+                    {
+                        "comments": [{"id": 20, "post_id": 2, "updated_at": "2024-01-22T00:00:00Z"}],
+                        "next_page": "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
+                    },
+                ),
+                # Fetch the second page of comments for post 2
+                (
+                    "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
+                    {"comments": [{"id": 21, "post_id": 2, "updated_at": "2024-01-21T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 20 of post 2
+                (
+                    "https://api.example.com/community/posts/2/comments/20/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {"votes": [{"id": 200, "comment_id": 20, "created_at": "2024-01-12T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 21 of post 2
+                (
+                    "https://api.example.com/community/posts/2/comments/21/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {"votes": [{"id": 201, "comment_id": 21, "created_at": "2024-01-12T00:00:15Z"}]},
+                ),
+                # Fetch the first page of comments for post 3
+                (
+                    "https://api.example.com/community/posts/3/comments?per_page=100",
+                    {"comments": [{"id": 30, "post_id": 3, "updated_at": "2024-01-09T00:00:00Z"}]},
+                ),
+                # Fetch the first page of votes for comment 30 of post 3
+                (
+                    "https://api.example.com/community/posts/3/comments/30/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {"votes": [{"id": 300, "comment_id": 30, "created_at": "2024-01-10T00:00:00Z"}]},
+                ),
+            ],
+            # Expected records
+            [
+                {"id": 100, "comment_id": 10, "created_at": "2024-01-15T00:00:00Z"},
+                {"id": 101, "comment_id": 10, "created_at": "2024-01-14T00:00:00Z"},
+                {"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"},
+                {"id": 200, "comment_id": 20, "created_at": "2024-01-12T00:00:00Z"},
+                {"id": 201, "comment_id": 21, "created_at": "2024-01-12T00:00:15Z"},
+                {"id": 300, "comment_id": 30, "created_at": "2024-01-10T00:00:00Z"},
+            ],
+            # Initial state
+            [
+                AirbyteStateMessage(
+                    type=AirbyteStateType.STREAM,
+                    stream=AirbyteStreamState(
+                        stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
+                        stream_state=AirbyteStateBlob(
+                            {
+                                "created_at": "2024-01-02T00:00:00Z"
+                            }
+                        ),
+                    ),
+                )
+            ],
+            # Expected state
+            {
+                "use_global_cursor": False,
+                "state": {"created_at": "2024-01-15T00:00:00Z"},
+                "parent_state": {
+                    "post_comments": {
+                        "use_global_cursor": False,
+                        "state": {"updated_at": "2024-01-25T00:00:00Z"},
+                        "parent_state": {"posts": {"updated_at": "2024-01-30T00:00:00Z"}},
+                        "lookback_window": 1,
+                        "states": [
+                            {"partition": {"id": 1, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-25T00:00:00Z"}},
+                            {"partition": {"id": 2, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-22T00:00:00Z"}},
+                            {"partition": {"id": 3, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-09T00:00:00Z"}},
+                        ],
+                    }
+                },
+                "lookback_window": 1,
+                "states": [
+                    {
+                        "partition": {"id": 10, "parent_slice": {"id": 1, "parent_slice": {}}},
+                        "cursor": {"created_at": "2024-01-15T00:00:00Z"},
+                    },
+                    {
+                        "partition": {"id": 11, "parent_slice": {"id": 1, "parent_slice": {}}},
+                        "cursor": {"created_at": "2024-01-13T00:00:00Z"},
+                    },
+                    {
+                        'partition': {'id': 12, 'parent_slice': {'id': 1, 'parent_slice': {}}},
+                        'cursor': {'created_at': '2024-01-02T00:00:00Z'},
+                    },
+                    {
+                        "partition": {"id": 20, "parent_slice": {"id": 2, "parent_slice": {}}},
+                        "cursor": {"created_at": "2024-01-12T00:00:00Z"},
+                    },
+                    {
+                        "partition": {"id": 21, "parent_slice": {"id": 2, "parent_slice": {}}},
+                        "cursor": {"created_at": "2024-01-12T00:00:15Z"},
+                    },
+                    {
+                        "partition": {"id": 30, "parent_slice": {"id": 3, "parent_slice": {}}},
+                        "cursor": {"created_at": "2024-01-10T00:00:00Z"},
+                    },
+                ],
+            },
+        ),
+    ],
+)
+def test_incremental_parent_state_migration(test_name, manifest, mock_requests, expected_records, initial_state, expected_state):
+    """
+    Test incremental partition router with parent state migration
+    """
+    _stream_name = "post_comment_votes"
+    config = {"start_date": "2024-01-01T00:00:01Z", "credentials": {"email": "email", "api_token": "api_token"}}
+
+    with requests_mock.Mocker() as m:
+        for url, response in mock_requests:
+            m.get(url, json=response)
+
+        output = _run_read(manifest, config, _stream_name, initial_state)
+        output_data = [message.record.data for message in output if message.record]
+
+        assert output_data == expected_records
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
+        assert final_state[-1] == expected_state
+
+
+@pytest.mark.parametrize(
+    "test_name, manifest, mock_requests, expected_records, initial_state, expected_state",
+    [
+        (
+            "test_incremental_parent_state",
+            SUBSTREAM_MANIFEST,
+            [
+                # Fetch the first page of posts
+                (
                     "https://api.example.com/community/posts?per_page=100&start_time=2024-01-05T00:00:00Z",
                     {
                         "posts": [],

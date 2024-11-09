@@ -1,0 +1,3028 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte connector for Fulcrum would enable seamless data extraction from the
+  Fulcrum platform, allowing users to sync survey and field data with their data
+  warehouses or other applications. This connector would facilitate automated,
+  scheduled transfers of structured data, improving analytics, reporting, and
+  decision-making processes by integrating Fulcrum's powerful field data
+  collection capabilities with a broader data ecosystem.
+
+check:
+  type: CheckStream
+  stream_names:
+    - forms
+
+definitions:
+  streams:
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/forms.json
+          http_method: GET
+          request_parameters:
+            type: all
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/users.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - user
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/workflows.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workflows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/webhooks.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - webhooks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    changesets:
+      type: DeclarativeStream
+      name: changesets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/changesets.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - changesets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/changesets"
+    records:
+      type: DeclarativeStream
+      name: records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/records.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/records"
+    signatures:
+      type: DeclarativeStream
+      name: signatures
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/signatures.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - signatures
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signatures"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/projects.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    layers:
+      type: DeclarativeStream
+      name: layers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/layers.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - layers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/layers"
+    classification_sets:
+      type: DeclarativeStream
+      name: classification_sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/classification_sets.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - classification_sets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/classification_sets"
+    choice_lists:
+      type: DeclarativeStream
+      name: choice_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/choice_lists.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - choice_lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/choice_lists"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/groups.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - groups
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    memberships:
+      type: DeclarativeStream
+      name: memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/memberships.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - memberships
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/memberships"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/roles.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    authorizations:
+      type: DeclarativeStream
+      name: authorizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/authorizations.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - authorizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/authorizations"
+    photos:
+      type: DeclarativeStream
+      name: photos
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/photos.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - photos
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: current_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/photos"
+    audio:
+      type: DeclarativeStream
+      name: audio
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/audio.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - audio
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audio"
+    videos:
+      type: DeclarativeStream
+      name: videos
+      primary_key:
+        - record_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/videos.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - videos
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.fulcrumapp.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-ApiToken
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/changesets"
+  - $ref: "#/definitions/streams/records"
+  - $ref: "#/definitions/streams/signatures"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/layers"
+  - $ref: "#/definitions/streams/classification_sets"
+  - $ref: "#/definitions/streams/choice_lists"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/memberships"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/authorizations"
+  - $ref: "#/definitions/streams/photos"
+  - $ref: "#/definitions/streams/audio"
+  - $ref: "#/definitions/streams/videos"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API key to use. Find it at https://web.fulcrumapp.com/settings/api
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    forms: true
+    users: false
+    workflows: false
+    webhooks: true
+    changesets: true
+    records: true
+    signatures: true
+    projects: true
+    layers: true
+    classification_sets: true
+    choice_lists: true
+    groups: true
+    memberships: true
+    roles: true
+    authorizations: true
+    photos: false
+    audio: false
+    videos: false
+  testedStreams:
+    forms:
+      streamHash: d701e2df9f720df416aaa5c9b4e7a6a2a2a56252
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 524af7e9234688de6994edb27292be6ce7d82346
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflows:
+      streamHash: ba12cc2917bf11449cd1af4cab03cfafc904e5ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    webhooks:
+      streamHash: 76b56a17ebf198ae81942372cea3f586b2baf0db
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    changesets:
+      streamHash: 5fa140e231db93a5b1909ea11ab72381ce666299
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    records:
+      streamHash: 41331fe4c7953c6849064293d471a229278c1b09
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signatures:
+      hasRecords: true
+      streamHash: fb715c0bebb31f6c7e3147729bd9f78fb5884747
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 07364c25c3cffac0d4f85f59f19fce726db204d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    layers:
+      hasRecords: true
+      streamHash: e40fcbb288e274b84d840f6ff737310323d0a008
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    classification_sets:
+      hasRecords: true
+      streamHash: 277de4082d0d248d93785fb85d55e44fc6e9d350
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    choice_lists:
+      hasRecords: true
+      streamHash: 46bd64269bd9e61ee4942ab9d29f68b8bef17cc3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    groups:
+      hasRecords: true
+      streamHash: e65d5d2466ca21ebb78776ff87b202cd581cb2e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    memberships:
+      hasRecords: true
+      streamHash: 72381538d12e923b39c97b73b418b64aa2e07c74
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    roles:
+      hasRecords: true
+      streamHash: 145c72d8a6e501b5ac905db993e5cf16a78eda3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    authorizations:
+      hasRecords: true
+      streamHash: 1771d3b9077668e60e9c1281b0485710aac0bf71
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    photos:
+      hasRecords: true
+      streamHash: 49bb8ddaef2bec53a509a967f125f3df9e986a5f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audio:
+      hasRecords: true
+      streamHash: ed2ecfacee335f637a6e47c275e2f8ce1cb900c1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    videos:
+      hasRecords: true
+      streamHash: 99c4355f6405e291b6de7d639ea017c33cafc1f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.fulcrumapp.com/reference/rest-api-intro
+
+schemas:
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      assignment_enabled:
+        type:
+          - boolean
+          - "null"
+      attachment_ids:
+        type:
+          - array
+          - "null"
+      auto_assign:
+        type:
+          - boolean
+          - "null"
+      bounding_box:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      elements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            agreement_text:
+              type:
+                - string
+                - "null"
+            annotations_enabled:
+              type:
+                - boolean
+                - "null"
+            audio_enabled:
+              type:
+                - boolean
+                - "null"
+            data_name:
+              type:
+                - string
+                - "null"
+            default_previous_value:
+              type:
+                - boolean
+                - "null"
+            default_value:
+              type:
+                - string
+                - "null"
+            deidentification_enabled:
+              type:
+                - boolean
+                - "null"
+            disabled:
+              type:
+                - boolean
+                - "null"
+            hidden:
+              type:
+                - boolean
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            latlongstamp_enabled:
+              type:
+                - boolean
+                - "null"
+            negative:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            neutral:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            neutral_enabled:
+              type:
+                - boolean
+                - "null"
+            numeric:
+              type:
+                - boolean
+                - "null"
+            positive:
+              type:
+                - object
+                - "null"
+              properties:
+                label:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+            timestamp_enabled:
+              type:
+                - boolean
+                - "null"
+            track_enabled:
+              type:
+                - boolean
+                - "null"
+            visible_conditions_behavior:
+              type:
+                - string
+                - "null"
+      fastfill_audio_enabled:
+        type:
+          - boolean
+          - "null"
+      field_effects:
+        type:
+          - object
+          - "null"
+      geometry_required:
+        type:
+          - boolean
+          - "null"
+      geometry_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      hidden_on_dashboard:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      projects_enabled:
+        type:
+          - boolean
+          - "null"
+      record_changed_at:
+        type:
+          - string
+          - "null"
+      record_count:
+        type:
+          - number
+          - "null"
+      record_title_key:
+        type:
+          - string
+          - "null"
+      report_templates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_field:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          choices:
+            type:
+              - array
+              - "null"
+          data_name:
+            type:
+              - string
+              - "null"
+          default_previous_value:
+            type:
+              - boolean
+              - "null"
+          default_value:
+            type:
+              - string
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          hidden:
+            type:
+              - boolean
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          read_only:
+            type:
+              - boolean
+              - "null"
+          required:
+            type:
+              - boolean
+              - "null"
+      title_field_keys:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+          - object
+          - "null"
+        properties:
+          allowed:
+            type:
+              - boolean
+              - "null"
+      completed_onboarding:
+        type:
+          - boolean
+          - "null"
+      contexts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            api_token:
+              type:
+                - string
+                - "null"
+            has_ita_system_apps:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            plan:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                activity_feed_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                api_access_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                attachments_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                audio_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                audit_logs_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                barcodes_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                base_price_in_cents:
+                  type:
+                    - number
+                    - "null"
+                calculations_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                communities_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                custom_roles_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_inference_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_loadfile_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_event_recognizetext_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_pack_cost:
+                  type:
+                    - number
+                    - "null"
+                data_pack_size:
+                  type:
+                    - number
+                    - "null"
+                data_shares_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                data_shares_limit:
+                  type:
+                    - number
+                    - "null"
+                developer_pack_cost:
+                  type:
+                    - number
+                    - "null"
+                developer_pack_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                esri_enterprise_connection_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                export_changesets_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                export_formats:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                export_full_history_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                export_photos:
+                  type:
+                    - boolean
+                    - "null"
+                export_reports_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                exports_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                external_contributions_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                flags:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    advanced_geometry_android:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_beta:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    advanced_geometry_ios:
+                      type:
+                        - boolean
+                        - "null"
+                    batch_pdf_export_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    bulk_records_delete_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    esri_enhanced:
+                      type:
+                        - boolean
+                        - "null"
+                    feature_service_layers_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    import_limit:
+                      type:
+                        - number
+                        - "null"
+                    map_engine:
+                      type:
+                        - string
+                        - "null"
+                    mobile_layer_picker:
+                      type:
+                        - boolean
+                        - "null"
+                    mobile_layer_picker_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    mobile_offline_feature_services:
+                      type:
+                        - boolean
+                        - "null"
+                    non_blocking_sync_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    offline_basemaps_beta:
+                      type:
+                        - boolean
+                        - "null"
+                    reporting_map_engine:
+                      type:
+                        - string
+                        - "null"
+                    suppress_repeatable_geometry:
+                      type:
+                        - boolean
+                        - "null"
+                    suppress_repeatable_geometry_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_android_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_ios_enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    tracking_ios_enabled_ga:
+                      type:
+                        - boolean
+                        - "null"
+                    web_map_engine:
+                      type:
+                        - string
+                        - "null"
+                    web_sketch_editor:
+                      type:
+                        - boolean
+                        - "null"
+                form_scripts_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                imports_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                included_users:
+                  type:
+                    - number
+                    - "null"
+                layers_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                maps_data_quota:
+                  type:
+                    - number
+                    - "null"
+                media_data_quota:
+                  type:
+                    - number
+                    - "null"
+                media_data_usage_includes_audio:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_photos:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_signatures:
+                  type:
+                    - boolean
+                    - "null"
+                media_data_usage_includes_videos:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                photo_annotations_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                photo_deidentification_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                photo_recognition_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                photos_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                price_in_cents:
+                  type:
+                    - number
+                    - "null"
+                public_color:
+                  type:
+                    - string
+                    - "null"
+                public_slug:
+                  type:
+                    - string
+                    - "null"
+                query_api_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                record_links_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                record_merging_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                reference_files_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                repeatables_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                report_watermark_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                reporting_advanced_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                reporting_basic_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                saml_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                shared_views_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                signatures_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+                sync_draft_records_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                versioning_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                videos_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                view_history_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                webhooks_enabled:
+                  type:
+                    - boolean
+                    - "null"
+                workflow_integration_daily_limit:
+                  type:
+                    - number
+                    - "null"
+                workflows_enabled:
+                  type:
+                    - boolean
+                    - "null"
+            role:
+              type:
+                - object
+                - "null"
+              properties:
+                can_access_issues_and_tasks:
+                  type:
+                    - boolean
+                    - "null"
+                can_assign_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_bulk_delete_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_bulk_update_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_change_project:
+                  type:
+                    - boolean
+                    - "null"
+                can_change_status:
+                  type:
+                    - boolean
+                    - "null"
+                can_configure_issues_and_tasks:
+                  type:
+                    - boolean
+                    - "null"
+                can_create_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_delete_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_export_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_import_records:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_apps:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_authorizations:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_choice_lists:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_classification_sets:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_groups:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_layers:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_members:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_projects:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_roles:
+                  type:
+                    - boolean
+                    - "null"
+                can_manage_subscription:
+                  type:
+                    - boolean
+                    - "null"
+                can_run_reports:
+                  type:
+                    - boolean
+                    - "null"
+                can_update_organization:
+                  type:
+                    - boolean
+                    - "null"
+                can_update_records:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                created_by:
+                  type:
+                    - string
+                    - "null"
+                created_by_id:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_default:
+                  type:
+                    - boolean
+                    - "null"
+                is_system:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                updated_by:
+                  type:
+                    - string
+                    - "null"
+                updated_by_id:
+                  type:
+                    - string
+                    - "null"
+      current_organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_large:
+        type:
+          - string
+          - "null"
+      image_small:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      managed:
+        type:
+          - boolean
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      event_type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object_resource_id:
+        type:
+          - string
+          - "null"
+      object_type:
+        type:
+          - string
+          - "null"
+      run_for_bulk_actions:
+        type:
+          - boolean
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            arguments:
+              type:
+                - object
+                - "null"
+              properties:
+                auth:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    password:
+                      type:
+                        - string
+                        - "null"
+                    username:
+                      type:
+                        - string
+                        - "null"
+                expression:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      combinator:
+                        type:
+                          - string
+                          - "null"
+                      field:
+                        type:
+                          - string
+                          - "null"
+                      operator:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                headers:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "":
+                      type:
+                        - string
+                        - "null"
+                method:
+                  type:
+                    - string
+                    - "null"
+                parameters:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "":
+                      type:
+                        - string
+                        - "null"
+                payload:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            initial:
+              type:
+                - boolean
+                - "null"
+            next_steps:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            step_type:
+              type:
+                - string
+                - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      run_for_bulk_actions:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  changesets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          application:
+            type:
+              - string
+              - "null"
+          browser:
+            type:
+              - string
+              - "null"
+          browser_version:
+            type:
+              - string
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          platform_version:
+            type:
+              - string
+              - "null"
+          user_agent:
+            type:
+              - string
+              - "null"
+      closed_at:
+        type:
+          - string
+          - "null"
+      closed_by:
+        type:
+          - string
+          - "null"
+      closed_by_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      gravatar_image_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_large:
+        type:
+          - string
+          - "null"
+      image_small:
+        type:
+          - string
+          - "null"
+      max_lat:
+        type:
+          - number
+          - "null"
+      max_lon:
+        type:
+          - number
+          - "null"
+      min_lat:
+        type:
+          - number
+          - "null"
+      min_lon:
+        type:
+          - number
+          - "null"
+      number_created:
+        type:
+          - number
+          - "null"
+      number_deleted:
+        type:
+          - number
+          - "null"
+      number_of_changes:
+        type:
+          - number
+          - "null"
+      number_updated:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  records:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      client_created_at:
+        type:
+          - string
+          - "null"
+      client_updated_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      created_duration:
+        type:
+          - number
+          - "null"
+      edited_duration:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      form_values:
+        type:
+          - object
+          - "null"
+        properties:
+          "6281":
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                audio_id:
+                  type:
+                    - string
+                    - "null"
+          "0600":
+            type:
+              - string
+              - "null"
+          2f60:
+            type:
+              - object
+              - "null"
+            properties:
+              signature_id:
+                type:
+                  - string
+                  - "null"
+              timestamp:
+                type:
+                  - string
+                  - "null"
+          2fcc:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                video_id:
+                  type:
+                    - string
+                    - "null"
+          5d00:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                photo_id:
+                  type:
+                    - string
+                    - "null"
+          6c2f:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                attachment_id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          7da2:
+            type:
+              - string
+              - "null"
+          d630:
+            type:
+              - string
+              - "null"
+      geometry:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          coordinates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      id:
+        type: string
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      updated_duration:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  signatures:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - string
+          - "null"
+      external_job_id:
+        type:
+          - string
+          - "null"
+      form_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      record_count:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  layers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  classification_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  choice_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      choices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            label:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_managed:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      gravatar_image_url:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      image_large:
+        type:
+          - string
+          - "null"
+      image_small:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      last_sign_in_at:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - string
+          - "null"
+      role_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      user_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      can_access_issues_and_tasks:
+        type:
+          - boolean
+          - "null"
+      can_assign_records:
+        type:
+          - boolean
+          - "null"
+      can_bulk_delete_records:
+        type:
+          - boolean
+          - "null"
+      can_bulk_update_records:
+        type:
+          - boolean
+          - "null"
+      can_change_project:
+        type:
+          - boolean
+          - "null"
+      can_change_status:
+        type:
+          - boolean
+          - "null"
+      can_configure_issues_and_tasks:
+        type:
+          - boolean
+          - "null"
+      can_create_records:
+        type:
+          - boolean
+          - "null"
+      can_delete_records:
+        type:
+          - boolean
+          - "null"
+      can_export_records:
+        type:
+          - boolean
+          - "null"
+      can_import_records:
+        type:
+          - boolean
+          - "null"
+      can_manage_apps:
+        type:
+          - boolean
+          - "null"
+      can_manage_authorizations:
+        type:
+          - boolean
+          - "null"
+      can_manage_choice_lists:
+        type:
+          - boolean
+          - "null"
+      can_manage_classification_sets:
+        type:
+          - boolean
+          - "null"
+      can_manage_groups:
+        type:
+          - boolean
+          - "null"
+      can_manage_layers:
+        type:
+          - boolean
+          - "null"
+      can_manage_members:
+        type:
+          - boolean
+          - "null"
+      can_manage_projects:
+        type:
+          - boolean
+          - "null"
+      can_manage_roles:
+        type:
+          - boolean
+          - "null"
+      can_manage_subscription:
+        type:
+          - boolean
+          - "null"
+      can_run_reports:
+        type:
+          - boolean
+          - "null"
+      can_update_organization:
+        type:
+          - boolean
+          - "null"
+      can_update_records:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      is_default:
+        type:
+          - boolean
+          - "null"
+      is_system:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  authorizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      last_ip_address:
+        type:
+          - string
+          - "null"
+      last_used_at:
+        type:
+          - string
+          - "null"
+      last_user_agent:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      token_last_8:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  photos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  audio:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
+  videos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_key:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      created_by_id:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      form_id:
+        type:
+          - string
+          - "null"
+      processed:
+        type:
+          - boolean
+          - "null"
+      record_id:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      stored:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updated_by_id:
+        type:
+          - string
+          - "null"
+      uploaded:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - record_id
