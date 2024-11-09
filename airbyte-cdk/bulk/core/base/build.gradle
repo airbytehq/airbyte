@@ -50,3 +50,7 @@ dependencies {
     testFixturesApi 'io.micronaut.test:micronaut-test-junit5:4.5.0'
     testFixturesApi 'io.github.deblockt:json-diff:1.1.0'
 }
+
+test {
+    environment "PRESENT", "present-value"
+}

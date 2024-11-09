@@ -20,7 +20,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
-from airbyte_cdk.sources.file_based.file_types import BlobTransfer
+from airbyte_cdk.sources.file_based.file_types import FileTransfer
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, file_transfer_schema, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -126,8 +126,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 if self.use_file_transfer:
                     self.logger.info(f"{self.name}: {file} file-based syncing")
                     # todo: complete here the code to not rely on local parser
-                    blob_transfer = BlobTransfer()
-                    for record in blob_transfer.write_streams(self.config, file, self.stream_reader, self.logger):
+                    file_transfer = FileTransfer()
+                    for record in file_transfer.get_file(self.config, file, self.stream_reader, self.logger):
                         line_no += 1
                         if not self.record_passes_validation_policy(record):
                             n_skipped += 1
