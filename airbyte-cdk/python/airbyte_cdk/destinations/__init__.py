@@ -5,6 +5,4 @@ from .destination import Destination
 
 __all__ = [
     "Destination",
-    # Submodules
-    "vector_db_based",
 ]

@@ -14,21 +14,49 @@ Or with Poe-the-Poet:
 
 from __future__ import annotations
 
+import os
 import pathlib
 import shutil
+from typing import cast
 
 import pdoc
 
 
 def run() -> None:
     """Generate docs for all public modules in the Airbyte CDK and save them to docs/generated."""
+
     public_modules = [
         "airbyte_cdk",
-        "airbyte_cdk.sources",
-        "airbyte_cdk.sources.abstract_source",
-        "airbyte_cdk.sources.config",
-        "airbyte_cdk.sources.source",
     ]
+
+    # Walk all subdirectories and add them to the `public_modules` list
+    # if they do not begin with a "_" character.
+    for parent_dir, dirs, files in os.walk(pathlib.Path("airbyte_cdk")):
+        for dir_name in dirs:
+            if "/." in parent_dir or "/_" in parent_dir:
+                continue
+
+            if dir_name.startswith((".", "_")):
+                continue
+
+            print(f"Found module dir: {parent_dir + '|' + dir_name}")
+
+            # Check if the directory name does not begin with a "_"
+            module = (parent_dir + "." + dir_name).replace("/", ".")
+            if "._" not in module and not module.startswith("_"):
+                public_modules.append(module)
+
+        for file_name in files:
+            if not file_name.endswith(".py"):
+                continue
+            if file_name in ["py.typed"]:
+                continue
+            if file_name.startswith((".", "_")):
+                continue
+
+            print(f"Found module file: {'|'.join([parent_dir, file_name])}")
+            module = cast(str, ".".join([parent_dir, file_name])).replace("/", ".").removesuffix(".py")
+            public_modules.append(module)
 
     # recursively delete the docs/generated folder if it exists
     if pathlib.Path("docs/generated").exists():
@@ -43,8 +71,10 @@ def run() -> None:
         mermaid=True,
         docformat="google",
     )
+    nl = "\n"
+    print(f"Generating docs for public modules: {nl.join(public_modules)}")
     pdoc.pdoc(
-        *public_modules,
+        *set(public_modules),
         output_directory=pathlib.Path("docs/generated"),
     )
 
