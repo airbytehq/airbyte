@@ -271,17 +271,25 @@ class RecordDiffer(
                 // Handle temporal types specifically, because they require explicit parsing
                 return when (v1) {
                     is DateValue ->
-                        LocalDate.parse(v1.value)
-                            .compareTo(LocalDate.parse((v2 as DateValue).value))
+                        try {
+                            LocalDate.parse(v1.value)
+                                .compareTo(LocalDate.parse((v2 as DateValue).value))
+                        } catch (e: Exception) {
+                            v1.value.compareTo((v2 as DateValue).value)
+                        }
                     is TimeValue -> {
                         try {
                             val time1 = LocalTime.parse(v1.value)
                             val time2 = LocalTime.parse((v2 as TimeValue).value)
                             time1.compareTo(time2)
                         } catch (e: Exception) {
-                            val time1 = OffsetTime.parse(v1.value)
-                            val time2 = OffsetTime.parse((v2 as TimeValue).value)
-                            time1.compareTo(time2)
+                            try {
+                                val time1 = OffsetTime.parse(v1.value)
+                                val time2 = OffsetTime.parse((v2 as TimeValue).value)
+                                time1.compareTo(time2)
+                            } catch (e: Exception) {
+                                v1.value.compareTo((v2 as TimeValue).value)
+                            }
                         }
                     }
                     is TimestampValue -> {
@@ -290,9 +298,13 @@ class RecordDiffer(
                             val ts2 = LocalDateTime.parse((v2 as TimestampValue).value)
                             ts1.compareTo(ts2)
                         } catch (e: Exception) {
-                            val ts1 = OffsetDateTime.parse(v1.value)
-                            val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
-                            ts1.compareTo(ts2)
+                            try {
+                                val ts1 = OffsetDateTime.parse(v1.value)
+                                val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
+                                ts1.compareTo(ts2)
+                            } catch (e: Exception) {
+                                v1.value.compareTo((v2 as TimestampValue).value)
+                            }
                         }
                     }
                     // otherwise, just be a terrible person.

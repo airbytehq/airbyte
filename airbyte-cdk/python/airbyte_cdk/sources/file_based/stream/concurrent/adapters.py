@@ -4,7 +4,7 @@
 
 import copy
 import logging
-from functools import lru_cache
+from functools import cache, lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
@@ -231,7 +231,12 @@ class FileBasedStreamPartition(Partition):
                     yield Record(data_to_return, self)
                 elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record is not None:
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
-                    yield Record(record_data.record.data, self)
+                    # If stream is flagged for file_transfer the record should data in file key
+                    record_message_data = record_data.record.file if self._use_file_transfer() else record_data.record.data
+                    if not record_message_data:
+                        raise ExceptionWithDisplayMessage("A record without data was found")
+                    else:
+                        yield Record(data=record_message_data, partition=self, is_file_transfer_message=self._use_file_transfer())
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
@@ -272,6 +277,10 @@ class FileBasedStreamPartition(Partition):
 
     def stream_name(self) -> str:
         return self._stream.name
+
+    @cache
+    def _use_file_transfer(self) -> bool:
+        return hasattr(self._stream, "use_file_transfer") and self._stream.use_file_transfer
 
     def __repr__(self) -> str:
         return f"FileBasedStreamPartition({self._stream.name}, {self._slice})"

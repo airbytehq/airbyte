@@ -22,7 +22,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
-    CustomOutputFormatConcurrentStreamStateConverter,
+    CustomFormatConcurrentStreamStateConverter,
 )
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import StreamSlice
@@ -377,7 +377,7 @@ def test_cursor_partition_generator():
     stream = Mock()
     cursor = Mock()
     message_repository = Mock()
-    connector_state_converter = CustomOutputFormatConcurrentStreamStateConverter(datetime_format="%Y-%m-%dT%H:%M:%S")
+    connector_state_converter = CustomFormatConcurrentStreamStateConverter(datetime_format="%Y-%m-%dT%H:%M:%S")
     cursor_field = Mock()
     slice_boundary_fields = ("start", "end")
 
