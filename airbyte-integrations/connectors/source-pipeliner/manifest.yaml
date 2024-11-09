@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -34,6 +34,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -55,6 +65,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -76,6 +96,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -97,6 +127,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,6 +158,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -139,6 +189,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -160,6 +220,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -181,6 +251,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -202,6 +282,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -223,6 +313,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -244,6 +344,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -265,6 +375,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -286,6 +406,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,6 +437,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -328,6 +468,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -349,6 +499,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -370,6 +530,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -391,6 +561,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,6 +592,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -433,6 +623,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -454,6 +654,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -475,6 +685,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -496,6 +716,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -517,6 +747,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
+            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -528,8 +768,8 @@ definitions:
       }}.api.pipelinersales.com/api/v100/rest/spaces/{{ config['spaceid'] }}/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
       password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -569,27 +809,27 @@ spec:
     properties:
       username:
         type: string
-        title: Username
         order: 0
+        title: Username
       password:
         type: string
+        order: 1
         title: Password
         always_show: true
         airbyte_secret: true
-        order: 1
       service:
         type: string
-        title: Service
         enum:
           - eu-central
           - us-east
           - ca-central
           - ap-southeast
         order: 2
+        title: Data Center
       spaceid:
         type: string
-        title: SpaceID
         order: 3
+        title: Space ID
     additionalProperties: true
 
 metadata:
@@ -620,173 +860,173 @@ metadata:
     tags: true
   testedStreams:
     accounts:
-      streamHash: 772fe8d98aed8ef9edc56765e45c56a3ae12543d
+      streamHash: 39a2a8ec6dad4f5daa0f70d093829ad54ee2bb85
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     activities:
-      streamHash: d328dd273ec8a5632d3382b6fc77aeb5875912d0
+      streamHash: c0bca0262fdb27f1fc174989f6927c1e4e3352e1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     clients:
-      streamHash: 096accb8580ad171431bdeca32175bc70bbf5b48
+      streamHash: 680a25c68daddfacefd4e50f9c381872a9f25ef1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: bf06977d859017a137f143ac022c78371e9624c2
+      streamHash: 7a6f9e341c7dbaa5c9e344c86269f77e27d2e575
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entities:
-      streamHash: 5a6de69d9b76c6761c6dfba81128c6d6690bd588
+      streamHash: 970c819a71f20bc072424ade27b6e4041c5dd213
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     data:
-      streamHash: f23e337cb53e3a609f4641d8c35b1bfba48679b9
+      streamHash: 1b1641284543dd89962eddabf30c8af5fc616468
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     cloud_objects:
-      streamHash: 553a0189625cf8eaea42725cf5fe7559160a180d
+      streamHash: 58809570dd4bed53af074f6a0ba9989997cfff03
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     fields:
-      streamHash: 013a897d394c6aa83214f297bfc6ef524f7a4bca
+      streamHash: fc5d18d0aa512948fe71110579766e337f535c26
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     forecasts:
-      streamHash: 34e98860c3b5e90fb67247ee9462fc6063f713b7
+      streamHash: 137d841668963922696fbc1f9acf4369ba6af1bb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     form_views:
-      streamHash: d76db49c8a8a3e8a2acc1024bb680565532b4154
+      streamHash: cee76e910cc8f9abc84291f87bb183a2540b9e48
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entity_scorings:
-      streamHash: d4793aeb68a815222a6a77afcc7b6eff059678a6
+      streamHash: de7ca67bc33691f2b00b80086040d087727b0f55
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leads:
-      streamHash: db6ffbf26e996c677bb536a3a731b4c4af1f074b
+      streamHash: a1d4aaea9add93100649ffea2557f3574c803428
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     lead_oppties:
-      streamHash: 85a306998fa02a121c4c97441c0ada0176d90cfb
+      streamHash: 40c9d53fcf24deb787a97afd669c4c218587a554
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     memos:
-      streamHash: dd5f1b4c3f38ee4ccf5f7f57d4ff509e36e111f8
+      streamHash: 3f83c68405ac1f4591cb8efd09a56370d7d5b7cd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     notes:
-      streamHash: 3036aa24483ebd126639cc8c4395be400ffa5a7c
+      streamHash: e61cff7e465593bd67f5caceae043e50dbe58eff
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entity_fitnesses:
-      streamHash: 2580bf5124f2bfbebf72d9495fb65ab775184481
+      streamHash: e8791acf55a12009ec3fb3030a8ecda25efc8380
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     pipelines:
-      streamHash: efb28ad2b6569e05f0c30ae08615399fb8bf5fb4
+      streamHash: 9037984cc7288abc07dfcd10c6a6fe67ea3cea55
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
-      streamHash: 0cdf8d02157100b8c219972614249baf337a9800
+      streamHash: 2dd8a1a40c6e63d9399b6b1d38d6f6d880c33f97
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     oppty_product_relations:
-      streamHash: 16028b7bf151f41a983ee492048c9b3218964b6f
+      streamHash: 683e7de5f640fd0092352daf39d9813f2d6909d2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     profiles:
-      streamHash: 37bdad045d844c339d6a066ca2ac5e6f1cafc0b9
+      streamHash: 4c2e79023b4386e102392cdb59091c5255f0e976
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     quotes:
-      streamHash: 100f1612cddd0946ac1bf9f634f7d826cbc3ca65
+      streamHash: 27e8fc17a3e3f5a38db3ee6010c217b8741473e3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     reports:
-      streamHash: 99760cd7a2d5235156d7e465d88cd44e1850a8de
+      streamHash: 7266fcad025978b8985357e303fe635b3f536d7c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     steps:
-      streamHash: 1112e74ea0c47f456fe94051228fa582aaa616d3
+      streamHash: 137e1666655a1d220c831f95cc357327feb21816
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags:
-      streamHash: f9b98582bbc6c449c40179d9f1c76c2bd535a5db
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 98f3ff0eeed795c19550464a4491e61f2ab9f9f5
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
@@ -939,6 +1179,7 @@ schemas:
                   type:
                     - boolean
                     - number
+                    - string
                     - "null"
           last_calculation:
             type:

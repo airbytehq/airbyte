@@ -9,36 +9,36 @@ Docs : https://pipeliner.stoplight.io/docs/api-docs
 |-------|------|-------------|---------------|
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
-| `service` | `string` | Service.  |  |
-| `spaceid` | `string` | SpaceID.  |  |
+| `service` | `string` | Data Center.  |  |
+| `spaceid` | `string` | Space ID.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| accounts | id | No pagination | ✅ |  ❌  |
-| activities | id | No pagination | ✅ |  ❌  |
-| clients | id | No pagination | ✅ |  ❌  |
-| contacts | id | No pagination | ✅ |  ❌  |
-| entities | id | No pagination | ✅ |  ❌  |
-| data | id | No pagination | ✅ |  ❌  |
-| cloud_objects | id | No pagination | ✅ |  ❌  |
-| fields | id | No pagination | ✅ |  ❌  |
-| forecasts | id | No pagination | ✅ |  ❌  |
-| form_views | id | No pagination | ✅ |  ❌  |
-| entity_scorings | id | No pagination | ✅ |  ❌  |
-| leads | id | No pagination | ✅ |  ❌  |
-| lead_oppties | id | No pagination | ✅ |  ❌  |
-| memos | id | No pagination | ✅ |  ❌  |
-| notes | id | No pagination | ✅ |  ❌  |
-| entity_fitnesses | id | No pagination | ✅ |  ❌  |
-| pipelines | id | No pagination | ✅ |  ❌  |
-| products | id | No pagination | ✅ |  ❌  |
-| oppty_product_relations | id | No pagination | ✅ |  ❌  |
-| profiles | id | No pagination | ✅ |  ❌  |
-| quotes | id | No pagination | ✅ |  ❌  |
-| reports | id | No pagination | ✅ |  ❌  |
-| steps | id | No pagination | ✅ |  ❌  |
-| tags | id | No pagination | ✅ |  ❌  |
+| accounts | id | DefaultPaginator | ✅ |  ❌  |
+| activities | id | DefaultPaginator | ✅ |  ❌  |
+| clients | id | DefaultPaginator | ✅ |  ❌  |
+| contacts | id | DefaultPaginator | ✅ |  ❌  |
+| entities | id | DefaultPaginator | ✅ |  ❌  |
+| data | id | DefaultPaginator | ✅ |  ❌  |
+| cloud_objects | id | DefaultPaginator | ✅ |  ❌  |
+| fields | id | DefaultPaginator | ✅ |  ❌  |
+| forecasts | id | DefaultPaginator | ✅ |  ❌  |
+| form_views | id | DefaultPaginator | ✅ |  ❌  |
+| entity_scorings | id | DefaultPaginator | ✅ |  ❌  |
+| leads | id | DefaultPaginator | ✅ |  ❌  |
+| lead_oppties | id | DefaultPaginator | ✅ |  ❌  |
+| memos | id | DefaultPaginator | ✅ |  ❌  |
+| notes | id | DefaultPaginator | ✅ |  ❌  |
+| entity_fitnesses | id | DefaultPaginator | ✅ |  ❌  |
+| pipelines | id | DefaultPaginator | ✅ |  ❌  |
+| products | id | DefaultPaginator | ✅ |  ❌  |
+| oppty_product_relations | id | DefaultPaginator | ✅ |  ❌  |
+| profiles | id | DefaultPaginator | ✅ |  ❌  |
+| quotes | id | DefaultPaginator | ✅ |  ❌  |
+| reports | id | DefaultPaginator | ✅ |  ❌  |
+| steps | id | DefaultPaginator | ✅ |  ❌  |
+| tags | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -47,6 +47,6 @@ Docs : https://pipeliner.stoplight.io/docs/api-docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
