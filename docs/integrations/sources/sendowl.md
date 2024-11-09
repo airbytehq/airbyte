@@ -9,15 +9,15 @@ Docs : https://dashboard.sendowl.com/developers/api/introduction
 |-------|------|-------------|---------------|
 | `username` | `string` | Username. Enter you API Key |  |
 | `password` | `string` | Password. Enter your API secret |  |
+| `start_date` | `string` | Start date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| products |  | No pagination | ✅ |  ❌  |
-| packages | id | No pagination | ✅ |  ❌  |
-| orders | id | No pagination | ✅ |  ❌  |
-| discounts | id | No pagination | ✅ |  ❌  |
-| subscriptions |  | No pagination | ✅ |  ❌  |
+| products | id | DefaultPaginator | ✅ |  ❌  |
+| packages | id | DefaultPaginator | ✅ |  ❌  |
+| orders | id | DefaultPaginator | ✅ |  ✅  |
+| subscriptions | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -26,6 +26,6 @@ Docs : https://dashboard.sendowl.com/developers/api/introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-31 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
