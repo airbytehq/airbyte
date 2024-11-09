@@ -40,6 +40,12 @@ API Reference
 
 """
 
+# Warning: The below imports are not stable and will cause circular
+# dependencies if auto-sorted with isort. Please keep them in the same order.
+# TODO: Submodules should import from lower-level modules, rather than importing from here.
+# Imports should also be placed in `if TYPE_CHECKING` blocks if they are only used as type
+# hints - again, to avoid circular dependencies.
+# Once those issues are resolved, the below can be sorted with isort.
 from importlib import metadata
 
 from .destinations import Destination
