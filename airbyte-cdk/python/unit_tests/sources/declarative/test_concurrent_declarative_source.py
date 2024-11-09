@@ -1032,6 +1032,161 @@ def test_streams_with_stream_state_interpolation_should_be_synchronous():
     assert len(source._synchronous_streams) == 4
 
 
+def test_given_partition_routing_and_incremental_sync_then_stream_is_not_concurrent():
+    manifest = {
+        "version": "5.0.0",
+        "definitions": {
+            "selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": []
+                }
+            },
+            "requester": {
+                "type": "HttpRequester",
+                "url_base": "https://persona.metaverse.com",
+                "http_method": "GET",
+                "authenticator": {
+                    "type": "BasicHttpAuthenticator",
+                    "username": "{{ config['api_key'] }}",
+                    "password": "{{ config['secret_key'] }}"
+                },
+                "error_handler": {
+                    "type": "DefaultErrorHandler",
+                    "response_filters": [
+                        {
+                            "http_codes": [403],
+                            "action": "FAIL",
+                            "failure_type": "config_error",
+                            "error_message": "Access denied due to lack of permission or invalid API/Secret key or wrong data region."
+                        },
+                        {
+                            "http_codes": [404],
+                            "action": "IGNORE",
+                            "error_message": "No data available for the time range requested."
+                        }
+                    ]
+                },
+            },
+            "retriever": {
+                "type": "SimpleRetriever",
+                "record_selector": {
+                    "$ref": "#/definitions/selector"
+                },
+                "paginator": {
+                    "type": "NoPagination"
+                },
+                "requester": {
+                    "$ref": "#/definitions/requester"
+                }
+            },
+            "incremental_cursor": {
+                "type": "DatetimeBasedCursor",
+                "start_datetime": {
+                    "datetime": "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+                },
+                "end_datetime": {
+                    "datetime": "{{ now_utc().strftime('%Y-%m-%d') }}"
+                },
+                "datetime_format": "%Y-%m-%d",
+                "cursor_datetime_formats": ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"],
+                "cursor_granularity": "P1D",
+                "step": "P15D",
+                "cursor_field": "updated_at",
+                "lookback_window": "P5D",
+                "start_time_option": {
+                    "type": "RequestOption",
+                    "field_name": "start",
+                    "inject_into": "request_parameter"
+                },
+                "end_time_option": {
+                    "type": "RequestOption",
+                    "field_name": "end",
+                    "inject_into": "request_parameter"
+                }
+            },
+            "base_stream": {
+                "retriever": {
+                    "$ref": "#/definitions/retriever"
+                }
+            },
+            "base_incremental_stream": {
+                "retriever": {
+                    "$ref": "#/definitions/retriever",
+                    "requester": {
+                        "$ref": "#/definitions/requester"
+                    }
+                },
+                "incremental_sync": {
+                    "$ref": "#/definitions/incremental_cursor"
+                }
+            },
+            "incremental_party_members_skills_stream": {
+                "$ref": "#/definitions/base_incremental_stream",
+                "retriever": {
+                    "$ref": "#/definitions/base_incremental_stream/retriever",
+                    "partition_router": {
+                        "type": "ListPartitionRouter",
+                        "cursor_field": "party_member_id",
+                        "values": ["party_member1", "party_member2"],
+                    }
+                },
+                "$parameters": {
+                    "name": "incremental_party_members_skills",
+                    "primary_key": "id",
+                    "path": "/party_members/{{stream_slice.party_member_id}}/skills"
+                },
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "schema": {
+                        "$schema": "https://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "The identifier",
+                                "type": ["null", "string"],
+                            },
+                            "name": {
+                                "description": "The name of the party member",
+                                "type": ["null", "string"]
+                            }
+                        }
+                    }
+                }
+            },
+        },
+        "streams": [
+            "#/definitions/incremental_party_members_skills_stream"
+        ],
+        "check": {
+            "stream_names": ["incremental_party_members_skills"]
+        },
+        "concurrency_level": {
+            "type": "ConcurrencyLevel",
+            "default_concurrency": "{{ config['num_workers'] or 10 }}",
+            "max_concurrency": 25,
+        }
+    }
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="incremental_party_members_skills", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+
+    state = []
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=_CONFIG, catalog=catalog, state=state)
+
+    assert len(source._concurrent_streams) == 0
+    assert len(source._synchronous_streams) == 1
+
+
 def create_wrapped_stream(stream: DeclarativeStream) -> Stream:
     slice_to_records_mapping = get_mocked_read_records_output(stream_name=stream.name)
 
