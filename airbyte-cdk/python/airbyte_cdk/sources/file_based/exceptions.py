@@ -121,3 +121,7 @@ class CustomFileBasedException(AirbyteTracedException):
     """
 
     pass
+
+
+class FileSizeLimitError(CustomFileBasedException):
+    pass
