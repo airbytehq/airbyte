@@ -1,12 +1,10 @@
 # Blogger
-source-blogger
+Google Blogger is a free blogging platform by Google that allows users to create and manage their own blogs with ease. It offers customizable templates, user-friendly tools, and integration with other Google services, making it simple to publish content and reach a wide audience. 
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `blog_id` | `string` | BLOG_ID.  |  |
-| `post_id` | `string` | post_id.  |  |
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
@@ -14,9 +12,11 @@ source-blogger
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| users |  | DefaultPaginator | ✅ |  ❌  |
-| blogposts | items | DefaultPaginator | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| blogs | id | DefaultPaginator | ✅ |  ❌  |
 | posts |  | DefaultPaginator | ✅ |  ❌  |
+| pages | id | DefaultPaginator | ✅ |  ❌  |
+| comments | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -25,6 +25,6 @@ source-blogger
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-08 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-11-09 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>

@@ -1,7 +1,7 @@
 # Blogger
 This directory contains the manifest-only connector for `source-blogger`.
 
-source-blogger
+Google Blogger is a free blogging platform by Google that allows users to create and manage their own blogs with ease. It offers customizable templates, user-friendly tools, and integration with other Google services, making it simple to publish content and reach a wide audience. 
 
 ## Usage
 There are multiple ways to use this connector:
