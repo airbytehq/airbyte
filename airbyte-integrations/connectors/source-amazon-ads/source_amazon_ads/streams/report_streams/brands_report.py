@@ -5,7 +5,6 @@
 from http import HTTPStatus
 
 from .products_report import SponsoredProductsReportStream
-from .report_streams import ReportStream
 
 METRICS_MAP_V3 = {
     "purchasedAsin": [
