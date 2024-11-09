@@ -277,5 +277,3 @@ To help illustrate what is possible, below are a couple examples of how the retr
         </tr>
     </tbody>
 </table>
-
-

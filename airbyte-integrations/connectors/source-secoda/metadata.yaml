@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-secoda
   githubIssueLabel: source-secoda
   icon: secoda.svg

@@ -4,34 +4,26 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
-
 class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     override fun mapUnion(schema: UnionType): AirbyteType {
-        val (nullOptions, nonNullOptions) = schema.options.partition { it is NullType }
-        if (nonNullOptions.size < 2) {
+        if (schema.options.size < 2) {
             return schema
         }
         /* Create a schema of { "type": "string", "<typename(option1)>": <type(option1)>, etc... } */
         val properties = linkedMapOf("type" to FieldType(StringType, nullable = false))
-        nonNullOptions.forEach {
+        schema.options.forEach {
             val name = typeName(it)
             if (name in properties) {
                 throw IllegalArgumentException("Union of types with same name: $name")
             }
             properties[typeName(it)] = FieldType(it, nullable = true)
         }
-        val obj = ObjectType(properties)
-        if (nullOptions.isEmpty()) {
-            return obj
-        }
-        return UnionType(nullOptions + obj)
+        return ObjectType(properties)
     }
 
     companion object {
         fun typeName(type: AirbyteType): String =
             when (type) {
-                is NullType -> "null"
                 is StringType -> "string"
                 is BooleanType -> "boolean"
                 is IntegerType -> "integer"
@@ -52,27 +44,23 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     }
 }
 
-class UnionValueToDisjointRecord(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        path: List<String>
-    ): AirbyteValue {
-        val nNonNullOptions = schema.options.filter { it !is NullType }.size
-        if (nNonNullOptions < 2) {
-            return value
-        }
-
+        context: Context
+    ): Pair<AirbyteValue, Context> {
         val type =
             schema.options.find { matches(it, value) }
                 ?: throw IllegalArgumentException("No matching union option in $schema for $value")
+        val (valueMapped, contextMapped) = mapInner(value, type, context)
         return ObjectValue(
             values =
                 linkedMapOf(
                     "type" to StringValue(UnionTypeToDisjointRecord.typeName(type)),
-                    UnionTypeToDisjointRecord.typeName(type) to map(value, type, path)
+                    UnionTypeToDisjointRecord.typeName(type) to valueMapped
                 )
-        )
+        ) to contextMapped
     }
 
     private fun matches(schema: AirbyteType, value: AirbyteValue): Boolean {
@@ -82,7 +70,6 @@ class UnionValueToDisjointRecord(meta: DestinationRecord.Meta) : AirbyteValueIde
             is BooleanType -> value is BooleanValue
             is DateType -> value is DateValue
             is IntegerType -> value is IntegerValue
-            is NullType -> value is NullValue
             is NumberType -> value is NumberValue
             is ObjectType,
             is ObjectTypeWithoutSchema,

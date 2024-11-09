@@ -20,6 +20,10 @@ class S3V2CheckTest :
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 ),
                 CheckTestConfig(
+                    Path.of(S3V2TestUtils.JSON_STAGING_CONFIG_PATH),
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                ),
+                CheckTestConfig(
                     Path.of(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),

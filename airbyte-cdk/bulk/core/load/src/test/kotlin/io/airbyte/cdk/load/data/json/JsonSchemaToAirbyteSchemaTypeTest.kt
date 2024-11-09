@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NullType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
@@ -30,13 +29,6 @@ import org.junit.jupiter.api.Test
 class JsonSchemaToAirbyteSchemaTypeTest {
     private fun ofType(type: String): ObjectNode {
         return JsonNodeFactory.instance.objectNode().put("type", type)
-    }
-
-    @Test
-    fun testNull() {
-        val nullType = ofType("null")
-        val airbyteType = JsonSchemaToAirbyteType().convert(nullType)
-        Assertions.assertTrue(airbyteType is NullType)
     }
 
     @Test
@@ -249,6 +241,6 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                 """.trimIndent()
             ) as ObjectNode
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
-        Assertions.assertEquals(UnionType(listOf(StringType, IntegerType)), airbyteType)
+        Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
     }
 }
