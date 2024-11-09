@@ -193,6 +193,9 @@ class StateManager(
             for ((_, streamStateManager) in streamStateManagers) {
                 val streamStateForCheckpoint: StateForCheckpoint =
                     streamStateManager.takeForCheckpoint()
+                if (streamStateForCheckpoint.opaqueStateValue == null) {
+                    continue
+                }
                 totalNumRecords += streamStateForCheckpoint.numRecords
                 if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
@@ -227,7 +230,8 @@ class StateManager(
     ) : BaseStateManager<Stream>(stream, initialState) {
         fun checkpoint(): AirbyteStateMessage? {
             val streamStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
-            if (streamStateForCheckpoint is Stale) {
+            if (streamStateForCheckpoint is Stale
+                || streamStateForCheckpoint.opaqueStateValue == null) {
                 return null
             }
             val airbyteStreamState =
