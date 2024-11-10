@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-
+import asyncio
 import datetime
 import logging
 import stat
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_sftp_bulk.client import SFTPClient
+from source_sftp_bulk.file_transfer_client import SFTPFileTransferClient
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from typing_extensions import override
 
@@ -24,6 +25,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._sftp_client = None
+        self._file_transfer_sftp_client = None
 
     @property
     def config(self) -> SourceSFTPBulkSpec:
@@ -59,6 +61,22 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             )
         return self._sftp_client
 
+    @property
+    def file_transfer_sftp_client(self) -> SFTPFileTransferClient:
+        if self._file_transfer_sftp_client is None:
+            authentication = (
+                {"password": self.config.credentials.password}
+                if self.config.credentials.auth_type == "password"
+                else {"private_key": self.config.credentials.private_key}
+            )
+            self._file_transfer_sftp_client = SFTPFileTransferClient(
+                host=self.config.host,
+                username=self.config.username,
+                **authentication,
+                port=self.config.port,
+            )
+        return self._file_transfer_sftp_client
+
     def get_matching_files(
         self,
         globs: List[str],
@@ -88,6 +106,29 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
         return remote_file
+
+    @staticmethod
+    def create_progress_handler():
+        previous_bytes_copied = 0
+
+        def progress_handler(source_path, destination_path, bytes_copied, total_bytes):
+            nonlocal previous_bytes_copied
+            if bytes_copied - previous_bytes_copied >= 100 * 1024 * 1024:
+                print(
+                    f"{bytes_copied / (1024 * 1024):,.2f} MB ({bytes_copied / (1024 * 1024 * 1024):.2f} GB) "
+                    f"of {total_bytes / (1024 * 1024):,.2f} MB ({total_bytes / (1024 * 1024 * 1024):.2f} GB) "
+                    f"written to {destination_path}"
+                )
+                previous_bytes_copied = bytes_copied
+
+        return progress_handler
+
+    async def download_file(self, remote_file_path: str, local_file_path: str):
+        # async with SFTPFileTransferClient(config.host, config.username, port=config.port ,private_key=config.credentials.private_key) as client:
+        progress_handler = self.create_progress_handler()
+
+        sftp_connection = await self.file_transfer_sftp_client.sftp_connection
+        await sftp_connection.get(remote_file_path, local_file_path, progress_handler=progress_handler)
 
     @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
@@ -135,7 +176,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         )
         start_download_time = time.time()
         # Copy a remote file in remote path from the SFTP server to the local host as local path.
-        self.sftp_client.sftp_connection.get(file.uri, local_file_path)
+        asyncio.run(self.download_file(file.uri, local_file_path))
 
         download_duration = time.time() - start_download_time
         logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
