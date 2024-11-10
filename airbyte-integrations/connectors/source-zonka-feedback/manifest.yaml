@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -44,6 +44,21 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -64,6 +79,21 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,6 +114,21 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -117,8 +162,9 @@ definitions:
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 25
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -151,8 +197,9 @@ definitions:
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 25
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -185,8 +232,9 @@ definitions:
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 25
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -208,13 +256,28 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/locations"
   base_requester:
     type: HttpRequester
-    url_base: https://{{ config['dc_id'] }}.apis.zonkafeedback.com
+    url_base: https://{{ config['datacenter'] }}.apis.zonkafeedback.com
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config[\"auth_token\"] }}"
@@ -238,24 +301,27 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - dc_id
+      - datacenter
       - auth_token
     properties:
-      dc_id:
+      datacenter:
         type: string
         description: The identifier for the data center, such as 'us1' or 'e' for EU.
+        enum:
+          - us1
+          - e
         name: dc_id
-        title: Data Center ID
         order: 0
+        title: Data Center ID
       auth_token:
         type: string
         description: >-
           Auth token to use. Generate it by navigating to Company Settings >
           Developers > API in your Zonka Feedback account.
         name: auth_token
+        order: 1
         title: Auth Token
         airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
@@ -269,54 +335,54 @@ metadata:
     locations: true
   testedStreams:
     responses:
-      streamHash: 5f873aa7b149a7cf3857b959baf14d588a953514
+      streamHash: 45864c9dfee8dd94b7c81f10f499cec03ad2127e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     workspaces:
-      streamHash: fd8a696f8a97e53909dfcd342179bb4ceb8d750f
+      streamHash: c644d7a7709ab8218f21f01df8f1e7dc6ecbc2f6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     surveys:
-      streamHash: 92e2647967ac28d7d9bd76c86f8474718e2fd1c1
+      streamHash: fe999cb8cb8a1d8d883e3882c1522bfd77203288
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 5c8c24761242e60175f8cd8df7df34936ccb8317
+      streamHash: 190251275e488fbf11a35e28457e9c9ca949ba63
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tasks:
-      streamHash: 7da25bd2d34ec16247c78f5a299b681bbcf5437a
+      streamHash: 587a5b308da89877d45ce0d3470c8aadc191dc92
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: bd1884ac89c92576e5e2a15763ba443991ba5659
+      streamHash: 225b8c2205b1ab9f83a2b900ddbf5a6ad14e3728
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     locations:
-      streamHash: 0f041cc6f24ec09f65459c4525dec85912f36222
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: f79c494a0cdd71761274ad3cb8b8068cd6179fdf
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://apidocs.zonkafeedback.com/#intro
 
@@ -880,6 +946,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       mobile:
         type:
           - string
