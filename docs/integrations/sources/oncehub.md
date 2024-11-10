@@ -16,13 +16,13 @@ You can learn more about the API here https://developers.oncehub.com/reference/i
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| bookings | id | DefaultPaginator | ✅ |  ✅  |
-| booking_pages | id | DefaultPaginator | ✅ |  ❌  |
-| event_types | id | DefaultPaginator | ✅ |  ❌  |
-| master_pages | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| teams | id | DefaultPaginator | ✅ |  ❌  |
-| contacts | id | DefaultPaginator | ✅ |  ❌  |
+| bookings | id | CursorPagination | ✅ |  ✅  |
+| booking_pages | id | CursorPagination | ✅ |  ❌  |
+| event_types | id | CursorPagination | ✅ |  ❌  |
+| master_pages | id | CursorPagination | ✅ |  ❌  |
+| users | id | CursorPagination | ✅ |  ❌  |
+| teams | id | CursorPagination | ✅ |  ❌  |
+| contacts | id | CursorPagination | ✅ |  ❌  |
 
 ## Changelog
 
