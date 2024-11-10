@@ -17,13 +17,13 @@ For more information about the API visit https://apidocs.zonkafeedback.com/#intr
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| responses | id | No pagination | ✅ |  ❌  |
-| workspaces | id | No pagination | ✅ |  ❌  |
-| surveys | id | No pagination | ✅ |  ❌  |
+| responses | id | DefaultPaginator | ✅ |  ❌  |
+| workspaces | id | DefaultPaginator | ✅ |  ❌  |
+| surveys | id | DefaultPaginator | ✅ |  ❌  |
 | contacts | emailAddress | DefaultPaginator | ✅ |  ❌  |
 | tasks | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
-| locations | id | No pagination | ✅ |  ❌  |
+| locations | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
