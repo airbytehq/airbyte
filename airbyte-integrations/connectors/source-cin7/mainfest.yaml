@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -56,12 +56,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -95,12 +95,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -134,12 +134,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -173,12 +173,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -212,12 +212,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -251,12 +251,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -311,12 +311,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -350,12 +350,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -389,12 +389,12 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -428,17 +428,209 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 100
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/suppliers"
+    sales:
+      type: DeclarativeStream
+      name: sales
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/crm/opportunity
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales"
+    sale_list:
+      type: DeclarativeStream
+      name: sale_list
+      primary_key:
+        - SaleID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/saleList
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - SaleList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sale_list"
+    taxes:
+      type: DeclarativeStream
+      name: taxes
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/ref/tax
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - TaxRuleList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxes"
+    product_categories:
+      type: DeclarativeStream
+      name: product_categories
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/ref/category
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - CategoryList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_categories"
+    product_family:
+      type: DeclarativeStream
+      name: product_family
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/productFamily
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ProductFamilies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_family"
   base_requester:
     type: HttpRequester
     url_base: https://inventory.dearsystems.com/externalapi/
@@ -455,6 +647,11 @@ streams:
   - $ref: "#/definitions/streams/products"
   - $ref: "#/definitions/streams/purchases"
   - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/sales"
+  - $ref: "#/definitions/streams/sale_list"
+  - $ref: "#/definitions/streams/taxes"
+  - $ref: "#/definitions/streams/product_categories"
+  - $ref: "#/definitions/streams/product_family"
 
 spec:
   type: Spec
@@ -468,13 +665,13 @@ spec:
       accountid:
         type: string
         description: The ID associated with your account.
-        title: AccountID
         order: 0
+        title: Account ID
       api_key:
         type: string
         description: The API key associated with your account.
-        title: API Key
         order: 1
+        title: API Key
     additionalProperties: true
 
 metadata:
@@ -490,79 +687,119 @@ metadata:
     products: true
     purchases: true
     suppliers: true
+    sales: true
+    sale_list: true
+    taxes: true
+    product_categories: true
+    product_family: true
   testedStreams:
     bank_accounts:
+      hasRecords: true
       streamHash: f7dd65eb1f8a795e710813293bccdf70380226ff
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     attribute_sets:
+      hasRecords: true
       streamHash: a477de0eca518a4c300f0581fabe1d00ae87cb1d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     accounts:
+      hasRecords: true
       streamHash: f544371a8538ec73c072dbfd3241c64aba21124f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     brands:
+      hasRecords: true
       streamHash: 73573fb44c4417e98dbe0650e1782df7c57ae6d7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     carriers:
+      hasRecords: true
       streamHash: 4d049420bb231781198df96e94f555db8922970e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     customers:
+      hasRecords: true
       streamHash: 8ebcdd2288269655b2b926a08b3ff13de4830701
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     deals:
+      hasRecords: true
       streamHash: 3091c0f345e8e31f88ed309fbc5d000ec7eca4b3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     locations:
+      hasRecords: true
       streamHash: e49c3d38646053ba45575de9669e6f163187fbbb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: c5379cda41ba035523eaa33f17107d772e25f1d3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchases:
+      hasRecords: true
       streamHash: 751de6d6cfbfcfb538a62a15db61f2ea8dcc6f63
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppliers:
+      hasRecords: true
+      streamHash: 58f238049ce5031d00fee8b5b562c6110541afd8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sales:
+      streamHash: 1a2b13e12deda2bd88e54afa8137820fb0d55736
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    suppliers:
-      streamHash: 58f238049ce5031d00fee8b5b562c6110541afd8
+    sale_list:
+      streamHash: 63f057d9b8a830772b5e0ae35c44c189821a21c5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    taxes:
+      streamHash: 67b527295ad75865bbf0f651f8faf1d461839e85
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_categories:
+      streamHash: 60ce930da7366da26fdc07296bcc6b7f9601882d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_family:
+      streamHash: 7e9a93bb48fe322bac0d4db56acc9e46c63534b0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1635,6 +1872,414 @@ schemas:
           - string
           - "null"
       TaxRule:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  sales:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Page:
+        type:
+          - number
+          - "null"
+      Total:
+        type:
+          - number
+          - "null"
+      opportunityList:
+        type:
+          - array
+          - "null"
+  sale_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      BaseCurrency:
+        type:
+          - string
+          - "null"
+      CombinedInvoiceStatus:
+        type:
+          - string
+          - "null"
+      CombinedPackingStatus:
+        type:
+          - string
+          - "null"
+      CombinedPaymentStatus:
+        type:
+          - string
+          - "null"
+      CombinedPickingStatus:
+        type:
+          - string
+          - "null"
+      CombinedShippingStatus:
+        type:
+          - string
+          - "null"
+      CombinedTrackingNumbers:
+        type:
+          - string
+          - "null"
+      CreditNoteStatus:
+        type:
+          - string
+          - "null"
+      Customer:
+        type:
+          - string
+          - "null"
+      CustomerCurrency:
+        type:
+          - string
+          - "null"
+      CustomerID:
+        type:
+          - string
+          - "null"
+      CustomerReference:
+        type:
+          - string
+          - "null"
+      ExternalID:
+        type:
+          - string
+          - "null"
+      FulFilmentStatus:
+        type:
+          - string
+          - "null"
+      InvoiceAmount:
+        type:
+          - number
+          - "null"
+      InvoiceDate:
+        type:
+          - string
+          - "null"
+      InvoiceDueDate:
+        type:
+          - string
+          - "null"
+      InvoiceNumber:
+        type:
+          - string
+          - "null"
+      OrderDate:
+        type:
+          - string
+          - "null"
+      OrderLocationID:
+        type:
+          - string
+          - "null"
+      OrderNumber:
+        type:
+          - string
+          - "null"
+      OrderStatus:
+        type:
+          - string
+          - "null"
+      PaidAmount:
+        type:
+          - number
+          - "null"
+      QuoteStatus:
+        type:
+          - string
+          - "null"
+      RestockStatus:
+        type:
+          - string
+          - "null"
+      SaleID:
+        type: string
+      ShipBy:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
+      Updated:
+        type:
+          - string
+          - "null"
+    required:
+      - SaleID
+  taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Account:
+        type:
+          - string
+          - "null"
+      Components:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ComponentOrder:
+              type:
+                - number
+                - "null"
+            Compound:
+              type:
+                - boolean
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+      ID:
+        type: string
+      IsActive:
+        type:
+          - boolean
+          - "null"
+      IsTaxForPurchase:
+        type:
+          - boolean
+          - "null"
+      IsTaxForSale:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      TaxInclusive:
+        type:
+          - boolean
+          - "null"
+      TaxPercent:
+        type:
+          - number
+          - "null"
+    required:
+      - ID
+  product_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  product_family:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Attachments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ContentType:
+              type:
+                - string
+                - "null"
+            DownloadUrl:
+              type:
+                - string
+                - "null"
+            FileName:
+              type:
+                - string
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+            IsDefault:
+              type:
+                - boolean
+                - "null"
+      AttributeSet:
+        type:
+          - string
+          - "null"
+      Brand:
+        type:
+          - string
+          - "null"
+      Category:
+        type:
+          - string
+          - "null"
+      CostingMethod:
+        type:
+          - string
+          - "null"
+      DefaultLocation:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      DropShipMode:
+        type:
+          - string
+          - "null"
+      ID:
+        type: string
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      MinimumBeforeReorder:
+        type:
+          - number
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Option1Name:
+        type:
+          - string
+          - "null"
+      Option1Values:
+        type:
+          - string
+          - "null"
+      Option2Name:
+        type:
+          - string
+          - "null"
+      Option2Values:
+        type:
+          - string
+          - "null"
+      Option3Name:
+        type:
+          - string
+          - "null"
+      Option3Values:
+        type:
+          - string
+          - "null"
+      PriceTier1:
+        type:
+          - number
+          - "null"
+      PriceTier10:
+        type:
+          - number
+          - "null"
+      PriceTier2:
+        type:
+          - number
+          - "null"
+      PriceTier3:
+        type:
+          - number
+          - "null"
+      PriceTier4:
+        type:
+          - number
+          - "null"
+      PriceTier5:
+        type:
+          - number
+          - "null"
+      PriceTier6:
+        type:
+          - number
+          - "null"
+      PriceTier7:
+        type:
+          - number
+          - "null"
+      PriceTier8:
+        type:
+          - number
+          - "null"
+      PriceTier9:
+        type:
+          - number
+          - "null"
+      Products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ID:
+              type:
+                - string
+                - "null"
+            Name:
+              type:
+                - string
+                - "null"
+            Option1:
+              type:
+                - string
+                - "null"
+            Option2:
+              type:
+                - string
+                - "null"
+            Option3:
+              type:
+                - string
+                - "null"
+            SKU:
+              type:
+                - string
+                - "null"
+      ReorderQuantity:
+        type:
+          - number
+          - "null"
+      SKU:
+        type:
+          - string
+          - "null"
+      ShortDescription:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - string
+          - "null"
+      UOM:
         type:
           - string
           - "null"
