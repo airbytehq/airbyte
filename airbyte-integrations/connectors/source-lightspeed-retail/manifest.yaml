@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -87,16 +87,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,21 +118,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -159,16 +144,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -195,23 +180,23 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/attributes"
-    tax:
+    taxes:
       type: DeclarativeStream
-      name: tax
+      name: taxes
       primary_key:
         - id
       retriever:
@@ -231,20 +216,20 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tax"
+          $ref: "#/schemas/taxes"
     tags:
       type: DeclarativeStream
       name: tags
@@ -267,16 +252,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -303,16 +288,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -339,16 +324,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -375,16 +360,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -411,16 +396,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -447,16 +432,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -483,16 +468,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -519,16 +504,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -555,16 +540,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -593,16 +578,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -629,16 +614,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -665,16 +650,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -701,58 +686,20 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/outlets"
-    outlet_taxes:
-      type: DeclarativeStream
-      name: outlet_taxes
-      primary_key:
-        - outlet_id
-        - product_id
-        - tax_id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /api/2.0/outlet_taxes
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/outlet_taxes"
     inventory:
       type: DeclarativeStream
       name: inventory
@@ -775,16 +722,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -806,21 +753,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: page_size
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -855,16 +787,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -891,16 +823,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -927,16 +859,16 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: page
+            field_name: after
           page_size_option:
             type: RequestOption
             field_name: page_size
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 200
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -962,7 +894,7 @@ streams:
   - $ref: "#/definitions/streams/audit"
   - $ref: "#/definitions/streams/brands"
   - $ref: "#/definitions/streams/attributes"
-  - $ref: "#/definitions/streams/tax"
+  - $ref: "#/definitions/streams/taxes"
   - $ref: "#/definitions/streams/tags"
   - $ref: "#/definitions/streams/suppliers"
   - $ref: "#/definitions/streams/serial_numbers"
@@ -976,7 +908,6 @@ streams:
   - $ref: "#/definitions/streams/price_books"
   - $ref: "#/definitions/streams/payment_types"
   - $ref: "#/definitions/streams/outlets"
-  - $ref: "#/definitions/streams/outlet_taxes"
   - $ref: "#/definitions/streams/inventory"
   - $ref: "#/definitions/streams/fulfillments"
   - $ref: "#/definitions/streams/customer_groups"
@@ -1016,7 +947,7 @@ metadata:
     audit: true
     brands: true
     attributes: true
-    tax: true
+    taxes: true
     tags: true
     suppliers: true
     serial_numbers: true
@@ -1030,7 +961,6 @@ metadata:
     price_books: true
     payment_types: true
     outlets: true
-    outlet_taxes: true
     inventory: true
     fulfillments: true
     customer_groups: true
@@ -1039,179 +969,172 @@ metadata:
   testedStreams:
     users:
       hasRecords: true
-      streamHash: 9fc99e529e9ac6e67e71997a91932e65f35dcd53
+      streamHash: 751b8b9148096c8a9a5f71a3b1c484a7a82025ff
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     customers:
       hasRecords: true
-      streamHash: e0316c929297757e0c65222709e3b91967f89b68
+      streamHash: 1c8e045f96f8147a7cc02e9d2b675ce81ab40bf9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     audit:
       hasRecords: true
-      streamHash: 1d7fb1dcbbd99451cde3a1356861fb6859a7788e
+      streamHash: 0c1acba4335c198ffaae74fc885fef0eef44d1bd
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     brands:
       hasRecords: true
-      streamHash: 06703fbc94e4d4e95f58d3a630e6b05413690274
+      streamHash: 219cb9e7b3f744042c7f75911cdf6cd83fc70003
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     attributes:
       hasRecords: true
-      streamHash: d78cd6d5e72379f3df7c0c98667699b003924295
+      streamHash: 7b7c892515a5014c18f7dcfa42e8fe02c7e8d0b9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    tax:
+    taxes:
+      streamHash: e182344e7fd52ec75e8509a157fe2fa0d3f6de40
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: true
-      streamHash: 2b318d032d23d1a06e4953c6e7bb46d7ed6e0e2a
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     tags:
       hasRecords: true
-      streamHash: a862181a301124be5d2f5bebe9e48b2afa3677f1
+      streamHash: d690b86dcd9bd3d46c198eb6643c7f41c30e4ba9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     suppliers:
       hasRecords: true
-      streamHash: 61a9eb43a09d8b415ebbb80247cacf5aba34be1c
+      streamHash: 176e543b6fbea2916c8c61435443795d29019f78
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     serial_numbers:
-      hasRecords: true
-      streamHash: 9f9538425c444d59a8228f521a837020601037b1
+      streamHash: cc91fb2d3c3205bf28412832e8140da4dca3f1fe
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sales:
-      hasRecords: true
-      streamHash: 47186803e7fae95960fb9560bad11fa2980ffc3d
+      streamHash: 7c7c25c3bb7dbf52c83acfb6500ce8f36a5ffedf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     registers:
-      hasRecords: true
-      streamHash: 1b5cfe508ed1c62c8e5ebeda5ba19586deb4d439
+      streamHash: f3124011e7301476806fca620bba0b68ff8a1835
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     quotes:
-      hasRecords: true
-      streamHash: 23fd5647181b89ad716885f1e31f290db7d3f517
+      streamHash: 40956aab86903d5e717a375d7cba8224c0a6a669
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     services:
-      hasRecords: true
-      streamHash: b7d2e062c5daa6f383a81828872e94c5906365ce
+      streamHash: 772135472936f9da613e338d2aeb357d35fc9ff6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     promotions:
-      hasRecords: true
-      streamHash: 149681ff007851deb1e494b73de36ff1f113cade
+      streamHash: dcca98f5fef5232b2e79fc89232d77c005c8049d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     products:
-      hasRecords: true
-      streamHash: cc85265e7624d88ca9d9c914ea7f7d54f0d3f236
+      streamHash: 97ab2b66a57ccf26466597cd75054e7bc9b9af6c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     product_categories:
-      hasRecords: true
-      streamHash: 4d6d6b7a8ead4ef727fdb67bb41622c443ca9a09
+      streamHash: fbff8212ac053f90f829b87bbef87bc2b0000656
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     price_books:
-      hasRecords: true
-      streamHash: 0982a5e2698b3d8b9f35581dcf8861ab92136d18
+      streamHash: 103f8720bfe259320932e058bc56575fefd29b5c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     payment_types:
-      hasRecords: true
-      streamHash: 961a79706354ae8eb104f212ef512b891c11d4b0
+      streamHash: 6194f192d0d01e781d495443ec4e06225fd49aa8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     outlets:
-      hasRecords: true
-      streamHash: 4c62aae8ed5acf2c7d9ebacce08dd234c49e834a
+      streamHash: 948836b196d9d60ceb1880bdeb3216216b4e38e9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    outlet_taxes:
       hasRecords: true
-      streamHash: a726945eb8ece6b215b18bdd27fd82bb2b0d2d31
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     inventory:
-      hasRecords: true
-      streamHash: 43b7d8815ce336bfe288362aedc5dff838415ee7
+      streamHash: be98a57ce2c142442808e7f5ea7ea74be3318fe9
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     fulfillments:
-      hasRecords: true
-      streamHash: 96d617e342d417bc5ab41655f3ce4b89cc868e40
+      streamHash: 4918d63a88b1cbbde9700b6e83ea1db6f72d9089
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customer_groups:
-      hasRecords: true
-      streamHash: d7af30cb81a1b02f2490fb6f34dd2520f2a43c5d
+      streamHash: 6dbcbaad97892a867e06606fcfb8a6db90839e9e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     consignments:
-      hasRecords: true
-      streamHash: 0080a4543a27365efbc28aeee0032f356f4ed95e
+      streamHash: 72df1dcc5cea93af7a72f1d7323fcfdb6d05e4ab
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     consignment_products:
-      hasRecords: true
-      streamHash: e3e8425af0dff7296bcf786c3a2de8b499e1b712
+      streamHash: c8fdf41124665c0b50ae4eab1dde61423d9d8c46
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://x-series-api.lightspeedhq.com/docs/quick_start
 
@@ -1238,6 +1161,10 @@ schemas:
           - string
           - "null"
       email:
+        type:
+          - string
+          - "null"
+      email_verified_at:
         type:
           - string
           - "null"
@@ -1343,24 +1270,12 @@ schemas:
         type:
           - boolean
           - "null"
-      email:
-        type:
-          - string
-          - "null"
       enable_loyalty:
         type:
           - boolean
           - "null"
-      first_name:
-        type:
-          - string
-          - "null"
       id:
         type: string
-      last_name:
-        type:
-          - string
-          - "null"
       loyalty_balance:
         type:
           - number
@@ -1368,22 +1283,6 @@ schemas:
       loyalty_email_sent:
         type:
           - boolean
-          - "null"
-      mobile:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      physical_country_id:
-        type:
-          - string
-          - "null"
-      postal_country_id:
-        type:
-          - string
           - "null"
       updated_at:
         type:
@@ -1483,7 +1382,7 @@ schemas:
           - "null"
     required:
       - id
-  tax:
+  taxes:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1709,6 +1608,31 @@ schemas:
               type:
                 - array
                 - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  promo_code:
+                    type:
+                      - string
+                      - "null"
+                  promo_code_id:
+                    type:
+                      - string
+                      - "null"
+                  promotion_id:
+                    type:
+                      - string
+                      - "null"
             quantity:
               type:
                 - number
@@ -2005,11 +1929,11 @@ schemas:
         type:
           - string
           - "null"
-      register_open_sequence_id:
+      register_close_time:
         type:
           - string
           - "null"
-      register_open_time:
+      register_open_sequence_id:
         type:
           - string
           - "null"
@@ -2255,7 +2179,7 @@ schemas:
             type:
               - array
               - "null"
-          min_price:
+          quantity:
             type:
               - number
               - "null"
@@ -2899,25 +2823,6 @@ schemas:
           - "null"
     required:
       - id
-  outlet_taxes:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      version:
-        type:
-          - number
-          - "null"
-      outlet_id:
-        type: string
-      product_id:
-        type: string
-      tax_id:
-        type: string
-    required:
-      - outlet_id
-      - product_id
-      - tax_id
   inventory:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3081,11 +2986,31 @@ schemas:
         type:
           - string
           - "null"
+      show_inactive:
+        type:
+          - boolean
+          - "null"
       status:
         type:
           - string
           - "null"
       supplier_id:
+        type:
+          - string
+          - "null"
+      total_cost_gain:
+        type:
+          - string
+          - "null"
+      total_cost_loss:
+        type:
+          - string
+          - "null"
+      total_count_gain:
+        type:
+          - string
+          - "null"
+      total_count_loss:
         type:
           - string
           - "null"
@@ -3110,7 +3035,7 @@ schemas:
           - "null"
       count:
         type:
-          - number
+          - string
           - "null"
       created_at:
         type:
@@ -3122,10 +3047,6 @@ schemas:
           - "null"
       product_id:
         type: string
-      received:
-        type:
-          - number
-          - "null"
       status:
         type:
           - string
