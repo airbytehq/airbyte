@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
@@ -45,18 +46,6 @@ abstract class IntegrationTest(
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
 ) {
-    // Connectors are calling System.getenv rather than using micronaut-y properties,
-    // so we have to mock it out, instead of just setting more properties
-    // inside NonDockerizedDestination.
-    // This field has no effect on DockerizedDestination, which explicitly
-    // sets env vars when invoking `docker run`.
-    @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
-
-    @BeforeEach
-    fun setEnvVars() {
-        nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
-    }
-
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
     // multiple times.
@@ -173,7 +162,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }
@@ -185,5 +174,18 @@ abstract class IntegrationTest(
 
     companion object {
         private val hasRunCleaner = AtomicBoolean(false)
+
+        // Connectors are calling System.getenv rather than using micronaut-y properties,
+        // so we have to mock it out, instead of just setting more properties
+        // inside NonDockerizedDestination.
+        // This field has no effect on DockerizedDestination, which explicitly
+        // sets env vars when invoking `docker run`.
+        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+
+        @JvmStatic
+        @BeforeAll
+        fun setEnvVars() {
+            nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
+        }
     }
 }
