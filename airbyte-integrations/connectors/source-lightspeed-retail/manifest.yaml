@@ -753,6 +753,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"version\", {}).get(\"max\", {}) }}"
+            stop_condition: "{{ not response.get(\"version\", {}).get(\"max\", {}) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1108,7 +1123,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     fulfillments:
-      streamHash: 4918d63a88b1cbbde9700b6e83ea1db6f72d9089
+      streamHash: 48a4341d944e53bc273fe4741da982db1026f8d4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
