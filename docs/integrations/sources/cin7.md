@@ -28,6 +28,9 @@ Create an application and note down the Account Id and the API key, you will nee
 | products | ID | DefaultPaginator | ✅ |  ❌  |
 | purchases | ID | DefaultPaginator | ✅ |  ❌  |
 | suppliers | ID | DefaultPaginator | ✅ |  ❌  |
+| product_categories | ID | DefaultPaginator | ✅ |  ❌  |
+| sale_lists | ID | DefaultPaginator | ✅ |  ❌  |
+| product_families | ID | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
