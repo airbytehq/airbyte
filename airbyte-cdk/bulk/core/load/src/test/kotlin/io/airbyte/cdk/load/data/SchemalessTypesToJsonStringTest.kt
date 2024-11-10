@@ -85,7 +85,7 @@ class SchemalessTypesToJsonStringTest {
                 )
                 .build()
         val mapper = SchemalessValuesToJsonString()
-        val output = mapper.map(inputValues, inputSchema)
+        val output = mapper.map(inputValues, inputSchema).first
         Assertions.assertEquals(expectedOutput, output)
     }
 
@@ -120,7 +120,7 @@ class SchemalessTypesToJsonStringTest {
                 )
                 .build()
         val mapper = SchemalessValuesToJsonString()
-        val output = mapper.map(inputValues, inputSchema)
+        val output = mapper.map(inputValues, inputSchema).first
         Assertions.assertEquals(expectedOutput, output)
     }
 }

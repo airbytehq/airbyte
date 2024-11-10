@@ -11,6 +11,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.concurrency_level import ConcurrencyLevel
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors import RecordSelector
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConcurrencyLevel as ConcurrencyLevelModel
@@ -156,6 +157,8 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                     datetime_based_cursor_component_definition
                     and datetime_based_cursor_component_definition.get("type", "") == DatetimeBasedCursorModel.__name__
                     and self._stream_supports_concurrent_partition_processing(declarative_stream=declarative_stream)
+                    and hasattr(declarative_stream.retriever, "stream_slicer")
+                    and isinstance(declarative_stream.retriever.stream_slicer, DatetimeBasedCursor)
                 ):
                     stream_state = state_manager.get_stream_state(
                         stream_name=declarative_stream.name, namespace=declarative_stream.namespace
