@@ -226,11 +226,9 @@ class MysqlJdbcPartitionFactory(
         } else {
             val sv: MysqlJdbcStreamStateValue =
                 Jsons.treeToValue(opaqueStateValue, MysqlJdbcStreamStateValue::class.java)
-            println("sv: $sv")
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                println("pkval: ${sv.pkValue}, upperBound: ${upperBound.asText()}")
                 if (sv.pkValue == upperBound.asText()) {
                     return null
                 }
@@ -249,7 +247,9 @@ class MysqlJdbcPartitionFactory(
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
-                val pkLowerBound: JsonNode = Jsons.valueToTree(sv.pkValue)
+                val pkField = pkChosenFromCatalog.first()
+                val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
+
                 val cursorChosenFromCatalog: Field =
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
