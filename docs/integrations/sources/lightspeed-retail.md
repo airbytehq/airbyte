@@ -19,31 +19,30 @@ After logging in, you can create your personal token by navigating to Setup -&gt
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| customers | id | DefaultPaginator | ✅ |  ❌  |
-| audit | id | DefaultPaginator | ✅ |  ❌  |
-| brands | id | DefaultPaginator | ✅ |  ❌  |
-| attributes | id | DefaultPaginator | ✅ |  ❌  |
-| tax | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
-| suppliers | id | DefaultPaginator | ✅ |  ❌  |
-| serial_numbers | id | DefaultPaginator | ✅ |  ❌  |
-| sales | id | DefaultPaginator | ✅ |  ❌  |
-| registers | id | DefaultPaginator | ✅ |  ❌  |
-| quotes | id | DefaultPaginator | ✅ |  ❌  |
-| services | id | DefaultPaginator | ✅ |  ❌  |
-| promotions | id | DefaultPaginator | ✅ |  ❌  |
-| products | id | DefaultPaginator | ✅ |  ❌  |
-| product_categories | id | DefaultPaginator | ✅ |  ❌  |
-| price_books | id | DefaultPaginator | ✅ |  ❌  |
-| payment_types | id | DefaultPaginator | ✅ |  ❌  |
-| outlets | id | DefaultPaginator | ✅ |  ❌  |
-| outlet_taxes | outlet_id.product_id.tax_id | DefaultPaginator | ✅ |  ❌  |
-| inventory | id | DefaultPaginator | ✅ |  ❌  |
-| fulfillments | id | DefaultPaginator | ✅ |  ❌  |
-| customer_groups | id | DefaultPaginator | ✅ |  ❌  |
-| consignments | id | DefaultPaginator | ✅ |  ❌  |
-| consignment_products | product_id | DefaultPaginator | ✅ |  ❌  |
+| users | id | CursorPagination | ✅ |  ❌  |
+| customers | id | CursorPagination | ✅ |  ❌  |
+| audit | id | CursorPagination | ✅ |  ❌  |
+| brands | id | CursorPagination | ✅ |  ❌  |
+| attributes | id | CursorPagination | ✅ |  ❌  |
+| tax | id | CursorPagination | ✅ |  ❌  |
+| tags | id | CursorPagination | ✅ |  ❌  |
+| suppliers | id | CursorPagination | ✅ |  ❌  |
+| serial_numbers | id | CursorPagination | ✅ |  ❌  |
+| sales | id | CursorPagination | ✅ |  ❌  |
+| registers | id | CursorPagination | ✅ |  ❌  |
+| quotes | id | CursorPagination | ✅ |  ❌  |
+| services | id | CursorPagination | ✅ |  ❌  |
+| promotions | id | CursorPagination | ✅ |  ❌  |
+| products | id | CursorPagination | ✅ |  ❌  |
+| product_categories | id | CursorPagination | ✅ |  ❌  |
+| price_books | id | CursorPagination | ✅ |  ❌  |
+| payment_types | id | CursorPagination | ✅ |  ❌  |
+| outlets | id | CursorPagination | ✅ |  ❌  |
+| inventory | id | CursorPagination | ✅ |  ❌  |
+| fulfillments | id | CursorPagination | ✅ |  ❌  |
+| customer_groups | id | CursorPagination | ✅ |  ❌  |
+| consignments | id | CursorPagination | ✅ |  ❌  |
+| consignment_products | product_id | CursorPagination | ✅ |  ❌  |
 
 ## Changelog
 
