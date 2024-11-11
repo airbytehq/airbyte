@@ -7,22 +7,16 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 |-------|------|-------------|---------------|
 | `orgId` | `string` | orgId.  |  |
 | `api_key` | `string` | API Key. API key to use. Find it at https://cal.com/account |  |
-| `start_time` | `string` | Start Time.  |  |
-| `end_time` | `string` | End Time.  |  |
-| `event_type_id` | `number` | Event Type Id.  |  |
-| `event_type_slug` | `string` | Event Type Slug.  |  |
-| `user_name_list` | `array` | User Name List.  |  |
-| `duration` | `number` | Duration.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| event_types | id | No pagination | ✅ |  ❌  |
+| event_types | id | DefaultPaginator | ✅ |  ❌  |
 | my_profile | id | No pagination | ✅ |  ❌  |
-| schedules | id | No pagination | ✅ |  ❌  |
-| slots |  | No pagination | ✅ |  ❌  |
+| schedules | id | DefaultPaginator | ✅ |  ❌  |
 | calendars | externalId | No pagination | ✅ |  ❌  |
-| bookings | id | No pagination | ✅ |  ❌  |
+| bookings | id | DefaultPaginator | ✅ |  ❌  |
+| conferencing | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -31,6 +25,6 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-23 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+| 0.0.1 | 2024-11-11 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>
