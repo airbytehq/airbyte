@@ -1,0 +1,1012 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Benzinga is a full-service news and media company offering investors unmatched
+  market intelligence. With expertise in breaking news and accurate financial
+  data, Benzinga covers all aspects of financial markets spanning from corporate
+  actions to economics to politics.
+
+  [API Docs](https://docs.benzinga.com/home)
+
+check:
+  type: CheckStream
+  stream_names:
+    - bull_bear_comment
+
+definitions:
+  streams:
+    bull_bear_comment:
+      type: DeclarativeStream
+      name: bull_bear_comment
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /api/v1/bulls_bears_say?symbols={{
+            ','.join(config['ticker_symbol'])}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bulls_say_bears_say
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bull_bear_comment"
+    analyst_insights:
+      type: DeclarativeStream
+      name: analyst_insights
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /api/v1/analyst/insights?symbols={{
+            ','.join(config['ticker_symbol']) }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - analyst-insights
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/analyst_insights"
+    historical_data:
+      type: DeclarativeStream
+      name: historical_data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/bars
+          http_method: GET
+          request_parameters:
+            interval: "{{config['interval']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - candles
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.ticker_symbol }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbols
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date_2\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - symbol
+              value: "{{ stream_partition.symbol }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/historical_data"
+    delayed_quotes:
+      type: DeclarativeStream
+      name: delayed_quotes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/quoteDelayed
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - quotes
+              - "*"
+              - quote
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.ticker_symbol }}"
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: symbols
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - symbol
+              value: "{{ stream_partition.symbol }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/delayed_quotes"
+    market_news:
+      type: DeclarativeStream
+      name: market_news
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/news?tickers={{ ','.join(config['ticker_symbol'])}}
+          http_method: GET
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/market_news"
+    option_activity:
+      type: DeclarativeStream
+      name: option_activity
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/signal/option_activity
+          http_method: GET
+          request_parameters:
+            parameters[tickers]: "{{config['ticker_symbol']}}"
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - option_activity
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagesize
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/option_activity"
+    signals:
+      type: DeclarativeStream
+      name: signals
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/sec/insider_transactions/filings
+          http_method: GET
+          request_parameters:
+            search_keys: "{{ ','.join(config.ticker_symbol) }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagesize
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signals"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.benzinga.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/bull_bear_comment"
+  - $ref: "#/definitions/streams/analyst_insights"
+  - $ref: "#/definitions/streams/historical_data"
+  - $ref: "#/definitions/streams/delayed_quotes"
+  - $ref: "#/definitions/streams/market_news"
+  - $ref: "#/definitions/streams/option_activity"
+  - $ref: "#/definitions/streams/signals"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - ticker_symbol
+      - interval
+      - start_date_2
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      ticker_symbol:
+        type: array
+        order: 1
+        title: Symbols
+      interval:
+        type: string
+        order: 2
+        title: Interval
+        enum:
+          - 1MONTH
+          - 1W
+          - 1D
+          - 2H
+          - 3H
+          - 4H
+          - 10M
+          - 15M
+          - 30M
+          - 5M
+          - 1H
+      start_date_2:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bull_bear_comment: true
+    analyst_insights: false
+    historical_data: false
+    delayed_quotes: false
+    market_news: false
+    option_activity: false
+    signals: true
+  testedStreams:
+    bull_bear_comment:
+      streamHash: 2e092e71f2e7e3abf60151a78b6ddc3c818bef18
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analyst_insights:
+      streamHash: cadae53bde0a4ec3558d7776006741a612fe56ea
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    historical_data:
+      streamHash: 050a0a827a3f951be592028515943c25a8cd9b19
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    delayed_quotes:
+      streamHash: 0a3d72dbcdffe86a0de68d8a4f8d396657ee9564
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    market_news:
+      streamHash: ced1bf9b357f09592882c512d9aa225c69fdb94a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    option_activity:
+      streamHash: 5d203260f8afafce7f47e1bd777d995ebbec5c46
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signals:
+      streamHash: 8d0bc053c79ed84c30aa58ebd2eaca12375d0860
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.benzinga.com/
+
+schemas:
+  bull_bear_comment:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bear_case:
+        type:
+          - string
+          - "null"
+      bull_case:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      securities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            cik:
+              type:
+                - string
+                - "null"
+            exchange:
+              type:
+                - string
+                - "null"
+            isin:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            symbol:
+              type:
+                - string
+                - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - number
+          - "null"
+  analyst_insights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      analyst-insights:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            action:
+              type:
+                - string
+                - "null"
+            analyst_insights:
+              type:
+                - string
+                - "null"
+            date:
+              type:
+                - string
+                - "null"
+            firm:
+              type:
+                - string
+                - "null"
+            firm_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            pt:
+              type:
+                - string
+                - "null"
+            rating:
+              type:
+                - string
+                - "null"
+            rating_id:
+              type:
+                - string
+                - "null"
+            security:
+              type:
+                - object
+                - "null"
+              properties:
+                cik:
+                  type:
+                    - string
+                    - "null"
+                exchange:
+                  type:
+                    - string
+                    - "null"
+                isin:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                symbol:
+                  type:
+                    - string
+                    - "null"
+            updated:
+              type:
+                - number
+                - "null"
+  historical_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      close:
+        type:
+          - number
+          - "null"
+      dateTime:
+        type: string
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      time:
+        type:
+          - string
+          - "null"
+      volume:
+        type:
+          - string
+          - "null"
+    required:
+      - dateTime
+  delayed_quotes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      quotes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            quote:
+              type:
+                - object
+                - "null"
+              properties:
+                change:
+                  type:
+                    - number
+                    - "null"
+                changePercent:
+                  type:
+                    - number
+                    - "null"
+                close:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+                date:
+                  type:
+                    - string
+                    - "null"
+                fiftyTwoWeekHigh:
+                  type:
+                    - number
+                    - "null"
+                fiftyTwoWeekLow:
+                  type:
+                    - number
+                    - "null"
+                high:
+                  type:
+                    - number
+                    - "null"
+                last:
+                  type:
+                    - number
+                    - "null"
+                low:
+                  type:
+                    - number
+                    - "null"
+                open:
+                  type:
+                    - number
+                    - "null"
+                previousClose:
+                  type:
+                    - number
+                    - "null"
+                previousCloseDate:
+                  type:
+                    - string
+                    - "null"
+                volume:
+                  type:
+                    - number
+                    - "null"
+            security:
+              type:
+                - object
+                - "null"
+              properties:
+                cik:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                symbol:
+                  type:
+                    - string
+                    - "null"
+  market_news:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - string
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      channels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      created:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      image:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            size:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      stocks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      teaser:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+  option_activity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      option_activity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            aggressor_ind:
+              type:
+                - string
+                - "null"
+            ask:
+              type:
+                - string
+                - "null"
+            bid:
+              type:
+                - string
+                - "null"
+            cost_basis:
+              type:
+                - string
+                - "null"
+            date:
+              type:
+                - string
+                - "null"
+            date_expiration:
+              type:
+                - string
+                - "null"
+            description_extended:
+              type:
+                - string
+                - "null"
+            exchange:
+              type:
+                - string
+                - "null"
+            execution_estimate:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            midpoint:
+              type:
+                - string
+                - "null"
+            open_interest:
+              type:
+                - string
+                - "null"
+            option_activity_type:
+              type:
+                - string
+                - "null"
+            option_symbol:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            put_call:
+              type:
+                - string
+                - "null"
+            sentiment:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - string
+                - "null"
+            strike_price:
+              type:
+                - string
+                - "null"
+            ticker:
+              type:
+                - string
+                - "null"
+            time:
+              type:
+                - string
+                - "null"
+            trade_count:
+              type:
+                - number
+                - "null"
+            underlying_price:
+              type:
+                - string
+                - "null"
+            underlying_type:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - number
+                - "null"
+            volume:
+              type:
+                - string
+                - "null"
+  signals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accession_number:
+        type:
+          - string
+          - "null"
+      company_cik:
+        type:
+          - string
+          - "null"
+      company_name:
+        type:
+          - string
+          - "null"
+      company_symbol:
+        type:
+          - string
+          - "null"
+      filing_date:
+        type:
+          - string
+          - "null"
+      footnotes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+      form_type:
+        type:
+          - string
+          - "null"
+      html_url:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_10b5:
+        type:
+          - boolean
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          insider_cik:
+            type:
+              - string
+              - "null"
+          insider_name:
+            type:
+              - string
+              - "null"
+          insider_title:
+            type:
+              - string
+              - "null"
+          is_director:
+            type:
+              - boolean
+              - "null"
+          is_officer:
+            type:
+              - boolean
+              - "null"
+          is_ten_percent_owner:
+            type:
+              - boolean
+              - "null"
+          raw_signature:
+            type:
+              - string
+              - "null"
+      transactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            acquired_or_disposed:
+              type:
+                - string
+                - "null"
+            conversion_exercise_price_derivative:
+              type:
+                - string
+                - "null"
+            date_transaction:
+              type:
+                - string
+                - "null"
+            is_derivative:
+              type:
+                - boolean
+                - "null"
+            ownership:
+              type:
+                - string
+                - "null"
+            post_transaction_quantity:
+              type:
+                - string
+                - "null"
+            price_per_share:
+              type:
+                - string
+                - "null"
+            remaining_underlying_shares:
+              type:
+                - string
+                - "null"
+            security_title:
+              type:
+                - string
+                - "null"
+            shares:
+              type:
+                - string
+                - "null"
+            transaction_code:
+              type:
+                - string
+                - "null"
+            transaction_id:
+              type:
+                - string
+                - "null"
+            underlying_security_title:
+              type:
+                - string
+                - "null"
+            underlying_shares:
+              type:
+                - string
+                - "null"
+            voluntarily_reported:
+              type:
+                - boolean
+                - "null"
+      updated:
+        type:
+          - number
+          - "null"
