@@ -7,8 +7,7 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `from` | `string` | From.  |  |
-| `to` | `string` | To.  |  |
+| `start_date` | `string` | Start Date.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
