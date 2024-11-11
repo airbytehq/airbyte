@@ -11,6 +11,7 @@ from typing import Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
+import psutil
 import pytz
 import smart_open
 from airbyte_cdk import FailureType
@@ -187,6 +188,36 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result
 
+    @staticmethod
+    def create_progress_handler(file_size: int, local_file_path: str, logger: logging.Logger):
+        previous_bytes_checkpoint = 0
+        total_bytes_transferred = 0
+
+        def progress_handler(bytes_transferred: int):
+            nonlocal previous_bytes_checkpoint, total_bytes_transferred
+            total_bytes_transferred += bytes_transferred
+            if total_bytes_transferred - previous_bytes_checkpoint >= 100 * 1024 * 1024:
+                logger.info(
+                    f"{total_bytes_transferred / (1024 * 1024):,.2f} MB ({total_bytes_transferred / (1024 * 1024 * 1024):.2f} GB) "
+                    f"of {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB) "
+                    f"written to {local_file_path}"
+                )
+                previous_bytes_checkpoint = total_bytes_transferred
+
+                # Get available disk space
+                disk_usage = psutil.disk_usage("/")
+                available_disk_space = disk_usage.free
+
+                # Get available memory
+                memory_info = psutil.virtual_memory()
+                available_memory = memory_info.available
+                logger.info(
+                    f"Available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB), "
+                    f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+                )
+
+        return progress_handler
+
     @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
@@ -220,7 +251,8 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         )
         # at some moment maybe we will require to play with the max_pool_connections and max_concurrency of s3 config
         start_download_time = time.time()
-        self.s3_client.download_file(self.config.bucket, file.uri, local_file_path)
+        progress_handler = self.create_progress_handler(file_size, local_file_path, logger)
+        self.s3_client.download_file(self.config.bucket, file.uri, local_file_path, Callback=progress_handler)
         write_duration = time.time() - start_download_time
         logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
 
