@@ -455,7 +455,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - opportunityList
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -736,12 +737,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     deals:
-      hasRecords: true
       streamHash: 3091c0f345e8e31f88ed309fbc5d000ec7eca4b3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     locations:
       hasRecords: true
       streamHash: e49c3d38646053ba45575de9669e6f163187fbbb
@@ -764,33 +765,33 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     suppliers:
-      hasRecords: true
       streamHash: 58f238049ce5031d00fee8b5b562c6110541afd8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    sales:
-      streamHash: 1a2b13e12deda2bd88e54afa8137820fb0d55736
-      hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sales:
+      streamHash: d09addf97ad0ae0453e42ff9f3e8f66bb71616aa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sale_list:
+      hasRecords: true
       streamHash: 63f057d9b8a830772b5e0ae35c44c189821a21c5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxes:
+      hasRecords: true
       streamHash: 67b527295ad75865bbf0f651f8faf1d461839e85
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     product_categories:
       streamHash: 60ce930da7366da26fdc07296bcc6b7f9601882d
       hasResponse: true
