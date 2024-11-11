@@ -108,24 +108,36 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         return remote_file
 
     @staticmethod
-    def create_progress_handler():
+    def create_progress_handler(logger: logging.Logger):
         previous_bytes_copied = 0
 
         def progress_handler(source_path, destination_path, bytes_copied, total_bytes):
             nonlocal previous_bytes_copied
             if bytes_copied - previous_bytes_copied >= 100 * 1024 * 1024:
-                print(
+                logger.info(
                     f"{bytes_copied / (1024 * 1024):,.2f} MB ({bytes_copied / (1024 * 1024 * 1024):.2f} GB) "
                     f"of {total_bytes / (1024 * 1024):,.2f} MB ({total_bytes / (1024 * 1024 * 1024):.2f} GB) "
                     f"written to {destination_path}"
                 )
                 previous_bytes_copied = bytes_copied
 
+                # Get available disk space
+                disk_usage = psutil.disk_usage("/")
+                available_disk_space = disk_usage.free
+
+                # Get available memory
+                memory_info = psutil.virtual_memory()
+                available_memory = memory_info.available
+                logger.info(
+                    f"Available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB), "
+                    f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+                )
+
         return progress_handler
 
-    async def download_file(self, remote_file_path: str, local_file_path: str):
+    async def download_file(self, remote_file_path: str, local_file_path: str, logger: logging.Logger):
         # async with SFTPFileTransferClient(config.host, config.username, port=config.port ,private_key=config.credentials.private_key) as client:
-        progress_handler = self.create_progress_handler()
+        progress_handler = self.create_progress_handler(logger=logger)
 
         sftp_connection = await self.file_transfer_sftp_client.sftp_connection
         await sftp_connection.get(remote_file_path, local_file_path, progress_handler=progress_handler)
@@ -152,10 +164,6 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
         """
         file_size = self.file_size(file)
-        # I'm putting this check here so we can remove the safety wheels per connector when ready.
-        if file_size > self.FILE_SIZE_LIMIT:
-            message = "File size exceeds the 1 GB limit."
-            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
@@ -177,7 +185,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         )
         start_download_time = time.time()
         # Copy a remote file in remote path from the SFTP server to the local host as local path.
-        asyncio.run(self.download_file(file.uri, local_file_path))
+        asyncio.run(self.download_file(file.uri, local_file_path, logger))
 
         download_duration = time.time() - start_download_time
         logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
