@@ -5,7 +5,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `orgId` | `string` | orgId.  |  |
+| `orgId` | `string` | Organization ID.  |  |
 | `api_key` | `string` | API Key. API key to use. Find it at https://cal.com/account |  |
 
 ## Streams
