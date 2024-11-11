@@ -77,6 +77,16 @@ class SFTPFileTransferClient:
         self._connection = None
         self.conn = None
 
+    async def close(self):
+        """Async method to clean up and close connections."""
+        if self._connection:
+            self._connection.exit()
+        if self.conn:
+            self.conn.close()
+            await self.conn.wait_closed()  # Use await to ensure the connection fully closes
+        self._connection = None
+        self.conn = None
+
     @property
     async def sftp_connection(self) -> SFTPClient:
         if self._connection is not None:

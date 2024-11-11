@@ -129,6 +129,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
 
         sftp_connection = await self.file_transfer_sftp_client.sftp_connection
         await sftp_connection.get(remote_file_path, local_file_path, progress_handler=progress_handler)
+        await self.file_transfer_sftp_client.close()
 
     @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
