@@ -720,6 +720,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
         "release_notes/aug_2024",

@@ -9,9 +9,9 @@ import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
@@ -64,8 +64,8 @@ class DefaultProcessRecordsTask(
                                 }
                             }
                             .takeWhile {
-                                it !is DestinationStreamComplete &&
-                                    it !is DestinationStreamIncomplete
+                                it !is DestinationRecordStreamComplete &&
+                                    it !is DestinationRecordStreamIncomplete
                             }
                             .map { it as DestinationRecord }
                             .iterator()
