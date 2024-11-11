@@ -1,7 +1,7 @@
 # Sendowl
 Sendowl is an All-in-One Digital Commerce Platform.
 Using this connector we can extract data from products , packages , orders , discounts and subscriptions streams.
-Docs : https://dashboard.sendowl.com/developers/api/introduction
+[API Docs](https://dashboard.sendowl.com/developers/api/introduction)
 
 ## Configuration
 
