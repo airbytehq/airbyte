@@ -120,7 +120,7 @@ spec:
       form_id:
         type: array
         order: 3
-        title: form_id
+        title: Form IDs
     additionalProperties: true
 
 metadata:
@@ -129,12 +129,12 @@ metadata:
     form_responses: false
   testedStreams:
     forms:
+      hasRecords: true
       streamHash: 5ef19a0392984fc2363de94820d88ef8511811b4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     form_responses:
       streamHash: 690303fa58627d1353bbfc4d0f7ad69f7911e5cf
       hasResponse: true
