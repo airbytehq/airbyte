@@ -1075,6 +1075,8 @@ metadata:
 #| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
 #| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
 #| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists), not within stream as `step` not defined             |
+# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
 concurrency_level:
   type: ConcurrencyLevel

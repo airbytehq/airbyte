@@ -3,6 +3,7 @@
 #
 
 
+import math
 import urllib.parse
 from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional
@@ -35,14 +36,13 @@ EVENTS_STREAM_CONFIG_START_DATE = "2021-11-08T00:00:00+00:00"
 EVENTS_STREAM_STATE_DATE = (datetime.fromisoformat(EVENTS_STREAM_CONFIG_START_DATE) + relativedelta(years=1)).isoformat()
 EVENTS_STREAM_TESTING_FREEZE_TIME = "2023-12-12 12:00:00"
 
-def get_months_diff(provided_date: str) -> int:
+def get_step_diff(provided_date: str) -> int:
     """
-    This function returns the difference in months between provided date and freeze time.
+    This function returns the difference in weeks between provided date and freeze time.
     """
     provided_date = datetime.fromisoformat(provided_date).replace(tzinfo=None)
     freeze_date = datetime.strptime(EVENTS_STREAM_TESTING_FREEZE_TIME, "%Y-%m-%d %H:%M:%S")
-    difference = relativedelta(freeze_date, provided_date)
-    return difference.years * 12 + difference.months
+    return (freeze_date - provided_date).days // 7
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     source = SourceKlaviyo(CatalogBuilder().build(), KlaviyoConfigBuilder().build(), StateBuilder().build())
@@ -190,8 +190,9 @@ class TestIncrementalKlaviyoStream:
         start_date = datetime.fromisoformat(start_date_str)
         current_date = datetime.now(start_date.tzinfo)
         urls = []
+        step = relativedelta(days=7)
         while start_date < current_date:
-            end_date = start_date + relativedelta(months=1) - timedelta(seconds=1)
+            end_date = start_date + step - timedelta(seconds=1)
             if end_date > current_date:
                 end_date = current_date
             start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S") + start_date.strftime("%z")
@@ -207,7 +208,7 @@ class TestIncrementalKlaviyoStream:
             encoded_url = f"{base_url}?{encoded_query}"
             dummy_record = {"attributes": {"datetime": start_date_str}, "datetime": start_date_str}
             urls.append((encoded_url, dummy_record))
-            start_date = start_date + relativedelta(months=1)
+            start_date = start_date + step
         return urls
 
     def test_cursor_field_is_required(self):
@@ -296,20 +297,20 @@ class TestIncrementalKlaviyoStream:
         (
             (
                 # we pick the state
-                EVENTS_STREAM_CONFIG_START_DATE,
-                EVENTS_STREAM_STATE_DATE,
-                get_months_diff(EVENTS_STREAM_STATE_DATE) + 1 # adding last request
+                    EVENTS_STREAM_CONFIG_START_DATE,
+                    EVENTS_STREAM_STATE_DATE,
+                    get_step_diff(EVENTS_STREAM_STATE_DATE) + 1 # adding last request
             ),
             (
                     # we pick the config start date
                     EVENTS_STREAM_CONFIG_START_DATE,
                     None,
-                    get_months_diff(EVENTS_STREAM_CONFIG_START_DATE) + 1  # adding last request
+                    get_step_diff(EVENTS_STREAM_CONFIG_START_DATE) + 1  # adding last request
             ),
             (
                     "",
                     "",
-                    get_months_diff(EVENTS_STREAM_DEFAULT_START_DATE) + 1 # adding last request
+                    get_step_diff(EVENTS_STREAM_DEFAULT_START_DATE) + 1 # adding last request
             ),
         ),
     )
