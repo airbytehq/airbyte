@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "https://*.api.pipelinersales.com/api/v100/rest/"
   registryOverrides:
     oss:
       enabled: true
