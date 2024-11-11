@@ -38,6 +38,6 @@ This PR adds a new connector for source Reddit Ads (source-reddit-ads)
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-11 | | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
+| 0.0.1 | 2024-11-11 | [47213] (https://github.com/airbytehq/airbyte/pull/47213) | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
 
 </details>
