@@ -59,6 +59,7 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 import org.apache.kafka.connect.json.JsonConverterConfig
 import org.apache.kafka.connect.source.SourceRecord
+import org.apache.mina.util.Base64
 
 @Singleton
 class MySqlDebeziumOperations(
@@ -329,8 +330,14 @@ class MySqlDebeziumOperations(
             } else {
                 stateNode.put(IS_COMPRESSED, true)
                 val baos = ByteArrayOutputStream()
+                val builder = StringBuilder()
                 GZIPOutputStream(baos).writer(Charsets.UTF_8).use { it.write(uncompressedString) }
-                stateNode.put(MYSQL_DB_HISTORY, baos.toByteArray())
+
+                builder.append("\"")
+                builder.append(Base64.encodeBase64(baos.toByteArray()).toString(Charsets.UTF_8))
+                builder.append("\"")
+
+                stateNode.put(MYSQL_DB_HISTORY, builder.toString())
             }
         }
         return Jsons.objectNode().apply { set<JsonNode>(STATE, stateNode) }
@@ -443,9 +450,11 @@ class MySqlDebeziumOperations(
             val isCompressed: Boolean = stateNode[IS_COMPRESSED]?.asBoolean() ?: false
             val uncompressedString: String =
                 if (isCompressed) {
-                    val compressedBytes: ByteArray =
-                        Jsons.readValue(schemaNode.textValue(), ByteArray::class.java)
-                    GZIPInputStream(ByteArrayInputStream(compressedBytes))
+                    val textValue: String = schemaNode.textValue()
+                    val compressedBytes: ByteArray = textValue.substring(1, textValue.length-1).toByteArray(Charsets.UTF_8)
+                    val decoded = Base64.decodeBase64(compressedBytes)
+
+                    GZIPInputStream(ByteArrayInputStream(decoded))
                         .reader(Charsets.UTF_8)
                         .readText()
                 } else {
