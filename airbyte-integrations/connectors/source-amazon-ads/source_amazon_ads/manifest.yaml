@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.5.0
 
 type: DeclarativeSource
 
@@ -1158,6 +1158,141 @@ definitions:
             page_size: 300
             cursor_value: "{{ response.cursorId }}"
 
+    sponsored_brands_v3_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_v3_report_stream
+      primary_key: ["profileId", "recordType", "reportDate", "recordId"]
+      # TODO: ADD SUPPORT FOR INCREMENTAL
+#      incremental_sync:
+#        type: DatetimeBasedCursor
+#        cursor_field: reportDate
+#        cursor_datetime_formats:
+#          - "%Y-%m-%d"
+#        datetime_format: "%Y-%m-%d"
+#        lookback_window: P{{ config.get('look_back_window', 0) }}D
+#        start_datetime:
+#          type: MinMaxDatetime
+#          datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
+#          datetime_format: "%Y-%m-%d"
+#        end_datetime:
+#          datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+#          datetime_format: "%Y-%m-%d"
+#        cursor_granularity: "P1D"
+#        step: "P{{ config.get('events_time_step', 30) }}D"
+#        start_time_option:
+#          field_name: startDate
+#          inject_into: body_json
+#        end_time_option:
+#          field_name: endDate
+#          inject_into: body_json
+      retriever:
+        type: AsyncRetriever
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "profileId"
+              stream: "#/definitions/streams/profiles_filtered"
+              partition_field: "profileId"
+        status_mapping:
+          failed:
+            - FAILED
+          running:
+            - PENDING
+            - PROCESSING
+          timeout:
+            - timeout
+          completed:
+            - COMPLETED
+        urls_extractor:
+          type: DpathExtractor
+          field_path:
+            - url
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ ]
+        decoder:
+          type: "CustomDecoder"
+          class_name: "source_amazon_ads.components.GzipDecoder"
+        status_extractor:
+          type: DpathExtractor
+          field_path:
+            - status
+        creation_requester:
+          type: HttpRequester
+          path: /reporting/reports
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%}
+            {{ URL_MAPPING[config["region"]] }}
+          authenticator: "#/definitions/oauth_authenticator"
+          http_method: POST
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            name: "purchasedAsin report 2024-11-11" # TODO: make configurable
+#            name: "purchasedAsin report {report_date}" # TODO: make configurable
+            startDate: "2024-11-11" # TODO: set today
+            endDate: "2024-11-11" # TODO: set today
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["purchasedAsin"]
+              columns: [ # TODO: make configurable
+                "campaignBudgetCurrencyCode",
+                "campaignName",
+                "adGroupName",
+                "attributionType",
+                "purchasedAsin",
+                "productName",
+                "productCategory",
+                "sales14d",
+                "orders14d",
+                "unitsSold14d",
+                "newToBrandSales14d",
+                "newToBrandPurchases14d",
+                "newToBrandUnitsSold14d",
+                "newToBrandSalesPercentage14d",
+                "newToBrandPurchasesPercentage14d",
+                "newToBrandUnitsSoldPercentage14d",
+              ]
+              reportTypeId: sbPurchasedProduct
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+        polling_requester:
+          type: HttpRequester
+          path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+          url_base: >-
+            {%- set URL_MAPPING = {
+                "NA": "https://advertising-api.amazon.com/",
+                "EU": "https://advertising-api-eu.amazon.com/",
+                "FE": "https://advertising-api-fe.amazon.com/"
+            } -%}
+            {{ URL_MAPPING[config["region"]] }}
+          authenticator: "#/definitions/oauth_authenticator"
+          http_method: GET
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+
+        download_requester:
+          type: HttpRequester
+          path: "{{stream_slice['url']}}"
+          url_base: ""
+          http_method: GET
+          authenticator: "#/definitions/oauth_authenticator"
+          request_headers:
+            Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+            Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+
+
+
 streams:
   - $ref: "#/definitions/streams/profiles"
   - $ref: "#/definitions/streams/portfolios"
@@ -1188,6 +1323,10 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_adgroup"
   - $ref: "#/definitions/streams/attribution_report_performance_campaign"
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
+
+
+  - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
+
 
 # TODO: change concurrency after migration of async based reports
 concurrency_level:
