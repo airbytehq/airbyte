@@ -43,7 +43,7 @@ def _get_source(args: List[str]):
                 )
             ).decode()
         )
-        return None
+        raise
 
 
 def run() -> None:
