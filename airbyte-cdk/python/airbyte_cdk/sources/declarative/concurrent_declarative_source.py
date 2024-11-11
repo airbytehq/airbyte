@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, Generic, Iterator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Generic, Iterator, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -184,7 +184,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                         declarative_stream.retriever.cursor = None
 
                     partition_generator = CursorPartitionGenerator(
-                        stream=self._create_new_instance(declarative_stream, config),
+                        stream_factory=self._new_stream_instance_factory(declarative_stream, config),
                         message_repository=self.message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
                         cursor=cursor,
                         connector_state_converter=connector_state_converter,
@@ -280,12 +280,14 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
     ) -> ConfiguredAirbyteCatalog:
         return ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name not in concurrent_stream_names])
 
-    def _create_new_instance(self, stream_to_copy: Stream, config: Mapping[str, Any]) -> Stream:
+    def _new_stream_instance_factory(self, stream_to_copy: Stream, config: Mapping[str, Any]) -> Callable[[], Stream]:
         """
         Some of the declarative components are stateful. Therefore, we create one stream per thread in order to avoid threads updating
         the same field for a specific instance.
         """
-        streams_with_same_name = list(filter(lambda stream: stream.name == stream_to_copy.name, self.streams(config)))
-        if len(streams_with_same_name) == 1:
-            return streams_with_same_name[0]
-        raise ValueError(f"Expected one stream with name `{stream_to_copy.name}` but got {len(streams_with_same_name)}")
+        def _create_new_stream() -> Stream:
+            streams_with_same_name = list(filter(lambda stream: stream.name == stream_to_copy.name, self.streams(config)))
+            if len(streams_with_same_name) == 1:
+                return streams_with_same_name[0]
+            raise ValueError(f"Expected one stream with name `{stream_to_copy.name}` but got {len(streams_with_same_name)}")
+        return _create_new_stream
