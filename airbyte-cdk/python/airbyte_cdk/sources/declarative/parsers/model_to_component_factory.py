@@ -35,6 +35,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import (
     Decoder,
+    GzipJsonDecoder,
     IterableDecoder,
     JsonDecoder,
     JsonlDecoder,
@@ -91,6 +92,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     ExponentialBackoffStrategy as ExponentialBackoffStrategyModel,
 )
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import GzipJsonDecoder as GzipJsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
@@ -247,6 +249,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonlDecoderModel: self.create_jsonl_decoder,
+            GzipJsonDecoderModel: self.create_gzipjson_decoder,
             KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
             XmlDecoderModel: self.create_xml_decoder,
@@ -1127,6 +1130,10 @@ class ModelToComponentFactory:
     @staticmethod
     def create_xml_decoder(model: XmlDecoderModel, config: Config, **kwargs: Any) -> XmlDecoder:
         return XmlDecoder(parameters={})
+
+    @staticmethod
+    def create_gzipjson_decoder(model: GzipJsonDecoderModel, config: Config, **kwargs: Any) -> GzipJsonDecoder:
+        return GzipJsonDecoder(parameters={}, encoding=model.encoding)
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:

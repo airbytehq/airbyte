@@ -4,6 +4,7 @@
 
 import logging
 from dataclasses import InitVar, dataclass
+from gzip import decompress
 from typing import Any, Generator, Mapping
 
 import requests
@@ -30,15 +31,19 @@ class JsonDecoder(Decoder):
         """
         try:
             body_json = response.json()
-            if not isinstance(body_json, list):
-                body_json = [body_json]
-            if len(body_json) == 0:
-                yield {}
-            else:
-                yield from body_json
+            yield from self.parse_body_json(body_json)
         except requests.exceptions.JSONDecodeError:
             logger.warning(f"Response cannot be parsed into json: {response.status_code=}, {response.text=}")
             yield {}
+
+    @staticmethod
+    def parse_body_json(body_json: Mapping[str, Any] | list) -> Generator[Mapping[str, Any], None, None]:
+        if not isinstance(body_json, list):
+            body_json = [body_json]
+        if len(body_json) == 0:
+            yield {}
+        else:
+            yield from body_json
 
 
 @dataclass
@@ -73,3 +78,12 @@ class JsonlDecoder(Decoder):
         #  https://github.com/airbytehq/airbyte-internal-issues/issues/8436
         for record in response.iter_lines():
             yield orjson.loads(record)
+
+
+@dataclass
+class GzipJsonDecoder(JsonDecoder):
+    encoding: str = "utf-8"
+
+    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
+        raw_string = decompress(response.content).decode(encoding=self.encoding)
+        yield from self.parse_body_json(orjson.loads(raw_string))

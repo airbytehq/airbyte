@@ -703,6 +703,15 @@ class CustomDecoder(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class GzipJsonDecoder(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['GzipJsonDecoder']
+    encoding: Optional[str] = 'utf-8'
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -1649,7 +1658,14 @@ class SimpleRetriever(BaseModel):
         title='Partition Router',
     )
     decoder: Optional[
-        Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder, CustomDecoder]
+        Union[
+            CustomDecoder,
+            JsonDecoder,
+            JsonlDecoder,
+            IterableDecoder,
+            XmlDecoder,
+            GzipJsonDecoder,
+        ]
     ] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
@@ -1715,7 +1731,14 @@ class AsyncRetriever(BaseModel):
         title='Partition Router',
     )
     decoder: Optional[
-        Union[JsonDecoder, JsonlDecoder, IterableDecoder, XmlDecoder, CustomDecoder]
+        Union[
+            CustomDecoder,
+            JsonDecoder,
+            JsonlDecoder,
+            IterableDecoder,
+            XmlDecoder,
+            GzipJsonDecoder,
+        ]
     ] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
