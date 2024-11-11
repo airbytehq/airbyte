@@ -51,17 +51,30 @@ class SFTPFileTransferClient:
 
         try:
 
+            # Determine authentication method
+            auth_params = {}
+            if self.key:
+                auth_params["client_keys"] = [self.key]  # Use SSH key authentication if available
+            else:
+                auth_params["password"] = self.password  # Use password authentication otherwise
+
+            # Connect to the server with chosen authentication
             self.conn = await asyncssh.connect(
-                self.host, username=self.username, client_keys=[self.key] if self.key else None, password=self.password
+                self.host,
+                username=self.username,
+                known_hosts=None,  # Disable host key verification (use cautiously)
+                **auth_params  # Pass the chosen authentication parameters
             )
+
             # Start the SFTP client
             self._connection = await self.conn.start_sftp_client()
             return self._connection
 
+        #remove this
         except asyncssh.Error as ex:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                message="SSH Authentication failed, please check username, password or private key and try again",
+                message=f"SSH Authentication failed, please check username, password or private key and try again {type(self.key)} {self.key} {self.password}",
                 internal_message="Authentication failed: %s" % ex,
             )
         except Exception as ex:
