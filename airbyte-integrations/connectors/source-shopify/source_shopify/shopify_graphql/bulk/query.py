@@ -2510,6 +2510,10 @@ class ProductVariant(ShopifyBulkQuery):
                                 color
                                 image {
                                     id
+                                    image {
+                                        src
+                                        url
+                                    }
                                 }
                             }
                         }
@@ -2517,6 +2521,8 @@ class ProductVariant(ShopifyBulkQuery):
                     grams: weight
                     image {
                         image_id: id
+                        image_src: src
+                        image_url: url
                     }
                     old_inventory_quantity: inventoryQuantity
                     product {
@@ -2577,7 +2583,7 @@ class ProductVariant(ShopifyBulkQuery):
             "id",
             "name",
             Field(name="hasVariants", alias="has_variants"),
-            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id", Field(name="image", fields=["src", "url"])])]),
         ]
         option_fields: List[Field] = [
             "name",
@@ -2587,6 +2593,12 @@ class ProductVariant(ShopifyBulkQuery):
         presentment_prices = (
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
+
+        image_fields = [
+            Field(name="id", alias="image_id"),
+            Field(name="src", alias="image_src"),
+            Field(name="url", alias="image_url"),
+        ]
 
         query_nodes: List[Field] = [
             "__typename",
@@ -2611,7 +2623,7 @@ class ProductVariant(ShopifyBulkQuery):
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="weight", alias="grams"),
-            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
             Field(name="product", fields=[Field(name="id", alias="product_id")]),
             Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
@@ -2677,6 +2689,9 @@ class ProductVariant(ShopifyBulkQuery):
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
+        image = record.get("image", {})
+        record["image_src"] = image.get("image_src") if image else None
+        record["image_url"] = image.get("image_url") if image else None
         # unnest `fulfillment_service` from `fulfillmentService`
         record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         # cast the `price` to number, could be literally `None`

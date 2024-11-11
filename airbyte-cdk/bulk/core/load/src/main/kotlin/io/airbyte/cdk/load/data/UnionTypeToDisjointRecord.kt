@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
-
 class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     override fun mapUnion(schema: UnionType): AirbyteType {
         if (schema.options.size < 2) {
@@ -46,26 +44,23 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
     }
 }
 
-class UnionValueToDisjointRecord(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
     override fun mapUnion(
         value: AirbyteValue,
         schema: UnionType,
-        path: List<String>
-    ): AirbyteValue {
-        if (schema.options.size < 2) {
-            return value
-        }
-
+        context: Context
+    ): Pair<AirbyteValue, Context> {
         val type =
             schema.options.find { matches(it, value) }
                 ?: throw IllegalArgumentException("No matching union option in $schema for $value")
+        val (valueMapped, contextMapped) = mapInner(value, type, context)
         return ObjectValue(
             values =
                 linkedMapOf(
                     "type" to StringValue(UnionTypeToDisjointRecord.typeName(type)),
-                    UnionTypeToDisjointRecord.typeName(type) to map(value, type, path)
+                    UnionTypeToDisjointRecord.typeName(type) to valueMapped
                 )
-        )
+        ) to contextMapped
     }
 
     private fun matches(schema: AirbyteType, value: AirbyteValue): Boolean {

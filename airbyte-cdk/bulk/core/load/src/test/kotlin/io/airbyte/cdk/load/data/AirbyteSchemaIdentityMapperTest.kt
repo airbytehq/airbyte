@@ -20,7 +20,7 @@ class AirbyteSchemaIdentityMapperTest {
                 .with(BooleanType)
                 .with(NumberType)
                 .with(ArrayType(FieldType(StringType, true)))
-                .with(UnionType(listOf(StringType, IntegerType)))
+                .with(UnionType.of(StringType, IntegerType))
                 .withRecord()
                 .with(TimeTypeWithTimezone)
                 .with(TimeTypeWithoutTimezone)

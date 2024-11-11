@@ -29,7 +29,11 @@ We do not recommend providing your API token in the `md:` connection string, as 
 
 ### Authenticating to MotherDuck
 
-For authentication, you can can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
+<FieldAnchor field="motherduck_api_key">
+
+For authentication, you will use your [MotherDuck Access Token](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#creating-an-access-token).
+
+</FieldAnchor>
 
 ### Sync Overview
 
@@ -51,7 +55,9 @@ In addition, columns specified in the [JSON schema](https://docs.airbyte.com/con
 | Full Refresh Sync              | Yes       |     |
 | Incremental - Append Sync      | Yes       |     |
 | Incremental - Append + Deduped | Yes       |     |
-| Namespaces                     | No        |     |
+| [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) | Yes        |     |
+| [Namespaces](/using-airbyte/core-concepts/namespaces) | No        |     |
+| [Data Generations](/operator-guides/refreshes#data-generations) | No        |     |
 
 #### Performance consideration
 
@@ -61,7 +67,6 @@ This integration will be constrained by the speed at which your filesystem accep
 
 This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
 
-
 ## Changelog
 
 <details>
@@ -69,6 +74,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.15 | 2024-11-07 | [48405](https://github.com/airbytehq/airbyte/pull/48405) | Updated docs and hovertext for schema, api key, and database name. |
 | 0.1.14 | 2024-10-30 | [48006](https://github.com/airbytehq/airbyte/pull/48006) | Fix bug in _flush_buffer, explicitly register dataframe before inserting |
 | 0.1.13 | 2024-10-30 | [47969](https://github.com/airbytehq/airbyte/pull/47969) | Preserve Platform-generated id in state messages. |
 | 0.1.12 | 2024-10-30 | [47987](https://github.com/airbytehq/airbyte/pull/47987) | Disable PyPi publish. |
