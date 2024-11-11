@@ -89,6 +89,34 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
         return remote_file
 
+    @staticmethod
+    def create_progress_handler(local_file_path: str, logger: logging.Logger):
+        previous_bytes_copied = 0
+
+        def progress_handler(bytes_copied, total_bytes):
+            nonlocal previous_bytes_copied
+            if bytes_copied - previous_bytes_copied >= 100 * 1024 * 1024:
+                logger.info(
+                    f"{bytes_copied / (1024 * 1024):,.2f} MB ({bytes_copied / (1024 * 1024 * 1024):.2f} GB) "
+                    f"of {total_bytes / (1024 * 1024):,.2f} MB ({total_bytes / (1024 * 1024 * 1024):.2f} GB) "
+                    f"written to {local_file_path}"
+                )
+                previous_bytes_copied = bytes_copied
+
+                # Get available disk space
+                disk_usage = psutil.disk_usage("/")
+                available_disk_space = disk_usage.free
+
+                # Get available memory
+                memory_info = psutil.virtual_memory()
+                available_memory = memory_info.available
+                logger.info(
+                    f"Available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB), "
+                    f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
+                )
+
+        return progress_handler
+
     @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
@@ -133,9 +161,10 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             f"available disk space: {available_disk_space / (1024 * 1024):,.2f} MB ({available_disk_space / (1024 * 1024 * 1024):.2f} GB),"
             f"available memory: {available_memory / (1024 * 1024):,.2f} MB ({available_memory / (1024 * 1024 * 1024):.2f} GB)."
         )
+        progress_handler = self.create_progress_handler(local_file_path, logger)
         start_download_time = time.time()
         # Copy a remote file in remote path from the SFTP server to the local host as local path.
-        self.sftp_client.sftp_connection.get(file.uri, local_file_path)
+        self.sftp_client.sftp_connection.get(file.uri, local_file_path, callback=progress_handler)
 
         download_duration = time.time() - start_download_time
         logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
