@@ -16,7 +16,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types import BlobTransfer
+from airbyte_cdk.sources.file_based.file_types import FileTransfer
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
@@ -286,7 +286,7 @@ class DefaultFileBasedStreamFileTransferTest(unittest.TestCase):
 
     def test_when_read_records_from_slice_then_return_records(self) -> None:
         """Verify that we have the new file method and data is empty"""
-        with mock.patch.object(BlobTransfer, "write_streams", return_value=[self._A_RECORD]):
+        with mock.patch.object(FileTransfer, "get_file", return_value=[self._A_RECORD]):
             messages = list(self._stream.read_records_from_slice({"files": [RemoteFile(uri="uri", last_modified=self._NOW)]}))
             assert list(map(lambda message: message.record.file, messages)) == [self._A_RECORD]
             assert list(map(lambda message: message.record.data, messages)) == [{}]

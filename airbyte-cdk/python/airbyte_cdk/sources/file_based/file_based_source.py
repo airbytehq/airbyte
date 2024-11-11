@@ -200,7 +200,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        stream=self._make_default_stream(
+                            stream_config=stream_config, cursor=cursor, use_file_transfer=self._use_file_transfer(parsed_config)
+                        ),
+                        source=self,
+                        logger=self.logger,
+                        state=stream_state,
+                        cursor=cursor,
                     )
 
                 elif (
