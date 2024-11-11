@@ -10,18 +10,16 @@ description: >+
   streams
 
 
-
-
 check:
   type: CheckStream
   stream_names:
-    - symbols_news_feeds
+    - news_feeds_per_symbols
 
 definitions:
   streams:
-    symbols_news_feeds:
+    news_feeds_per_symbols:
       type: DeclarativeStream
-      name: symbols_news_feeds
+      name: news_feeds_per_symbols
       primary_key:
         - uuid
       retriever:
@@ -71,12 +69,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: published_after
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: published_before
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -84,10 +82,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/symbols_news_feeds"
+          $ref: "#/schemas/news_feeds_per_symbols"
     eod_data:
       type: DeclarativeStream
       name: eod_data
+      primary_key:
+        - date
+        - ticker
       retriever:
         type: SimpleRetriever
         requester:
@@ -128,6 +129,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition.symb }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,9 +189,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/intraday_unadjusted_data"
-    industries_news_feeds:
+    news_feeds_per_industry:
       type: DeclarativeStream
-      name: industries_news_feeds
+      name: news_feeds_per_industry
       primary_key:
         - uuid
       retriever:
@@ -234,12 +241,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: published_after
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: published_before
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -247,7 +254,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/industries_news_feeds"
+          $ref: "#/schemas/news_feeds_per_industry"
   base_requester:
     type: HttpRequester
     url_base: https://api.stockdata.org/v1/
@@ -260,10 +267,10 @@ definitions:
         inject_into: request_parameter
 
 streams:
-  - $ref: "#/definitions/streams/symbols_news_feeds"
+  - $ref: "#/definitions/streams/news_feeds_per_symbols"
   - $ref: "#/definitions/streams/eod_data"
   - $ref: "#/definitions/streams/intraday_unadjusted_data"
-  - $ref: "#/definitions/streams/industries_news_feeds"
+  - $ref: "#/definitions/streams/news_feeds_per_industry"
 
 spec:
   type: Spec
@@ -279,66 +286,60 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      to:
-        type: string
-        order: 1
-        title: To
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-        format: date
       symbols:
         type: array
-        order: 2
+        order: 1
         title: Symbols
       industries:
         type: array
         description: >-
           Specify the industries of entities which have been identified within
           the article.
-        order: 3
+        order: 2
         title: Industries
       filter_entities:
         type: boolean
-        title: Filter Entities
+        order: 3
+        title: Entities
         default: false
-        order: 4
       start_date:
         type: string
+        order: 4
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 5
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    symbols_news_feeds: true
+    news_feeds_per_symbols: true
     eod_data: true
     intraday_unadjusted_data: true
-    industries_news_feeds: true
+    news_feeds_per_industry: true
   testedStreams:
-    symbols_news_feeds:
-      streamHash: f4b90c7014c8397c6fcef6586a78b7d73617ecf0
+    news_feeds_per_symbols:
+      streamHash: e53e9e50fdf2746af0e5a23b0be08d09aea895f4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     eod_data:
-      hasRecords: true
-      streamHash: cfa87b3a2615ec4ed6decf7e9d9df960b17431fa
+      streamHash: 4177c0e0275183087a9b6870657b0cb9fb5f194c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    intraday_unadjusted_data:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    intraday_unadjusted_data:
       streamHash: ce637107641776943a13289a12f092c8be3eb845
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    industries_news_feeds:
-      streamHash: 3b3cf1332538c8d9d4e320b559a651634fa4f756
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    news_feeds_per_industry:
+      streamHash: 29f3c6a8064a076a4d878ec6fcec8c9d62b059b8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -347,7 +348,7 @@ metadata:
   assist: {}
 
 schemas:
-  symbols_news_feeds:
+  news_feeds_per_symbols:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -476,12 +477,15 @@ schemas:
         type:
           - number
           - "null"
+      symbol:
+        type: string
       volume:
         type:
           - number
           - "null"
     required:
       - date
+      - symbol
   intraday_unadjusted_data:
     type: object
     $schema: http://json-schema.org/schema#
@@ -523,7 +527,7 @@ schemas:
     required:
       - date
       - ticker
-  industries_news_feeds:
+  news_feeds_per_industry:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -608,109 +612,6 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            description:
-              type:
-                - string
-                - "null"
-            entities:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  country:
-                    type:
-                      - string
-                      - "null"
-                  highlights:
-                    type:
-                      - array
-                      - "null"
-                    items:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        highlight:
-                          type:
-                            - string
-                            - "null"
-                        highlighted_in:
-                          type:
-                            - string
-                            - "null"
-                        sentiment:
-                          type:
-                            - number
-                            - "null"
-                  industry:
-                    type:
-                      - string
-                      - "null"
-                  match_score:
-                    type:
-                      - number
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  sentiment_score:
-                    type:
-                      - number
-                      - "null"
-                  symbol:
-                    type:
-                      - string
-                      - "null"
-            image_url:
-              type:
-                - string
-                - "null"
-            keywords:
-              type:
-                - string
-                - "null"
-            language:
-              type:
-                - string
-                - "null"
-            published_at:
-              type:
-                - string
-                - "null"
-            snippet:
-              type:
-                - string
-                - "null"
-            source:
-              type:
-                - string
-                - "null"
-            title:
-              type:
-                - string
-                - "null"
-            url:
-              type:
-                - string
-                - "null"
-            uuid:
-              type:
-                - string
-                - "null"
       snippet:
         type:
           - string
