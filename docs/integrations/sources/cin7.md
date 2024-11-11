@@ -1,10 +1,10 @@
-# Cin7
+# Cin7 Inventory API
 This is the Cin7 source that ingests data from the Cin7 API.
 
 Cin7 (Connector Inventory Performance), If you’re a business that wants to grow, you need an inventory solution you can count on - both now and in the future. With Cin7 you get a real-time picture of your products across systems, channels, marketplaces and regions, plus NEW ForesightAI advanced inventory forecasting that empowers you to see around corners and stay three steps ahead of demand! https://www.cin7.com/
 
 To use this source, you must first create an account. Once logged in, head to Integrations -&gt; API -&gt; Cin7 Core API.
-Create an application and note down the Account Id and the API key, you will need to enter these in the input fields. You can find more information about the API here https://dearinventory.docs.apiary.io/#reference
+Create an application and note down the Account Id and the API key, you will need to enter these in the input fields. You can find more information about the [API Documentation](https://dearinventory.docs.apiary.io/#reference)
 
 
 ## Configuration
