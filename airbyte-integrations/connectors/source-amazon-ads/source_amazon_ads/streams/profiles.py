@@ -15,6 +15,7 @@ class Profiles(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles
     """
 
+    is_resumable = False
     primary_key = "profileId"
 
     def path(self, **kwargs) -> str:
