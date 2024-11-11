@@ -88,7 +88,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._name,
             json_schema,
             self._availability_strategy,
-            ["id"],
+            ["composite_key_1", "composite_key_2"],
             self._cursor_field,
             self._logger,
             FinalStateCursor(stream_name=self._name, stream_namespace=None, message_repository=self._message_repository),
@@ -100,7 +100,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
             source_defined_cursor=None,
             default_cursor_field=None,
-            source_defined_primary_key=[["id"]],
+            source_defined_primary_key=[["composite_key_1"], ["composite_key_2"]],
             namespace=None,
         )
 
@@ -132,7 +132,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
             source_defined_cursor=None,
             default_cursor_field=None,
-            source_defined_primary_key=[["id_a", "id_b"]],
+            source_defined_primary_key=[["id_a"], ["id_b"]],
             namespace=None,
         )
 
@@ -166,6 +166,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             default_cursor_field=["date"],
             source_defined_primary_key=None,
             namespace=None,
+            is_resumable=True,
         )
 
         airbyte_stream = stream.as_airbyte_stream()

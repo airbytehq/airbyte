@@ -4,7 +4,7 @@
 import copy
 import logging
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage
@@ -69,7 +69,6 @@ class SubstreamPartitionRouter(PartitionRouter):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
-        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
@@ -144,8 +143,6 @@ class SubstreamPartitionRouter(PartitionRouter):
                 if parent_stream_config.extra_fields:
                     extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]  # type: ignore # extra_fields is always casted to an interpolated string
 
-                incremental_dependency = parent_stream_config.incremental_dependency
-
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
                 for parent_record in parent_stream.read_only_records():
@@ -156,7 +153,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data  # type: ignore[union-attr]  # record is always a Record
+                            parent_record = parent_record.record.data  # type: ignore[union-attr, assignment]  # record is always a Record
                         else:
                             continue
                     elif isinstance(parent_record, Record):
@@ -178,13 +175,6 @@ class SubstreamPartitionRouter(PartitionRouter):
                         cursor_slice={},
                         extra_fields=extracted_extra_fields,
                     )
-
-                    if incremental_dependency:
-                        self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
-
-                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
-                if incremental_dependency:
-                    self._parent_state[parent_stream.name] = copy.deepcopy(parent_stream.state)
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
@@ -216,9 +206,11 @@ class SubstreamPartitionRouter(PartitionRouter):
         """
         Set the state of the parent streams.
 
+        If the `parent_state` key is missing from `stream_state`, migrate the child stream state to the parent stream's state format.
+        This migration applies only to parent streams with incremental dependencies.
+
         Args:
-            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
-            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+            stream_state (StreamState): The state of the streams to be set.
 
         Example of state format:
         {
@@ -231,18 +223,49 @@ class SubstreamPartitionRouter(PartitionRouter):
                 }
             }
         }
+
+        Example of migrating to parent state format:
+        - Initial state:
+        {
+            "updated_at": "2023-05-27T00:00:00Z"
+        }
+        - After migration:
+        {
+            "updated_at": "2023-05-27T00:00:00Z",
+            "parent_state": {
+                "parent_stream_name": {
+                    "parent_stream_cursor": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
         """
         if not stream_state:
             return
 
-        parent_state = stream_state.get("parent_state")
-        if not parent_state:
+        parent_state = stream_state.get("parent_state", {})
+
+        # If `parent_state` doesn't exist and at least one parent stream has an incremental dependency,
+        # copy the child state to parent streams with incremental dependencies.
+        incremental_dependency = any([parent_config.incremental_dependency for parent_config in self.parent_stream_configs])
+        if not parent_state and not incremental_dependency:
             return
 
+        if not parent_state and incremental_dependency:
+            # Attempt to retrieve child state
+            substream_state = list(stream_state.values())
+            substream_state = substream_state[0] if substream_state else {}
+            parent_state = {}
+
+            # Copy child state to parent streams with incremental dependencies
+            if substream_state:
+                for parent_config in self.parent_stream_configs:
+                    if parent_config.incremental_dependency:
+                        parent_state[parent_config.stream.name] = {parent_config.stream.cursor_field: substream_state}
+
+        # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
-                self._parent_state[parent_config.stream.name] = parent_config.stream.state
 
     def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         """
@@ -261,7 +284,11 @@ class SubstreamPartitionRouter(PartitionRouter):
             }
         }
         """
-        return copy.deepcopy(self._parent_state)
+        parent_state = {}
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_state[parent_config.stream.name] = copy.deepcopy(parent_config.stream.state)
+        return parent_state
 
     @property
     def logger(self) -> logging.Logger:
