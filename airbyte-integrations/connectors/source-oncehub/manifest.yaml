@@ -1,4 +1,4 @@
-version: 6.4.0
+version: 5.17.0
 
 type: DeclarativeSource
 
@@ -49,13 +49,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last_updated_time
@@ -99,13 +99,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -140,8 +140,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -171,13 +171,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -207,13 +207,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -243,13 +243,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -279,13 +279,13 @@ definitions:
             field_name: after
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response['data'][-1]['id'] if response['data'] else None }}"
-            stop_condition: "{{ not response['data'] }}"
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ not \"next\" in headers.get('Link') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -347,50 +347,50 @@ metadata:
     contacts: true
   testedStreams:
     bookings:
-      streamHash: 486fa86f1a9664e47ae95699b72f71c8f561be03
+      streamHash: b4534fe52430a16dd1749313c416c3aae3afa1fd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     booking_pages:
-      streamHash: 5bf9f75e7e295282e9f500e571802a5b1d9a7174
+      streamHash: a5a0c1642c867aa24c640bd35cfe09e4dd7208da
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     event_types:
-      streamHash: 9d6273fc39a60e85582f21bc7fc37a657a60b1d9
+      streamHash: 6915cf4ab58a9e3d09d7207939c6503c7d7ad93b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     master_pages:
-      streamHash: 027c4e8e9e6441c8c3636809cd5309bb53d4d246
+      streamHash: ee2a4a22dff22bcb7cacff32ac8568e4a02855d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     users:
-      streamHash: beaa3e356bfaa8eb3f9812a2370dd7872a63d415
+      streamHash: 69a6491af772e323c874c16583464f4a0d410fe1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams:
-      streamHash: fc39bca302f98afdb1e81f4c8be8c7637d113051
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 731b8cb9bc9b1d0465c1f22c09baf2ef5d851fc0
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
       hasRecords: true
-      streamHash: 614ece056ae84c16519d84e6f395c9db5324e0b7
+      streamHash: 2681d6726d862fae187bbd97b96efebe52ea2856
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
