@@ -6,7 +6,7 @@ Flowlu connector enables seamless data integration between Flowlu, a project man
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. The API key to use for authentication |  |
-| `company` | `string` | Company.  |  |
+| `company` | `string` | Sub Domain information for the Company.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
