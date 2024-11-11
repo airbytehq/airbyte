@@ -16,11 +16,14 @@ import requests
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
+from integration.config import KlaviyoConfigBuilder
 
 _ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
@@ -42,7 +45,7 @@ def get_months_diff(provided_date: str) -> int:
     return difference.years * 12 + difference.months
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourceKlaviyo()
+    source = SourceKlaviyo(CatalogBuilder().build(), KlaviyoConfigBuilder().build(), StateBuilder().build())
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")

@@ -66,7 +66,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(SourceKlaviyo(), config, catalog, state, expecting_exception)
+    return read(SourceKlaviyo(catalog, config, state), config, catalog, state, expecting_exception)
 
 
 class FullRefreshTest(TestCase):
