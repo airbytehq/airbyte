@@ -195,13 +195,14 @@ class StateManager(
                 val streamStateForCheckpoint: StateForCheckpoint =
                     streamStateManager.takeForCheckpoint()
                 totalNumRecords += streamStateForCheckpoint.numRecords
-                if (streamStateForCheckpoint is Fresh)
-                    shouldCheckpoint = true
+                if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
                 streamStates.add(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withStreamState(streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode() ),
+                        .withStreamState(
+                            streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                        ),
                 )
             }
             if (!shouldCheckpoint) {
@@ -235,7 +236,9 @@ class StateManager(
             val airbyteStreamState =
                 AirbyteStreamState()
                     .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode())
+                    .withStreamState(
+                        streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                    )
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)
