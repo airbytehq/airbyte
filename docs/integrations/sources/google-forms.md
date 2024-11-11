@@ -8,13 +8,13 @@ Google Forms is a free online tool from Google that allows users to create custo
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token` | `string` | Refresh token.  |  |
-| `form_id` | `array` | form_id.  |  |
+| `form_id` | `array` | Forms IDs.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| forms |  | No pagination | ✅ |  ❌  |
-| form_responses | responseId | DefaultPaginator | ✅ |  ❌  |
+| forms | `formId` | No pagination | ✅ |  ❌  |
+| form_responses | `responseId` | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
