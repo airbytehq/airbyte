@@ -1,19 +1,29 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="32.000000pt" height="32.000000pt" viewBox="0 0 32.000000 32.000000"
- preserveAspectRatio="xMidYMid meet">
-
-<g transform="translate(0.000000,32.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
-<path d="M0 160 l0 -160 160 0 160 0 0 160 0 160 -160 0 -160 0 0 -160z m200
-81 c0 -12 -29 -140 -36 -160 -7 -22 -35 9 -43 50 -9 44 -35 54 -29 10 6 -40
--8 -27 -17 17 l-7 32 54 2 53 2 -48 3 c-60 5 -52 22 11 25 44 1 44 2 10 5 -53
-6 -47 23 7 23 25 0 45 -4 45 -9z m30 -17 c0 -27 -34 -144 -42 -144 -6 0 -8 10
--4 23 3 12 11 46 17 75 7 28 16 52 21 52 4 0 8 -2 8 -6z m16 -79 c-4 -25 -11
--45 -17 -45 -12 0 -11 16 2 63 14 51 23 40 15 -18z"/>
-<path d="M130 148 c0 -13 4 -29 9 -36 6 -10 10 -8 14 8 6 25 -1 50 -14 50 -5
-0 -9 -10 -9 -22z"/>
-</g>
+<svg version="1.1" id="Layer_1" xmlns:x="ns_extend;" xmlns:i="ns_ai;" xmlns:graph="ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55.8 54.4" style="enable-background:new 0 0 55.8 54.4;" xml:space="preserve">
+ <style type="text/css">
+  .st0{fill-rule:evenodd;clip-rule:evenodd;fill:#7F96FF;}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#002DFF;}
+ </style>
+ <metadata>
+  <sfw xmlns="ns_sfw;">
+   <slices>
+   </slices>
+   <sliceSourceBounds bottomLeftOrigin="true" height="54.4" width="55.8" x="0" y="0.6">
+   </sliceSourceBounds>
+  </sfw>
+ </metadata>
+ <g id="cin7-blue">
+  <path id="Fill-7" class="st0" d="M18.4,49.9l5,2.4l1.5,0.7l-7.7-33.6h-5.7L18.4,49.9z">
+  </path>
+  <path id="Fill-8" class="st0" d="M5.5,43.7l6.5,3.1L5.7,19.4H0L5.5,43.7z">
+  </path>
+  <path id="Fill-12" class="st0" d="M32.3,35.2l-3.6-15.8H23l6.5,28.3L32.3,35.2z">
+  </path>
+  <path id="Fill-9" class="st1" d="M39.1,49.1l-5.6,2.7L44.2,4.9l3.9,4.9L39.1,49.1L39.1,49.1z">
+  </path>
+  <path id="Fill-10" class="st1" d="M50.3,43.7l-5.6,2.7L52,14.6l3.9,4.9L50.3,43.7L50.3,43.7z">
+  </path>
+  <path id="Fill-11" class="st1" d="M15.5,0l-3.9,4.9h22.6l-1.1,4.9H7.7l-3.9,4.9H32l-1.1,4.9H0l1.1,4.9h28.7l-6.4,28l4.5,2.2L40.3,0
+		H15.5z">
+  </path>
+ </g>
 </svg>
