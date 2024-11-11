@@ -5,31 +5,31 @@ This PR adds a new connector for source Reddit Ads (source-reddit-ads)
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
+| `api_key_2` | `string` | API Key.  |  |
 | `account_id` | `string` | account_id.  |  |
-| `api_key` | `string` | API Key.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| ad_account | id.business_id.name | DefaultPaginator | ✅ |  ❌  |
+| ad_account | id.business_id.name | No pagination | ✅ |  ❌  |
 | businesses |  | DefaultPaginator | ✅ |  ❌  |
 | ad_groups |  | DefaultPaginator | ✅ |  ❌  |
 | ads |  | DefaultPaginator | ✅ |  ❌  |
-| get_business |  | DefaultPaginator | ✅ |  ❌  |
-| industries |  | DefaultPaginator | ✅ |  ❌  |
+| get_business |  | No pagination | ✅ |  ❌  |
+| industries |  | No pagination | ✅ |  ❌  |
 | my_businesses |  | DefaultPaginator | ✅ |  ❌  |
 | campaigns |  | DefaultPaginator | ✅ |  ❌  |
 | custom_audiences |  | DefaultPaginator | ✅ |  ❌  |
 | lead_gen_forms |  | DefaultPaginator | ✅ |  ❌  |
-| me | id | DefaultPaginator | ✅ |  ❌  |
+| me | id | No pagination | ✅ |  ❌  |
 | posts |  | DefaultPaginator | ✅ |  ❌  |
 | carriers |  | DefaultPaginator | ✅ |  ❌  |
 | communities |  | DefaultPaginator | ✅ |  ❌  |
 | search |  | DefaultPaginator | ✅ |  ❌  |
 | suggestions |  | DefaultPaginator | ✅ |  ❌  |
-| devices |  | No pagination | ✅ |  ❌  |
-| geolocations |  | DefaultPaginator | ✅ |  ❌  |
-| interests |  | DefaultPaginator | ✅ |  ❌  |
+| devices |  | DefaultPaginator | ✅ |  ❌  |
+| geolocations |  | No pagination | ✅ |  ❌  |
+| interests |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -38,6 +38,6 @@ This PR adds a new connector for source Reddit Ads (source-reddit-ads)
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-21 | [47213] (https://github.com/airbytehq/airbyte/pull/47213) | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
+| 0.0.1 | 2024-11-11 | | Initial release by [@itsxdamdam](https://github.com/itsxdamdam) via Connector Builder |
 
 </details>

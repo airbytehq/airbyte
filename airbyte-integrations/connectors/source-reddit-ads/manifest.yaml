@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -11,312 +11,9 @@ check:
 
 definitions:
   streams:
-    ad_account:
-      type: DeclarativeStream
-      name: ad_account
-      primary_key:
-        - id
-        - business_id
-        - name
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config['account_id'] }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ad_account"
-    businesses:
-      type: DeclarativeStream
-      name: businesses
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /businesses/{{ stream_partition.business_id }}/ad_accounts
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: business_id
-              partition_field: business_id
-              stream:
-                $ref: "#/definitions/streams/ad_account"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/businesses"
-    ad_groups:
-      type: DeclarativeStream
-      name: ad_groups
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config['account_id'] }}/ad_groups
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ad_groups"
-    ads:
-      type: DeclarativeStream
-      name: ads
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config['account_id'] }}/ads
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ads"
-    get_business:
-      type: DeclarativeStream
-      name: get_business
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /businesses/{{ stream_partition.business_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: business_id
-              partition_field: business_id
-              stream:
-                $ref: "#/definitions/streams/ad_account"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/get_business"
-    industries:
-      type: DeclarativeStream
-      name: industries
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /industries
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/industries"
-    my_businesses:
-      type: DeclarativeStream
-      name: my_businesses
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /me/businesses
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/my_businesses"
-    campaigns:
-      type: DeclarativeStream
-      name: campaigns
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config["account_id"] }}/campaigns
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/campaigns"
-    custom_audiences:
-      type: DeclarativeStream
-      name: custom_audiences
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config["account_id"] }}/custom_audiences
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/custom_audiences"
-    lead_gen_forms:
-      type: DeclarativeStream
-      name: lead_gen_forms
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /ad_accounts/{{ config["account_id"] }}/lead_gen_forms
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: >-
-              {{ response.get('pagination', {}).get('next_url') is not defined
-              }}
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/lead_gen_forms"
     me:
       type: DeclarativeStream
       name: me
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -329,23 +26,65 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/me"
+    ads:
+      type: DeclarativeStream
+      name: ads
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config['account_id'] }}/ads
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ads"
     posts:
       type: DeclarativeStream
       name: posts
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /profiles/{{ stream_partition.profile_id }}/posts
@@ -355,83 +94,38 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: profile_id
               stream:
                 $ref: "#/definitions/streams/me"
+              parent_key: id
+              partition_field: profile_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/posts"
-    carriers:
-      type: DeclarativeStream
-      name: carriers
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /targeting/carriers
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/carriers"
-    communities:
-      type: DeclarativeStream
-      name: communities
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /targeting/communities
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/communities"
     search:
       type: DeclarativeStream
       name: search
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /targeting/communities/search
@@ -441,49 +135,30 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/search"
-    suggestions:
-      type: DeclarativeStream
-      name: suggestions
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /targeting/communities/suggestions
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/suggestions"
     devices:
       type: DeclarativeStream
       name: devices
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /targeting/devices
@@ -497,32 +172,105 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/devices"
-    geolocations:
+    carriers:
       type: DeclarativeStream
-      name: geolocations
+      name: carriers
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: /targeting/geolocations
+          path: /targeting/carriers
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/geolocations"
+          $ref: "#/schemas/carriers"
+    ad_groups:
+      type: DeclarativeStream
+      name: ad_groups
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config['account_id'] }}/ad_groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_groups"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config["account_id"] }}/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
     interests:
       type: DeclarativeStream
       name: interests
@@ -537,24 +285,307 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
-            stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/interests"
+    ad_account:
+      type: DeclarativeStream
+      name: ad_account
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config['account_id'] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+        - business_id
+        - name
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_account"
+    businesses:
+      type: DeclarativeStream
+      name: businesses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /businesses/{{ stream_partition.business_id }}/ad_accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/ad_account"
+              parent_key: business_id
+              partition_field: business_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/businesses"
+    industries:
+      type: DeclarativeStream
+      name: industries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /industries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/industries"
+    communities:
+      type: DeclarativeStream
+      name: communities
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /targeting/communities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/communities"
+    suggestions:
+      type: DeclarativeStream
+      name: suggestions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /targeting/communities/suggestions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suggestions"
+    geolocations:
+      type: DeclarativeStream
+      name: geolocations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /targeting/geolocations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/geolocations"
+    get_business:
+      type: DeclarativeStream
+      name: get_business
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /businesses/{{ stream_partition.business_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/ad_account"
+              parent_key: business_id
+              partition_field: business_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_business"
+    my_businesses:
+      type: DeclarativeStream
+      name: my_businesses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /me/businesses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/my_businesses"
+    lead_gen_forms:
+      type: DeclarativeStream
+      name: lead_gen_forms
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config["account_id"] }}/lead_gen_forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_gen_forms"
+    custom_audiences:
+      type: DeclarativeStream
+      name: custom_audiences
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: page.size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page.token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('pagination', {}).get('next_url') }}"
+            stop_condition: "{{ response.get('pagination', {}).get('next_url') is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad_accounts/{{ config["account_id"] }}/custom_audiences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_audiences"
   base_requester:
     type: HttpRequester
     url_base: https://ads-api.reddit.com/api/v3
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: "{{ config[\"api_key_2\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/ad_account"
@@ -584,541 +615,199 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - account_id
-      - api_key
+      - api_key_2
     properties:
-      account_id:
-        type: string
-        name: account_id
-        order: 0
-        title: account_id
-      api_key:
+      api_key_2:
         type: string
         order: 1
         title: API Key
         airbyte_secret: true
+      account_id:
+        type: string
+        order: 0
+        title: account_id
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    ad_account: true
-    businesses: false
-    ad_groups: false
-    ads: false
-    get_business: false
-    industries: false
-    my_businesses: false
-    campaigns: false
-    custom_audiences: false
-    lead_gen_forms: false
-    me: false
-    posts: false
-    carriers: false
-    communities: false
-    search: false
-    suggestions: false
-    devices: true
-    geolocations: false
-    interests: false
+  assist:
+    docsUrl: https://ads-api.reddit.com/docs/v3/
   testedStreams:
-    ad_account:
+    me:
       hasRecords: true
-      streamHash: ea9be97df71a2d695448712cc0599f482aa64374
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    businesses:
-      hasRecords: true
-      streamHash: f158fb761b1d081f2f3d22f7dd0f3c477e6ecd77
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    ad_groups:
-      hasRecords: true
-      streamHash: 3af56acb8abc33da2b62801bd7fe76225fb4677e
+      streamHash: d08a00b549f9e8070b9212e5f39c98c681459625
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     ads:
       hasRecords: true
-      streamHash: 208fa351046063020b9c96d6dd3fa35788487051
+      streamHash: e63d3490ef65c2ccb6e53cc14f198526633dd93c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    get_business:
+    posts:
       hasRecords: true
-      streamHash: b721e1a5147bca240743af4f2cbe61856c11580d
+      streamHash: aefd9b92338a62466fefc2c1eadc41beb5a6806d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    industries:
+    search:
       hasRecords: true
-      streamHash: a3b4af6f15bfb4e05c43fe0fddadfe4e88a6d009
+      streamHash: f79ecd8874768a35f159a08cd582122c2927b162
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    my_businesses:
+    devices:
       hasRecords: true
-      streamHash: 0326c880f3e220f8144358a1ba0f90603409f83c
+      streamHash: e0519a02dd468c413855f86b08f982637b3f7adb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    carriers:
+      hasRecords: true
+      streamHash: c3e262992141e83478f193bac94bc90e593c3470
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ad_groups:
+      hasRecords: true
+      streamHash: 1606c4901221435cb72241ad38eb02e637781216
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     campaigns:
       hasRecords: true
-      streamHash: da55715d9350f403d0753e43cf64e6b20406d0a8
+      streamHash: c7fa714aa226f577836127a4709a4d60b93bedbf
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    custom_audiences:
+    interests:
       hasRecords: true
-      streamHash: 8365d20cd9a53f87c5c57d7faf3af23d5b746e89
+      streamHash: a5345230de949a6c9e98ee71eb866c38f0ba9571
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ad_account:
+      hasRecords: true
+      streamHash: e3b9b8d372bd133f2b4f732da3db8571051a8324
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    businesses:
+      hasRecords: true
+      streamHash: c46dbd7745a9a82e55655ff6969e479ead2408bb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    industries:
+      hasRecords: true
+      streamHash: 76753ea1e1c57121e7eac6f7680bcbc997bb136d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    communities:
+      hasRecords: true
+      streamHash: 1269442c2a47f95c46017673f5e83fabe5dc749d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suggestions:
+      hasRecords: true
+      streamHash: 49f52d4118274a8937389ffc2f26bceb91c0d4e1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    geolocations:
+      hasRecords: true
+      streamHash: 77366440008171774780dbfacfcd0d370b413248
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    get_business:
+      hasRecords: true
+      streamHash: f707ff25c194ebb9eb88b8697d55c6bf04ab20fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    my_businesses:
+      hasRecords: true
+      streamHash: aa34fa270b2b33eeafea3cbd00a06b46e3b8b6d3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     lead_gen_forms:
       hasRecords: true
-      streamHash: 486a29fe4c0982183c99d97654eeaa5510c5712c
+      streamHash: cc6bd6c98269086d0fa1b4eb84bc09209bc39d43
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    me:
-      streamHash: e3ebd93b31e3ee412edd852dabc4d7496efbb4f0
-      hasResponse: true
-      responsesAreSuccessful: true
+    custom_audiences:
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    posts:
-      streamHash: 4a48bfed4cb47199e2a75738ba914bdd07f1e460
+      streamHash: 4ccb4a71d9f627ec51d320bf267f3d931211cc6a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    carriers:
-      streamHash: a2c8adc0ba5144b1ef45b1108ab76d347b65d125
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
       primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    communities:
-      streamHash: 0fd3dabce74e6c171c26b98e4cc477655e3713e8
-      hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    search:
-      streamHash: 18e2fe5f9e510f31d02bb52aeb1dd7a75d83e89a
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    suggestions:
-      streamHash: c41485f7f8f1cdd5c090be76e2fb9617c3896263
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    devices:
-      streamHash: 0b2e92e3f90d5c77804204e2d7477d13c1014fa7
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    geolocations:
-      streamHash: b55bf491d0634aa87357f466fd5b0a18ee7d3c96
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    interests:
-      streamHash: ad77f4dbf187852e94a8a0a047e21e40bf3f41f6
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-  assist:
-    docsUrl: https://ads-api.reddit.com/docs/v3/
+  autoImportSchema:
+    me: true
+    ads: true
+    posts: true
+    search: true
+    devices: true
+    carriers: true
+    ad_groups: true
+    campaigns: true
+    interests: true
+    ad_account: true
+    businesses: true
+    industries: true
+    communities: true
+    suggestions: true
+    geolocations: true
+    get_business: true
+    my_businesses: true
+    lead_gen_forms: true
+    custom_audiences: true
 
 schemas:
-  ad_account:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      admin_approval:
-        type:
-          - string
-          - "null"
-      attribution_type:
-        type:
-          - string
-          - "null"
-      business_id:
-        type: string
-      click_attribution_window:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      currency:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      modified_at:
-        type:
-          - string
-          - "null"
-      name:
-        type: string
-      pixel_partner_preferences:
-        type:
-          - array
-          - "null"
-      primary_contact_member_id:
-        type:
-          - string
-          - "null"
-      time_zone_id:
-        type:
-          - string
-          - "null"
-      view_attribution_window:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-      - business_id
-      - name
-  businesses:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            admin_approval:
-              type:
-                - string
-                - "null"
-            attribution_type:
-              type:
-                - string
-                - "null"
-            business_id:
-              type:
-                - string
-                - "null"
-            click_attribution_window:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            currency:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            modified_at:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            pixel_partner_preferences:
-              type:
-                - array
-                - "null"
-            primary_contact_member_id:
-              type:
-                - string
-                - "null"
-            time_zone_id:
-              type:
-                - string
-                - "null"
-            view_attribution_window:
-              type:
-                - string
-                - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  ad_groups:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  ads:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  get_business:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - object
-          - "null"
-        properties:
-          agency_affiliated:
-            type:
-              - boolean
-              - "null"
-          country:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          creator_id:
-            type:
-              - string
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          industry:
-            type:
-              - string
-              - "null"
-          modified_at:
-            type:
-              - string
-              - "null"
-          name:
-            type:
-              - string
-              - "null"
-          phone:
-            type:
-              - string
-              - "null"
-          primary_contact_id:
-            type:
-              - string
-              - "null"
-          website_url:
-            type:
-              - string
-              - "null"
-  industries:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            display:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-  my_businesses:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            agency_affiliated:
-              type:
-                - boolean
-                - "null"
-            country:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            creator_id:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            industry:
-              type:
-                - string
-                - "null"
-            modified_at:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            phone:
-              type:
-                - string
-                - "null"
-            primary_contact_id:
-              type:
-                - string
-                - "null"
-            website_url:
-              type:
-                - string
-                - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  campaigns:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  custom_audiences:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-  lead_gen_forms:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
   me:
     type: object
     $schema: http://json-schema.org/schema#
+    required:
+      - id
     properties:
+      id:
+        type: string
       email:
         type:
           - string
           - "null"
-      firstname:
+      phone:
         type:
           - string
           - "null"
-      id:
-        type: string
       lastname:
         type:
           - string
           - "null"
-      phone:
+      firstname:
         type:
           - string
           - "null"
@@ -1130,55 +819,22 @@ schemas:
         type:
           - string
           - "null"
-    required:
-      - id
+    additionalProperties: true
+  ads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
     additionalProperties: true
   posts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-    additionalProperties: true
-  carriers:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            country_code:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-    additionalProperties: true
-  communities:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
@@ -1209,18 +865,6 @@ schemas:
               type:
                 - string
                 - "null"
-            categories:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-            icon_url:
-              type:
-                - string
-                - "null"
             id:
               type:
                 - string
@@ -1229,30 +873,7 @@ schemas:
               type:
                 - string
                 - "null"
-            subscriber_count:
-              type:
-                - number
-                - "null"
-      pagination:
-        type:
-          - object
-          - "null"
-        properties: {}
-    additionalProperties: true
-  suggestions:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      data:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            description:
+            icon_url:
               type:
                 - string
                 - "null"
@@ -1264,18 +885,6 @@ schemas:
                 type:
                   - string
                   - "null"
-            icon_url:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
             subscriber_count:
               type:
                 - number
@@ -1289,7 +898,6 @@ schemas:
   devices:
     type: object
     $schema: http://json-schema.org/schema#
-    additionalProperties: true
     properties:
       data:
         type:
@@ -1313,7 +921,8 @@ schemas:
           - object
           - "null"
         properties: {}
-  geolocations:
+    additionalProperties: true
+  carriers:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
@@ -1326,18 +935,6 @@ schemas:
             - object
             - "null"
           properties:
-            city:
-              type:
-                - string
-                - "null"
-            country:
-              type:
-                - string
-                - "null"
-            dma:
-              type:
-                - number
-                - "null"
             id:
               type:
                 - string
@@ -1346,14 +943,43 @@ schemas:
               type:
                 - string
                 - "null"
-            postal_code:
+            country_code:
               type:
                 - string
                 - "null"
-            region:
-              type:
-                - string
-                - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  ad_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
     additionalProperties: true
   interests:
     type: object
@@ -1368,7 +994,92 @@ schemas:
             - object
             - "null"
           properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
             category:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  ad_account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - business_id
+      - name
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type: string
+      currency:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      business_id:
+        type: string
+      modified_at:
+        type:
+          - string
+          - "null"
+      time_zone_id:
+        type:
+          - string
+          - "null"
+      admin_approval:
+        type:
+          - string
+          - "null"
+      attribution_type:
+        type:
+          - string
+          - "null"
+      view_attribution_window:
+        type:
+          - string
+          - "null"
+      click_attribution_window:
+        type:
+          - string
+          - "null"
+      pixel_partner_preferences:
+        type:
+          - array
+          - "null"
+      primary_contact_member_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  businesses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
               type:
                 - string
                 - "null"
@@ -1380,4 +1091,323 @@ schemas:
               type:
                 - string
                 - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            business_id:
+              type:
+                - string
+                - "null"
+            modified_at:
+              type:
+                - string
+                - "null"
+            time_zone_id:
+              type:
+                - string
+                - "null"
+            admin_approval:
+              type:
+                - string
+                - "null"
+            attribution_type:
+              type:
+                - string
+                - "null"
+            view_attribution_window:
+              type:
+                - string
+                - "null"
+            click_attribution_window:
+              type:
+                - string
+                - "null"
+            pixel_partner_preferences:
+              type:
+                - array
+                - "null"
+            primary_contact_member_id:
+              type:
+                - string
+                - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  industries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            display:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  communities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  suggestions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            icon_url:
+              type:
+                - string
+                - "null"
+            categories:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            subscriber_count:
+              type:
+                - number
+                - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  geolocations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            dma:
+              type:
+                - number
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            region:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            postal_code:
+              type:
+                - string
+                - "null"
+    additionalProperties: true
+  get_business:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          industry:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          creator_id:
+            type:
+              - string
+              - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          website_url:
+            type:
+              - string
+              - "null"
+          agency_affiliated:
+            type:
+              - boolean
+              - "null"
+          primary_contact_id:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  my_businesses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            phone:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            industry:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            creator_id:
+              type:
+                - string
+                - "null"
+            modified_at:
+              type:
+                - string
+                - "null"
+            website_url:
+              type:
+                - string
+                - "null"
+            agency_affiliated:
+              type:
+                - boolean
+                - "null"
+            primary_contact_id:
+              type:
+                - string
+                - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  lead_gen_forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
+    additionalProperties: true
+  custom_audiences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties: {}
     additionalProperties: true
