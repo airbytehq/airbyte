@@ -1,7 +1,8 @@
 # Pipeliner
+
 Pipeliner is a CRM tool.
-Using this connector we fetch data from various streams such as contacts , data , leads and quotes.
-Docs : https://pipeliner.stoplight.io/docs/api-docs
+Using this connector we fetch data from various streams such as contacts, data, leads and quotes.
+[API Docs](https://pipeliner.stoplight.io/docs/api-docs)
 
 ## Configuration
 
