@@ -224,7 +224,7 @@ spec:
     properties:
       orgId:
         type: string
-        name: orgId
+        name: Organization ID
         order: 0
         title: orgId
       api_key:
