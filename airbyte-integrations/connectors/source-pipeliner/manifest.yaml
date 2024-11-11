@@ -40,10 +40,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -71,10 +76,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -102,10 +112,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -133,10 +148,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -164,10 +184,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -195,10 +220,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -226,10 +256,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -257,10 +292,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -288,10 +328,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -319,10 +364,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -350,10 +400,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -381,10 +436,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,10 +472,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -443,10 +508,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -474,10 +544,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -505,10 +580,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -536,10 +616,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -567,10 +652,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -598,10 +688,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -629,10 +724,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -660,10 +760,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -691,10 +796,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -722,10 +832,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -753,10 +868,15 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: after
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: first
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"end_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"end_cursor\", {}) }}"
+            page_size: 100
+            cursor_value: "{{ response.page_info.end_cursor }}"
+            stop_condition: "{{ not response.page_info.has_next_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -860,169 +980,169 @@ metadata:
     tags: true
   testedStreams:
     accounts:
-      streamHash: 39a2a8ec6dad4f5daa0f70d093829ad54ee2bb85
+      streamHash: 6ab8ec476ef56d01c02264ec96a27e40c63906cd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     activities:
-      streamHash: c0bca0262fdb27f1fc174989f6927c1e4e3352e1
+      streamHash: 6c22c38ce0651fc3a4fb494eeb9b4a5deae98344
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     clients:
-      streamHash: 680a25c68daddfacefd4e50f9c381872a9f25ef1
+      streamHash: d7f078ebd342effe553723ed59738e9feb28312a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 7a6f9e341c7dbaa5c9e344c86269f77e27d2e575
+      streamHash: c4119ed4afe702ee0e695a58cf743ae81c468dcc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entities:
-      streamHash: 970c819a71f20bc072424ade27b6e4041c5dd213
+      streamHash: d74086e4537bae1c9ca6cb8319f8843e4999599e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     data:
-      streamHash: 1b1641284543dd89962eddabf30c8af5fc616468
+      streamHash: 55f82848cab8951657b5cfb60bd9a8e5f8fe1125
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     cloud_objects:
-      streamHash: 58809570dd4bed53af074f6a0ba9989997cfff03
+      streamHash: 2381d99248683f4ca86a4a8a0d7998d244fba81c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     fields:
-      streamHash: fc5d18d0aa512948fe71110579766e337f535c26
+      streamHash: 90a35bed39bd52eafb34420840248f8fb0d48b16
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     forecasts:
-      streamHash: 137d841668963922696fbc1f9acf4369ba6af1bb
+      streamHash: bb5755a564616be24973cc2ba36ce1cc2a79b9d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     form_views:
-      streamHash: cee76e910cc8f9abc84291f87bb183a2540b9e48
+      streamHash: a166cdcdf567396ead58d8a3b9c579c5b668c0b0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entity_scorings:
-      streamHash: de7ca67bc33691f2b00b80086040d087727b0f55
+      streamHash: cf8eb86ff8dc28c2843f564fd9ff0adf5cba89b1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leads:
-      streamHash: a1d4aaea9add93100649ffea2557f3574c803428
+      streamHash: 04131f5bf9cfafda1a011607abc47c18a6c80dad
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     lead_oppties:
-      streamHash: 40c9d53fcf24deb787a97afd669c4c218587a554
+      streamHash: e0f8c448daa23fab0bc06b8e335c136e763c9840
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     memos:
-      streamHash: 3f83c68405ac1f4591cb8efd09a56370d7d5b7cd
+      streamHash: db68807e8384d83696928f31ef8f79c89e1c7409
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     notes:
-      streamHash: e61cff7e465593bd67f5caceae043e50dbe58eff
+      streamHash: f87012a0d4f0566df56ae23deea98c8176476583
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     entity_fitnesses:
-      streamHash: e8791acf55a12009ec3fb3030a8ecda25efc8380
+      streamHash: e4e9f3342a71246edc7cd36b711554c16f056ad6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     pipelines:
-      streamHash: 9037984cc7288abc07dfcd10c6a6fe67ea3cea55
+      streamHash: b9fa3f7934aac48815de30ef3c3c982ae9b0b8b7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
-      streamHash: 2dd8a1a40c6e63d9399b6b1d38d6f6d880c33f97
+      streamHash: abd7be207544b1011c6f5c0d8006066da2633f29
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     oppty_product_relations:
-      streamHash: 683e7de5f640fd0092352daf39d9813f2d6909d2
+      streamHash: 5b248475e04bcbdc79df30042ec5fe168f7e1b96
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     profiles:
-      streamHash: 4c2e79023b4386e102392cdb59091c5255f0e976
+      streamHash: 3a5c1edbcbe6ca4aaa2f4b5f0b47e363e09c9f3b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     quotes:
-      streamHash: 27e8fc17a3e3f5a38db3ee6010c217b8741473e3
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 719daa6b53bc16b1eb48cc67b10cf49b618a4f16
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     reports:
-      streamHash: 7266fcad025978b8985357e303fe635b3f536d7c
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: f3e96474b73105728db63696a4627c8849539f7d
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     steps:
-      streamHash: 137e1666655a1d220c831f95cc357327feb21816
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 7140340d07c6a2821ed61666515fc89b9eed8276
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
       hasRecords: true
-      streamHash: 98f3ff0eeed795c19550464a4491e61f2ab9f9f5
+      streamHash: 6e0c5f0c1a5c5184f06dff912e85916a0688f872
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -2202,6 +2322,15 @@ schemas:
         type:
           - object
           - "null"
+      options:
+        type:
+          - object
+          - "null"
+        properties:
+          decimal_places:
+            type:
+              - number
+              - "null"
       original_dataset_field_id:
         type:
           - string
@@ -2218,6 +2347,27 @@ schemas:
         type:
           - string
           - "null"
+      sequence_id:
+        type:
+          - string
+          - "null"
+      sequence_pattern:
+        type:
+          - string
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          __typename:
+            type:
+              - string
+              - "null"
+          decimal_places:
+            type:
+              - number
+              - "null"
       shared_with_field_id:
         type:
           - string
@@ -4381,6 +4531,75 @@ schemas:
           - object
           - "null"
         properties:
+          entity_types:
+            type:
+              - object
+              - "null"
+            properties:
+              show_account:
+                type:
+                  - boolean
+                  - "null"
+              show_activities:
+                type:
+                  - boolean
+                  - "null"
+              show_contact:
+                type:
+                  - boolean
+                  - "null"
+              show_custom_entities:
+                type:
+                  - array
+                  - "null"
+              show_document:
+                type:
+                  - boolean
+                  - "null"
+              show_email:
+                type:
+                  - boolean
+                  - "null"
+              show_lead:
+                type:
+                  - boolean
+                  - "null"
+              show_mass_email:
+                type:
+                  - boolean
+                  - "null"
+              show_memo:
+                type:
+                  - boolean
+                  - "null"
+              show_note:
+                type:
+                  - boolean
+                  - "null"
+              show_online_form:
+                type:
+                  - boolean
+                  - "null"
+              show_opportunity:
+                type:
+                  - boolean
+                  - "null"
+              show_project:
+                type:
+                  - boolean
+                  - "null"
+              show_quote:
+                type:
+                  - boolean
+                  - "null"
+              show_text_message:
+                type:
+                  - boolean
+                  - "null"
+              show_whats_app_message:
+                type:
+                  - boolean
+                  - "null"
           filter:
             type:
               - object
@@ -4436,6 +4655,19 @@ schemas:
                 type:
                   - boolean
                   - "null"
+          filter_by_period:
+            type:
+              - object
+              - "null"
+            properties:
+              period:
+                type:
+                  - string
+                  - "null"
+          has_attachment:
+            type:
+              - boolean
+              - "null"
           lead_process:
             type:
               - array
@@ -4444,6 +4676,18 @@ schemas:
               type:
                 - string
                 - "null"
+          quote_process:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          related_messages:
+            type:
+              - boolean
+              - "null"
           role:
             type:
               - object
@@ -4473,6 +4717,14 @@ schemas:
               type:
                 - string
                 - "null"
+          show_only_favorite:
+            type:
+              - boolean
+              - "null"
+          show_only_my:
+            type:
+              - boolean
+              - "null"
           target:
             type:
               - object
