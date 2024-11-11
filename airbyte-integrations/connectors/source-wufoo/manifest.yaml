@@ -20,6 +20,8 @@ definitions:
     forms:
       type: DeclarativeStream
       name: forms
+      primary_key:
+        - Hash
       retriever:
         type: SimpleRetriever
         requester:
@@ -32,54 +34,59 @@ definitions:
             type: DpathExtractor
             field_path:
               - Forms
-      primary_key:
-        - Hash
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/forms"
-    users:
+    form_comments:
       type: DeclarativeStream
-      name: users
+      name: form_comments
+      primary_key:
+        - CommentId
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /users.json
+          path: /forms/{{ stream_partition.form_identifier }}/comments.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - Users
-      primary_key:
-        - Hash
+              - Comments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageStart
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Hash
+              partition_field: form_identifier
+              stream:
+                $ref: "#/definitions/streams/forms"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - Hash
+              value: "{{ stream_slice.form_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/users"
-    reports:
-      type: DeclarativeStream
-      name: reports
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /reports.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - Reports
-      primary_key:
-        - Hash
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/reports"
+          $ref: "#/schemas/form_comments"
     form_fields:
       type: DeclarativeStream
       name: form_fields
@@ -99,10 +106,16 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
               parent_key: Hash
               partition_field: form_identifier
+              stream:
+                $ref: "#/definitions/streams/forms"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - Hash
+              value: "{{ stream_slice.form_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -110,22 +123,10 @@ definitions:
     form_entries:
       type: DeclarativeStream
       name: form_entries
+      primary_key:
+        - EntryId
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /forms/{{ stream_partition.form_identifier }}/entries.json
@@ -136,90 +137,59 @@ definitions:
             type: DpathExtractor
             field_path:
               - Entries
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
-              parent_key: Hash
-              partition_field: form_identifier
-      primary_key:
-        - EntryId
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/form_entries"
-    form_comments:
-      type: DeclarativeStream
-      name: form_comments
-      retriever:
-        type: SimpleRetriever
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageStart
           page_size_option:
             type: RequestOption
             field_name: pageSize
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: pageStart
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
             inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /forms/{{ stream_partition.form_identifier }}/comments.json
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - Comments
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/forms"
               parent_key: Hash
               partition_field: form_identifier
-      primary_key:
-        - CommentId
+              stream:
+                $ref: "#/definitions/streams/forms"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - Hash
+              value: "{{ stream_slice.form_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/form_comments"
-    report_fields:
+          $ref: "#/schemas/form_entries"
+    reports:
       type: DeclarativeStream
-      name: report_fields
+      name: reports
+      primary_key:
+        - Hash
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /reports/{{ stream_partition.report_identifier }}/fields.json
+          path: /reports.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - Fields
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/reports"
-              parent_key: Hash
-              partition_field: report_identifier
+              - Reports
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/report_fields"
+          $ref: "#/schemas/reports"
     report_entries:
       type: DeclarativeStream
       name: report_entries
@@ -239,19 +209,58 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/reports"
               parent_key: Hash
               partition_field: report_identifier
-      primary_key:
-        - EntryId
+              stream:
+                $ref: "#/definitions/streams/reports"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - Hash
+              value: "{{ stream_slice.form_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/report_entries"
+    report_fields:
+      type: DeclarativeStream
+      name: report_fields
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/{{ stream_partition.report_identifier }}/fields.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Fields
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: Hash
+              partition_field: report_identifier
+              stream:
+                $ref: "#/definitions/streams/reports"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - Hash
+              value: "{{ stream_slice.form_identifier }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_fields"
     report_widgets:
       type: DeclarativeStream
       name: report_widgets
+      primary_key:
+        - Hash
       retriever:
         type: SimpleRetriever
         requester:
@@ -268,16 +277,41 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/reports"
               parent_key: Hash
               partition_field: report_identifier
-      primary_key:
-        - Hash
+              stream:
+                $ref: "#/definitions/streams/reports"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ParentHash
+              value: "{{ stream_slice.form_identifier }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/report_widgets"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - Hash
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Users
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.wufoo.com/api/v3
@@ -324,16 +358,76 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://wufoo.github.io/docs/
+  autoImportSchema:
+    forms: true
+    form_comments: false
+    form_fields: false
+    form_entries: false
+    reports: true
+    report_entries: false
+    report_fields: false
+    report_widgets: false
+    users: true
+  yamlComponents:
+    global:
+      - authenticator
   testedStreams:
     forms:
-      hasRecords: true
       streamHash: 3e8a6c437d8154adbcecb09841f9623e0a65cd38
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    form_comments:
+      streamHash: 03ff538dbd33b1edfcf0b62861316237f817a447
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    form_fields:
+      streamHash: 5928b041e2194511ad00a496dbcde128f6c4f55c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    form_entries:
+      streamHash: 152a88ebaadc7f666d5429092429ebcf98b655cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reports:
+      streamHash: 95a82666ed200e648e146026c10cba4c126b0f37
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    report_entries:
+      streamHash: 5a4d509e27dc231dae639e6a74949a2dac566122
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    report_fields:
+      streamHash: 28bbb9e5e6dcba068d2aa948829100d1b1e4d7d8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    report_widgets:
+      streamHash: 02aabea6a27fac4a9ea692aaea2285dad51c451e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
       hasRecords: true
       streamHash: 43d9b0a10663cec6591ef6f5672fc6100aea09fb
@@ -341,83 +435,20 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reports:
-      hasRecords: true
-      streamHash: 95a82666ed200e648e146026c10cba4c126b0f37
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    form_fields:
-      hasRecords: true
-      streamHash: d0a392046a7ebdaccada984ddc2de1ff93364e99
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    form_entries:
-      hasRecords: true
-      streamHash: e797c3eaaa6ea2ad77638b79b0381333495141e7
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    form_comments:
-      hasRecords: true
-      streamHash: 1450463668b30e97fa3c7f9b62e95b08bb4edec0
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    report_fields:
-      hasRecords: true
-      streamHash: 0bc9c701da75fb8370c2a9b43a559a9331869a5c
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    report_entries:
-      hasRecords: true
-      streamHash: 19f70fae9d42b1cfa4d0e1db1c4a38b390147d91
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    report_widgets:
-      hasRecords: true
-      streamHash: f4239d39d63dd85c4a3ea2e1bc8bee84043c9ebc
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-  yamlComponents:
-    global:
-      - authenticator
-  autoImportSchema:
-    forms: true
-    users: true
-    reports: true
-    form_fields: false
-    form_entries: false
-    form_comments: false
-    report_fields: false
-    report_entries: false
-    report_widgets: false
+  assist:
+    docsUrl: https://wufoo.github.io/docs/
 
 schemas:
   forms:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - Hash
+    additionalProperties: true
     properties:
-      Url:
+      DateCreated:
         type:
           - string
           - "null"
-      Hash:
-        type: string
-      Name:
+      DateUpdated:
         type:
           - string
           - "null"
@@ -429,6 +460,12 @@ schemas:
         type:
           - string
           - "null"
+      EntryLimit:
+        type:
+          - string
+          - "null"
+      Hash:
+        type: string
       IsPublic:
         type:
           - string
@@ -437,11 +474,11 @@ schemas:
         type:
           - string
           - "null"
-      StartDate:
+      LinkEntries:
         type:
           - string
           - "null"
-      EntryLimit:
+      LinkEntriesCount:
         type:
           - string
           - "null"
@@ -449,15 +486,7 @@ schemas:
         type:
           - string
           - "null"
-      DateCreated:
-        type:
-          - string
-          - "null"
-      DateUpdated:
-        type:
-          - string
-          - "null"
-      LinkEntries:
+      Name:
         type:
           - string
           - "null"
@@ -465,105 +494,24 @@ schemas:
         type:
           - string
           - "null"
-      LinkEntriesCount:
+      StartDate:
         type:
           - string
           - "null"
-    additionalProperties: true
-  users:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - Hash
-    properties:
-      Hash:
-        type: string
-      User:
-        type:
-          - string
-          - "null"
-      Email:
-        type:
-          - string
-          - "null"
-      Image:
-        type:
-          - string
-          - "null"
-      ApiKey:
-        type:
-          - string
-          - "null"
-      Company:
-        type:
-          - string
-          - "null"
-      TimeZone:
-        type:
-          - string
-          - "null"
-      LinkForms:
-        type:
-          - string
-          - "null"
-      AdminAccess:
-        type:
-          - string
-          - "null"
-      CreateForms:
-        type:
-          - string
-          - "null"
-      ImageUrlBig:
-        type:
-          - string
-          - "null"
-      LinkReports:
-        type:
-          - string
-          - "null"
-      CreateThemes:
-        type:
-          - string
-          - "null"
-      HttpsEnabled:
-        type:
-          - string
-          - "null"
-      CreateReports:
-        type:
-          - string
-          - "null"
-      ImageUrlSmall:
-        type:
-          - string
-          - "null"
-      IsAccountOwner:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  reports:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - Hash
-    properties:
       Url:
         type:
           - string
           - "null"
-      Hash:
-        type: string
-      Name:
-        type:
-          - string
-          - "null"
-      IsPublic:
-        type:
-          - string
-          - "null"
-      LinkFields:
+    required:
+      - Hash
+  form_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CommentId:
+        type: number
+      CommentedBy:
         type:
           - string
           - "null"
@@ -571,47 +519,21 @@ schemas:
         type:
           - string
           - "null"
-      DateUpdated:
+      EntryId:
+        type:
+          - number
+          - "null"
+      Text:
         type:
           - string
           - "null"
-      Description:
-        type:
-          - string
-          - "null"
-      LinkEntries:
-        type:
-          - string
-          - "null"
-      LinkWidgets:
-        type:
-          - string
-          - "null"
-      LinkEntriesCount:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
+    required:
+      - CommentId
   form_fields:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
-      ID:
-        type:
-          - string
-          - "null"
-      Page:
-        type:
-          - string
-          - "null"
-      Type:
-        type:
-          - string
-          - "null"
-      Title:
-        type:
-          - string
-          - "null"
       Choices:
         type:
           - array
@@ -629,6 +551,34 @@ schemas:
               type:
                 - number
                 - "null"
+      ClassNames:
+        type:
+          - string
+          - "null"
+      DefaultVal:
+        type:
+          - string
+          - "null"
+      HasOtherField:
+        type:
+          - boolean
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      Instructions:
+        type:
+          - string
+          - "null"
+      IsRequired:
+        type:
+          - string
+          - "null"
+      Page:
+        type:
+          - string
+          - "null"
       SubFields:
         type:
           - array
@@ -638,6 +588,10 @@ schemas:
             - object
             - "null"
           properties:
+            DefaultVal:
+              type:
+                - string
+                - "null"
             ID:
               type:
                 - string
@@ -646,75 +600,37 @@ schemas:
               type:
                 - string
                 - "null"
-            DefaultVal:
-              type:
-                - string
-                - "null"
-      ClassNames:
+      Title:
         type:
           - string
           - "null"
-      DefaultVal:
+      Type:
         type:
           - string
           - "null"
-      IsRequired:
-        type:
-          - string
-          - "null"
-      Instructions:
-        type:
-          - string
-          - "null"
-      HasOtherField:
-        type:
-          - boolean
-          - "null"
-    additionalProperties: true
   form_entries:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - EntryId
+    additionalProperties: true
     properties:
-      Field1:
+      CreatedBy:
         type:
           - string
           - "null"
-      Field2:
+      DateCreated:
         type:
           - string
           - "null"
-      Field3:
-        type:
-          - string
-          - "null"
-      Field4:
-        type:
-          - string
-          - "null"
-      Field5:
-        type:
-          - string
-          - "null"
-      Field6:
-        type:
-          - string
-          - "null"
-      Field7:
-        type:
-          - string
-          - "null"
-      Field8:
-        type:
-          - string
-          - "null"
-      Field9:
+      DateUpdated:
         type:
           - string
           - "null"
       EntryId:
         type: string
+      Field1:
+        type:
+          - string
+          - "null"
       Field10:
         type:
           - string
@@ -755,6 +671,10 @@ schemas:
         type:
           - string
           - "null"
+      Field2:
+        type:
+          - string
+          - "null"
       Field20:
         type:
           - string
@@ -767,6 +687,90 @@ schemas:
         type:
           - string
           - "null"
+      Field3:
+        type:
+          - string
+          - "null"
+      Field4:
+        type:
+          - string
+          - "null"
+      Field5:
+        type:
+          - string
+          - "null"
+      Field6:
+        type:
+          - string
+          - "null"
+      Field7:
+        type:
+          - string
+          - "null"
+      Field8:
+        type:
+          - string
+          - "null"
+      Field9:
+        type:
+          - string
+          - "null"
+    required:
+      - EntryId
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateUpdated:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      Hash:
+        type: string
+      IsPublic:
+        type:
+          - string
+          - "null"
+      LinkEntries:
+        type:
+          - string
+          - "null"
+      LinkEntriesCount:
+        type:
+          - string
+          - "null"
+      LinkFields:
+        type:
+          - string
+          - "null"
+      LinkWidgets:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Url:
+        type:
+          - string
+          - "null"
+    required:
+      - Hash
+  report_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       CreatedBy:
         type:
           - string
@@ -779,75 +783,8 @@ schemas:
         type:
           - string
           - "null"
-    additionalProperties: true
-  form_comments:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - CommentId
-    properties:
-      Text:
-        type:
-          - string
-          - "null"
       EntryId:
-        type:
-          - number
-          - "null"
-      CommentId:
-        type: number
-      CommentedBy:
-        type:
-          - string
-          - "null"
-      DateCreated:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  report_fields:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      ID:
-        type:
-          - string
-          - "null"
-      Page:
-        type:
-          - string
-          - "null"
-      Type:
-        type:
-          - string
-          - "null"
-      Title:
-        type:
-          - string
-          - "null"
-      ClassNames:
-        type:
-          - string
-          - "null"
-      DefaultVal:
-        type:
-          - string
-          - "null"
-      IsRequired:
-        type:
-          - string
-          - "null"
-      Instructions:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  report_entries:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - EntryId
-    properties:
+        type: string
       Field1:
         type:
           - string
@@ -856,26 +793,49 @@ schemas:
         type:
           - string
           - "null"
-      EntryId:
-        type: string
-      CreatedBy:
-        type:
-          - string
-          - "null"
-      DateCreated:
-        type:
-          - string
-          - "null"
-      DateUpdated:
-        type:
-          - string
-          - "null"
+    required:
+      - EntryId
+  report_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      ClassNames:
+        type:
+          - string
+          - "null"
+      DefaultVal:
+        type:
+          - string
+          - "null"
+      ID:
+        type:
+          - string
+          - "null"
+      Instructions:
+        type:
+          - string
+          - "null"
+      IsRequired:
+        type:
+          - string
+          - "null"
+      Page:
+        type:
+          - string
+          - "null"
+      Title:
+        type:
+          - string
+          - "null"
+      Type:
+        type:
+          - string
+          - "null"
   report_widgets:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - Hash
+    additionalProperties: true
     properties:
       Hash:
         type: string
@@ -895,4 +855,78 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - Hash
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
+    properties:
+      AdminAccess:
+        type:
+          - string
+          - "null"
+      ApiKey:
+        type:
+          - string
+          - "null"
+      Company:
+        type:
+          - string
+          - "null"
+      CreateForms:
+        type:
+          - string
+          - "null"
+      CreateReports:
+        type:
+          - string
+          - "null"
+      CreateThemes:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - string
+          - "null"
+      Hash:
+        type: string
+      HttpsEnabled:
+        type:
+          - string
+          - "null"
+      Image:
+        type:
+          - string
+          - "null"
+      ImageUrlBig:
+        type:
+          - string
+          - "null"
+      ImageUrlSmall:
+        type:
+          - string
+          - "null"
+      IsAccountOwner:
+        type:
+          - string
+          - "null"
+      LinkForms:
+        type:
+          - string
+          - "null"
+      LinkReports:
+        type:
+          - string
+          - "null"
+      TimeZone:
+        type:
+          - string
+          - "null"
+      User:
+        type:
+          - string
+          - "null"
+    required:
+      - Hash
