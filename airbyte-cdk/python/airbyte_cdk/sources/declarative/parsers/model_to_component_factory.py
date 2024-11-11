@@ -72,6 +72,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomDecoder as CustomDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomIncrementalSync as CustomIncrementalSyncModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
@@ -222,6 +223,7 @@ class ModelToComponentFactory:
             CursorPaginationModel: self.create_cursor_pagination,
             CustomAuthenticatorModel: self.create_custom_component,
             CustomBackoffStrategyModel: self.create_custom_component,
+            CustomDecoderModel: self.create_custom_component,
             CustomErrorHandlerModel: self.create_custom_component,
             CustomIncrementalSyncModel: self.create_custom_component,
             CustomRecordExtractorModel: self.create_custom_component,
