@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "https://*.wufoo.com/api/v3"
   registryOverrides:
     oss:
       enabled: true
