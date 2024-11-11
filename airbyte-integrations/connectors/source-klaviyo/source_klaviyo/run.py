@@ -46,6 +46,7 @@ def _get_source(args: List[str]):
         return None
 
 
-def run():
-    source = SourceKlaviyo()
-    launch(source, sys.argv[1:])
+def run() -> None:
+    args = sys.argv[1:]
+    source = _get_source(args)
+    launch(source, args)
