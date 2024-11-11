@@ -56,7 +56,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -91,7 +91,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -126,7 +126,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -163,7 +163,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -198,7 +198,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -233,7 +233,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
@@ -268,7 +268,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 0
+            start_from_page: 1
             page_size: 100
             inject_on_first_request: true
       schema_loader:
