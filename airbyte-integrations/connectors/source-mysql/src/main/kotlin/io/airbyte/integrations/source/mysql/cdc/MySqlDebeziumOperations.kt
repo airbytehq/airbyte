@@ -451,12 +451,11 @@ class MySqlDebeziumOperations(
             val uncompressedString: String =
                 if (isCompressed) {
                     val textValue: String = schemaNode.textValue()
-                    val compressedBytes: ByteArray = textValue.substring(1, textValue.length-1).toByteArray(Charsets.UTF_8)
+                    val compressedBytes: ByteArray =
+                        textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
                     val decoded = Base64.decodeBase64(compressedBytes)
 
-                    GZIPInputStream(ByteArrayInputStream(decoded))
-                        .reader(Charsets.UTF_8)
-                        .readText()
+                    GZIPInputStream(ByteArrayInputStream(decoded)).reader(Charsets.UTF_8).readText()
                 } else {
                     schemaNode.textValue()
                 }
