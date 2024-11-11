@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.4.0
 
 type: DeclarativeSource
 
@@ -41,18 +41,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tasks"
-    fields:
+    custom_fields:
       type: DeclarativeStream
-      name: fields
+      name: custom_fields
       primary_key:
         - id
       retriever:
@@ -74,18 +78,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/fields"
-    workflows:
+          $ref: "#/schemas/custom_fields"
+    agile_workflows:
       type: DeclarativeStream
-      name: workflows
+      name: agile_workflows
       primary_key:
         - id
       retriever:
@@ -107,18 +115,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/workflows"
-    projects_users:
+          $ref: "#/schemas/agile_workflows"
+    st_projects_users:
       type: DeclarativeStream
-      name: projects_users
+      name: st_projects_users
       retriever:
         type: SimpleRetriever
         requester:
@@ -138,6 +150,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -146,7 +162,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/projects_users"
+          $ref: "#/schemas/st_projects_users"
     projects:
       type: DeclarativeStream
       name: projects
@@ -171,9 +187,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -204,18 +224,22 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/account"
-    epics:
+    agile_epics:
       type: DeclarativeStream
-      name: epics
+      name: agile_epics
       primary_key:
         - id
       retriever:
@@ -237,15 +261,19 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/epics"
+          $ref: "#/schemas/agile_epics"
     loss_reason:
       type: DeclarativeStream
       name: loss_reason
@@ -270,9 +298,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -301,9 +333,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -334,9 +370,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -367,6 +407,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -400,9 +444,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -433,9 +481,13 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
@@ -466,15 +518,833 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            page_size: 50
+            page_size: 100
             start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bank_account"
+    agile_stages:
+      type: DeclarativeStream
+      name: agile_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/stages/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_stages"
+    agile_sprints:
+      type: DeclarativeStream
+      name: agile_sprints
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/sprints/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_sprints"
+    agile_issues:
+      type: DeclarativeStream
+      name: agile_issues
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/issues/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_issues"
+    task_lists:
+      type: DeclarativeStream
+      name: task_lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /task/taskslists/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task_lists"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /task/lists/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    calendar:
+      type: DeclarativeStream
+      name: calendar
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calendar/calendar/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendar"
+    agile_issue_relation_types:
+      type: DeclarativeStream
+      name: agile_issue_relation_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/issue_relation_types/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_issue_relation_types"
+    agile_issue_relation_names:
+      type: DeclarativeStream
+      name: agile_issue_relation_names
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/issue_relation_names/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_issue_relation_names"
+    agile_issue_type:
+      type: DeclarativeStream
+      name: agile_issue_type
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/issue_type/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_issue_type"
+    agile_categories:
+      type: DeclarativeStream
+      name: agile_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agile/categories/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agile_categories"
+    custom_fields_field_sets:
+      type: DeclarativeStream
+      name: custom_fields_field_sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customfields/fieldsets/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields_field_sets"
+    product_list:
+      type: DeclarativeStream
+      name: product_list
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/product/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_list"
+    product_categories:
+      type: DeclarativeStream
+      name: product_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/category/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_categories"
+    product_price_list:
+      type: DeclarativeStream
+      name: product_price_list
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/pricelist/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_price_list"
+    product_manufacturer:
+      type: DeclarativeStream
+      name: product_manufacturer
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/manufacturer/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_manufacturer"
+    timesheet:
+      type: DeclarativeStream
+      name: timesheet
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timetracker/timesheets/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timesheet"
+    estimates:
+      type: DeclarativeStream
+      name: estimates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fin/estimate/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/estimates"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fin/transaction/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    invoice_items:
+      type: DeclarativeStream
+      name: invoice_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fin/invoice_item/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_items"
+    invoice_contacts:
+      type: DeclarativeStream
+      name: invoice_contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /fin/invoice_contacts/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoice_contacts"
+    project_observers:
+      type: DeclarativeStream
+      name: project_observers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /st/project_observers/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_observers"
+    task_workflows:
+      type: DeclarativeStream
+      name: task_workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /task/workflows/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task_workflows"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['company'] }}.flowlu.com/api/v1/module
@@ -488,12 +1358,12 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/tasks"
-  - $ref: "#/definitions/streams/fields"
-  - $ref: "#/definitions/streams/workflows"
-  - $ref: "#/definitions/streams/projects_users"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/agile_workflows"
+  - $ref: "#/definitions/streams/st_projects_users"
   - $ref: "#/definitions/streams/projects"
   - $ref: "#/definitions/streams/account"
-  - $ref: "#/definitions/streams/epics"
+  - $ref: "#/definitions/streams/agile_epics"
   - $ref: "#/definitions/streams/loss_reason"
   - $ref: "#/definitions/streams/pipeline"
   - $ref: "#/definitions/streams/lead"
@@ -501,6 +1371,28 @@ streams:
   - $ref: "#/definitions/streams/invoice"
   - $ref: "#/definitions/streams/customer_payment"
   - $ref: "#/definitions/streams/bank_account"
+  - $ref: "#/definitions/streams/agile_stages"
+  - $ref: "#/definitions/streams/agile_sprints"
+  - $ref: "#/definitions/streams/agile_issues"
+  - $ref: "#/definitions/streams/task_lists"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/calendar"
+  - $ref: "#/definitions/streams/agile_issue_relation_types"
+  - $ref: "#/definitions/streams/agile_issue_relation_names"
+  - $ref: "#/definitions/streams/agile_issue_type"
+  - $ref: "#/definitions/streams/agile_categories"
+  - $ref: "#/definitions/streams/custom_fields_field_sets"
+  - $ref: "#/definitions/streams/product_list"
+  - $ref: "#/definitions/streams/product_categories"
+  - $ref: "#/definitions/streams/product_price_list"
+  - $ref: "#/definitions/streams/product_manufacturer"
+  - $ref: "#/definitions/streams/timesheet"
+  - $ref: "#/definitions/streams/estimates"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/invoice_items"
+  - $ref: "#/definitions/streams/invoice_contacts"
+  - $ref: "#/definitions/streams/project_observers"
+  - $ref: "#/definitions/streams/task_workflows"
 
 spec:
   type: Spec
@@ -515,25 +1407,25 @@ spec:
         type: string
         description: The API key to use for authentication
         name: api_key
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       company:
         type: string
         name: company
-        title: company
         order: 1
+        title: Company
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     tasks: true
-    fields: true
-    workflows: true
-    projects_users: true
+    custom_fields: true
+    agile_workflows: true
+    st_projects_users: true
     projects: true
     account: true
-    epics: true
+    agile_epics: true
     loss_reason: true
     pipeline: true
     lead: true
@@ -541,100 +1433,276 @@ metadata:
     invoice: true
     customer_payment: true
     bank_account: true
+    agile_stages: true
+    agile_sprints: true
+    agile_issues: true
+    task_lists: true
+    lists: true
+    calendar: true
+    agile_issue_relation_types: true
+    agile_issue_relation_names: true
+    agile_issue_type: true
+    agile_categories: true
+    custom_fields_field_sets: true
+    product_list: true
+    product_categories: true
+    product_price_list: true
+    product_manufacturer: true
+    timesheet: true
+    estimates: true
+    transactions: true
+    invoice_items: true
+    invoice_contacts: true
+    project_observers: true
+    task_workflows: true
   testedStreams:
     tasks:
-      streamHash: 609b4ee3603c0c0d954de901665a8921793acbe8
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    fields:
-      streamHash: be5c65304c41ea32147d8cab644c937adf91e2e6
+      streamHash: 4d21cf594aa725599fd06c5ef408cb4606cb8eca
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    workflows:
-      streamHash: bedbd1a31ff5d786e0ebae1436b11392c06c6279
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      hasRecords: true
+      streamHash: fe7885829ecedc0f8ceb2096fa6320eed0e91954
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    projects_users:
-      streamHash: b6ee813683b2ecbc1e4e9e224a035fa72279991f
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agile_workflows:
+      hasRecords: true
+      streamHash: c1457e272b04375034a467ffb744ceff84451ff8
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    st_projects_users:
+      hasRecords: true
+      streamHash: b6b4e8948e4f852465fe2b0ae828cf28cafe5b92
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     projects:
-      streamHash: 3878231b61071b5bd380ecc1c6c930e941510a61
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 472f78d65df39c709377d22cb30e56ddcacd36ed
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     account:
-      streamHash: a39b3f2120806fde84e5fa48d95eae92debfd828
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    epics:
-      streamHash: 62a749ff4d39a7f6cad54847c9f9403f7b782585
+      streamHash: 6e382ff1c416f7f693a19609a309879f1f1afcdd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agile_epics:
+      hasRecords: true
+      streamHash: dd7c0643e16c5c38f11f1c822ffe046c1b1c070a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     loss_reason:
-      streamHash: c9c7cfce64bb80b796976f36bda848a575718395
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a03f2220a1cf400741e68161f802c1a1ec2a8272
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     pipeline:
-      streamHash: 3a013898e058f88a68a7b162bf20373bf976a367
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 1315a4bea1c162b8bc635d4737ef046003782bb6
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     lead:
-      streamHash: c4283ae9370e1dc710a58652c1d2c6d017d01617
+      streamHash: 7dacf161994621f8e5f25b08925f043890ce9c6e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     emails:
-      streamHash: bb5af6ab4bf160e15550938c10ad664dab784298
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 599ca6acbe72953d36a3b14a00744ab169d58371
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     invoice:
-      streamHash: 430d5d5777e324d6b9ebd532108a7230f6b7cb18
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 8c26ab3eeb9ded4581b64b111fd6ee9d1250ad5f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     customer_payment:
-      streamHash: 2871f277fd0d052756f9d504076697373efca4c0
+      streamHash: 8789e193fc5bfed0567747f074ac9e307df9b28d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     bank_account:
-      streamHash: 5b77dbd5066ca7e197de8b22003c7b4022dc8e23
+      hasRecords: true
+      streamHash: 5d0b80df2701d5547eca79808bd532feb8dfc2d6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agile_stages:
+      streamHash: 6ec71a29729a2e7037597b2a09c830ad8b6c58dd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agile_sprints:
+      streamHash: 84090469153118dbc987a9c37cf2c799a83e6d2d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agile_issues:
+      streamHash: 2dfe1c6fb173ccf02521581efa6ee9006fcf24e7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    task_lists:
+      hasRecords: true
+      streamHash: f9ee5cf4140c33dfce4fcc5ad4614702add957ac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists:
+      hasRecords: true
+      streamHash: d8435b29cba98887f89abbaefff341e6cb1b6ea2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    calendar:
+      hasRecords: true
+      streamHash: 820c3058e9e99635a08c5bed6a636c91ddba6489
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agile_issue_relation_types:
+      streamHash: c7c49d323249db80ebd12c25696b3a8aedc15881
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agile_issue_relation_names:
+      streamHash: d325d97845d03febf1789a55afd5cb4c4fc034ee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agile_issue_type:
+      streamHash: c5de0b7196345425586cae50a436443ecb7f4533
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    agile_categories:
+      streamHash: da5fe66d152a993a89e8aecf5c9c845584de3c5c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_fields_field_sets:
+      hasRecords: true
+      streamHash: fe0fc46f7b8609aed7ab2f881741f8f9747432dc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_list:
+      hasRecords: true
+      streamHash: ae55e6d3b33655d9417f462760e7476847f066f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product_categories:
+      streamHash: 77477ff0efdf5f63d3214bf50fce6b985f91beb1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_price_list:
+      streamHash: 6d0373a7cd9776a359bdf49099bb9588b900b055
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_manufacturer:
+      streamHash: ab864bebecfa95947fa189acef03afb490aa8a22
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timesheet:
+      streamHash: 5d940a9256be572fc15ce9976bda373f41ae4cec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    estimates:
+      streamHash: ef0ff9b1004e55e8cc666d035043e27423851e6c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transactions:
+      streamHash: e2598f4d0f43fc7b0f37ae256ae83a233b271b20
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoice_items:
+      streamHash: 110a211844ace85ae8dc297049dd97709db80b4f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoice_contacts:
+      streamHash: bbe98bae7f8fee36a8edad2553f5b88b55a9bb09
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    project_observers:
+      streamHash: f8b4261a5e38ed2d294fd4f2704f0ac54b2bd704
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    task_workflows:
+      streamHash: dffaca6f0d341a9dddc39f204efdeeb28df44794
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -728,6 +1796,10 @@ schemas:
       event_type:
         type:
           - number
+          - "null"
+      extra_fields:
+        type:
+          - string
           - "null"
       first_closed_date:
         type:
@@ -893,7 +1965,7 @@ schemas:
           - "null"
     required:
       - id
-  fields:
+  custom_fields:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -990,7 +2062,7 @@ schemas:
           - "null"
     required:
       - id
-  workflows:
+  agile_workflows:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1015,7 +2087,7 @@ schemas:
           - "null"
     required:
       - id
-  projects_users:
+  st_projects_users:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1025,6 +2097,10 @@ schemas:
           - number
           - "null"
       project_id:
+        type:
+          - number
+          - "null"
+      role:
         type:
           - number
           - "null"
@@ -1446,7 +2522,7 @@ schemas:
           - "null"
     required:
       - id
-  epics:
+  agile_epics:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2325,6 +3401,1620 @@ schemas:
           - string
           - "null"
       ref_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      workflow_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  agile_sprints:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      changelog:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      standup_time:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_issues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      archived_date:
+        type:
+          - string
+          - "null"
+      assignee_id:
+        type:
+          - number
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      completed_date:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      creator_id:
+        type:
+          - number
+          - "null"
+      effort:
+        type:
+          - number
+          - "null"
+      epic_id:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_archived:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - number
+          - "null"
+      number_label:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      parent_issue_id:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      sprint_id:
+        type:
+          - number
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - string
+          - "null"
+      workflow_stage_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  task_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_by:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      list_id:
+        type:
+          - number
+          - "null"
+      task_id:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      sync_type:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_issue_relation_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      child_relation_name_id:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent_relation_name_id:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_issue_relation_names:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      tree_type:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_issue_type:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_default:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agile_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      assignee_id:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  custom_fields_field_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      group_field:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      model:
+        type:
+          - string
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  product_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      article:
+        type:
+          - string
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      code_ean:
+        type:
+          - string
+          - "null"
+      code_isbn:
+        type:
+          - string
+          - "null"
+      code_mpn:
+        type:
+          - string
+          - "null"
+      code_upc:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      full_description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      manufacturer_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      online_payment_subject_type:
+        type:
+          - number
+          - "null"
+      online_payment_type:
+        type:
+          - number
+          - "null"
+      online_payment_vat:
+        type:
+          - number
+          - "null"
+      pricelist_currency_1:
+        type:
+          - string
+          - "null"
+      pricelist_price_1:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      tax:
+        type:
+          - number
+          - "null"
+      tax_desc:
+        type:
+          - string
+          - "null"
+      tax_included:
+        type:
+          - number
+          - "null"
+      taxable:
+        type:
+          - number
+          - "null"
+      unit_id:
+        type:
+          - number
+          - "null"
+      uom_id:
+        type:
+          - number
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  product_categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  product_price_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      default:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  product_manufacturer:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      crm_company_id:
+        type:
+          - number
+          - "null"
+      currency_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  timesheet:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      aggregated_time_estimate:
+        type:
+          - number
+          - "null"
+      amount_timeestimate:
+        type:
+          - number
+          - "null"
+      amount_timespent:
+        type:
+          - number
+          - "null"
+      bill_amount_timeestimate:
+        type:
+          - number
+          - "null"
+      bill_amount_timespent:
+        type:
+          - number
+          - "null"
+      bill_cost_timeestimate:
+        type:
+          - number
+          - "null"
+      bill_cost_timespent:
+        type:
+          - number
+          - "null"
+      bill_time:
+        type:
+          - number
+          - "null"
+      bill_time_estimate:
+        type:
+          - number
+          - "null"
+      bill_time_type:
+        type:
+          - string
+          - "null"
+      billing_rate:
+        type:
+          - number
+          - "null"
+      billing_status:
+        type:
+          - number
+          - "null"
+      cost_time_type:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - number
+          - "null"
+      employee_cost_rate:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      invoice_id:
+        type:
+          - number
+          - "null"
+      is_billable:
+        type:
+          - number
+          - "null"
+      is_billable_employee:
+        type:
+          - number
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - number
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      parent_sheet_id:
+        type:
+          - number
+          - "null"
+      rate:
+        type:
+          - number
+          - "null"
+      time_estimate:
+        type:
+          - number
+          - "null"
+      time_spent:
+        type:
+          - number
+          - "null"
+      unbill_time:
+        type:
+          - number
+          - "null"
+      unbill_time_estimate:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  estimates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      adjustment:
+        type:
+          - number
+          - "null"
+      adjustment_description:
+        type:
+          - string
+          - "null"
+      assignee_id:
+        type:
+          - number
+          - "null"
+      bill_from_address:
+        type:
+          - string
+          - "null"
+      bill_from_city:
+        type:
+          - string
+          - "null"
+      bill_from_country_id:
+        type:
+          - number
+          - "null"
+      bill_from_state:
+        type:
+          - string
+          - "null"
+      bill_from_zip:
+        type:
+          - string
+          - "null"
+      bill_to_address:
+        type:
+          - string
+          - "null"
+      bill_to_city:
+        type:
+          - string
+          - "null"
+      bill_to_country_id:
+        type:
+          - number
+          - "null"
+      bill_to_state:
+        type:
+          - string
+          - "null"
+      bill_to_zip:
+        type:
+          - string
+          - "null"
+      company_phone:
+        type:
+          - string
+          - "null"
+      company_phone2:
+        type:
+          - string
+          - "null"
+      company_vat:
+        type:
+          - string
+          - "null"
+      company_vat2:
+        type:
+          - string
+          - "null"
+      contact_person:
+        type:
+          - string
+          - "null"
+      contact_person_position:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      currency_code:
+        type:
+          - string
+          - "null"
+      currency_id:
+        type:
+          - number
+          - "null"
+      customer_id:
+        type:
+          - number
+          - "null"
+      customer_legal_name:
+        type:
+          - string
+          - "null"
+      customer_name:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      discount_before_tax:
+        type:
+          - number
+          - "null"
+      estimate_emailed_date:
+        type:
+          - string
+          - "null"
+      estimate_footer_text:
+        type:
+          - string
+          - "null"
+      estimate_number:
+        type:
+          - number
+          - "null"
+      estimate_number_print:
+        type:
+          - string
+          - "null"
+      estimate_terms_text:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      expire_date:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      invoice_date:
+        type:
+          - string
+          - "null"
+      is_discount_percent:
+        type:
+          - number
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - number
+          - "null"
+      module:
+        type:
+          - string
+          - "null"
+      org_id:
+        type:
+          - number
+          - "null"
+      org_phone:
+        type:
+          - string
+          - "null"
+      org_phone2:
+        type:
+          - string
+          - "null"
+      org_vat:
+        type:
+          - string
+          - "null"
+      org_vat2:
+        type:
+          - string
+          - "null"
+      pricelist_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      reference_number:
+        type:
+          - string
+          - "null"
+      shipping_charge:
+        type:
+          - number
+          - "null"
+      status_id:
+        type:
+          - number
+          - "null"
+      sub_total:
+        type:
+          - number
+          - "null"
+      tax1:
+        type:
+          - number
+          - "null"
+      tax1_included:
+        type:
+          - number
+          - "null"
+      tax2:
+        type:
+          - number
+          - "null"
+      tax2_included:
+        type:
+          - number
+          - "null"
+      tax_total:
+        type:
+          - number
+          - "null"
+      template_id:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      bcy_charge:
+        type:
+          - number
+          - "null"
+      bcy_income:
+        type:
+          - number
+          - "null"
+      bcy_outcome:
+        type:
+          - number
+          - "null"
+      business_line_id:
+        type:
+          - number
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      charge:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      crm_account_id:
+        type:
+          - number
+          - "null"
+      currency_exchange_rate:
+        type:
+          - number
+          - "null"
+      currency_id:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      income:
+        type:
+          - number
+          - "null"
+      invoice_id:
+        type:
+          - number
+          - "null"
+      is_charge:
+        type:
+          - number
+          - "null"
+      is_generated:
+        type:
+          - number
+          - "null"
+      is_storno:
+        type:
+          - number
+          - "null"
+      manager_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      org_account_id:
+        type:
+          - number
+          - "null"
+      org_id:
+        type:
+          - number
+          - "null"
+      outcome:
+        type:
+          - number
+          - "null"
+      plan_money_id:
+        type:
+          - number
+          - "null"
+      plan_money_total:
+        type:
+          - number
+          - "null"
+      pm_currency_id:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - number
+          - "null"
+      ref_uuid:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      reference_id:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      store_doc_currency_id:
+        type:
+          - number
+          - "null"
+      store_doc_id:
+        type:
+          - number
+          - "null"
+      store_doc_total:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  invoice_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      bcy_paid_total:
+        type:
+          - number
+          - "null"
+      discount:
+        type:
+          - string
+          - "null"
+      discount_amount:
+        type:
+          - number
+          - "null"
+      discount_is_percent:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      invoice_id:
+        type:
+          - number
+          - "null"
+      item_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      online_payment_subject_type:
+        type:
+          - number
+          - "null"
+      online_payment_type:
+        type:
+          - number
+          - "null"
+      online_payment_vat:
+        type:
+          - number
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      paid_date:
+        type:
+          - string
+          - "null"
+      paid_total:
+        type:
+          - number
+          - "null"
+      plan_money_id:
+        type:
+          - number
+          - "null"
+      plan_money_total:
+        type:
+          - number
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      ref:
+        type:
+          - string
+          - "null"
+      ref_id:
+        type:
+          - string
+          - "null"
+      sub_total:
+        type:
+          - number
+          - "null"
+      tax1:
+        type:
+          - number
+          - "null"
+      tax1_amount:
+        type:
+          - number
+          - "null"
+      tax1_included:
+        type:
+          - number
+          - "null"
+      tax2:
+        type:
+          - number
+          - "null"
+      tax2_amount:
+        type:
+          - number
+          - "null"
+      tax2_included:
+        type:
+          - number
+          - "null"
+      tax_displayed:
+        type:
+          - string
+          - "null"
+      tax_total:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      unit_id:
+        type:
+          - number
+          - "null"
+      unit_price:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  invoice_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contact_id:
+        type:
+          - string
+          - "null"
+      email_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      invoice_emailed:
+        type:
+          - number
+          - "null"
+      invoice_emailed_date:
+        type:
+          - string
+          - "null"
+      invoice_id:
+        type:
+          - number
+          - "null"
+      is_primary:
+        type:
+          - number
+          - "null"
+      reminders_sent:
+        type:
+          - number
+          - "null"
+      reminders_sent_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  project_observers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      project_id:
+        type:
+          - number
+          - "null"
+      role:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  task_workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      ordering:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_date:
         type:
           - string
           - "null"
