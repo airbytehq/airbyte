@@ -12,6 +12,7 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
         0, description="The percentage of users that should receive the new version initially."
     )

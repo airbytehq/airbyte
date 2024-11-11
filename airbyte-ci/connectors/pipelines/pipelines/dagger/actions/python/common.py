@@ -52,7 +52,7 @@ async def find_local_dependencies_in_setup_py(python_package: Container) -> List
         return []
 
     local_setup_dependency_paths = []
-    with_egg_info = python_package.with_exec(["python", "setup.py", "egg_info"])
+    with_egg_info = python_package.with_exec(["python", "setup.py", "egg_info"], use_entrypoint=True)
     egg_info_output = await with_egg_info.stdout()
     dependency_in_requires_txt = []
     for line in egg_info_output.split("\n"):
@@ -250,7 +250,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         # Install the airbyte-cdk package from the local directory
         # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"], skip_entrypoint=True
+            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"]
         )
 
     return connector_container

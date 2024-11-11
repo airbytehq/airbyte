@@ -71,7 +71,7 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
@@ -80,7 +80,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: ${{ github.event_name == 'pull_request' && 'pull_request' || 'manual' }}
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

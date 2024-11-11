@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
@@ -199,7 +200,9 @@ class StateManager(
                 streamStates.add(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withStreamState(streamStateForCheckpoint.opaqueStateValue),
+                        .withStreamState(
+                            streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                        ),
                 )
             }
             if (!shouldCheckpoint) {
@@ -233,7 +236,9 @@ class StateManager(
             val airbyteStreamState =
                 AirbyteStreamState()
                     .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(streamStateForCheckpoint.opaqueStateValue)
+                    .withStreamState(
+                        streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                    )
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)
