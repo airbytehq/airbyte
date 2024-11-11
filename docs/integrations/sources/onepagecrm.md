@@ -1,7 +1,7 @@
 # Onepagecrm
 Onepagecrm is a CRM solution for small busineeses.
 Using this stream we can extarct data from various streams such as contacts , deals , pipelines and meetings
-Docs : https://developer.onepagecrm.com/api/
+[API Documentation](https://developer.onepagecrm.com/api/)
 
 ## Configuration
 
