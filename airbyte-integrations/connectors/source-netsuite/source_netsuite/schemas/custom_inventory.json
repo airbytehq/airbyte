@@ -48,6 +48,12 @@
       },
       "quantityintransit": {
         "type": ["null", "number"]
-      }     
+      },   
+      "locationid": {
+        "type": ["null", "number"]
+      },
+      "locationname": {
+        "type": ["null", "string"]
+      }
     }
   }
