@@ -45,20 +45,17 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  # Disable the acceptanceTests suite for now
-  # Low/No Airbyte Cloud usage
-  #
-  # connectorTestSuitesOptions:
-  #   - suite: liveTests
-  #     testConnections:
-  #       - name: quickbooks_config_dev_null
-  #         id: 211394cc-91d6-4450-9563-fa0be54a6c25
-  #   - suite: unitTests
-  #   - suite: acceptanceTests
-  #     testSecrets:
-  #       - name: SECRET_SOURCE-QUICKBOOKS__CREDS
-  #         fileName: config.json
-  #         secretStore:
-  #           type: GSM
-  #           alias: airbyte-connector-testing-secret-store
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: quickbooks_config_dev_null
+          id: 211394cc-91d6-4450-9563-fa0be54a6c25
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-QUICKBOOKS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
