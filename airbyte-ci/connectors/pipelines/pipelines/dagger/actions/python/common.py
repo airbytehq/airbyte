@@ -244,6 +244,9 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         # mount the local cdk
         # Assume CDK is cloned in a sibling dir to `airbyte`:
         path_to_cdk = str(Path("../airbyte-python-cdk").resolve())
+        if not Path(path_to_cdk).exists():
+            raise FileExistsError(f"Local CDK not found at '{path_to_cdk}'")
+
         directory_to_mount = context.get_repo_dir(path_to_cdk)
         cdk_mount_dir = "/airbyte-cdk/python"
 
