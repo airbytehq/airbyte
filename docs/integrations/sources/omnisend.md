@@ -36,6 +36,7 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.2.1 | 2024-10-29 | [47474](https://github.com/airbytehq/airbyte/pull/47474) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44411](https://github.com/airbytehq/airbyte/pull/44411) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-17 | [44307](https://github.com/airbytehq/airbyte/pull/44307) | Update dependencies |
 | 0.1.12 | 2024-08-12 | [43727](https://github.com/airbytehq/airbyte/pull/43727) | Update dependencies |

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "5.17.0"
+version = "6.5.2"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -37,9 +37,11 @@ jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pandas = "2.2.2"
 pendulum = "<3.0.0"
+psutil = "6.1.0"
 pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
+python-ulid = "^3.0.0"
 PyYAML = "^6.0.1"
 requests = "*"
 requests_cache = "*"
@@ -62,6 +64,9 @@ Sphinx = { version = "~4.2", optional = true }
 sphinx-rtd-theme = { version = "~1.0", optional = true }
 tiktoken = { version = "0.4.0", optional = true }
 nltk = { version = "3.8.1", optional = true }
+# This will ensure that even when you run poetry install or pip install, the compatible version of numpy will always be chosen.
+# airbyte-ci will try to install latest version when --use-local-cdk is used, resulting in the conflict.
+numpy = "<2"
 unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true }
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 pyjwt = "^2.8.0"
@@ -84,6 +89,7 @@ pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
 requests-mock = "*"
+pdoc = "^15.0.0"
 
 [tool.poetry.extras]
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "python-snappy"]
@@ -114,6 +120,11 @@ check-ci = {sequence = ["check-lockfile", "build", "lint", "unit-test-with-cov"]
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
+
+# API Docs with PDoc
+docs-generate = {env = {PDOC_ALLOW_EXEC = "1"}, cmd = "python -m docs.generate run"}
+docs-preview = {shell = "poe docs-generate && open docs/generated/index.html"}
+
 
 [tool.airbyte_ci]
 python_versions = ["3.10", "3.11"]

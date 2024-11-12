@@ -225,7 +225,11 @@ class DockerizedDestination(
             process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())
+                throw DestinationUncleanExitException.of(
+                    exitCode,
+                    destinationOutput.traces(),
+                    destinationOutput.states(),
+                )
             }
         }
     }
