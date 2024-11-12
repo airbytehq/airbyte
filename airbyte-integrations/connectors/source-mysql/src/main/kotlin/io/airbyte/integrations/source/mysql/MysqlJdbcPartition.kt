@@ -35,7 +35,9 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val log = KotlinLogging.logger {}
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MysqlJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
@@ -329,6 +331,9 @@ class MysqlJdbcCursorIncrementalPartition(
         cursorUpperBound
     ) {
 
+    init {
+        log.info { "SGX cursorLowerBound=$cursorLowerBound, cursorUpperBound=$cursorUpperBound, ${Thread.currentThread().stackTrace.toList()}" }
+    }
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)

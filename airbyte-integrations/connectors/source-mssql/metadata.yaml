@@ -39,18 +39,6 @@ data:
         upgradeDeadline: "2023-08-23"
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-MSSQL__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
-          fileName: performance-config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MSSQL__CREDS
