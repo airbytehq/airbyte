@@ -179,6 +179,11 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.3
+Update `get_container_from_id` with the correct new Dagger API.
+
+### 0.19.2
+Update Dagger to 0.13.3
 ### 0.19.1
 
 Fixed the `UserDict` type annotation not found bug.

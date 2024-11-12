@@ -14,6 +14,7 @@ from .file_type_parser import FileTypeParser
 from .jsonl_parser import JsonlParser
 from .parquet_parser import ParquetParser
 from .unstructured_parser import UnstructuredParser
+from .file_transfer import FileTransfer
 
 default_parsers: Mapping[Type[Any], FileTypeParser] = {
     AvroFormat: AvroParser(),
@@ -24,4 +25,4 @@ default_parsers: Mapping[Type[Any], FileTypeParser] = {
     UnstructuredFormat: UnstructuredParser(),
 }
 
-__all__ = ["AvroParser", "CsvParser", "ExcelParser", "JsonlParser", "ParquetParser", "UnstructuredParser", "default_parsers"]
+__all__ = ["AvroParser", "CsvParser", "ExcelParser", "JsonlParser", "ParquetParser", "UnstructuredParser", "FileTransfer", "default_parsers"]

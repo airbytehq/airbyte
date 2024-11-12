@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -72,6 +73,12 @@ class TestStreamReader(AbstractFileBasedStreamReader):
 
     def open_file(self, file: RemoteFile) -> IOBase:
         pass
+
+    def file_size(self, file: RemoteFile) -> int:
+        return 0
+
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, Any]:
+        return {}
 
 
 class TestSpec(AbstractFileBasedSpec):

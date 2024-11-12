@@ -9,7 +9,7 @@ import logging
 import tempfile
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import avro.io as ai
 import avro.schema as avro_schema
@@ -109,6 +109,12 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             ],
             globs,
         )
+
+    def file_size(self, file: RemoteFile) -> int:
+        return 0
+
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, Any]:
+        return {}
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":

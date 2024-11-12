@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class DestinationMessageTest {
-    private val factory =
+    private fun factory(isFileTransferEnabled: Boolean) =
         DestinationMessageFactory(
             DestinationCatalog(
                 listOf(
@@ -39,14 +39,39 @@ class DestinationMessageTest {
                         syncId = 42,
                     )
                 )
-            )
+            ),
+            isFileTransferEnabled
         )
+
+    private fun convert(
+        factory: DestinationMessageFactory,
+        message: AirbyteMessage
+    ): DestinationMessage {
+        val serialized = Jsons.serialize(message)
+        return factory.fromAirbyteMessage(
+            // We have to set some stuff in additionalProperties, so force the protocol model back
+            // to a serialized representation and back.
+            // This avoids issues with e.g. `additionalProperties.put("foo", 12L)`:
+            // working directly with that object, `additionalProperties["foo"]` returns `Long?`,
+            // whereas converting to JSON yields `{"foo": 12}`, which then deserializes back out
+            // as `Int?`.
+            // Fortunately, the protocol models are (by definition) round-trippable through JSON.
+            Jsons.deserialize(serialized, AirbyteMessage::class.java),
+            serialized,
+        )
+    }
 
     @ParameterizedTest
     @MethodSource("roundTrippableMessages")
-    fun testRoundTrip(message: AirbyteMessage) {
-        val roundTripped =
-            factory.fromAirbyteMessage(message, Jsons.serialize(message)).asProtocolMessage()
+    fun testRoundTripRecord(message: AirbyteMessage) {
+        val roundTripped = convert(factory(false), message).asProtocolMessage()
+        Assertions.assertEquals(message, roundTripped)
+    }
+
+    @ParameterizedTest
+    @MethodSource("roundTrippableFileMessages")
+    fun testRoundTripFile(message: AirbyteMessage) {
+        val roundTripped = convert(factory(true), message).asProtocolMessage()
         Assertions.assertEquals(message, roundTripped)
     }
 
@@ -67,17 +92,23 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage =
-            factory.fromAirbyteMessage(inputMessage, Jsons.serialize(inputMessage))
-                as StreamCheckpoint
+        val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
 
         Assertions.assertEquals(
-            inputMessage.also {
-                it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-            },
-            parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage(),
+            // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
+            // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
+            // So we just compare the serialized protocol messages.
+            Jsons.serialize(
+                inputMessage.also {
+                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
+                }
+            ),
+            Jsons.serialize(
+                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
+            ),
         )
     }
 
@@ -102,19 +133,20 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage =
-            factory.fromAirbyteMessage(
-                inputMessage,
-                Jsons.serialize(inputMessage),
-            ) as GlobalCheckpoint
+        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
         Assertions.assertEquals(
-            inputMessage.also {
-                it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-            },
-            parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage(),
+            Jsons.serialize(
+                inputMessage.also {
+                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
+                }
+            ),
+            Jsons.serialize(
+                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
+            ),
         )
     }
 
@@ -150,6 +182,61 @@ class DestinationMessageTest {
                                         )
                                 )
                                 .withData(blob1)
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .COMPLETE
+                                        )
+                                )
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .INCOMPLETE
+                                        )
+                                )
+                        ),
+                )
+                .map { Arguments.of(it) }
+
+        @JvmStatic
+        fun roundTrippableFileMessages(): List<Arguments> =
+            listOf(
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            AirbyteRecordMessage()
+                                .withStream("name")
+                                .withNamespace("namespace")
+                                .withEmittedAt(1234)
+                                .withAdditionalProperty("file_url", "file://foo/bar")
+                                .withAdditionalProperty("bytes", 9001L)
+                                .withAdditionalProperty("file_relative_path", "foo/bar")
+                                .withAdditionalProperty("modified", 123L)
+                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)

@@ -60,7 +60,7 @@ class TestBuildConnectorImage:
         step = manifest_only_connectors.BuildConnectorImages(test_context_with_connector_with_base_image)
         step_result = await step._run()
         assert step._build_from_base_image.call_count == len(all_platforms)
-        container_built_from_base.with_exec.assert_called_with(["spec"])
+        container_built_from_base.with_exec.assert_called_with(["spec"], use_entrypoint=True)
         container_built_from_base.with_label.assert_any_call(
             "io.airbyte.version", test_context_with_connector_with_base_image.connector.metadata["dockerImageTag"]
         )

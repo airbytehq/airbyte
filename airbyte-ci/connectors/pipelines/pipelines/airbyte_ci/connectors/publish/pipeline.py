@@ -19,7 +19,7 @@ from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.metadata.pipeline import MetadataRollbackReleaseCandidate, MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
 from pipelines.airbyte_ci.steps.bump_version import SetConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
@@ -48,7 +48,7 @@ class CheckConnectorImageDoesNotExist(Step):
                 self.context,
             )
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["ls", docker_repository])
+            .with_exec(["ls", docker_repository], use_entrypoint=True)
         )
         try:
             crane_ls_stdout = await crane_ls.stdout()
@@ -107,7 +107,7 @@ class UploadDependenciesToMetadataService(Step):
             ConnectorLanguage.LOW_CODE,
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
-        pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        pip_freeze_output = await built_container.with_exec(["pip", "freeze"]).stdout()
         dependencies = [
             {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
         ]
@@ -226,7 +226,7 @@ class PullConnectorImageFromRegistry(Step):
         has_only_gzip_layers = True
         for platform in consts.BUILD_PLATFORMS:
             inspect = docker.with_crane(self.context).with_exec(
-                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"], use_entrypoint=True
             )
             try:
                 inspect_stdout = await inspect.stdout()
@@ -244,7 +244,9 @@ class PullConnectorImageFromRegistry(Step):
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
-                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"])
+                await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(
+                    ["spec"], use_entrypoint=True
+                )
             except ExecError:
                 if attempt > 0:
                     await anyio.sleep(10)
@@ -308,7 +310,9 @@ class UploadSpecToCache(Step):
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
-        spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
+        spec_output = (
+            await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
+        )
         return self._parse_spec_output(spec_output)
 
     async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
@@ -366,7 +370,7 @@ class UploadSbom(Step):
         try:
             syft_container = self.get_syft_container()
             sbom_file = await syft_container.with_exec(
-                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"]
+                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"], use_entrypoint=True
             ).file(self.IN_CONTAINER_SBOM_PATH)
         except ExecError as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
@@ -421,7 +425,7 @@ class DisableProgressiveRollout(StepModifyingFiles):
     title = "Disable progressive rollout in metadata file"
 
     async def _run(self) -> StepResult:
-        raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=METADATA_FILE_NAME), METADATA_FILE_NAME)
+        raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=[METADATA_FILE_NAME]), METADATA_FILE_NAME)
         current_metadata = yaml.safe_load(raw_metadata)
         enable_progressive_rollout = (
             current_metadata.get("data", {}).get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)

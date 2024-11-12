@@ -66,7 +66,7 @@ class SetConnectorVersion(StepModifyingFiles):
             connector_directory_with_updated_pyproject = await (
                 container_with_poetry.with_directory("/connector", connector_directory)
                 .with_workdir("/connector")
-                .with_exec(["poetry", "version", new_version])
+                .with_exec(["poetry", "version", new_version], use_entrypoint=True)
                 .directory("/connector")
             )
         except dagger.ExecError as e:

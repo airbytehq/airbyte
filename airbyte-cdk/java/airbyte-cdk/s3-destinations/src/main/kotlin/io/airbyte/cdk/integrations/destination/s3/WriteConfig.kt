@@ -6,7 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 
-class WriteConfig
+open class WriteConfig
 @JvmOverloads
 constructor(
     val namespace: String?,
