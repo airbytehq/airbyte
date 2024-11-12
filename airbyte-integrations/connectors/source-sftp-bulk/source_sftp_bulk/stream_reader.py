@@ -139,9 +139,9 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         """
         file_size = self.file_size(file)
         # I'm putting this check here so we can remove the safety wheels per connector when ready.
-        # if file_size > self.FILE_SIZE_LIMIT:
-        #     message = "File size exceeds the 1 GB limit."
-        #     raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
 
         file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
