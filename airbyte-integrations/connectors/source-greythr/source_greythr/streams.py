@@ -33,8 +33,6 @@ class BaseGreythrStream(HttpStream):
         Generate headers required for the API request, including the domain and access token.
         """
         headers = super().request_headers(stream_slice=stream_slice, **kwargs)
-        # Add custom headers if required
-        # headers["x-greythr-domain"] = self.gtHost
         return headers
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -77,4 +75,4 @@ class Categories(BaseGreythrStream):
         """
         Set the path for the categories endpoint.
         """
-        return "https://api.greythr.com/employee/v2/employees/categories"
+        return "https://api.greythr.com/employee/v2/employees/categories?descRequired=true&state=CURRENT"
