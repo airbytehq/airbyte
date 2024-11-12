@@ -29,7 +29,7 @@
     "itemid": {
       "type": ["null", "string"]
     },
-    "description": {
+    "itemdescription": {
       "type": ["null", "string"]
     },
     "status": {
@@ -39,6 +39,30 @@
       "type": ["null", "number"]
     },
     "qtyplanned": {
+      "type": ["null", "number"]
+    },
+    "lineitemused": {
+      "type": ["null", "string"]
+    },
+    "lineoperation": {
+      "type": ["null", "string"]
+    },
+    "lineasset": {
+      "type": ["null", "string"]
+    },
+    "lineoperationtime": {
+      "type": ["null", "number"]
+    },
+    "lineqtyplanned": {
+      "type": ["null", "number"]
+    },
+    "lineqtyactual": {
+      "type": ["null", "number"]
+    },
+    "lineearnedhours": {
+      "type": ["null", "number"]
+    },
+    "lineefficiency": {
       "type": ["null", "number"]
     }
   }
