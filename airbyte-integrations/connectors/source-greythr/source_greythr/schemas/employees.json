@@ -1,19 +1,111 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "years_of_service": {
+    "employeeId": {
+      "description": "The unique identifier for the employee.",
       "type": ["null", "integer"]
     },
-    "start_date": {
+    "name": {
+      "description": "The full name of the employee.",
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "description": "The first name of the employee.",
+      "type": ["null", "string"]
+    },
+    "middleName": {
+      "description": "The middle name of the employee, if any.",
+      "type": ["null", "string"]
+    },
+    "lastName": {
+      "description": "The last name of the employee.",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "The work email address of the employee.",
+      "type": ["null", "string"]
+    },
+    "employeeNo": {
+      "description": "The employee number.",
+      "type": ["null", "string"]
+    },
+    "dateOfJoin": {
+      "description": "The date the employee joined the organization.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
+    },
+    "leavingDate": {
+      "description": "The date the employee left the organization, if applicable.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "originalHireDate": {
+      "description": "The original hire date of the employee, if applicable.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "leftorg": {
+      "description": "Indicates whether the employee has left the organization.",
+      "type": ["boolean"]
+    },
+    "lastModified": {
+      "description": "The timestamp of the last modification to the employee's record.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "status": {
+      "description": "The status of the employee (e.g., active, inactive).",
+      "type": ["null", "integer"]
+    },
+    "dateOfBirth": {
+      "description": "The employee's date of birth.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "gender": {
+      "description": "The gender of the employee.",
+      "type": ["null", "string"]
+    },
+    "probationPeriod": {
+      "description": "The probation period of the employee in days.",
+      "type": ["null", "integer"]
+    },
+    "personalEmail": {
+      "description": "The primary personal email address of the employee.",
+      "type": ["null", "string"]
+    },
+    "personalEmail2": {
+      "description": "The secondary personal email address of the employee, if any.",
+      "type": ["null", "string"]
+    },
+    "personalEmail3": {
+      "description": "The tertiary personal email address of the employee, if any.",
+      "type": ["null", "string"]
+    },
+    "mobile": {
+      "description": "The mobile phone number of the employee.",
+      "type": ["null", "string"]
+    },
+    "relevantExperience": {
+      "description": "The relevant experience of the employee in years.",
+      "type": ["null", "number"]
+    },
+    "title": {
+      "description": "The title or position of the employee.",
+      "type": ["null", "string"]
+    },
+    "yearsInJob": {
+      "description": "The number of years the employee has been in their current job.",
+      "type": ["null", "number"]
+    },
+    "yearsInService": {
+      "description": "The number of years the employee has been in service.",
+      "type": ["null", "number"]
+    },
+    "prevExperience": {
+      "description": "The employee's previous experience in years.",
+      "type": ["null", "number"]
     }
   }
 }

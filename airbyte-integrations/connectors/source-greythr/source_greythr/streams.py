@@ -9,7 +9,7 @@ class Employees(HttpStream):
     """
 
     url_base = ""  # This will be set using the configuration in the Source class
-    primary_key = "employee_id"  # Define a unique key for each record, assuming "employee_id" is unique
+    primary_key = "employeeId"  # Define a unique key for each record, assuming "employee_id" is unique
 
     def __init__(self, config: Mapping[str, Any], authenticator:HttpAuthenticator):
         super().__init__(authenticator=authenticator)
