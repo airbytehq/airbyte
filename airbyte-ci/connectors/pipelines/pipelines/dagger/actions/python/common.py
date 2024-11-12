@@ -245,18 +245,18 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         # Assume CDK is cloned in a sibling dir to `airbyte`:
         path_to_cdk = str(Path("../airbyte-python-cdk").resolve())
         directory_to_mount = context.get_repo_dir(path_to_cdk)
-        cdk_mount_dir = "/airbyte-python-cdk"
+        cdk_mount_dir = "/airbyte-cdk/python"
 
-        context.logger.info(f"Mounting CDK from '{directory_to_mount!s}' ('{path_to_cdk}')")
+        context.logger.info(f"Mounting CDK from '{path_to_cdk}' to '{cdk_mount_dir}'")
 
         # Install the airbyte-cdk package from the local directory
-        connector_container = connector_container.with_mounted_directory(
+        connector_container = connector_container.with_directory(
             cdk_mount_dir,
             directory_to_mount,
         ).with_exec(
             ["pip", "install", "--force-reinstall", f"{cdk_mount_dir}"],
             # TODO: Consider moving to Poetry-native installation:
-            # ["poetry", "add", f"--path={cdk_mount_dir}"]
+            # ["poetry", "add", cdk_mount_dir]
         )
 
     return connector_container
