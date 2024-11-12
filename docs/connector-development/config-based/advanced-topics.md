@@ -17,12 +17,12 @@ will result in
 ```
 
 If the component definition is a mapping with a "type" field,
-the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
+the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte-python-cdk/blob/main//airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
 and instantiate the object from the resulting mapping
 
 If the component definition is a mapping with neither a "class_name" nor a "type" field,
 the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
-If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py),
+If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte-python-cdk/blob/main//airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py),
 then the factory will create an object of its default implementation.
 
 If the component definition is a list, then the factory will iterate over the elements of the list,
