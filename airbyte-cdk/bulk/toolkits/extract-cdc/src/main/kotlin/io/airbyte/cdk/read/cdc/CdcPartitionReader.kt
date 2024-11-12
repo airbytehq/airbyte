@@ -229,7 +229,9 @@ open class CdcPartitionReader<T : Comparable<T>>(
                 return null
             }
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
+            log.info{"SGX currentPosition=$currentPosition, upperBound=$upperBound."}
             if (currentPosition == null || currentPosition < upperBound) {
+                log.info{"SGX returning null"}
                 return null
             }
 
