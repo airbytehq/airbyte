@@ -200,7 +200,8 @@ class CdcPartitionReader<T : Comparable<T>>(
             if (event.sourceRecord == null) {
                 numEventsWithoutSourceRecord.incrementAndGet()
             }
-            when (eventType) {
+
+            val counterToIncrement = when (eventType) {
                 EventType.TOMBSTONE -> numTombstones
                 EventType.HEARTBEAT -> numHeartbeats
                 EventType.KEY_JSON_INVALID,
@@ -208,7 +209,11 @@ class CdcPartitionReader<T : Comparable<T>>(
                 EventType.RECORD_DISCARDED_BY_DESERIALIZE,
                 EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
                 EventType.RECORD_EMITTED -> numEmittedRecords
-            }.incrementAndGet()
+            }
+            if (counterToIncrement === numDiscardedRecords) {
+                log.info{"SGX discarding record eventType=$eventType, event=$event"}
+            }
+            counterToIncrement.incrementAndGet()
         }
 
         private fun findCloseReason(event: DebeziumEvent, eventType: EventType): CloseReason? {
@@ -221,12 +226,14 @@ class CdcPartitionReader<T : Comparable<T>>(
                 return null
             }
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
+            log.info{"SGX currentPosition=$currentPosition, upperBound=$upperBound."}
             if (currentPosition == null || currentPosition < upperBound) {
+                log.info{"SGX returning null"}
                 return null
             }
 
             // Close because the current event is past the sync upper bound.
-            return when (eventType) {
+            val retVal = when (eventType) {
                 EventType.TOMBSTONE,
                 EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
                 EventType.KEY_JSON_INVALID,
@@ -236,6 +243,9 @@ class CdcPartitionReader<T : Comparable<T>>(
                 EventType.RECORD_DISCARDED_BY_STREAM_ID ->
                     CloseReason.RECORD_REACHED_TARGET_POSITION
             }
+
+            log.info{"SGX returning $retVal. eventType=$eventType, event=$event"}
+            return retVal
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {

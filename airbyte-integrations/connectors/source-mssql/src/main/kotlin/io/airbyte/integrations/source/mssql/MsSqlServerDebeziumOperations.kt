@@ -74,7 +74,7 @@ class MsSqlServerDebeziumOperations(
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
-    override fun synthesize(streams: List<Stream>): DebeziumInput {
+    override fun synthesize(): DebeziumInput {
         val lsn = queryMaxLsn()
         val key: ArrayNode =
             Jsons.arrayNode().apply {
@@ -103,6 +103,7 @@ class MsSqlServerDebeziumOperations(
             // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
             // is rotated out. This will also end up read streaming changes from the transaction_log.
             .with("snapshot.mode", "recovery")
+            .withStreams(listOf())
             .buildMap(), state, isSynthetic = true)
     }
 
@@ -231,9 +232,6 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
         const val MSSQL_DB_HISTORY = "mssql_db_history"
         const val MSSQL_IS_COMPRESSED = "is_compressed"
-        init {
-            File("/tmp/sgx_schema_history").mkdirs()
-        }
 
         val staticProperties: Map<String, String> =
                 DebeziumPropertiesBuilder()
@@ -264,7 +262,6 @@ class MsSqlServerDebeziumOperations(
                     .withHeartbeats(Duration.ofSeconds(10))
                     .withOffset()
                     .withSchemaHistory()
-                    .withSchemaHistoryFile(File("/tmp/sgx_schema_history/hist").toPath())
                     .buildMap()
 
         fun commonProperties(tunnelSession: TunnelSession,
