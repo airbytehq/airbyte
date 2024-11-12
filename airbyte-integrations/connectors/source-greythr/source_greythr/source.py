@@ -11,7 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from .streams import Employees  # Import EmployeesStream from streams.py
+from .streams import Employees,Categories  # Import EmployeesStream from streams.py
 
 def generate_token(config):
         url = f"https://{config['gtHost']}/uas/v1/oauth2/client-token"
@@ -60,4 +60,4 @@ class SourceGreythr(AbstractSource):
             "x-greythr-domain": config["gtHost"]
         }
         authenticator = CustomHeadersAuthenticator(custom_headers=custom_headers)
-        return [Employees(config=config, authenticator=authenticator)] #Customers(authenticator=auth), 
+        return [Employees(config=config, authenticator=authenticator),Categories(config=config, authenticator=authenticator)]

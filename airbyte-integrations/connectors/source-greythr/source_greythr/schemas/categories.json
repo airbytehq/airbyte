@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "employeeId": {
+      "description": "The unique identifier for the employee.",
+      "type": ["null", "integer"]
+    },
+    "categoryList": {
+      "description": "The data of employee category",
+      "type": ["null", "string"]
+    }
+  }
+}
