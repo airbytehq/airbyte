@@ -85,7 +85,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                             stream.generationId,
                             it.data as ObjectValue,
                             OutputRecord.Meta(
-                                changes = it.meta?.changes ?: mutableListOf(),
+                                changes = it.meta?.changes ?: listOf(),
                                 syncId = stream.syncId
                             ),
                         )

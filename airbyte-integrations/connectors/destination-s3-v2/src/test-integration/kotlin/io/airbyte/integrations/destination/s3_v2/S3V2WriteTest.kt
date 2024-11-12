@@ -106,6 +106,15 @@ class S3V2WriteTestJsonUncompressed :
         allTypesBehavior = Untyped,
     )
 
+class S3V2WriteTestJsonRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
 class S3V2WriteTestJsonStaging :
     S3V2WriteTest(
         S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
@@ -133,6 +142,21 @@ class S3V2WriteTestCsvUncompressed :
         allTypesBehavior = Untyped,
     )
 
+class S3V2WriteTestCsvRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+    ) {
+    @Disabled("Does not work yet")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
+
 class S3V2WriteTestCsvGzip :
     S3V2WriteTest(
         S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
@@ -150,19 +174,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -177,19 +189,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -204,19 +204,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()
@@ -231,19 +219,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
     ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("Not yet working")
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
     override fun testAllTypes() {
         super.testAllTypes()

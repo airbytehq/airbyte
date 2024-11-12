@@ -43,19 +43,35 @@ class DestinationMessageTest {
             isFileTransferEnabled
         )
 
+    private fun convert(
+        factory: DestinationMessageFactory,
+        message: AirbyteMessage
+    ): DestinationMessage {
+        val serialized = Jsons.serialize(message)
+        return factory.fromAirbyteMessage(
+            // We have to set some stuff in additionalProperties, so force the protocol model back
+            // to a serialized representation and back.
+            // This avoids issues with e.g. `additionalProperties.put("foo", 12L)`:
+            // working directly with that object, `additionalProperties["foo"]` returns `Long?`,
+            // whereas converting to JSON yields `{"foo": 12}`, which then deserializes back out
+            // as `Int?`.
+            // Fortunately, the protocol models are (by definition) round-trippable through JSON.
+            Jsons.deserialize(serialized, AirbyteMessage::class.java),
+            serialized,
+        )
+    }
+
     @ParameterizedTest
     @MethodSource("roundTrippableMessages")
     fun testRoundTripRecord(message: AirbyteMessage) {
-        val roundTripped =
-            factory(false).fromAirbyteMessage(message, Jsons.serialize(message)).asProtocolMessage()
+        val roundTripped = convert(factory(false), message).asProtocolMessage()
         Assertions.assertEquals(message, roundTripped)
     }
 
     @ParameterizedTest
     @MethodSource("roundTrippableFileMessages")
     fun testRoundTripFile(message: AirbyteMessage) {
-        val roundTripped =
-            factory(true).fromAirbyteMessage(message, Jsons.serialize(message)).asProtocolMessage()
+        val roundTripped = convert(factory(true), message).asProtocolMessage()
         Assertions.assertEquals(message, roundTripped)
     }
 
@@ -76,17 +92,23 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage =
-            factory(false).fromAirbyteMessage(inputMessage, Jsons.serialize(inputMessage))
-                as StreamCheckpoint
+        val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
 
         Assertions.assertEquals(
-            inputMessage.also {
-                it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-            },
-            parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage(),
+            // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
+            // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
+            // So we just compare the serialized protocol messages.
+            Jsons.serialize(
+                inputMessage.also {
+                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
+                }
+            ),
+            Jsons.serialize(
+                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
+            ),
         )
     }
 
@@ -111,20 +133,20 @@ class DestinationMessageTest {
                         )
                         // Note: only source stats, no destination stats
                         .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                        .withAdditionalProperty("id", 1234)
                 )
 
-        val parsedMessage =
-            factory(false)
-                .fromAirbyteMessage(
-                    inputMessage,
-                    Jsons.serialize(inputMessage),
-                ) as GlobalCheckpoint
+        val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
         Assertions.assertEquals(
-            inputMessage.also {
-                it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
-            },
-            parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage(),
+            Jsons.serialize(
+                inputMessage.also {
+                    it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0)
+                }
+            ),
+            Jsons.serialize(
+                parsedMessage.withDestinationStats(CheckpointMessage.Stats(3)).asProtocolMessage()
+            ),
         )
     }
 

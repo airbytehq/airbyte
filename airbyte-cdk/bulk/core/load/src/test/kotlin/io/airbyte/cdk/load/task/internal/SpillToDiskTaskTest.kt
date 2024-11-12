@@ -67,14 +67,14 @@ class SpillToDiskTaskTest {
             val index = recordsWritten++
             bytesReserved++
             queue.publish(
-                memoryManager.reserveBlocking(
+                memoryManager.reserve(
                     1L,
                     StreamRecordWrapped(
                         index = index,
                         sizeBytes = 8,
                         record =
                             DestinationRecord(
-                                stream = MockDestinationCatalogFactory.stream1.descriptor,
+                                stream = MockDestinationCatalogFactory.stream1,
                                 data = NullValue,
                                 emittedAtMs = 0,
                                 meta = null,
@@ -84,9 +84,7 @@ class SpillToDiskTaskTest {
                 )
             )
         }
-        queue.publish(
-            memoryManager.reserveBlocking(0L, StreamRecordCompleteWrapped(index = maxRecords))
-        )
+        queue.publish(memoryManager.reserve(0L, StreamRecordCompleteWrapped(index = maxRecords)))
         return bytesReserved
     }
 

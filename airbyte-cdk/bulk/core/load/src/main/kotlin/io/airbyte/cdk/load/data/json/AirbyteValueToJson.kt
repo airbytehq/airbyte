@@ -27,7 +27,7 @@ class AirbyteValueToJson {
             is StringValue -> JsonNodeFactory.instance.textNode(value.value)
             is TimeValue -> JsonNodeFactory.instance.textNode(value.value)
             is TimestampValue -> JsonNodeFactory.instance.textNode(value.value)
-            is UnknownValue -> throw IllegalArgumentException("Unknown value: $value")
+            is UnknownValue -> value.value
         }
     }
 }

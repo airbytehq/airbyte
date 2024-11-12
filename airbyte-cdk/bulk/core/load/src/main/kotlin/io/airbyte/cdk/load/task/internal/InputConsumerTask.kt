@@ -28,6 +28,7 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
+import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
@@ -64,6 +65,8 @@ class DefaultInputConsumerTask(
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+    private val fileQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationFileWrapped>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher
@@ -193,26 +196,21 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
     abstract val inputStream: InputStream
 
     override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        val reservation = memoryManager.reserveRatio(config.maxMessageQueueMemoryUsageRatio, this)
-        val reservationManager = reservation.getReservationManager()
+        log.info { "Reserved ${memoryManager.totalMemoryBytes/1024}mb memory for input processing" }
 
-        log.info { "Reserved ${reservation.bytesReserved/1024}mb memory for input processing" }
+        inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
+            if (line.isEmpty()) {
+                return@forEachIndexed
+            }
 
-        reservation.use { _ ->
-            inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
-                if (line.isEmpty()) {
-                    return@forEachIndexed
-                }
+            val lineSize = line.length.toLong()
+            val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
+            val reserved = memoryManager.reserve(estimatedSize.toLong(), line)
+            val message = deserializer.deserialize(line)
+            collector.emit(Pair(lineSize, reserved.replace(message)))
 
-                val lineSize = line.length.toLong()
-                val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
-                val reserved = reservationManager.reserveBlocking(estimatedSize.toLong(), line)
-                val message = deserializer.deserialize(line)
-                collector.emit(Pair(lineSize, reserved.replace(message)))
-
-                if (index % 10_000 == 0) {
-                    log.info { "Processed $index lines" }
-                }
+            if (index % 10_000 == 0) {
+                log.info { "Processed $index lines" }
             }
         }
 

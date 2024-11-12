@@ -88,7 +88,7 @@ class InputConsumerTaskTest {
         }
 
         suspend fun addMessage(message: DestinationMessage, size: Long = 0L) {
-            messages.send(Pair(size, memoryManager.reserveBlocking(1, message)))
+            messages.send(Pair(size, memoryManager.reserve(1, message)))
         }
 
         fun stop() {
@@ -143,7 +143,6 @@ class InputConsumerTaskTest {
                     JsonNodeFactory.instance.objectNode()
                 ),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            additionalProperties = emptyMap()
         )
     }
 
@@ -151,7 +150,8 @@ class InputConsumerTaskTest {
         return GlobalCheckpoint(
             state = JsonNodeFactory.instance.objectNode(),
             sourceStats = CheckpointMessage.Stats(recordCount),
-            checkpoints = emptyList()
+            checkpoints = emptyList(),
+            additionalProperties = emptyMap(),
         )
     }
 

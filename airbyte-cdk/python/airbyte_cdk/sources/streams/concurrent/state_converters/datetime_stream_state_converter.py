@@ -183,7 +183,7 @@ class CustomFormatConcurrentStreamStateConverter(IsoMillisConcurrentStreamStateC
         self._parser = DatetimeParser()
 
     def output_format(self, timestamp: datetime) -> str:
-        return timestamp.strftime(self._datetime_format)
+        return self._parser.format(timestamp, self._datetime_format)
 
     def parse_timestamp(self, timestamp: str) -> datetime:
         for datetime_format in self._input_datetime_formats:
