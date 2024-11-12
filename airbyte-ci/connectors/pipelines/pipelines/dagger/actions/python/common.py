@@ -247,7 +247,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         if not Path(path_to_cdk).exists():
             raise FileExistsError(f"Local CDK not found at '{path_to_cdk}'")
 
-        directory_to_mount = context.get_repo_dir(path_to_cdk)
+        directory_to_mount = context.dagger_client.host().directory(path_to_cdk)
         cdk_mount_dir = "/airbyte-cdk/python"
 
         context.logger.info(f"Mounting CDK from '{path_to_cdk}' to '{cdk_mount_dir}'")
