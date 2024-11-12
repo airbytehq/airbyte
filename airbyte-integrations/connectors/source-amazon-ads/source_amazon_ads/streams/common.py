@@ -84,8 +84,6 @@ class BasicAmazonAdsStream(Stream, ABC):
     Base class for all Amazon Ads streams.
     """
 
-    is_resumable = False
-
     def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]] = None):
         self._profiles = profiles or []
         self._client_id = config["client_id"]

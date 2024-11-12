@@ -13,9 +13,10 @@ class Record:
     Represents a record read from a stream.
     """
 
-    def __init__(self, data: Mapping[str, Any], partition: "Partition"):
+    def __init__(self, data: Mapping[str, Any], partition: "Partition", is_file_transfer_message: bool = False):
         self.data = data
         self.partition = partition
+        self.is_file_transfer_message = is_file_transfer_message
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Record):

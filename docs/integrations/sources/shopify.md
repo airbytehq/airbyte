@@ -247,6 +247,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.11 | 2024-11-07 | [48402](https://github.com/airbytehq/airbyte/pull/48402) | Add `image_src`, `image_url`, including `options` to `Product Variants` stream |
 | 2.5.10 | 2024-11-05 | [48322](https://github.com/airbytehq/airbyte/pull/48322) | Update dependencies |
 | 2.5.9 | 2024-10-29 | [47814](https://github.com/airbytehq/airbyte/pull/47814) | Update dependencies |
 | 2.5.8 | 2024-10-28 | [47044](https://github.com/airbytehq/airbyte/pull/47044) | Update dependencies |
