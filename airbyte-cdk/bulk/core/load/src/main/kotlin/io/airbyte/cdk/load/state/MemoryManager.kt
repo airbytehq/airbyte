@@ -11,9 +11,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
- * Releasable reservation of memory.
- */
+/** Releasable reservation of memory. */
 class Reserved<T>(
     private val memoryManager: MemoryManager,
     val bytesReserved: Long,

@@ -63,8 +63,7 @@ class MemoryManagerTest {
             Assertions.assertEquals(0, memoryManager.remainingMemoryBytes)
             val nIterations = 100000
 
-            val jobs =
-                (0 until nIterations).map { launch { memoryManager.reserve(10, this) } }
+            val jobs = (0 until nIterations).map { launch { memoryManager.reserve(10, this) } }
 
             repeat(nIterations) {
                 memoryManager.release(10)
