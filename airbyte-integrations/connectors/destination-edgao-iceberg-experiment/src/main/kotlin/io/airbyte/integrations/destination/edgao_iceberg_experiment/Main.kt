@@ -73,8 +73,10 @@ fun main(): Unit = runBlocking {
 
 
 
+
     // Sync 1 - write (and commit) data to a temp table, then crash
     // (note that we write files to the _real_ table's location - this is weird, but allowed)
+    // arguably we could just write to the temp table location though (i.e. airbyte_internal)...?
     writeRecordToTable(tmpTable, table.location(), schema, structType, 32)
     // !!! let's say we crash here.
 
@@ -83,9 +85,7 @@ fun main(): Unit = runBlocking {
     writeRecordToTable(tmpTable, table.location(), schema, structType, 33)
     // second: find the last snapshot in the real table,
     // and append all files from later snapshots from the temp table.
-    val s = table.snapshot(table.refs()["airbyte_last_commit"]!!.snapshotId())
-    logger.info { "found previous snapshot ${s.snapshotId()} with timestamp ${s.timestampMillis()}" }
-    val latestCommittedSnapshotTs = table.snapshot(table.refs()["airbyte_last_commit"]!!.snapshotId()).timestampMillis()
+    val latestCommittedSnapshotTs = table.snapshot("airbyte_last_commit").timestampMillis()
     val snapshotsToRecover = tmpTable.snapshots().filter { it.timestampMillis() >= latestCommittedSnapshotTs }
     val append = table.newAppend()
     for (snapshot in snapshotsToRecover) {
