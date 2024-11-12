@@ -1,20 +1,12 @@
 package io.airbyte.integrations.destination.edgao_iceberg_experiment
 
-//import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-//import aws.sdk.kotlin.services.glue.GlueClient
-//import aws.sdk.kotlin.services.glue.model.Column
-//import aws.sdk.kotlin.services.glue.model.CreateDatabaseRequest
-//import aws.sdk.kotlin.services.glue.model.CreateTableRequest
-//import aws.sdk.kotlin.services.glue.model.UpdateTableRequest
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import java.time.OffsetDateTime
-import java.util.Map
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.aws.glue.GlueCatalog
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Namespace
@@ -24,7 +16,8 @@ import org.apache.iceberg.data.parquet.GenericParquetWriter
 import org.apache.iceberg.io.DataWriter
 import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.Types
-
+import java.io.File
+import java.time.OffsetDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -47,8 +40,10 @@ fun main(): Unit = runBlocking {
 //            CatalogProperties.URI to "http://localhost:8181/",
         ),
     )
-    val namespace = Namespace.of("edgao_test_namespace")
+    val namespaceId = Namespace.of("edgao_test_namespace")
     val tableId = TableIdentifier.of("edgao_test_namespace", "edgao_test_table")
+    val tmpTableId = TableIdentifier.of("edgao_test_namespace", "edgao_test_table_tmp")
+
     val structType = Types.StructType.of(
         Types.NestedField.required(4, "bar", Types.IntegerType.get()),
     )
@@ -62,96 +57,64 @@ fun main(): Unit = runBlocking {
                 structType,
             ),
         )
+
+    // TODO create if not exists (... or just wrap in a try catch)
 //    catalog.createNamespace(namespaceId)
 //    catalog.createTable(tableId, schema)
-
+//    catalog.createTable(tmpTableId, schema)
     val table = catalog.loadTable(tableId)
+    val tmpTable = catalog.loadTable(tmpTableId)
 
-    val path = table.location() + "/" + System.currentTimeMillis()
-    val file = table.io().newOutputFile(path)
+    // Sync 1 - write (and commit) data to a temp table, then crash
+    // (note that we write files to the _real_ table's location - this is weird, but allowed)
+    writeRecordToTable(tmpTable, table.location(), schema, structType, 3)
+    // !!! let's say we crash here.
+
+    // Sync 2 - when committing to the real table, also recover data from the temp table.
+    // first: write new records to the same temp table as the previous sync
+    writeRecordToTable(tmpTable, table.location(), schema, structType, 4)
+    // second: find the last snapshot in the real table,
+    // and append all files from later snapshots from the temp table.
+    val latestCommittedSnapshotTs = table.currentSnapshot()?.timestampMillis() ?: 0
+    val snapshotsToRecover = tmpTable.snapshots().filter { it.timestampMillis() >= latestCommittedSnapshotTs }
+    val append = table.newAppend()
+    for (snapshot in snapshotsToRecover) {
+        // TODO do we need to also handle delete/manifest files?
+        val files = snapshot.addedDataFiles(tmpTable.io())
+        for (file in files) {
+            append.appendFile(file)
+        }
+    }
+    append.commit()
+}
+
+private fun writeRecordToTable(
+    tmpTable: Table,
+    realTableLocation: String,
+    schema: Schema,
+    structType: Types.StructType,
+    number: Int,
+) {
+    val structValue: GenericRecord = GenericRecord.create(structType)
     val dataWriter: DataWriter<GenericRecord> =
-        Parquet.writeData(file)
+        Parquet.writeData(tmpTable.io().newOutputFile(realTableLocation + "/" + System.currentTimeMillis()))
             .schema(schema)
             .createWriterFunc(GenericParquetWriter::buildWriter)
             .overwrite()
             .withSpec(PartitionSpec.unpartitioned())
             .build()
-
-    val structRecord: GenericRecord = GenericRecord.create(structType)
-    val records = listOf(
-        GenericRecord.create(schema).copy(
-            mapOf(
-                "uuid" to "4f37e94e-741e-40fc-9e3f-f75f5ffacaba",
-                "updated_at" to OffsetDateTime.now(),
-                "foo" to structRecord.copy(mapOf("bar" to 43)),
-            ),
-        ),
-    )
-
     dataWriter.use { writer ->
-        records.forEach {
-            writer.write(it)
-        }
+        writer.write(
+            GenericRecord.create(schema).copy(
+                mapOf(
+                    "uuid" to "4f37e94e-741e-40fc-9e3f-f75f5ffacaba",
+                    "updated_at" to OffsetDateTime.now(),
+                    "foo" to structValue.copy(mapOf("bar" to number)),
+                ),
+            )
+        )
     }
-
-    table.newAppend()
+    tmpTable.newAppend()
         .appendFile(dataWriter.toDataFile())
         .commit()
-
-
-//    val glueClient = GlueClient {
-//        credentialsProvider = StaticCredentialsProvider {
-//            this.accessKeyId = accessKeyId
-//            this.secretAccessKey = secretAccessKey
-//        }
-//        region = "us-east-2"
-//    }
-//    val databaseName = "edgao_test_database"
-//    val tableName = "edgao_test_table"
-//    // TODO create if not exists, for now just do it manually
-//    if (false) {
-//        glueClient.createDatabase(
-//            CreateDatabaseRequest.invoke {
-//                databaseInput {
-//                    name = databaseName
-//                }
-//            },
-//        )
-//        glueClient.createTable(
-//            CreateTableRequest.invoke {
-//                this.databaseName = databaseName
-//                tableInput {
-//                    name = tableName
-//                }
-//            },
-//        )
-//    }
-//
-//    println("${LocalTime.now()} starting update")
-//    glueClient.updateTable(UpdateTableRequest.invoke {
-//        this.databaseName = databaseName
-//        tableInput {
-//            name = tableName
-//            storageDescriptor {
-//                location = "s3://ab-destination-iceberg/edgao_test/test2.jsonl"
-//                columns = listOf(
-//                    Column.invoke {
-//                        name = "uuid"
-//                        type = "string"
-//                    },
-//                    Column.invoke {
-//                        name = "updated_at"
-//                        type = "timestamp"
-//                    },
-//                    Column.invoke {
-//                        name = "foo"
-//                        type = "struct<bar: INT>"
-//                    },
-//                )
-//            }
-//        }
-//    })
-//    println("${LocalTime.now()} done with update")
-//    glueClient.close()
-//    println("${LocalTime.now()} closed client")
 }
