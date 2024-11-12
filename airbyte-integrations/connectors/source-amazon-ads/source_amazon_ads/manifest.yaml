@@ -8,7 +8,7 @@ check:
     - streams
 
 definitions:
-  error_handler:
+  sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
     #    max_retries: 5
     response_filters:
@@ -21,6 +21,18 @@ definitions:
       - http_codes: [404]
         action: IGNORE
         error_message: "Skip current AdGroup because the specified ad group has no associated bid"
+
+  basic_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ 'message' in response }}"
+        action: FAIL
+        error_message: "{{ response.message }}"
+      - predicate: "{{ 'code' in response and 'details' in response }}"
+        action: IGNORE
+        error_message: "{{ response.code }}; {{ response.details }}"
+
+
 
   oauth_authenticator:
     type: OAuthAuthenticator
@@ -138,6 +150,8 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           path: sd/campaigns
           http_method: GET
           request_headers:
@@ -170,6 +184,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/adGroups
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -198,6 +214,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/productAds
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -226,6 +244,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/targets
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -254,6 +274,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/creatives
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -285,6 +307,8 @@ definitions:
           #        sp/budgetRules - working endpoint
           path: sp/budgetRules # TODO: check/rename stream during next breaking changes
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -325,14 +349,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sb/keywords
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -362,14 +379,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sb/v4/campaigns/list
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -414,14 +424,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           path: sb/v4/adGroups/list
           http_method: POST
           request_headers:
@@ -761,7 +764,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          error_handler: "#/definitions/error_handler"
+          error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
           path: /sp/targets/bid/recommendations
           http_method: POST
           request_headers:
@@ -822,7 +825,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          error_handler: "#/definitions/error_handler"
+          error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
           path: "v2/sp/adGroups/{{ stream_slice['adGroupId'] }}/suggested/keywords"
           http_method: GET
           request_headers:
