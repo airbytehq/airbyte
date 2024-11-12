@@ -28,13 +28,13 @@ import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
-import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.MemoryManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
@@ -64,10 +64,9 @@ class DefaultInputConsumerTask(
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
-    private val fileQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationFileWrapped>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
+    private val destinationTaskLauncher: DestinationTaskLauncher
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
@@ -76,9 +75,8 @@ class DefaultInputConsumerTask(
         sizeBytes: Long
     ) {
         val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream)
-        val recordQueue = recordQueueSupplier.get(stream)
-        val fileQueue = fileQueueSupplier.get(stream)
+        val manager = syncManager.getStreamManager(stream.descriptor)
+        val recordQueue = recordQueueSupplier.get(stream.descriptor)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
@@ -98,19 +96,10 @@ class DefaultInputConsumerTask(
             is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
             is DestinationFile -> {
-                val wrapped =
-                    StreamFileWrapped(
-                        index = manager.countRecordIn(),
-                        sizeBytes = sizeBytes,
-                        file = message
-                    )
-                fileQueue.publish(reserved.replace(wrapped))
+                destinationTaskLauncher.handleFile(stream, message)
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamFileCompleteWrapped(index = manager.markEndOfStream())
-                fileQueue.publish(reserved.replace(wrapped))
-                fileQueue.close()
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")

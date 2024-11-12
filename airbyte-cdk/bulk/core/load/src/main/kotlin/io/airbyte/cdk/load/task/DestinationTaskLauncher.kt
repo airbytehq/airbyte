@@ -9,10 +9,12 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
+import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
@@ -25,6 +27,7 @@ import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
@@ -38,6 +41,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
+    suspend fun handleFile(stream: DestinationStream, file: DestinationFile)
 }
 
 /**
@@ -89,6 +93,7 @@ class DefaultDestinationTaskLauncher(
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
+    private val processFileTaskFactory: ProcessFileTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
@@ -99,7 +104,8 @@ class DefaultDestinationTaskLauncher(
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
-    private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>
+    private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
+    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -124,11 +130,13 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
-        // Start a spill-to-disk task for each record stream
-        catalog.streams.forEach { stream ->
-            log.info { "Starting spill-to-disk task for $stream" }
-            val spillTask = spillToDiskTaskFactory.make(this, stream)
-            enqueue(spillTask)
+        if (!fileTransferEnabled) {
+            // Start a spill-to-disk task for each record stream
+            catalog.streams.forEach { stream ->
+                log.info { "Starting spill-to-disk task for $stream" }
+                val spillTask = spillToDiskTaskFactory.make(this, stream)
+                enqueue(spillTask)
+            }
         }
 
         // Start the checkpoint management tasks
@@ -223,5 +231,9 @@ class DefaultDestinationTaskLauncher(
     /** Called exactly once when all streams are closed. */
     override suspend fun handleTeardownComplete() {
         succeeded.send(true)
+    }
+
+    override suspend fun handleFile(stream: DestinationStream, file: DestinationFile) {
+        enqueue(processFileTaskFactory.make(this, stream, file))
     }
 }
