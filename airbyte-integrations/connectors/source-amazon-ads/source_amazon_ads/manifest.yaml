@@ -32,8 +32,6 @@ definitions:
         action: IGNORE
         error_message: "{{ response.code }}; {{ response.details }}"
 
-
-
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
