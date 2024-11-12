@@ -47,7 +47,6 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val heartbeat: Duration = Duration.ofMillis(100),
     val timeout: Duration = Duration.ofSeconds(10),
 ) {
-
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),

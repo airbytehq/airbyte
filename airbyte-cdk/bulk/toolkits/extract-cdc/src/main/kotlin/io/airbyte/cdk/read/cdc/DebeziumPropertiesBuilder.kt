@@ -7,6 +7,7 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.read.Stream
 import io.debezium.spi.common.ReplacementFunction
 import io.debezium.storage.file.history.FileSchemaHistory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.Duration
 import java.util.Properties
@@ -17,6 +18,7 @@ import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
 
 /** Utility class for building [Properties] for initializing the Debezium engine. */
+val log = KotlinLogging.logger {}
 class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     fun build(): Properties = props.clone() as Properties
@@ -117,12 +119,17 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     /** Tells Debezium which tables and columns we care about. */
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
         val tableIncludeList: List<String> =
-            streams.map { Pattern.quote("${it.namespace}.${it.name}") }
+            streams.map {
+                log.info{"SGX stream namespace=${it.namespace}, name=${it.name}"}
+                Pattern.quote("${it.namespace}.${it.name}")
+            }
         val columnIncludeList: List<String> =
             streams.zip(tableIncludeList).map { (stream: Stream, prefix: String) ->
                 val suffix: String = stream.fields.joinToString("|") { Pattern.quote(it.id) }
                 "$prefix\\.($suffix)"
             }
+        log.info {"SGX tableIncludeList=$tableIncludeList, table.include.list=${joinIncludeList(tableIncludeList)}"}
+        log.info{"SGX columnIncludeList=${columnIncludeList}, joinIncludeList(columnIncludeList)=${joinIncludeList(columnIncludeList)}"}
         return apply {
             with("table.include.list", joinIncludeList(tableIncludeList))
             with("column.include.list", joinIncludeList(columnIncludeList))

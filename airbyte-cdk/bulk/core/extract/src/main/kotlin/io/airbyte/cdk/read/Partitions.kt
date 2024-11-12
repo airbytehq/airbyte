@@ -3,7 +3,9 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val log = KotlinLogging.logger {}
 /**
  * [PartitionsCreatorFactory] must be implemented by each source connector and serves as the
  * entrypoint to how READ operations are executed for that connector, via the [PartitionsCreator]

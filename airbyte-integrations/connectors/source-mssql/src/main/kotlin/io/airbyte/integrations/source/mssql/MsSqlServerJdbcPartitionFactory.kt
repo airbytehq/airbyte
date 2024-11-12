@@ -25,33 +25,31 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mssql.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
-import jakarta.inject.Singleton
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
-import java.util.*
+import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
-
-private val log = KotlinLogging.logger {}
+import javax.inject.Singleton
 
 @Primary
 @Singleton
-class MySqlSourceJdbcPartitionFactory(
+class MsSqlServerJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
-    val selectQueryGenerator: MySqlSourceOperations,
-    val config: MySqlSourceConfiguration,
+    val selectQueryGenerator: MsSqlServerSelectQueryGenerator,
+    val config: MsSqlServerSourceConfiguration,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
         DefaultJdbcStreamState,
-        MySqlSourceJdbcPartition,
+        MsSqlServerJdbcPartition,
     > {
+    private val log = KotlinLogging.logger {}
 
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
@@ -81,13 +79,13 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun coldStart(streamState: DefaultJdbcStreamState): MySqlSourceJdbcPartition {
+    private fun coldStart(streamState: DefaultJdbcStreamState): MsSqlServerJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
-                return MySqlSourceJdbcNonResumableSnapshotPartition(
+                return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                 )
@@ -95,7 +93,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
             if (sharedState.configuration.global) {
-                return MySqlSourceJdbcCdcRfrSnapshotPartition(
+                return MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -103,7 +101,7 @@ class MySqlSourceJdbcPartitionFactory(
                     upperBound = listOf(upperBound)
                 )
             } else {
-                return MySqlSourceJdbcRfrSnapshotPartition(
+                return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -114,7 +112,7 @@ class MySqlSourceJdbcPartitionFactory(
         }
 
         if (sharedState.configuration.global) {
-            return MySqlSourceJdbcCdcSnapshotPartition(
+            return MsSqlServerJdbcCdcSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 pkChosenFromCatalog,
@@ -126,13 +124,13 @@ class MySqlSourceJdbcPartitionFactory(
             stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
         if (pkChosenFromCatalog.isEmpty()) {
-            return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
+            return MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
                 cursorChosenFromCatalog
             )
         }
-        return MySqlSourceJdbcSnapshotWithCursorPartition(
+        return MsSqlServerJdbcSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
             pkChosenFromCatalog,
@@ -160,25 +158,17 @@ class MySqlSourceJdbcPartitionFactory(
      *      ii. In cursor read phase, use cursor incremental.
      * ```
      */
-    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MySqlSourceJdbcPartition? {
+    override fun create(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
+        val retVal = createInternal(streamFeedBootstrap)
+        log.info { "SGX returning $retVal" }
+        return retVal
+    }
+
+    fun createInternal(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-
-        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        // to read it
-        if (streamFeedBootstrap.currentState?.isNull == true) {
-            return null
-        }
-
-        // A legacy saved state may be null for an empty table. We will attempt to read it again
-        if (
-            streamFeedBootstrap.currentState == null ||
-                streamFeedBootstrap.currentState?.isEmpty == true
-        ) {
-            return coldStart(streamState)
-        }
-
-        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
+        val opaqueStateValue: OpaqueStateValue =
+            streamFeedBootstrap.currentState ?: return coldStart(streamState)
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -190,21 +180,21 @@ class MySqlSourceJdbcPartitionFactory(
         ) {
             if (
                 streamState.streamFeedBootstrap.currentState ==
-                    MySqlSourceJdbcStreamStateValue.snapshotCompleted
+                    MsSqlServerJdbcStreamStateValue.snapshotCompleted
             ) {
                 return null
             }
-            return MySqlSourceJdbcNonResumableSnapshotPartition(
+            return MsSqlServerJdbcNonResumableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
             )
         }
 
         if (!isCursorBased) {
-            val sv: MySqlSourceCdcInitialSnapshotStateValue =
+            val sv: MsSqlServerCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(
                     opaqueStateValue,
-                    MySqlSourceCdcInitialSnapshotStateValue::class.java
+                    MsSqlServerCdcInitialSnapshotStateValue::class.java
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -214,7 +204,7 @@ class MySqlSourceJdbcPartitionFactory(
                 }
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
 
-                return MySqlSourceJdbcRfrSnapshotPartition(
+                return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -239,7 +229,7 @@ class MySqlSourceJdbcPartitionFactory(
                     if (sv.pkVal == upperBound.asText()) {
                         return null
                     }
-                    return MySqlSourceJdbcCdcRfrSnapshotPartition(
+                    return MsSqlServerJdbcCdcRfrSnapshotPartition(
                         selectQueryGenerator,
                         streamState,
                         pkChosenFromCatalog,
@@ -247,7 +237,7 @@ class MySqlSourceJdbcPartitionFactory(
                         upperBound = listOf(upperBound)
                     )
                 }
-                return MySqlSourceJdbcCdcSnapshotPartition(
+                return MsSqlServerJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -255,8 +245,8 @@ class MySqlSourceJdbcPartitionFactory(
                 )
             }
         } else {
-            val sv: MySqlSourceJdbcStreamStateValue =
-                Jsons.treeToValue(opaqueStateValue, MySqlSourceJdbcStreamStateValue::class.java)
+            val sv: MsSqlServerJdbcStreamStateValue =
+                Jsons.treeToValue(opaqueStateValue, MsSqlServerJdbcStreamStateValue::class.java)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
@@ -266,7 +256,7 @@ class MySqlSourceJdbcPartitionFactory(
                 val pkLowerBound: JsonNode =
                     stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
 
-                return MySqlSourceJdbcCdcRfrSnapshotPartition(
+                return MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -274,6 +264,7 @@ class MySqlSourceJdbcPartitionFactory(
                     upperBound = listOf(upperBound)
                 )
             }
+
 
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
@@ -285,7 +276,7 @@ class MySqlSourceJdbcPartitionFactory(
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
 
                 // in a state where it's still in primary_key read part.
-                return MySqlSourceJdbcSnapshotWithCursorPartition(
+                return MsSqlServerJdbcSnapshotWithCursorPartition(
                     selectQueryGenerator,
                     streamState,
                     pkChosenFromCatalog,
@@ -300,15 +291,11 @@ class MySqlSourceJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint.isNull) {
-                return coldStart(streamState)
-            }
-
             if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
             }
-            return MySqlSourceJdbcCursorIncrementalPartition(
+            return MsSqlServerJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
                 streamState,
                 cursor,
@@ -330,66 +317,41 @@ class MySqlSourceJdbcPartitionFactory(
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
                     LeafAirbyteSchemaType.BINARY -> {
-                        try {
-                            val ba = Base64.getDecoder().decode(stateValue!!)
-                            Jsons.valueToTree<BinaryNode>(ba)
-                        } catch (_: RuntimeException) {
-                            Jsons.valueToTree<JsonNode>(stateValue)
-                        }
+                        val ba = Base64.getDecoder().decode(stateValue!!)
+                        Jsons.valueToTree<BinaryNode>(ba)
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
-                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
                         try {
-                            val formatter: DateTimeFormatter =
-                                DateTimeFormatterBuilder()
-                                    .appendPattern(timestampInStatePattern)
-                                    .optionalStart()
-                                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
-                                    .optionalEnd()
-                                    .toFormatter()
-                            val parsedDate =  LocalDateTime.parse(stateValue, formatter)
-                            val dateAsString = parsedDate.format(LocalDateTimeCodec.formatter)
+
+                            val parsedDate =  LocalDateTime.parse(stateValue, inputDateFormatter)
+                            val dateAsString = parsedDate.format(outputDateFormatter)
                             log.info{"SGX stateValue=$stateValue, parsedDate=$parsedDate, dateAsString=$dateAsString"}
                             Jsons.textNode(
                                 dateAsString
                             )
-                        } catch (e: RuntimeException) {
+                        } catch (e: DateTimeParseException) {
                             log.info{"SGX cought exception $e"}
                             // Resolve to use the new format.
-                            Jsons.valueToTree<JsonNode>(stateValue)
+                            Jsons.valueToTree(stateValue)
                         }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
-                        val formatter =
-                            DateTimeFormatterBuilder()
-                                .appendPattern(timestampInStatePattern)
-                                .optionalStart()
-                                .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
-                                .optionalEnd()
-                                .optionalStart()
-                                .optionalStart()
-                                .appendLiteral(' ')
-                                .optionalEnd()
-                                .appendOffset("+HH:mm", "Z")
-                                .optionalEnd()
-                                .toFormatter()
-
                         try {
-                            val offsetDateTime =
-                                try {
-                                    OffsetDateTime.parse(stateValue, formatter)
-                                } catch (_: DateTimeParseException) {
-                                    // if no offset exists, we assume it's UTC
-                                    LocalDateTime.parse(stateValue, formatter).atOffset(UTC)
-                                }
-                            Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
-                        } catch (_: RuntimeException) {
+                            val formatter: DateTimeFormatter =
+                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                            Jsons.valueToTree(
+                                LocalDateTime.parse(stateValue, formatter)
+                                    .minusDays(1)
+                                    .atOffset(java.time.ZoneOffset.UTC)
+                                    .format(OffsetDateTimeCodec.formatter)
+                            )
+                        } catch (e: DateTimeParseException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree<JsonNode>(stateValue)
+                            Jsons.valueToTree(stateValue)
                         }
                     }
-                    else -> Jsons.valueToTree<JsonNode>(stateValue)
+                    else -> Jsons.valueToTree(stateValue)
                 }
             else ->
                 throw IllegalStateException(
@@ -399,10 +361,24 @@ class MySqlSourceJdbcPartitionFactory(
     }
 
     override fun split(
-        unsplitPartition: MySqlSourceJdbcPartition,
+        unsplitPartition: MsSqlServerJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
-    ): List<MySqlSourceJdbcPartition> {
+    ): List<MsSqlServerJdbcPartition> {
         // At this moment we don't support split on within mysql stream in any mode.
         return listOf(unsplitPartition)
+    }
+
+    companion object {
+        const val DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"
+        val outputDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN)
+
+        val TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
+        val inputDateFormatter: DateTimeFormatter =
+            DateTimeFormatterBuilder()
+                .appendPattern(TIMESTAMP_WITHOUT_FRACT_SECOND_PATTERN)
+                .optionalStart()
+                .appendFraction(ChronoField.NANO_OF_SECOND, 1, 7, true)
+                .optionalEnd()
+                .toFormatter()
     }
 }

@@ -102,12 +102,14 @@ class MySqlSourceCursorBasedIntegrationTest {
     fun testWithFullRefresh() {
         val fullRefreshCatalog =
             getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
+        log.info { "SGX run1" }
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
         assertEquals(recordMessageFromRun1.size, 2)
         val lastStateMessageFromRun1 = run1.states().last()
 
+        log.info { "SGX run2" }
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
                 .run()

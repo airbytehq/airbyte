@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql
+package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -39,7 +39,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val log = KotlinLogging.logger {}
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
-sealed class MySqlSourceJdbcPartition(
+sealed class MsSqlServerJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
 ) : JdbcPartition<DefaultJdbcStreamState> {
@@ -64,29 +64,29 @@ sealed class MySqlSourceJdbcPartition(
 }
 
 /** Default implementation of a [JdbcPartition] for an unsplittable snapshot partition. */
-class MySqlSourceJdbcNonResumableSnapshotPartition(
+class MsSqlServerJdbcNonResumableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-) : MySqlSourceJdbcPartition(selectQueryGenerator, streamState) {
+) : MsSqlServerJdbcPartition(selectQueryGenerator, streamState) {
 
-    override val completeState: OpaqueStateValue = MySqlSourceJdbcStreamStateValue.snapshotCompleted
+    override val completeState: OpaqueStateValue = MsSqlServerJdbcStreamStateValue.snapshotCompleted
 }
 
 /**
  * Default implementation of a [JdbcPartition] for an non resumable snapshot partition preceding a
  * cursor-based incremental sync.
  */
-class MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
+class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     val cursor: Field,
 ) :
-    MySqlSourceJdbcPartition(selectQueryGenerator, streamState),
+    MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = streamState.cursorUpperBound!!,
                 streamState.stream,
@@ -99,12 +99,12 @@ class MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
 }
 
 /** Base class for default implementations of [JdbcPartition] for partitions. */
-sealed class MySqlSourceJdbcResumablePartition(
+sealed class MsSqlServerJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
     val checkpointColumns: List<Field>,
 ) :
-    MySqlSourceJdbcPartition(selectQueryGenerator, streamState),
+    MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState> {
     abstract val lowerBound: List<JsonNode>?
     abstract val upperBound: List<JsonNode>?
@@ -181,49 +181,53 @@ sealed class MySqlSourceJdbcResumablePartition(
 }
 
 /** RFR for cursor based read. */
-class MySqlSourceJdbcRfrSnapshotPartition(
+class MsSqlServerJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
 
     // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
     // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+            MsSqlServerJdbcStreamStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
                 primaryKeyCheckpoint =
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+        MsSqlServerJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
 }
 
 /** RFR for CDC. */
-class MySqlSourceJdbcCdcRfrSnapshotPartition(
+class MsSqlServerJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    init {
+        log.info { "SGX lowerBound=$lowerBound, upperBound=$upperBound" }
+    }
+
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
                 primaryKeyCheckpoint =
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+        MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
@@ -233,18 +237,18 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
  * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC
  * initial sync.
  */
-class MySqlSourceJdbcCdcSnapshotPartition(
+class MsSqlServerJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?
-) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
-        get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+        get() = MsSqlServerCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+        MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
@@ -253,18 +257,18 @@ class MySqlSourceJdbcCdcSnapshotPartition(
 /**
  * Default implementation of a [JdbcPartition] for a splittable partition involving cursor columns.
  */
-sealed class MySqlSourceJdbcCursorPartition(
+sealed class MsSqlServerJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
     checkpointColumns: List<Field>,
     val cursor: Field,
     private val explicitCursorUpperBound: JsonNode?,
 ) :
-    MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
+    MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
@@ -276,7 +280,7 @@ sealed class MySqlSourceJdbcCursorPartition(
  * Default implementation of a [JdbcPartition] for a splittable snapshot partition preceding a
  * cursor-based incremental sync.
  */
-class MySqlSourceJdbcSnapshotWithCursorPartition(
+class MsSqlServerJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
@@ -284,7 +288,7 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
     cursor: Field,
     cursorUpperBound: JsonNode?,
 ) :
-    MySqlSourceJdbcCursorPartition(
+    MsSqlServerJdbcCursorPartition(
         selectQueryGenerator,
         streamState,
         primaryKey,
@@ -296,14 +300,14 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorUpperBound,
                 stream,
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+        MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
@@ -315,7 +319,7 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
  * Default implementation of a [JdbcPartition] for a cursor incremental partition. These are always
  * splittable.
  */
-class MySqlSourceJdbcCursorIncrementalPartition(
+class MsSqlServerJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     cursor: Field,
@@ -323,7 +327,7 @@ class MySqlSourceJdbcCursorIncrementalPartition(
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
 ) :
-    MySqlSourceJdbcCursorPartition(
+    MsSqlServerJdbcCursorPartition(
         selectQueryGenerator,
         streamState,
         listOf(cursor),
@@ -332,22 +336,23 @@ class MySqlSourceJdbcCursorIncrementalPartition(
     ) {
 
     init {
-        log.info { "SGX cursorLowerBound=$cursorLowerBound, cursorUpperBound=$cursorUpperBound, ${Thread.currentThread().stackTrace.toList()}" }
+        log.info { "SGX cursorLowerBound=$cursorLowerBound, cursorUpperBound=$cursorUpperBound" }
     }
+
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)
 
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = cursorUpperBound,
                 stream,
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
             stream,
