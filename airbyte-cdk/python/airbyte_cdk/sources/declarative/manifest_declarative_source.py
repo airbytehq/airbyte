@@ -193,27 +193,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
         except ValidationError as e:
             raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
-        cdk_version = metadata.version("airbyte_cdk")
-        cdk_major, cdk_minor, cdk_patch = self._get_version_parts(cdk_version, "airbyte-cdk")
-        manifest_version = self._source_config.get("version")
-        if manifest_version is None:
-            raise RuntimeError(
-                "Manifest version is not defined in the manifest. This is unexpected since it should be a required field. Please contact support."
-            )
-        manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version, "manifest")
-
-        if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
-            raise ValidationError(
-                f"The manifest version {manifest_version} is greater than the airbyte-cdk package version ({cdk_version}). Your "
-                f"manifest may contain features that are not in the current CDK version."
-            )
-        elif manifest_major == 0 and manifest_minor < 29:
-            raise ValidationError(
-                f"The low-code framework was promoted to Beta in airbyte-cdk version 0.29.0 and contains many breaking changes to the "
-                f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version "
-                f"{cdk_version} which contains these breaking changes."
-            )
-
     @staticmethod
     def _get_version_parts(version: str, version_type: str) -> Tuple[int, int, int]:
         """
