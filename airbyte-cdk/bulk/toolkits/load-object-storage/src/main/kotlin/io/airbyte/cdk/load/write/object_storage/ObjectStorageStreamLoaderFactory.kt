@@ -102,7 +102,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                     records.forEach { writer.accept(it) }
                 }
             }
-        log.info { "Finished writing records to $key" }
         return if (pathFactory.supportsStaging) {
             StagedObject(remoteObject = obj, partNumber = partNumber)
         } else {

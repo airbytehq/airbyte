@@ -237,7 +237,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             log.info { "Waiting for all checkpoints to flush" }
             // Not usually a fan of busywaiting, but it's extremely unlikely we
             // get here without more than a handful of stragglers
-            delay(1000L)
+            delay(10_000L)
             flushReadyCheckpointMessages()
         }
     }

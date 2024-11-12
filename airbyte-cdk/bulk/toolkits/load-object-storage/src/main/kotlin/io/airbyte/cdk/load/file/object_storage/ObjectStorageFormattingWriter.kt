@@ -88,11 +88,12 @@ class CSVFormattingWriter(
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean
 ) : ObjectStorageFormattingWriter {
+    // If CSV is not flattened, the entire json row should be converted to a string
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     override fun accept(record: DestinationRecord) {
         printer.printRecord(
-            *record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
+            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
         )
     }
 

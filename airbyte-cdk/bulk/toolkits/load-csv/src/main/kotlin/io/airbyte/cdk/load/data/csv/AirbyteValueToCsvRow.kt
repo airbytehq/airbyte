@@ -22,30 +22,30 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
 
 class AirbyteValueToCsvRow {
-    fun convert(value: ObjectValue, schema: ObjectType): Array<String> {
-        return schema.properties
-            .map { (key, _) -> value.values[key]?.let { convertInner(it) } ?: "" }
-            .toTypedArray()
+    fun convert(value: ObjectValue, schema: ObjectType): List<Any> {
+        return schema.properties.map { (key, _) ->
+            value.values[key]?.let { convertInner(it) } ?: ""
+        }
     }
 
-    private fun convertInner(value: AirbyteValue): String {
+    private fun convertInner(value: AirbyteValue): Any {
         return when (value) {
             is ObjectValue -> value.toJson().serializeToString()
             is ArrayValue -> value.toJson().serializeToString()
             is StringValue -> value.value
-            is IntegerValue -> value.value.toString()
-            is NumberValue -> value.value.toString()
+            is IntegerValue -> value.value
+            is NumberValue -> value.value
             is NullValue -> ""
             is TimestampValue -> value.value
-            is BooleanValue -> value.value.toString()
+            is BooleanValue -> value.value
             is DateValue -> value.value
-            is IntValue -> value.value.toString()
+            is IntValue -> value.value
             is TimeValue -> value.value
             is UnknownValue -> ""
         }
     }
 }
 
-fun ObjectValue.toCsvRecord(schema: ObjectType): Array<String> {
+fun ObjectValue.toCsvRecord(schema: ObjectType): List<Any> {
     return AirbyteValueToCsvRow().convert(this, schema)
 }

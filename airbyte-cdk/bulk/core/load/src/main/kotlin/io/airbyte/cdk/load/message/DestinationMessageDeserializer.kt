@@ -25,7 +25,8 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
             val airbyteMessage = Jsons.readValue(serialized, AirbyteMessage::class.java)
             return messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
         } catch (t: Throwable) {
-            throw RuntimeException("Failed to deserialize AirbyteMessage")
+            // TODO: REMOVE BEFORE RELEASE
+            throw RuntimeException("Failed to deserialize AirbyteMessage: $serialized", t)
         }
     }
 }
