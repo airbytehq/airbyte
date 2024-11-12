@@ -57,6 +57,10 @@ class FeedReader(
                 // Publish stream completion.
                 root.streamStatusManager.notifyComplete(feed)
                 break
+            } else {
+                log.info {
+                    "SGX reading partition $partitionsCreatorID for feed ${feed.label}. partitionReaders=${partitionReaders}"
+                }
             }
             // Launch coroutines which read from each partition.
             val scheduledPartitionReaders =

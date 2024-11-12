@@ -325,7 +325,6 @@ class MsSqlServerDebeziumOperations(
                     .withSchemaHistory()
                     .buildMap()
 
-
     }
 }
 
