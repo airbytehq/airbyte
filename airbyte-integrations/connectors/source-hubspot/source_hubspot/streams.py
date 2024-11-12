@@ -30,6 +30,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
     APIPropertiesWithHistory,
@@ -72,7 +73,6 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
-
 
 def retry_token_expired_handler(**kwargs):
     """Retry helper when token expired"""
@@ -852,6 +852,25 @@ class Stream(HttpStream, ABC):
         return HubspotAvailabilityStrategy()
 
 
+class LegacyFieldMigrationMixin:
+
+    _transformations = [NewtoLegacyFieldTransformation]
+
+    @property
+    @lru_cache()
+    def properties(self) -> Mapping[str, Any]:
+        props = super().properties
+        for transformation in self._transformations:
+            props = transformation().transform(props)
+        return props
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            for transformation in self._transformations:
+                record = transformation().transform(record=record)
+            yield record
+
+
 class ClientSideIncrementalStream(Stream, CheckpointMixin):
     _cursor_value = ""
 
@@ -1505,7 +1524,7 @@ class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
 
-class Deals(CRMSearchStream):
+class Deals(LegacyFieldMigrationMixin, CRMSearchStream):
     """Deals, API v3"""
 
     entity = "deal"
@@ -1515,7 +1534,7 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
-class DealsArchived(ClientSideIncrementalStream):
+class DealsArchived(LegacyFieldMigrationMixin, ClientSideIncrementalStream):
     """Archived Deals, API v3"""
 
     url = "/crm/v3/objects/deals"
@@ -2192,7 +2211,7 @@ class Companies(CRMSearchStream):
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
-class Contacts(CRMSearchStream):
+class Contacts(LegacyFieldMigrationMixin, CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
