@@ -242,16 +242,16 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
     if context.use_local_cdk:
         context.logger.info("Using local CDK")
         # mount the local cdk
-        path_to_cdk = "airbyte-cdk/python/"
+        path_to_cdk = "../airbyte-python-cdk"  # Assume CDK is cloned in a sibling dir to `airbyte`
         directory_to_mount = context.get_repo_dir(path_to_cdk)
 
         context.logger.info(f"Mounting CDK from {directory_to_mount}")
 
         # Install the airbyte-cdk package from the local directory
-        # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
-        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"]
-        )
+        connector_container = connector_container.with_mounted_directory(
+            path_to_cdk,
+            directory_to_mount,
+        ).with_exec(["poetry", "add", f"--path={path_to_cdk}"])
 
     return connector_container
 
