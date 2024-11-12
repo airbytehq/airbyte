@@ -42,7 +42,7 @@ fun main(): Unit = runBlocking {
     )
     val namespaceId = Namespace.of("edgao_test_namespace")
     val tableId = TableIdentifier.of("edgao_test_namespace", "edgao_test_table")
-    val tmpTableId = TableIdentifier.of("edgao_test_namespace", "edgao_test_table_tmp")
+    val incomingDataBranchName = "_airbyte_incoming_data"
 
     val structType = Types.StructType.of(
         Types.NestedField.required(4, "bar", Types.IntegerType.get()),
@@ -59,12 +59,10 @@ fun main(): Unit = runBlocking {
         )
 
     // TODO create if not exists (... or just wrap in a try catch)
-//    catalog.createNamespace(namespaceId)
-//    catalog.createTable(tableId, schema)
-//    catalog.createTable(tmpTableId, schema)
+    catalog.createNamespace(namespaceId)
+    catalog.createTable(tableId, schema)
     val table = catalog.loadTable(tableId)
-//    table.manageSnapshots().createBranch("airbyte_last_commit").commit()
-    val tmpTable = catalog.loadTable(tmpTableId)
+    table.manageSnapshots().createBranch(incomingDataBranchName).commit()
 
 
 
@@ -74,43 +72,26 @@ fun main(): Unit = runBlocking {
 
 
 
-    // Sync 1 - write (and commit) data to a temp table, then crash
-    // (note that we write files to the _real_ table's location - this is weird, but allowed)
-    // arguably we could just write to the temp table location though (i.e. airbyte_internal)...?
-    writeRecordToTable(tmpTable, table.location(), schema, structType, 32)
+    // Sync 1 - write (and commit) data to a separate branch, then crash
+    writeRecordToTable(table, incomingDataBranchName, schema, structType, 0)
     // !!! let's say we crash here.
 
-    // Sync 2 - when committing to the real table, also recover data from the temp table.
+    // Sync 2
     // first: write new records to the same temp table as the previous sync
-    writeRecordToTable(tmpTable, table.location(), schema, structType, 33)
-    // second: find the last snapshot in the real table,
-    // and append all files from later snapshots from the temp table.
-    val latestCommittedSnapshotTs = table.snapshot("airbyte_last_commit").timestampMillis()
-    val snapshotsToRecover = tmpTable.snapshots().filter { it.timestampMillis() >= latestCommittedSnapshotTs }
-    val append = table.newAppend()
-    for (snapshot in snapshotsToRecover) {
-        logger.info { "adding snapshot ${snapshot.snapshotId()} from timestamp ${snapshot.timestampMillis()}" }
-        val files = snapshot.addedDataFiles(tmpTable.io())
-        for (file in files) {
-            append.appendFile(file)
-        }
-    }
-    val newSnapshot = append.apply()
-    append.commit()
-    logger.info { "fast forwarding to snapshot ID ${newSnapshot.snapshotId()} with timestamp ${newSnapshot.timestampMillis()}" }
-    table.manageSnapshots().replaceBranch("airbyte_last_commit", newSnapshot.snapshotId()).commit()
+    writeRecordToTable(table, incomingDataBranchName, schema, structType, 1)
+    table.manageSnapshots().fastForwardBranch("main", incomingDataBranchName).commit()
 }
 
 private fun writeRecordToTable(
-    tmpTable: Table,
-    realTableLocation: String,
+    table: Table,
+    branchName: String,
     schema: Schema,
     structType: Types.StructType,
     number: Int,
 ) {
     val structValue: GenericRecord = GenericRecord.create(structType)
     val dataWriter: DataWriter<GenericRecord> =
-        Parquet.writeData(tmpTable.io().newOutputFile(realTableLocation + "/" + System.currentTimeMillis()))
+        Parquet.writeData(table.io().newOutputFile(table.location() + "/" + System.currentTimeMillis()))
             .schema(schema)
             .createWriterFunc(GenericParquetWriter::buildWriter)
             .overwrite()
@@ -127,7 +108,8 @@ private fun writeRecordToTable(
             )
         )
     }
-    tmpTable.newAppend()
+    table.newAppend()
+        .toBranch(branchName)
         .appendFile(dataWriter.toDataFile())
         .commit()
 }
