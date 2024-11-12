@@ -4,9 +4,26 @@ connectionSpecification:
   title: Greythr Spec
   type: object
   required:
-    - TODO
+    - username
+    - password
+    - gtHost
+    - api_gateway_host
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    username:
+      title: Username
       type: string
-      description: describe me
+      description: The username for GreyHR
+    password:
+      title: Password
+      type: string
+      description: The password for GreyHR
+      airbyte_secret: true
+    gtHost:
+      title: Orgainization Host URL
+      type: string
+      description: The GreyHR host URL
+    api_gateway_host:
+      title: Greythr Host Url 
+      type: string
+      description: The API Gateway host URL
+
