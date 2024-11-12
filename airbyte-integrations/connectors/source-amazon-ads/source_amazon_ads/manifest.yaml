@@ -280,7 +280,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: sp/budgetRules # WHY sp here???
+          #    Important: API docs contains incorrect endpoint path:
+          #        sd/budgetRules - endpoint from API docs which always returns empty results
+          #        sp/budgetRules - working endpoint
+          path: sp/budgetRules # TODO: check/rename stream during next breaking changes
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
