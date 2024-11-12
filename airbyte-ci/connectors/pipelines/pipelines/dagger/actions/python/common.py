@@ -250,13 +250,20 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         context.logger.info(f"Mounting CDK from '{path_to_cdk}' to '{cdk_mount_dir}'")
 
         # Install the airbyte-cdk package from the local directory
-        connector_container = connector_container.with_directory(
-            cdk_mount_dir,
-            directory_to_mount,
-        ).with_exec(
-            ["pip", "install", "--force-reinstall", f"{cdk_mount_dir}"],
-            # TODO: Consider moving to Poetry-native installation:
-            # ["poetry", "add", cdk_mount_dir]
+        connector_container = (
+            connector_container.with_env_variable(
+                "POETRY_DYNAMIC_VERSIONING_BYPASS",
+                "0.0.0-dev.0",  # Replace dynamic versioning with dev version
+            )
+            .with_directory(
+                cdk_mount_dir,
+                directory_to_mount,
+            )
+            .with_exec(
+                ["pip", "install", "--force-reinstall", f"{cdk_mount_dir}"],
+                # TODO: Consider moving to Poetry-native installation:
+                # ["poetry", "add", cdk_mount_dir]
+            )
         )
 
     return connector_container
