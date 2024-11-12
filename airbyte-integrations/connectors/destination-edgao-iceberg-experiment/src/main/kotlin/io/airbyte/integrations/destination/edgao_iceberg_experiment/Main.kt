@@ -59,10 +59,10 @@ fun main(): Unit = runBlocking {
         )
 
     // TODO create if not exists (... or just wrap in a try catch)
-    catalog.createNamespace(namespaceId)
-    catalog.createTable(tableId, schema)
+//    catalog.createNamespace(namespaceId)
+//    catalog.createTable(tableId, schema)
     val table = catalog.loadTable(tableId)
-    table.manageSnapshots().createBranch(incomingDataBranchName).commit()
+//    table.manageSnapshots().createBranch(incomingDataBranchName).commit()
 
 
 
@@ -73,12 +73,13 @@ fun main(): Unit = runBlocking {
 
 
     // Sync 1 - write (and commit) data to a separate branch, then crash
-    writeRecordToTable(table, incomingDataBranchName, schema, structType, 0)
+    writeRecordToTable(table, incomingDataBranchName, schema, structType, 2)
     // !!! let's say we crash here.
 
     // Sync 2
-    // first: write new records to the same temp table as the previous sync
-    writeRecordToTable(table, incomingDataBranchName, schema, structType, 1)
+    // first: write new records to the same branch as the previous sync
+    writeRecordToTable(table, incomingDataBranchName, schema, structType, 3)
+    // and at the end of the sync, fast-forward the main branch to catch up with the temp branch
     table.manageSnapshots().fastForwardBranch("main", incomingDataBranchName).commit()
 }
 
