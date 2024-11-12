@@ -63,29 +63,42 @@ fun main(): Unit = runBlocking {
 //    catalog.createTable(tableId, schema)
 //    catalog.createTable(tmpTableId, schema)
     val table = catalog.loadTable(tableId)
+//    table.manageSnapshots().createBranch("airbyte_last_commit").commit()
     val tmpTable = catalog.loadTable(tmpTableId)
+
+
+
+
+
+
+
 
     // Sync 1 - write (and commit) data to a temp table, then crash
     // (note that we write files to the _real_ table's location - this is weird, but allowed)
-    writeRecordToTable(tmpTable, table.location(), schema, structType, 3)
+    writeRecordToTable(tmpTable, table.location(), schema, structType, 32)
     // !!! let's say we crash here.
 
     // Sync 2 - when committing to the real table, also recover data from the temp table.
     // first: write new records to the same temp table as the previous sync
-    writeRecordToTable(tmpTable, table.location(), schema, structType, 4)
+    writeRecordToTable(tmpTable, table.location(), schema, structType, 33)
     // second: find the last snapshot in the real table,
     // and append all files from later snapshots from the temp table.
-    val latestCommittedSnapshotTs = table.currentSnapshot()?.timestampMillis() ?: 0
+    val s = table.snapshot(table.refs()["airbyte_last_commit"]!!.snapshotId())
+    logger.info { "found previous snapshot ${s.snapshotId()} with timestamp ${s.timestampMillis()}" }
+    val latestCommittedSnapshotTs = table.snapshot(table.refs()["airbyte_last_commit"]!!.snapshotId()).timestampMillis()
     val snapshotsToRecover = tmpTable.snapshots().filter { it.timestampMillis() >= latestCommittedSnapshotTs }
     val append = table.newAppend()
     for (snapshot in snapshotsToRecover) {
-        // TODO do we need to also handle delete/manifest files?
+        logger.info { "adding snapshot ${snapshot.snapshotId()} from timestamp ${snapshot.timestampMillis()}" }
         val files = snapshot.addedDataFiles(tmpTable.io())
         for (file in files) {
             append.appendFile(file)
         }
     }
+    val newSnapshot = append.apply()
     append.commit()
+    logger.info { "fast forwarding to snapshot ID ${newSnapshot.snapshotId()} with timestamp ${newSnapshot.timestampMillis()}" }
+    table.manageSnapshots().replaceBranch("airbyte_last_commit", newSnapshot.snapshotId()).commit()
 }
 
 private fun writeRecordToTable(
