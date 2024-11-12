@@ -861,12 +861,15 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - http_codes: [400]
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "{{ response }}"
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
+              - predicate: "{{ 'code' in response and 'details' in response }}"
+                action: IGNORE
+                error_message: "{{ response.code }}; {{ response.details }}"
           path: /attribution/report
           http_method: POST
           request_headers:
