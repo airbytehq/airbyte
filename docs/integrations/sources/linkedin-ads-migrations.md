@@ -11,6 +11,12 @@ Version 5.0.0 introduces changes to primary keys for streams:
 |:-------------------------------------|:--------------------------------------------------------|
 | `[string_of_pivot_values, end_date]` | `[string_of_pivot_values, end_date, sponsoredCampaign]` | 
 
+- account_users
+
+| Old PK      | New PK            | 
+|:------------|:------------------|
+| `[account]` | `[account, user]` | 
+
 ## Migration Steps
 
 Clearing your data is required for the affected streams in order to continue syncing successfully. To clear your data 

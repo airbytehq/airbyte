@@ -88,7 +88,7 @@ data:
               - "campaign_groups"
               - "conversions"
       5.0.0:
-        message: This release introduces updated primary keys for streams ad_campaign_analytics and Custom Ad Analytics Reports from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign]. Users using 4.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
+        message: This release introduces updated primary keys for streams ad_campaign_analytics and Custom Ad Analytics Reports from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and for stream account_users from [account] to [account, user]. Users using 4.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
         upgradeDeadline: "2024-12-02"
   suggestedStreams:
     streams:

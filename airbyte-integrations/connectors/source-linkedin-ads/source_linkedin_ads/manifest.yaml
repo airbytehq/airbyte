@@ -55,6 +55,7 @@ definitions:
       name: account_users
       primary_key:
         - account
+        - user
       retriever:
         type: SimpleRetriever
         requester:
