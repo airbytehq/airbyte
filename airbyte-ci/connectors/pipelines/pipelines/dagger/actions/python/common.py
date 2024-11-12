@@ -243,11 +243,11 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         context.logger.info("Using local CDK")
         # mount the local cdk
         # Assume CDK is cloned in a sibling dir to `airbyte`:
-        path_to_cdk = "../airbyte-python-cdk"
+        path_to_cdk = str(Path("../airbyte-python-cdk").absolute())
         directory_to_mount = context.get_repo_dir(path_to_cdk)
         cdk_mount_dir = "/airbyte-python-cdk"
 
-        context.logger.info(f"Mounting CDK from {directory_to_mount}")
+        context.logger.info(f"Mounting CDK from '{directory_to_mount!s}' ('{path_to_cdk}')")
 
         # Install the airbyte-cdk package from the local directory
         connector_container = connector_container.with_mounted_directory(
