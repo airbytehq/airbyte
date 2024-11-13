@@ -378,7 +378,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-
   private void putDoubleArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
