@@ -1,0 +1,49 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    // I have no idea what this means!!
+    core = 'load'
+    toolkits = ['load-s3']
+    cdk = 'local'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.iceberg.v2.IcebergDestination'
+
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=70.0']
+
+    // Uncomment and replace to run locally
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
+
+dependencies {
+    configurations.all {
+        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+
+    // temporary dependencies so that we can continue running the legacy test suite.
+    // eventually we should remove those tests + rely solely on the bulk CDK tests.
+    // integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    implementation("org.apache.iceberg:iceberg-api:1.6.1")
+    implementation("org.apache.iceberg:iceberg-parquet:1.6.1")
+    implementation("org.apache.iceberg:iceberg-common:1.6.1")
+    implementation("org.apache.iceberg:iceberg-core:1.6.1")
+    implementation("org.apache.iceberg:iceberg-aws:1.6.1")
+    implementation("org.apache.iceberg:iceberg-nessie:1.6.1")
+    implementation("org.apache.iceberg:iceberg-spark:1.6.1")
+    implementation("software.amazon.awssdk:bundle:2.29.6")
+    implementation("org.apache.hadoop:hadoop-common:3.4.1")
+    implementation("org.apache.parquet:parquet-hadoop:1.14.3")
+    implementation("org.apache.parquet:parquet-column:1.14.3")
+    implementation("org.projectnessie.nessie:nessie-client:0.99.0")
+}
