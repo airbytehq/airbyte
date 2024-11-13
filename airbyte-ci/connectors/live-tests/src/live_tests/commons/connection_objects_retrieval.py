@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
@@ -99,10 +99,10 @@ def get_connection_objects(
     fail_if_missing_objects: bool = True,
     connector_image: Optional[str] = None,
     connector_version: Optional[str] = None,
-    auto_select_connection: bool = False,
+    auto_select_connections: bool = False,
     selected_streams: Optional[set[str]] = None,
     connection_subset: ConnectionSubset = ConnectionSubset.SANDBOXES,
-) -> ConnectionObjects:
+) -> List[ConnectionObjects]:
     """This function retrieves the connection objects values.
     It checks that the required objects are available and raises a UsageError if they are not.
     If a connection_id is provided, it retrieves the connection objects from the connection.
@@ -118,19 +118,19 @@ def get_connection_objects(
         fail_if_missing_objects (bool, optional): Whether to raise a ValueError if a required object is missing. Defaults to True.
         connector_image (Optional[str]): The image name for the connector under test.
         connector_version (Optional[str]): The version for the connector under test.
-        auto_select_connection (bool, optional): Whether to automatically select a connection if no connection id is passed. Defaults to False.
+        auto_select_connections (bool, optional): Whether to automatically select connections if no connection id is passed. Defaults to False.
         selected_streams (Optional[Set[str]]): The set of selected streams to use when auto selecting a connection.
         connection_subset (ConnectionSubset): The subset of connections to select from.
     Raises:
         click.UsageError: If a required object is missing for the command.
         click.UsageError: If a retrieval reason is missing when passing a connection id.
     Returns:
-        ConnectionObjects: The connection objects values.
+        List[ConnectionObjects]: List of connection objects.
     """
-    if connection_id and auto_select_connection:
-        raise ValueError("Cannot set both `connection_id` and `auto_select_connection`.")
-    if auto_select_connection and not connector_image:
-        raise ValueError("A connector image must be provided when using auto_select_connection.")
+    if connection_id and auto_select_connections:
+        raise ValueError("Cannot set both `connection_id` and `auto_select_connections`.")
+    if auto_select_connections and not connector_image:
+        raise ValueError("A connector image must be provided when using auto_select_connections.")
 
     custom_config = get_connector_config_from_path(custom_config_path) if custom_config_path else None
     custom_configured_catalog = (
@@ -158,7 +158,7 @@ def get_connection_objects(
         )
 
     else:
-        if auto_select_connection:
+        if auto_select_connections:
             connection_object = _get_connection_objects_from_retrieved_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
@@ -194,7 +194,7 @@ def get_connection_objects(
             raise ValueError("A catalog is required to run the command.")
         if not connection_object.state and ConnectionObject.STATE in requested_objects:
             raise ValueError("A state is required to run the command.")
-    return connection_object
+    return [connection_object]
 
 
 def _get_connection_objects_from_retrieved_objects(

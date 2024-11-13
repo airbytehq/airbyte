@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 import json
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Iterable, MutableMapping
 from copy import deepcopy
@@ -15,12 +16,15 @@ import requests
 import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
 from live_tests import stash_keys
+from live_tests.commons.models import ConnectionObjects
 from live_tests.consts import MAX_LINES_IN_REPORT
 
 if TYPE_CHECKING:
+    from typing import List
+
     import pytest
     from _pytest.config import Config
-    from airbyte_protocol.models import SyncMode, Type  # type: ignore
+    from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteStream, SyncMode, Type  # type: ignore
     from live_tests.commons.models import Command, ExecutionResult
 
 
@@ -30,33 +34,25 @@ class ReportState(Enum):
     FINISHED = "finished"
 
 
-class Report:
-    TEMPLATE_NAME = "report.html.j2"
-
-    SPEC_SECRET_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
+class BaseReport(ABC):
+    TEMPLATE_NAME: str
 
     def __init__(self, path: Path, pytest_config: Config) -> None:
         self.path = path
         self.pytest_config = pytest_config
-        self.connection_objects = pytest_config.stash[stash_keys.CONNECTION_OBJECTS]
-        self.secret_properties = self.get_secret_properties()
         self.created_at = datetime.datetime.utcnow()
-        self.updated_at = self.created_at
         self.control_execution_results_per_command: dict[Command, ExecutionResult] = {}
         self.target_execution_results_per_command: dict[Command, ExecutionResult] = {}
-        self.test_results: list[dict[str, Any]] = []
-        self.update(ReportState.INITIALIZING)
+        self._state = ReportState.INITIALIZING
+    @abstractmethod
+    def render(self) -> None:
+        pass
 
-    def get_secret_properties(self) -> list:
-        response = requests.get(self.SPEC_SECRET_MASK_URL)
-        response.raise_for_status()
-        return yaml.safe_load(response.text)["properties"]
+    @property
+    def all_connection_objects(self) -> List[ConnectionObjects]:
+        return self.pytest_config.stash[stash_keys.ALL_CONNECTION_OBJECTS]
 
-    def update(self, state: ReportState = ReportState.RUNNING) -> None:
-        self._state = state
-        self.updated_at = datetime.datetime.utcnow()
-        self.render()
-
+    # TODO rework to support multiple execution results per command
     def add_control_execution_result(self, control_execution_result: ExecutionResult) -> None:
         self.control_execution_results_per_command[control_execution_result.command] = control_execution_result
         self.update()
@@ -64,6 +60,121 @@ class Report:
     def add_target_execution_result(self, target_execution_result: ExecutionResult) -> None:
         self.target_execution_results_per_command[target_execution_result.command] = target_execution_result
         self.update()
+
+    def update(self, state: ReportState = ReportState.RUNNING) -> None:
+        self._state = state
+        self.updated_at = datetime.datetime.utcnow()
+        self.render()
+
+class PrivateDetailsReport(BaseReport):
+    TEMPLATE_NAME = "private_details.html.j2"
+    SPEC_SECRET_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
+
+    def __init__(self, path: Path, pytest_config: Config) -> None:
+        super().__init__(path, pytest_config)
+        self.secret_properties = self.get_secret_properties()
+        self.render()
+
+    def get_secret_properties(self) -> list:
+        response = requests.get(self.SPEC_SECRET_MASK_URL)
+        response.raise_for_status()
+        return yaml.safe_load(response.text)["properties"]
+
+    def scrub_secrets_from_config(self, to_scrub: MutableMapping) -> MutableMapping:
+        if isinstance(to_scrub, dict):
+            for key, value in to_scrub.items():
+                if key in self.secret_properties:
+                    to_scrub[key] = "********"
+                elif isinstance(value, dict):
+                    to_scrub[key] = self.scrub_secrets_from_config(value)
+        return to_scrub
+
+
+    @property
+    def renderable_connection_objects(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "workspace_id": connection_objects.workspace_id,
+                "connection_id": connection_objects.connection_id,
+                "hashed_connection_id": connection_objects.hashed_connection_id,
+                "source_config": json.dumps(
+                    self.scrub_secrets_from_config(
+                        deepcopy(connection_objects.source_config.data) if connection_objects.source_config else {}
+                    ),
+                    indent=2,
+                ),
+                "url": connection_objects.url,
+            }
+            for connection_objects in self.all_connection_objects
+        ]
+
+    def render(self) -> None:
+        jinja_env = Environment(
+            loader=PackageLoader(__package__, "templates"),
+            autoescape=select_autoescape(),
+            trim_blocks=False,
+            lstrip_blocks=True,
+        )
+        template = jinja_env.get_template(self.TEMPLATE_NAME)
+        rendered = template.render(
+            user=self.pytest_config.stash[stash_keys.USER],
+            test_date=self.created_at,
+            all_connection_objects=self.renderable_connection_objects,
+            connector_image=self.pytest_config.stash[stash_keys.CONNECTOR_IMAGE],
+            control_version=self.pytest_config.stash[stash_keys.CONTROL_VERSION],
+            target_version=self.pytest_config.stash[stash_keys.TARGET_VERSION],
+            requested_urls_per_command=self.get_requested_urls_per_command(),
+            fully_generated=self._state is ReportState.FINISHED,
+        )
+        self.path.write_text(rendered)
+
+
+    def get_requested_urls_per_command(
+        self,
+    ) -> dict[Command, list[tuple[int, str, str]]]:
+        requested_urls_per_command = {}
+        all_commands = sorted(
+            list(set(self.control_execution_results_per_command.keys()).union(set(self.target_execution_results_per_command.keys()))),
+            key=lambda command: command.value,
+        )
+        for command in all_commands:
+            if command in self.control_execution_results_per_command:
+                control_flows = self.control_execution_results_per_command[command].http_flows
+            else:
+                control_flows = []
+            if command in self.target_execution_results_per_command:
+                target_flows = self.target_execution_results_per_command[command].http_flows
+            else:
+                target_flows = []
+            all_flows = []
+            max_flows = max(len(control_flows), len(target_flows))
+            for i in range(max_flows):
+                control_url = control_flows[i].request.url if i < len(control_flows) else ""
+                target_url = target_flows[i].request.url if i < len(target_flows) else ""
+                all_flows.append((i, control_url, target_url))
+            requested_urls_per_command[command] = all_flows
+        return requested_urls_per_command
+
+
+class TestReport(BaseReport):
+    TEMPLATE_NAME = "report.html.j2"
+
+    def __init__(self, path: Path, pytest_config: Config) -> None:
+        super().__init__(path, pytest_config)
+        self.updated_at = self.created_at
+        self.test_results: list[dict[str, Any]] = []
+        self.update(ReportState.INITIALIZING)
+
+    # TODO: Remove this property once the test report can handle multiple connection objects
+    @property
+    def connection_objects(self) -> ConnectionObjects:
+        return self.all_connection_objects[0]
+
+    def update(self, state: ReportState = ReportState.RUNNING) -> None:
+        self._state = state
+        self.updated_at = datetime.datetime.utcnow()
+        self.render()
+
 
     def add_test_result(self, test_report: pytest.TestReport, test_documentation: Optional[str] = None) -> None:
         cut_properties: list[tuple[str, str]] = []
@@ -98,32 +209,15 @@ class Report:
             fully_generated=self._state is ReportState.FINISHED,
             user=self.pytest_config.stash[stash_keys.USER],
             test_date=self.updated_at,
-            connection_url=self.pytest_config.stash[stash_keys.CONNECTION_URL],
-            workspace_id=self.pytest_config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id,
-            connection_id=self.pytest_config.stash[stash_keys.CONNECTION_ID],
             connector_image=self.pytest_config.stash[stash_keys.CONNECTOR_IMAGE],
             control_version=self.pytest_config.stash[stash_keys.CONTROL_VERSION],
             target_version=self.pytest_config.stash[stash_keys.TARGET_VERSION],
-            source_config=json.dumps(
-                self.scrub_secrets_from_config(
-                    deepcopy(self.connection_objects.source_config.data) if self.connection_objects.source_config else {}
-                ),
-                indent=2,
-            ),
-            state=json.dumps(
-                self.connection_objects.state if self.connection_objects.state else {},
-                indent=2,
-            ),
-            configured_catalog=self.connection_objects.configured_catalog.json(indent=2)
-            if self.connection_objects.configured_catalog
-            else {},
-            catalog=self.connection_objects.catalog.json(indent=2) if self.connection_objects.catalog else {},
+            all_connection_objects=self.renderable_connection_objects,
             message_count_per_type=self.get_message_count_per_type(),
             stream_coverage_metrics=self.get_stream_coverage_metrics(),
             untested_streams=self.get_untested_streams(),
-            selected_streams=self.get_selected_streams(),
+            selected_streams=self.get_configured_streams(),
             sync_mode_coverage=self.get_sync_mode_coverage(),
-            requested_urls_per_command=self.get_requested_urls_per_command(),
             http_metrics_per_command=self.get_http_metrics_per_command(),
             record_count_per_command_and_stream=self.get_record_count_per_stream(),
             test_results=self.test_results,
@@ -131,20 +225,21 @@ class Report:
         )
         self.path.write_text(rendered)
 
-    def scrub_secrets_from_config(self, to_scrub: MutableMapping) -> MutableMapping:
-        if isinstance(to_scrub, dict):
-            for key, value in to_scrub.items():
-                if key in self.secret_properties:
-                    to_scrub[key] = "********"
-                elif isinstance(value, dict):
-                    to_scrub[key] = self.scrub_secrets_from_config(value)
-        return to_scrub
+    @property
+    def renderable_connection_objects(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "hashed_connection_id": connection_objects.hashed_connection_id,
+                "catalog": connection_objects.catalog.json(indent=2) if connection_objects.catalog else {},
+                "configured_catalog": connection_objects.configured_catalog.json(indent=2),
+                "state": json.dumps(self.connection_objects.state if self.connection_objects.state else {}, indent=2),
+            }
+            for connection_objects in self.all_connection_objects
+        ]
 
-    ### REPORT CONTENT HELPERS ###
     def get_stream_coverage_metrics(self) -> dict[str, str]:
-        configured_catalog_stream_count = (
-            len(self.connection_objects.configured_catalog.streams) if self.connection_objects.configured_catalog else 0
-        )
+
+        configured_catalog_stream_count = self.get_configured_streams()
         catalog_stream_count = len(self.connection_objects.catalog.streams) if self.connection_objects.catalog else 0
         coverage = configured_catalog_stream_count / catalog_stream_count if catalog_stream_count > 0 else 0
         return {
@@ -187,11 +282,28 @@ class Report:
         for stream_count in self.get_record_count_per_stream().values():
             streams_with_data.update(stream_count.keys())
 
-        catalog_streams = self.connection_objects.catalog.streams if self.connection_objects.catalog else []
+        return [stream.name for stream in self.all_streams if stream.name not in streams_with_data]
 
-        return [stream.name for stream in catalog_streams if stream.name not in streams_with_data]
-
-    def get_selected_streams(self) -> dict[str, dict[str, SyncMode | bool]]:
+    @property
+    def all_streams(self) -> List[AirbyteStream]:
+        # A set would be better but AirbyteStream is not hashable
+        all_streams = dict()
+        for connection_objects in self.all_connection_objects:
+            if connection_objects.catalog:
+                for stream in connection_objects.catalog.streams:
+                    all_streams[stream.name] = stream
+        return list(all_streams.values())
+    
+    @property
+    def all_configured_streams(self) -> List[ConfiguredAirbyteStream]:
+        all_configured_streams = dict()
+        for connection_objects in self.all_connection_objects:
+            if connection_objects.configured_catalog:
+                for configured_airbyte_stream in connection_objects.configured_catalog.streams:
+                    all_configured_streams[configured_airbyte_stream.stream.name] = configured_airbyte_stream
+        return list(all_configured_streams.values())
+    
+    def get_configured_streams(self) -> dict[str, dict[str, SyncMode | bool]]:
         untested_streams = self.get_untested_streams()
         return (
             {
@@ -200,17 +312,17 @@ class Report:
                     "has_data": configured_stream.stream.name not in untested_streams,
                 }
                 for configured_stream in sorted(
-                    self.connection_objects.configured_catalog.streams,
+                    self.all_configured_streams,
                     key=lambda x: x.stream.name,
                 )
             }
-            if self.connection_objects.configured_catalog
+            if self.all_configured_streams
             else {}
         )
 
     def get_sync_mode_coverage(self) -> dict[SyncMode, int]:
         count_per_sync_mode: dict[SyncMode, int] = defaultdict(int)
-        for s in self.get_selected_streams().values():
+        for s in self.get_configured_streams().values():
             count_per_sync_mode[s["sync_mode"]] += 1
         return count_per_sync_mode
 
@@ -296,29 +408,3 @@ class Report:
             }
 
         return metrics_per_command
-
-    def get_requested_urls_per_command(
-        self,
-    ) -> dict[Command, list[tuple[int, str, str]]]:
-        requested_urls_per_command = {}
-        all_commands = sorted(
-            list(set(self.control_execution_results_per_command.keys()).union(set(self.target_execution_results_per_command.keys()))),
-            key=lambda command: command.value,
-        )
-        for command in all_commands:
-            if command in self.control_execution_results_per_command:
-                control_flows = self.control_execution_results_per_command[command].http_flows
-            else:
-                control_flows = []
-            if command in self.target_execution_results_per_command:
-                target_flows = self.target_execution_results_per_command[command].http_flows
-            else:
-                target_flows = []
-            all_flows = []
-            max_flows = max(len(control_flows), len(target_flows))
-            for i in range(max_flows):
-                control_url = control_flows[i].request.url if i < len(control_flows) else ""
-                target_url = target_flows[i].request.url if i < len(target_flows) else ""
-                all_flows.append((i, control_url, target_url))
-            requested_urls_per_command[command] = all_flows
-        return requested_urls_per_command
