@@ -155,7 +155,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         resultSet: ResultSet,
         index: Int
     ) {
-        node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getLong(index) })
+        node.put(columnName, DataTypeUtils.returnNullIfInvalid { resultSet.getBigDecimal(index).toBigInteger() })
     }
 
     @Throws(SQLException::class)
