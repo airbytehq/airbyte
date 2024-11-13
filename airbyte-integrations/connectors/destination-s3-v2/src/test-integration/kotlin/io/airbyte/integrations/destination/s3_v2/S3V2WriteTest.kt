@@ -38,6 +38,7 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
     ) {
+<<<<<<< HEAD
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -58,39 +59,12 @@ abstract class S3V2WriteTest(
         super.testAppend()
     }
 
+=======
+>>>>>>> bbef02396a (copy over legacy DATs + enable remaining tests)
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
-
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
     }
 }
 
@@ -129,6 +103,7 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+<<<<<<< HEAD
         commitDataIncrementally = false
     ) {
 
@@ -147,6 +122,10 @@ class S3V2WriteTestJsonStaging :
         super.testInterruptedTruncateWithoutPriorData()
     }
 }
+=======
+        commitDataIncrementally = false,
+    )
+>>>>>>> bbef02396a (copy over legacy DATs + enable remaining tests)
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
