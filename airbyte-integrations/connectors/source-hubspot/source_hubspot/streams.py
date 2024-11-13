@@ -2297,7 +2297,7 @@ class LineItems(CRMObjectIncrementalStream):
 class Products(CRMObjectIncrementalStream):
     entity = "product"
     primary_key = "id"
-    scopes = {"e-commerce", "crm.objects.products.read"}
+    scopes = {"e-commerce"}
 
 
 class Tickets(CRMSearchStream):
