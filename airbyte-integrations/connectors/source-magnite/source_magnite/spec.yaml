@@ -17,14 +17,6 @@ connectionSpecification:
       description: "Secret key for Magnite API"
       order: 1
       airbyte_secret: true
-    source:
-      type: string
-      description: "Source"
-    fields:
-      type: array
-      description: "Fields"
-      items:
-        type: string
     constraints:
       type: array
       items:
