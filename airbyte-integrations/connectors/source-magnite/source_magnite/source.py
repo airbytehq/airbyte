@@ -165,18 +165,16 @@ class MagniteStream(HttpStream, ABC):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
         if stream_slice and "fromDate" in stream_slice and "toDate" in stream_slice:
-            self.logger.info(f"Fetching data from {stream_slice['fromDate']} to {stream_slice['toDate']}")
+            self.logger.info(f"Fetching {self.name} data from {stream_slice['fromDate']} to {stream_slice['toDate']}")
             date_range = {"fromDate": stream_slice["fromDate"], "toDate": stream_slice["toDate"]}
         else:
             date_range = stream_slice
-
         request_payload = {
-            "source": self.config["source"],
-            "fields": self.config["fields"],
-            "constraints": self.config["constraints"],
+            "source": self.name,
+            "fields": self.dimensions + self.metrics,
+            "constraints":self.config["constraints"],
             "orderings": self.config["orderings"],
             "range": date_range,
-            # "range": self.config["range"],
         }
         return request_payload
     
@@ -191,9 +189,9 @@ class MagniteStream(HttpStream, ABC):
             start_date = (
                 start_date if not self.cursor_field == "date" else start_date
             )
-            start_date = max(start_date, self.config["range"]["fromDate"])
+            start_date = max(start_date, self.config["fromDate"])
         else:
-            start_date = string_to_date(self.config["range"]["fromDate"], DATE_FORMAT)
+            start_date = string_to_date(self.config["fromDate"], DATE_FORMAT)
 
         while start_date <= today:
             yield {
@@ -220,13 +218,20 @@ class SourceMagnite(AbstractSource):
 
             auth_headers = CookieAuthenticator(config).get_auth_header()
             url = "https://api.tremorhub.com/v1/resources/queries"
+            today: date = date.today()
+
             test_payload = {
-                "source": config["source"],
-                "fields": config["fields"],
+                "source": "adstats-publisher",
+                "fields": ["day", "date", "adUnit", "publisher", "channel", "brand", "requests",
+                           "impressions", "useRate", "netRevenue", "grossRevenue"],
                 "constraints": config["constraints"],
                 "orderings": config["orderings"],
-                "range": config["range"]
+                "range": {
+                    "fromDate": config["fromDate"],
+                    "toDate": config.get("toDate", date_to_string(min(string_to_date(config["fromDate"]) + timedelta(days=WINDOW_IN_DAYS - 1), today)))
+                }
             }
+
             response = requests.request("POST", url=url, headers=auth_headers, data=json.dumps(test_payload))
             if response.status_code != 412:
                 response.raise_for_status()
