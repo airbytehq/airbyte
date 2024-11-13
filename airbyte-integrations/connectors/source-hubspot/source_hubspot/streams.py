@@ -795,7 +795,7 @@ class Stream(HttpStream, ABC):
 
         if not converted_type:
             converted_type = "string"
-            logger.warn(f"Unsupported type {field_type} found")
+            logger.warning(f"Unsupported type {field_type} found")
 
         field_props = {
             "type": ["null", converted_type or field_type],

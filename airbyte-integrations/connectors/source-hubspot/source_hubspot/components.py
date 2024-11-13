@@ -45,5 +45,9 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
                     transformed_field = field.replace(new_field, legacy_field)
                     if legacy_field == "hs_lifecyclestage_":
                         transformed_field += "_date"
-                    updated_record[transformed_field] = value
+                    if updated_record.get("properties", updated_record).get(transformed_field) is None:
+                        if updated_record.get("properties"):
+                            updated_record["properties"][transformed_field] = value
+                        else:
+                            updated_record[transformed_field] = value
         return updated_record
