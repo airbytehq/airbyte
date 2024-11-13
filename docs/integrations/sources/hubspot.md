@@ -336,6 +336,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2024-11-13 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrates specific fields for Contacts and Deals streams to legacy fields |
 | 4.2.26 | 2024-11-04 | [48199](https://github.com/airbytehq/airbyte/pull/48199) | Update dependencies |
 | 4.2.25 | 2024-10-29 | [47028](https://github.com/airbytehq/airbyte/pull/47028) | Update dependencies |
 | 4.2.24 | 2024-10-12 | [46827](https://github.com/airbytehq/airbyte/pull/46827) | Update dependencies |
