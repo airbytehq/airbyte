@@ -4,8 +4,9 @@
 
 import datetime
 import os
+from collections.abc import Iterable, Mapping
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
@@ -18,7 +19,15 @@ class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -37,10 +46,10 @@ class Products(Stream, IncrementalMixin):
             return {}
 
     @state.setter
-    def state(self, value: Mapping[str, Any]):
+    def state(self, value: Mapping[str, Any]) -> None:
         self._state = value
 
-    def load_products(self) -> List[Dict]:
+    def load_products(self) -> list[dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
@@ -68,7 +77,15 @@ class Users(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -89,7 +106,7 @@ class Users(Stream, IncrementalMixin):
             return {}
 
     @state.setter
-    def state(self, value: Mapping[str, Any]):
+    def state(self, value: Mapping[str, Any]) -> None:
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -128,7 +145,15 @@ class Purchases(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -149,7 +174,7 @@ class Purchases(Stream, IncrementalMixin):
             return {}
 
     @state.setter
-    def state(self, value: Mapping[str, Any]):
+    def state(self, value: Mapping[str, Any]) -> None:
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -165,13 +190,20 @@ class Purchases(Stream, IncrementalMixin):
 
         # a fuzzy guess, some users have purchases, some don't
         median_record_byte_size = 230
-        yield generate_estimate(self.name, (self.count) * 1.3, median_record_byte_size)
+        yield generate_estimate(
+            self.name,
+            (self.count) * 1.3,
+            median_record_byte_size,
+        )
 
         loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                carts = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
+                carts = pool.map(
+                    self.generator.generate,
+                    range(loop_offset, loop_offset + records_remaining_this_loop),
+                )
                 for purchases in carts:
                     loop_offset += 1
                     for purchase in purchases:
@@ -180,6 +212,14 @@ class Purchases(Stream, IncrementalMixin):
                 if records_remaining_this_loop == 0:
                     break
 
-                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+                self.state = {
+                    "seed": self.seed,
+                    "updated_at": updated_at,
+                    "loop_offset": loop_offset,
+                }
 
-            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            self.state = {
+                "seed": self.seed,
+                "updated_at": updated_at,
+                "loop_offset": loop_offset,
+            }
