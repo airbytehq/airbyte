@@ -83,6 +83,10 @@ class MagniteStream(HttpStream, ABC):
         self._path = path
         self._primary_key = primary_key
         self._data_field = data_field
+        self.dimensions_stream = DimensionsStream(name, **kwargs)
+        self.metrics_stream = MetricsStream(name, **kwargs)
+        self.dimensions_data = None
+        self.metrics_data = None
         super().__init__(**kwargs)
 
     url_base = "https://api.tremorhub.com/"
@@ -101,9 +105,9 @@ class MagniteStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-
         if self._data_field:
             result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}"
+            self.logger.info(f"Retrieving report {response_json[self._data_field]}...")
             while True:
                 result_response = requests.get(result_url, headers=self.authenticator.get_auth_header())
                 query_status = result_response.json()['status']
@@ -123,7 +127,7 @@ class MagniteStream(HttpStream, ABC):
                     raise Exception(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
         else:
             yield from response_json
-
+    
     @property
     def name(self) -> str:
         return self._name
@@ -140,6 +144,19 @@ class MagniteStream(HttpStream, ABC):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
+    
+    @property
+    def dimensions(self):
+        if self.dimensions_data is None:
+            self.dimensions_data = list(self.dimensions_stream.read_records(sync_mode=SyncMode.full_refresh))
+        return [record['id'] for record in self.dimensions_data]
+    
+    @property
+    def metrics(self):
+        if self.metrics_data is None:
+            self.metrics_data = list(self.metrics_stream.read_records(sync_mode=SyncMode.full_refresh))
+        return [record['id'] for record in self.metrics_data]
+        
     
     def request_body_json(
         self,
@@ -185,17 +202,18 @@ class MagniteStream(HttpStream, ABC):
             }
             start_date += timedelta(days=WINDOW_IN_DAYS)
 
+    def get_json_schema(self):
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {}
+        }
+        self.dimensions
+        self.metrics
+        for record in self.dimensions_data + self.metrics_data:
+            schema["properties"][record["id"]] = {"type": record["type"]}
+        return schema
 
-# class MagniteQueries(MagniteStream):
-
-#     primary_key = "id"
-
-#     def path(
-#             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-#     ) -> str:
-#         return "/v1/resources/queries"
-
-# Source
 class SourceMagnite(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
