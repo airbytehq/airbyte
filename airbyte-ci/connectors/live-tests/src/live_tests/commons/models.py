@@ -10,6 +10,7 @@ from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import cache
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -498,3 +499,15 @@ class ConnectionObjects:
     destination_id: Optional[str]
     source_docker_image: Optional[str]
     connection_id: Optional[str]
+
+    @property
+    def url(self) -> Optional[str]:
+        if not self.workspace_id or not self.connection_id:
+            return None
+        return f"https://cloud.airbyte.com/workspaces/{self.workspace_id}/connections/{self.connection_id}"
+
+    @property
+    def hashed_connection_id(self) -> Optional[str]:
+        if not self.connection_id:
+            return None
+        return hashlib.sha256(self.connection_id.encode("utf-8")).hexdigest()[:7]
