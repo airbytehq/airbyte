@@ -296,7 +296,6 @@ class ModelToComponentFactory:
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
 
-        print(component_definition)
         declarative_component_model = model_type.parse_obj(component_definition)
 
         if not isinstance(declarative_component_model, model_type):
