@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.util.lineSequence
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test
         ]
 )
 class SpillToDiskTaskTest {
-    @Inject lateinit var memoryManager: MemoryManager
+    @Inject lateinit var memoryManager: ReservationManager
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject
     lateinit var queueSupplier:
@@ -90,9 +90,9 @@ class SpillToDiskTaskTest {
 
     @Test
     fun testSpillToDiskTask() = runTest {
-        val availableMemory = memoryManager.remainingMemoryBytes
+        val availableMemory = memoryManager.remainingCapacityBytes
         val bytesReserved = primeMessageQueue()
-        Assertions.assertEquals(availableMemory - bytesReserved, memoryManager.remainingMemoryBytes)
+        Assertions.assertEquals(availableMemory - bytesReserved, memoryManager.remainingCapacityBytes)
 
         val mockTaskLauncher = MockTaskLauncher()
         spillToDiskTaskFactory
@@ -121,7 +121,7 @@ class SpillToDiskTaskTest {
         Assertions.assertEquals(expectedLinesFirst, file1.inputStream().lineSequence().toList())
         Assertions.assertEquals(expectedLinesSecond, file2.inputStream().lineSequence().toList())
 
-        Assertions.assertEquals(availableMemory, memoryManager.remainingMemoryBytes)
+        Assertions.assertEquals(availableMemory, memoryManager.remainingCapacityBytes)
 
         file1.toFile().delete()
         file2.toFile().delete()

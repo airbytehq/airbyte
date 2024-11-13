@@ -32,7 +32,7 @@ import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.KillableScope
@@ -200,11 +200,11 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
 
     abstract val config: DestinationConfiguration
     abstract val deserializer: Deserializer<T>
-    abstract val memoryManager: MemoryManager
+    abstract val memoryManager: ReservationManager
     abstract val inputStream: InputStream
 
     override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        log.info { "Reserved ${memoryManager.totalMemoryBytes/1024}mb memory for input processing" }
+        log.info { "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing" }
 
         inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
             if (line.isEmpty()) {
@@ -230,6 +230,6 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
 class DefaultInputFlow(
     override val config: DestinationConfiguration,
     override val deserializer: Deserializer<DestinationMessage>,
-    override val memoryManager: MemoryManager,
+    override val memoryManager: ReservationManager,
     override val inputStream: InputStream
 ) : ReservingDeserializingInputFlow<DestinationMessage>()

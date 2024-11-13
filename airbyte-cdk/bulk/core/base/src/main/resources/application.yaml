@@ -2,3 +2,6 @@ airbyte:
   file-transfer:
     enabled: ${USE_FILE_TRANSFER:false}
     staging-path: ${AIRBYTE_STAGING_DIRECTORY:/staging/files}
+  resources:
+    disk:
+      bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:107374182400} // 100GB

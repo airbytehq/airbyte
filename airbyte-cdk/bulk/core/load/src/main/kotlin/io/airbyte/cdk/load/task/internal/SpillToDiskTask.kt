@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import com.fasterxml.jackson.core.StreamReadConstraints
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
@@ -13,6 +14,7 @@ import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
@@ -22,6 +24,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.nio.file.Path
 import kotlin.io.path.outputStream
@@ -42,6 +45,7 @@ class DefaultSpillToDiskTask(
     private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher,
+    private val diskManager: ReservationManager,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
@@ -62,13 +66,21 @@ class DefaultSpillToDiskTask(
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordWrapped -> {
+                                    // reserve enough room for the record
+                                    diskManager.reserve(wrapped.sizeBytes)
+
+                                    // calculate whether we should flush
+                                    val saturated = diskManager.remainingCapacityBytes <
+                                        StreamReadConstraints.DEFAULT_MAX_STRING_LEN
+                                    val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
+                                    val bytesProcessed = sizeBytes + wrapped.sizeBytes
+                                    val forceFlush = saturated ||
+                                        flushStrategy.shouldFlush(stream, rangeProcessed, bytesProcessed)
+
+                                    // write and return output
                                     outputStream.write(wrapped.record.serialized)
                                     outputStream.write("\n")
-                                    val nextRange = range.withNextAdjacentValue(wrapped.index)
-                                    val nextSize = sizeBytes + wrapped.sizeBytes
-                                    val forceFlush =
-                                        flushStrategy.shouldFlush(stream, nextRange, nextSize)
-                                    ReadResult(nextRange, nextSize, forceFlush = forceFlush)
+                                    ReadResult(rangeProcessed, bytesProcessed, forceFlush = forceFlush)
                                 }
                                 is StreamRecordCompleteWrapped -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
@@ -107,6 +119,7 @@ class DefaultSpillToDiskTaskFactory(
     private val queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
+    @Named("diskManager") private val diskManager: ReservationManager,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
@@ -118,6 +131,7 @@ class DefaultSpillToDiskTaskFactory(
             flushStrategy,
             stream,
             taskLauncher,
+            diskManager,
         )
     }
 }

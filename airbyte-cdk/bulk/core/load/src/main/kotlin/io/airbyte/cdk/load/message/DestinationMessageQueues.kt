@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -55,7 +55,7 @@ data class StreamFileCompleteWrapped(
 class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
 
 /**
- * A supplier of message queues to which ([MemoryManager.reserve]'d) @ [DestinationRecordWrapped]
+ * A supplier of message queues to which ([ReservationManager.reserve]'d) @ [DestinationRecordWrapped]
  * messages can be published on a @ [DestinationStream] key. The queues themselves do not manage
  * memory.
  */

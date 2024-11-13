@@ -13,7 +13,7 @@ import kotlinx.coroutines.sync.withLock
 
 /** Releasable reservation of memory. */
 class Reserved<T>(
-    private val memoryManager: MemoryManager,
+    private val parentManager: ReservationManager,
     val bytesReserved: Long,
     val value: T,
 ) : CloseableCoroutine {
@@ -23,10 +23,10 @@ class Reserved<T>(
         if (!released.compareAndSet(false, true)) {
             return
         }
-        memoryManager.release(bytesReserved)
+        parentManager.release(bytesReserved)
     }
 
-    fun <U> replace(value: U): Reserved<U> = Reserved(memoryManager, bytesReserved, value)
+    fun <U> replace(value: U): Reserved<U> = Reserved(parentManager, bytesReserved, value)
 
     override suspend fun close() {
         release()
@@ -40,35 +40,40 @@ class Reserved<T>(
  *
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
-class MemoryManager(val totalMemoryBytes: Long) {
+class ReservationManager(val totalCapacityBytes: Long) {
 
-    private var usedMemoryBytes = AtomicLong(0L)
+    private var usedBytes = AtomicLong(0L)
     private val mutex = Mutex()
     private val syncChannel = Channel<Unit>(Channel.UNLIMITED)
 
-    val remainingMemoryBytes: Long
-        get() = totalMemoryBytes - usedMemoryBytes.get()
+    val remainingCapacityBytes: Long
+        get() = totalCapacityBytes - usedBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-    suspend fun <T> reserve(memoryBytes: Long, reservedFor: T): Reserved<T> {
-        if (memoryBytes > totalMemoryBytes) {
+    suspend fun <T> reserve(bytes: Long, reservedFor: T): Reserved<T> {
+        reserve(bytes)
+
+        return Reserved(this, bytes, reservedFor)
+    }
+
+   /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
+   suspend fun reserve(bytes: Long) {
+        if (bytes > totalCapacityBytes) {
             throw IllegalArgumentException(
-                "Requested ${memoryBytes}b memory exceeds ${totalMemoryBytes}b total"
+                "Requested ${bytes}b exceeds ${totalCapacityBytes}b total"
             )
         }
 
         mutex.withLock {
-            while (usedMemoryBytes.get() + memoryBytes > totalMemoryBytes) {
+            while (usedBytes.get() + bytes > totalCapacityBytes) {
                 syncChannel.receive()
             }
-            usedMemoryBytes.addAndGet(memoryBytes)
-
-            return Reserved(this, memoryBytes, reservedFor)
+            usedBytes.addAndGet(bytes)
         }
     }
 
-    suspend fun release(memoryBytes: Long) {
-        usedMemoryBytes.addAndGet(-memoryBytes)
+    suspend fun release(bytes: Long) {
+        usedBytes.addAndGet(-bytes)
         syncChannel.send(Unit)
     }
 }

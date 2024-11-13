@@ -30,7 +30,7 @@ import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
 import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils
@@ -74,10 +74,10 @@ class InputConsumerTaskTest {
     @Singleton
     @Primary
     @Requires(env = ["InputConsumerTaskTest"])
-    class MockInputFlow(val memoryManager: MemoryManager) :
+    class MockInputFlow(val memoryManager: ReservationManager) :
         SizedInputFlow<Reserved<DestinationMessage>> {
         private val messages = Channel<Pair<Long, Reserved<DestinationMessage>>>(Channel.UNLIMITED)
-        val initialMemory = memoryManager.remainingMemoryBytes
+        val initialMemory = memoryManager.remainingCapacityBytes
 
         override suspend fun collect(
             collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
@@ -309,7 +309,7 @@ class InputConsumerTaskTest {
         Assertions.assertEquals(messages1[10].value, StreamRecordCompleteWrapped(10))
         Assertions.assertEquals(
             mockInputFlow.initialMemory - 11,
-            mockInputFlow.memoryManager.remainingMemoryBytes,
+            mockInputFlow.memoryManager.remainingCapacityBytes,
             "1 byte per message should have been reserved, but the end-of-stream should have been released"
         )
     }
