@@ -2,12 +2,39 @@
   "streams": [
     {
       "stream": {
-        "name": "queries",
+        "name": "adstats-publisher",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["incremental"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "deals-publisher",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "platform-adsource-publisher",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "platform-supply-publisher",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }
