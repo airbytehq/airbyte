@@ -3,11 +3,10 @@
 #
 
 from copy import deepcopy
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-
 
 NEW_TO_LEGACY_FIELDS_MAPPING = {
     "hs_lifecyclestage_": "hs_v2_date_entered_",
