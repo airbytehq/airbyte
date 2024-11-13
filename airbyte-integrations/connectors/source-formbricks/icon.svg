@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="150.4727 95.5531 95.0943 134.7169" width="250" height="250">
+  <defs>
+    <linearGradient id="paint0_linear_2625_5904" x1="25.4688" y1="110.861" x2="-0.00218275" y2="110.964" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1, 0, 0, 1, 168.170744, 81.703995)">
+      <stop stop-color="#00E6CA"/>
+      <stop offset="1" stop-color="#00C4B8"/>
+    </linearGradient>
+    <linearGradient id="paint1_linear_2625_5904" x1="63.6719" y1="81.5407" x2="7.75704e-09" y2="82.1838" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1, 0, 0, 1, 168.170744, 81.703995)">
+      <stop stop-color="#00E6CA"/>
+      <stop offset="1" stop-color="#00C4B8"/>
+    </linearGradient>
+    <linearGradient id="paint2_linear_2625_5904" x1="63.6719" y1="52.2199" x2="7.75704e-09" y2="52.863" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1, 0, 0, 1, 168.170744, 81.703995)">
+      <stop stop-color="#00E6CA"/>
+      <stop offset="1" stop-color="#00C4B8"/>
+    </linearGradient>
+    <linearGradient id="paint3_linear_2625_5904" x1="25.4688" y1="110.861" x2="-0.00218275" y2="110.964" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FFE1"/>
+      <stop offset="1" stop-color="#01E0C6"/>
+    </linearGradient>
+    <linearGradient id="paint4_linear_2625_5904" x1="63.6719" y1="81.5407" x2="7.75704e-09" y2="82.1838" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FFE1"/>
+      <stop offset="1" stop-color="#01E0C6"/>
+    </linearGradient>
+    <linearGradient id="paint5_linear_2625_5904" x1="63.6719" y1="52.2199" x2="7.75704e-09" y2="52.863" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FFE1"/>
+      <stop offset="1" stop-color="#01E0C6"/>
+    </linearGradient>
+    <filter id="filter0_d_2625_5904" x="-2" y="28" width="60.4526" height="108" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dx="10"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2625_5904"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2625_5904" result="shape"/>
+    </filter>
+    <filter id="filter1_f_2625_5904" x="-51.698" y="69.1321" width="87.5471" height="87.5471" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_2625_5904"/>
+    </filter>
+    <filter id="filter2_f_2625_5904" x="-51.698" y="8.90576" width="87.5471" height="87.5471" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_2625_5904"/>
+    </filter>
+  </defs>
+  <mask id="mask0_2625_5904" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="40" width="64" height="84">
+    <path d="M0 98.6416H25.3585V111.321C25.3585 118.323 19.6818 124 12.6792 124V124C5.67669 124 0 118.323 0 111.321V98.6416Z" fill="url(#paint3_linear_2625_5904)"/>
+    <path d="M0 69.3208H50.717C57.7195 69.3208 63.3962 74.9975 63.3962 82V82C63.3962 89.0026 57.7195 94.6793 50.717 94.6793H0V69.3208Z" fill="url(#paint4_linear_2625_5904)"/>
+    <path d="M0 60C0 48.9543 8.9543 40 20 40H50.717C57.7195 40 63.3962 45.6767 63.3962 52.6792V52.6792C63.3962 59.6818 57.7195 65.3585 50.717 65.3585H0V60Z" fill="url(#paint5_linear_2625_5904)"/>
+  </mask>
+  <path d="M 168.171 180.346 L 193.529 180.346 L 193.529 193.025 C 193.529 200.027 187.853 205.704 180.85 205.704 C 173.848 205.704 168.171 200.027 168.171 193.025 L 168.171 180.346 Z" fill="url(#paint0_linear_2625_5904)"/>
+  <path d="M 168.171 151.025 L 218.888 151.025 C 225.89 151.025 231.567 156.702 231.567 163.704 C 231.567 170.707 225.89 176.383 218.888 176.383 L 168.171 176.383 L 168.171 151.025 Z" fill="url(#paint1_linear_2625_5904)"/>
+  <path d="M 168.171 141.704 C 168.171 130.658 177.125 121.704 188.171 121.704 L 218.888 121.704 C 225.89 121.704 231.567 127.381 231.567 134.383 C 231.567 141.386 225.89 147.063 218.888 147.063 L 168.171 147.063 L 168.171 141.704 Z" fill="url(#paint2_linear_2625_5904)"/>
+  <g mask="url(#mask0_2625_5904)" transform="matrix(1, 0, 0, 1, 168.17074584960938, 81.70399475097656)">
+    <g filter="url(#filter0_d_2625_5904)">
+      <mask id="mask1_2625_5904" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="40" width="64" height="84">
+        <path d="M0 98.6416H25.3585V111.321C25.3585 118.323 19.6818 124 12.6792 124V124C5.67669 124 0 118.323 0 111.321V98.6416Z" fill="black" fill-opacity="0.1"/>
+        <path d="M0 60C0 48.9543 8.9543 40 20 40H50.717C57.7195 40 63.3962 45.6767 63.3962 52.6792V52.6792C63.3962 59.6818 57.7195 65.3585 50.717 65.3585H0V60Z" fill="black" fill-opacity="0.1"/>
+        <path d="M0 69.3208H50.717C57.7195 69.3208 63.3962 74.9975 63.3962 82V82C63.3962 89.0026 57.7195 94.6793 50.717 94.6793H0V69.3208Z" fill="black" fill-opacity="0.1"/>
+      </mask>
+      <g mask="url(#mask1_2625_5904)">
+        <path d="M1.33026 18.158C11.2638 8.46307 36.4526 18.158 36.4526 18.158H1.33026C-1.10954 20.5391 -2.62906 24.09 -2.62906 29.2415C-2.62906 55.3672 25.6715 64.8676 25.6715 83.0764C25.6715 100.901 -1.4485 111.898 -2.59186 136.119H36.4526C36.4526 136.119 -2.62906 163.037 -2.62906 137.703C-2.62906 137.169 -2.61648 136.641 -2.59186 136.119H-19.8115L-16.4424 18.158H1.33026Z" fill="black" fill-opacity="0.1"/>
+      </g>
+    </g>
+    <g filter="url(#filter1_f_2625_5904)">
+      <circle cx="-7.92441" cy="112.906" r="23.7736" fill="#00C4B8"/>
+    </g>
+    <g filter="url(#filter2_f_2625_5904)">
+      <circle cx="-7.92441" cy="52.6793" r="23.7736" fill="#00C4B8"/>
+    </g>
+  </g>
+</svg>

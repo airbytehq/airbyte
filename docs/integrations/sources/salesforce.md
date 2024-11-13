@@ -31,31 +31,31 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
-While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read. 
-    
-Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). 
+While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
+
+Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-#### 1. Create a new User: 
+#### 1. Create a new User:
 -  On the top right of the screen, click the gear icon and then click **Setup**.
--  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname. 
+-  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
       - Leave `role` unspecified
       - Select `Salesforce Platform` for the User License
-      - Select `Standard Platform User` for Profile. 
-      - Decide whether to generate a new password and notify the user. 
+      - Select `Standard Platform User` for Profile.
+      - Decide whether to generate a new password and notify the user.
       - Select `save`
-#### 2. Create a new Permission Set: 
--  Using the left navigation bar, select **Users** > **Permission Sets** 
-- Click `New` to create a new Permission Set. 
-- Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name will autopopulate based on the label you give the permission set. 
-- For licence, leave this set to` –None—` and click `save`. 
-- Now that you see the permission set is created, define the permissions via Object Settings. 
+#### 2. Create a new Permission Set:
+-  Using the left navigation bar, select **Users** > **Permission Sets**
+- Click `New` to create a new Permission Set.
+- Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name will autopopulate based on the label you give the permission set.
+- For licence, leave this set to` –None—` and click `save`.
+- Now that you see the permission set is created, define the permissions via Object Settings.
    - Click "Object Settings."
    - Select the `Object Name` for each object you want the user to have read-only access to (e.g., Accounts, Contacts, Opportunities).
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
-   - Continue to add read permissions for any objects you want Airbyte to have access to. 
+   - Continue to add read permissions for any objects you want Airbyte to have access to.
 #### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
@@ -66,7 +66,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 :::info
 **Profile vs. Permission Set:** Remember that the user's profile will provide their baseline permissions. The permission set adds or restricts permissions on top of that.
-**Object-Level vs. Field-Level Security:** This guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields. 
+**Object-Level vs. Field-Level Security:** This guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields.
 :::
 
 <!-- env:oss -->
@@ -83,7 +83,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 1.  If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
 2.  When running a curl command, run it with the `-L` option to follow any redirects.
-3.  If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
+3.  If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
 
 <!-- /env:oss -->
 
@@ -219,7 +219,9 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
-| 2.6.1 | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies |
+| 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
+| 2.6.2 | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/) | Bump minimum CDK to 5.10.2 |
+| 2.6.1 | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2 |
 | 2.6.0 | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components |
 | 2.5.34 | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies |
 | 2.5.33 | 2024-09-21 | [45779](https://github.com/airbytehq/airbyte/pull/45779) | Update dependencies |

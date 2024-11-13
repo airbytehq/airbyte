@@ -22,6 +22,8 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
+        - predicate: "{{ response.get('code') == 40100 }}"
+          action: RATE_LIMITED
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"

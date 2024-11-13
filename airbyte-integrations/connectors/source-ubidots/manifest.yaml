@@ -1,0 +1,1082 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Ubidots Connector facilitates easy integration with the Ubidots IoT
+  platform, enabling users to fetch, sync, and analyze real-time sensor data.
+  This connector helps streamline IoT workflows by connecting Ubidots with other
+  tools for seamless data processing and insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - devices
+
+definitions:
+  streams:
+    devices:
+      type: DeclarativeStream
+      name: devices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/devices/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/devices"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/events/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    dashboards:
+      type: DeclarativeStream
+      name: dashboards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/dashboards/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboards"
+    variables:
+      type: DeclarativeStream
+      name: variables
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/variables/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/variables"
+    device_groups:
+      type: DeclarativeStream
+      name: device_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/device_groups/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/device_groups"
+    device_types:
+      type: DeclarativeStream
+      name: device_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2.0/device_types/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.next | regex_search(\"page=(\\d+)\") }}"
+            stop_condition: "{{ response.next is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/device_types"
+  base_requester:
+    type: HttpRequester
+    url_base: https://industrial.api.ubidots.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Auth-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/devices"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/variables"
+  - $ref: "#/definitions/streams/device_groups"
+  - $ref: "#/definitions/streams/device_types"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          API token to use for authentication. Obtain it from your Ubidots
+          account.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    devices: true
+    events: true
+    dashboards: true
+    variables: true
+    device_groups: true
+    device_types: true
+  testedStreams:
+    devices:
+      streamHash: 06eeff18f7efcbef9a6e9bed6be6d1b4b53effbf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 6ea9b8b12ca41339f2b08b16e392131bf751dc9f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dashboards:
+      streamHash: bebeb0bbd2ee18ce571f7d72b25fe51beae34e6f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    variables:
+      streamHash: 71b9f4fe4b5d3769183168758938c4c8d6a7a28d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    device_groups:
+      streamHash: 01a7589941aef02911e882e36fbd7c6efa79d8ee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    device_types:
+      streamHash: 569cd7a935ee204a3375d2552b89a471d4412236
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.ubidots.com/reference/authentication
+
+schemas:
+  devices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      lastActivity:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - object
+          - "null"
+        properties:
+          _color:
+            type:
+              - string
+              - "null"
+          _icon:
+            type:
+              - string
+              - "null"
+          _location_fixed:
+            type:
+              - object
+              - "null"
+            properties:
+              lat:
+                type:
+                  - number
+                  - "null"
+              lng:
+                type:
+                  - number
+                  - "null"
+          _location_type:
+            type:
+              - string
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - string
+          - "null"
+      variablesCount:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            back_to_normal:
+              type:
+                - boolean
+                - "null"
+            data:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  context:
+                    type:
+                      - object
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+                  variables:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - string
+                            - "null"
+            idGroupAction:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      activeDates:
+        type:
+          - object
+          - "null"
+        properties:
+          dates:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isGlobalEvent:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      triggers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - array
+            - "null"
+          items:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              condition:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  delay:
+                    type:
+                      - number
+                      - "null"
+                  operator:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - number
+                      - "null"
+              entity:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  operator:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - string
+                            - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  dashboards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      context:
+        type:
+          - object
+          - "null"
+        properties:
+          __customStyle:
+            type:
+              - object
+              - "null"
+            properties:
+              contextBar:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  backgroundColor:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+                  fontSize:
+                    type:
+                      - number
+                      - "null"
+                  title:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      fontSize:
+                        type:
+                          - number
+                          - "null"
+              dashboard:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  backgroundColor:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+              widget:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  backgroundColor:
+                    type:
+                      - string
+                      - "null"
+                  borderColor:
+                    type:
+                      - string
+                      - "null"
+                  borderRadius:
+                    type:
+                      - number
+                      - "null"
+                  borderStyle:
+                    type:
+                      - string
+                      - "null"
+                  borderWidth:
+                    type:
+                      - number
+                      - "null"
+                  boxShadow:
+                    type:
+                      - string
+                      - "null"
+                  color:
+                    type:
+                      - string
+                      - "null"
+                  fontSize:
+                    type:
+                      - number
+                      - "null"
+                  header:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      backgroundColor:
+                        type:
+                          - string
+                          - "null"
+                      borderColor:
+                        type:
+                          - string
+                          - "null"
+                      borderStyle:
+                        type:
+                          - string
+                          - "null"
+                      borderWidth:
+                        type:
+                          - number
+                          - "null"
+                      color:
+                        type:
+                          - string
+                          - "null"
+          alignment:
+            type:
+              - string
+              - "null"
+          dashboardType:
+            type:
+              - string
+              - "null"
+          defaultDevice:
+            type:
+              - string
+              - "null"
+          deviceFilterType:
+            type:
+              - string
+              - "null"
+          displayName:
+            type:
+              - string
+              - "null"
+          filterSettings:
+            type:
+              - object
+              - "null"
+          floatingWidgets:
+            type:
+              - boolean
+              - "null"
+          hasBackground:
+            type:
+              - boolean
+              - "null"
+          hideDatePicker:
+            type:
+              - boolean
+              - "null"
+          hideHeaderFooterWidgets:
+            type:
+              - boolean
+              - "null"
+          imageSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              isUrlValue:
+                type:
+                  - boolean
+                  - "null"
+          isDynamic:
+            type:
+              - boolean
+              - "null"
+          prospector_is_filters_last_value_alt:
+            type:
+              - boolean
+              - "null"
+          size:
+            type:
+              - object
+              - "null"
+            properties:
+              width:
+                type:
+                  - string
+                  - "null"
+          temporalxaxis:
+            type:
+              - string
+              - "null"
+          timestampFormat:
+            type:
+              - string
+              - "null"
+          widgetHorizontalSpacing:
+            type:
+              - string
+              - "null"
+          widgetVerticalSpacing:
+            type:
+              - string
+              - "null"
+          widgetsOpacity:
+            type:
+              - number
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isEditable:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      timeframe:
+        type:
+          - object
+          - "null"
+        properties:
+          endDate:
+            type:
+              - string
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+      url:
+        type:
+          - string
+          - "null"
+      widgets:
+        type:
+          - string
+          - "null"
+      widgetsNumber:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  variables:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      device:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      lastActivity:
+        type:
+          - number
+          - "null"
+      lastValue:
+        type:
+          - object
+          - "null"
+        properties:
+          context:
+            type:
+              - object
+              - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - number
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - object
+          - "null"
+        properties:
+          _previous_variable_label:
+            type:
+              - string
+              - "null"
+      syntheticExpression:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      valuesUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  device_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      devices:
+        type:
+          - string
+          - "null"
+      devicesCount:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  device_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      deviceColor:
+        type:
+          - string
+          - "null"
+      deviceIcon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      properties:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      tasks:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      variableColor:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - number
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            properties:
+              type:
+                - object
+                - "null"
+              properties:
+                _color:
+                  type:
+                    - string
+                    - "null"
+                _icon:
+                  type:
+                    - string
+                    - "null"
+                hidden:
+                  type:
+                    - boolean
+                    - "null"
+                isLocationVariable:
+                  type:
+                    - boolean
+                    - "null"
+            unit:
+              type:
+                - string
+                - "null"
+    required:
+      - id

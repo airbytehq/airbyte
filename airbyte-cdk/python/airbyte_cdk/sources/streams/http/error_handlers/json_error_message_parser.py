@@ -45,4 +45,7 @@ class JsonErrorMessageParser(ErrorMessageParser):
             body = response.json()
             return self._try_get_error(body)
         except requests.exceptions.JSONDecodeError:
-            return None
+            try:
+                return response.content.decode("utf-8")
+            except Exception:
+                return None

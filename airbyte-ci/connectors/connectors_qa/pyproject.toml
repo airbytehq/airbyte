@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.8.0"
+version = "1.10.0"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{ include = "connectors_qa", from = "src" }]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-connectors-base-images = { path = "../base_images", develop = false }
@@ -20,7 +25,7 @@ asyncer = "^0.0.4"
 connectors-qa = "connectors_qa.cli:connectors_qa"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.2.1"
+ruff = "^0.6"
 pytest = "^8"
 pytest-mock = "^3.12.0"
 mypy = "^1.8.0"
@@ -28,9 +33,6 @@ types-toml = "^0.10.8.7"
 pytest-asyncio = "^0.23.5"
 gitpython = "^3.1.42"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
 test = "pytest tests"
@@ -41,3 +43,7 @@ lint = "ruff check src"
 python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "test"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140

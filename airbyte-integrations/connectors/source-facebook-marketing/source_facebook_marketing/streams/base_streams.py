@@ -23,6 +23,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
+from airbyte_cdk.sources.streams import CheckpointMixin
 
 
 class FBMarketingStream(Stream, ABC):
@@ -240,7 +241,7 @@ class FBMarketingStream(Stream, ABC):
         )
 
 
-class FBMarketingIncrementalStream(FBMarketingStream, ABC):
+class FBMarketingIncrementalStream(FBMarketingStream, CheckpointMixin, ABC):
     """Base class for incremental streams"""
 
     cursor_field = "updated_time"
@@ -249,8 +250,17 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
+        self._state = {}
 
-    def get_updated_state(
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state.update(**value)
+
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
@@ -312,6 +322,17 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
                 },
             ],
         }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):

@@ -26,24 +26,38 @@ interface Sized {
  */
 sealed class DestinationRecordWrapped : Sized
 
+sealed class DestinationFileWrapped : Sized
+
 data class StreamRecordWrapped(
     val index: Long,
     override val sizeBytes: Long,
     val record: DestinationRecord
 ) : DestinationRecordWrapped()
 
-data class StreamCompleteWrapped(
+data class StreamFileWrapped(
+    val index: Long,
+    override val sizeBytes: Long,
+    val file: DestinationFile
+) : DestinationFileWrapped()
+
+data class StreamRecordCompleteWrapped(
     val index: Long,
 ) : DestinationRecordWrapped() {
+    override val sizeBytes: Long = 0L
+}
+
+data class StreamFileCompleteWrapped(
+    val index: Long,
+) : DestinationFileWrapped() {
     override val sizeBytes: Long = 0L
 }
 
 class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
 
 /**
- * A supplier of message queues to which ([MemoryManager.reserveBlocking]'d) @
- * [DestinationRecordWrapped] messages can be published on a @ [DestinationStream] key. The queues
- * themselves do not manage memory.
+ * A supplier of message queues to which ([MemoryManager.reserve]'d) @ [DestinationRecordWrapped]
+ * messages can be published on a @ [DestinationStream] key. The queues themselves do not manage
+ * memory.
  */
 @Singleton
 @Secondary

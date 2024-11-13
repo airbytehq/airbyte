@@ -30,7 +30,7 @@ class WriteOperation(
     val log = KotlinLogging.logger {}
 
     override fun execute() = runBlocking {
-        taskLauncher.start()
+        taskLauncher.run()
 
         when (val result = syncManager.awaitSyncResult()) {
             is SyncSuccess -> {

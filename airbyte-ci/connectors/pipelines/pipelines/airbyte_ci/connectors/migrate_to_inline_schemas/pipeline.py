@@ -18,7 +18,6 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
-from pipelines.helpers.connectors.format import format_prettier
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus

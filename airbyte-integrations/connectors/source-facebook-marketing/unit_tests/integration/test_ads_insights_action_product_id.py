@@ -11,6 +11,7 @@ from unittest import TestCase
 
 import freezegun
 import pendulum
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -22,7 +23,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import AirbyteStateMessage, StreamDescriptor, SyncMode
 from source_facebook_marketing.streams.async_job import Status
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -467,7 +467,7 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id]).with_start_date(start_date).with_end_date(end_date))
-        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(account_id, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_message = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_message == start_date.strftime(DATE_FORMAT)
 
@@ -511,8 +511,8 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id_1, account_id_2]).with_start_date(start_date).with_end_date(end_date))
-        cursor_value_from_state_account_1 = output.most_recent_state.stream_state.dict().get(account_id_1, {}).get(_CURSOR_FIELD)
-        cursor_value_from_state_account_2 = output.most_recent_state.stream_state.dict().get(account_id_2, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_1 = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_1, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_2 = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_2, {}).get(_CURSOR_FIELD)
         expected_cursor_value = start_date.strftime(DATE_FORMAT)
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value

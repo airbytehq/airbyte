@@ -43,6 +43,7 @@ See the [API docs](https://docs.statsig.com/http-api) for steps to generate the 
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.2 | 2024-10-28 | [47473](https://github.com/airbytehq/airbyte/pull/47473) | Update dependencies |
 | 0.0.1 | 2024-09-27 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

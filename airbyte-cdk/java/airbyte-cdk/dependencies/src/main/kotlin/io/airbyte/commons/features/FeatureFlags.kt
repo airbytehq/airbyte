@@ -3,6 +3,8 @@
  */
 package io.airbyte.commons.features
 
+import java.nio.file.Path
+
 /**
  * Interface that describe which features are activated in airbyte. Currently, the only
  * implementation relies on env. Ideally it should be on some DB.
@@ -51,4 +53,8 @@ interface FeatureFlags {
      * @return empty string for the default deployment mode, "CLOUD" for cloud deployment mode.
      */
     fun deploymentMode(): String?
+
+    fun airbyteStagingDirectory(): Path?
+
+    fun useFileTransfer(): Boolean
 }

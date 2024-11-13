@@ -1,0 +1,19 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro')
+
+    implementation("org.lz4:lz4-java:1.8.0")
+    runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
+    api ('org.apache.hadoop:hadoop-common:3.4.0') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+    }
+    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+    }
+    api 'org.apache.parquet:parquet-avro:1.14.2'
+
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
+}

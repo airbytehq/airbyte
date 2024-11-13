@@ -30,7 +30,8 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.2 | 2024-10-28 | [47673](https://github.com/airbytehq/airbyte/pull/47673) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44063](https://github.com/airbytehq/airbyte/pull/44063) | Refactor connector to manifest-only format |
 | 0.1.17 | 2024-08-10 | [43569](https://github.com/airbytehq/airbyte/pull/43569) | Update dependencies |
 | 0.1.16 | 2024-08-03 | [43249](https://github.com/airbytehq/airbyte/pull/43249) | Update dependencies |

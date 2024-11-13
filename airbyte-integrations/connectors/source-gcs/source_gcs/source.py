@@ -6,6 +6,7 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -33,6 +34,37 @@ class SourceGCS(FileBasedSource):
     @staticmethod
     def _is_file_based_config(config: Mapping[str, Any]) -> bool:
         return "streams" in config
+
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl=self.spec_class.documentation_url(),
+            connectionSpecification=self.spec_class.schema(),
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                predicate_key=["credentials", "auth_type"],
+                predicate_value="Client",
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]},
+                            "refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]},
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                        },
+                    },
+                ),
+            ),
+        )
 
     def _make_default_stream(
         self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]

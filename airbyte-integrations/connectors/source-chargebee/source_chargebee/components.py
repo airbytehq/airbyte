@@ -214,7 +214,7 @@ class IncrementalSingleSliceCursor(DeclarativeCursor):
         return {}
 
     def get_stream_state(self) -> StreamState:
-        return self._state
+        return {**self._state}
 
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
         return self.get_stream_state()

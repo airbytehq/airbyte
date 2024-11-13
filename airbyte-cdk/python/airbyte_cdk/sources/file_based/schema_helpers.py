@@ -14,6 +14,7 @@ JsonSchemaSupportedType = Union[List[str], Literal["string"], str]
 SchemaType = Mapping[str, Mapping[str, JsonSchemaSupportedType]]
 
 schemaless_schema = {"type": "object", "properties": {"data": {"type": "object"}}}
+file_transfer_schema = {"type": "object", "properties": {"data": {"type": "object"}, "file": {"type": "object"}}}
 
 
 @total_ordering

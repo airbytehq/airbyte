@@ -1,0 +1,3349 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the setup for the Teamtailor source that ingests data from the
+  teamtailor API.
+
+
+  Teamtailor is a recruitment software, provding a new way to attract and hire
+  top talent https://www.teamtailor.com/
+
+
+  In order to use this source, you must first create an account on teamtailor.
+
+
+  Navigate to your organisation settings -> API Key to create the required API
+  token. You must also specify a version number and can use today's date as
+  X-Api-Version to always get the latest version of the API.
+
+
+  Make sure to have the add-ons installed in your account for using the
+  `nps-response` and `job-offers` endpoints.
+
+check:
+  type: CheckStream
+  stream_names:
+    - candidates
+
+definitions:
+  streams:
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: candidates
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidates"
+    custom-fields:
+      type: DeclarativeStream
+      name: custom-fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: custom-fields
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom-fields"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: departments
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/jobs"
+    job-applications:
+      type: DeclarativeStream
+      name: job-applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: job-applications
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job-applications"
+    job-offers:
+      type: DeclarativeStream
+      name: job-offers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: job-offers
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/job-offers"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    todos:
+      type: DeclarativeStream
+      name: todos
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: todos
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/todos"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    team_memberships:
+      type: DeclarativeStream
+      name: team_memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: team-memberships
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_memberships"
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stages
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stages"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: roles
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    regions:
+      type: DeclarativeStream
+      name: regions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: regions
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/regions"
+    referrals:
+      type: DeclarativeStream
+      name: referrals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: referrals
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/referrals"
+    questions:
+      type: DeclarativeStream
+      name: questions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: questions
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/questions"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notes
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    nps_responses:
+      type: DeclarativeStream
+      name: nps_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nps-responses
+          http_method: GET
+          request_headers:
+            Authorization: Token token={{ config["api"] }}
+            X-Api-Version: "{{ config[\"x_api_version\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nps_responses"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.teamtailor.com/v1/
+
+streams:
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/custom-fields"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/job-applications"
+  - $ref: "#/definitions/streams/job-offers"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/todos"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/team_memberships"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/regions"
+  - $ref: "#/definitions/streams/referrals"
+  - $ref: "#/definitions/streams/questions"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/nps_responses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - x_api_version
+      - api
+    properties:
+      x_api_version:
+        type: string
+        description: The version of the API
+        order: 0
+        title: X-Api-Version
+      api:
+        type: string
+        order: 1
+        title: api
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    candidates: true
+    custom-fields: true
+    departments: true
+    jobs: true
+    job-applications: true
+    job-offers: true
+    locations: true
+    users: true
+    todos: true
+    teams: true
+    team_memberships: true
+    stages: true
+    roles: true
+    regions: true
+    referrals: true
+    questions: true
+    notes: true
+    nps_responses: true
+  testedStreams:
+    candidates:
+      hasRecords: true
+      streamHash: 294171311b855ec48747b8ae5f6036470043370e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom-fields:
+      hasRecords: true
+      streamHash: 30418d4c6f972a22adfd7a6f524fa533c26e39d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    departments:
+      hasRecords: true
+      streamHash: 33b2f7986aacf0f7604bd7fc7290cd83e85bada1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    jobs:
+      hasRecords: true
+      streamHash: 457712f32b3510edabcf0efd38cbb5f5d4bbffa2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    job-applications:
+      hasRecords: true
+      streamHash: 0cf9be09b4f1437eabc9dc1d1f0d07ad9018eb1f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    job-offers:
+      hasRecords: true
+      streamHash: cc4b3c3ce824eb818f66088a97de961e19d98513
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    locations:
+      hasRecords: true
+      streamHash: 07af1d1e90e0f8c0886f998b0b5b1246a3325ca9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: b954e57104785b82ec078292d291532a3e0f7110
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    todos:
+      hasRecords: true
+      streamHash: 3841f5c44be77d30034661426aa88565da35cfec
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: 5a1ac77f6258a77628c746dcafeaacdb78a9a074
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    team_memberships:
+      hasRecords: true
+      streamHash: 933dce91658322430be7cb39f224daa5cb29e79e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stages:
+      hasRecords: true
+      streamHash: 8dbdcccf39e95d9e38379f6e7a50aed65f562fad
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    roles:
+      hasRecords: true
+      streamHash: 41705cd6d5f22c45731d83a932d81182e8f7d98f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    regions:
+      hasRecords: true
+      streamHash: 55006304ae0acb6f3b70d8354a565acc0eb84e26
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    referrals:
+      hasRecords: true
+      streamHash: 634ff22519b0424a79fdf05a0b91806fa365153e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    questions:
+      hasRecords: true
+      streamHash: 651fc262e6e479f921143842f4baeb145656057a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      hasRecords: true
+      streamHash: 138aabee6f26e1177983be4b1af92a2b915592a5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    nps_responses:
+      streamHash: c1b259faa89d6166816f864b8770804f16df3edc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.teamtailor.com/
+
+schemas:
+  candidates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          connected:
+            type:
+              - boolean
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first-name:
+            type:
+              - string
+              - "null"
+          internal:
+            type:
+              - boolean
+              - "null"
+          last-name:
+            type:
+              - string
+              - "null"
+          original-resume:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          referred:
+            type:
+              - boolean
+              - "null"
+          resume:
+            type:
+              - string
+              - "null"
+          sourced:
+            type:
+              - boolean
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          unsubscribed:
+            type:
+              - boolean
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          activities:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          answers:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          custom-field-values:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          job-applications:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          locations:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          nps-responses:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          partner-results:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          regions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          uploads:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  custom-fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          api-name:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          field-type:
+            type:
+              - string
+              - "null"
+          is-external:
+            type:
+              - boolean
+              - "null"
+          is-featured:
+            type:
+              - boolean
+              - "null"
+          is-hidden:
+            type:
+              - boolean
+              - "null"
+          is-private:
+            type:
+              - boolean
+              - "null"
+          is-required:
+            type:
+              - boolean
+              - "null"
+          is-searchable:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          owner-type:
+            type:
+              - string
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          custom-field-values:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          manager:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          roles:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          teams:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          additional-files-requirement:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          cover-letter-requirement:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          human-status:
+            type:
+              - string
+              - "null"
+          internal:
+            type:
+              - boolean
+              - "null"
+          language-code:
+            type:
+              - string
+              - "null"
+          mailbox:
+            type:
+              - string
+              - "null"
+          name-requirement:
+            type:
+              - string
+              - "null"
+          phone-requirement:
+            type:
+              - string
+              - "null"
+          pinned:
+            type:
+              - boolean
+              - "null"
+          recruiter-email:
+            type:
+              - string
+              - "null"
+          remote-status:
+            type:
+              - string
+              - "null"
+          resume-requirement:
+            type:
+              - string
+              - "null"
+          sharing-image-layout:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          careersite-job-apply-iframe-url:
+            type:
+              - string
+              - "null"
+          careersite-job-apply-url:
+            type:
+              - string
+              - "null"
+          careersite-job-url:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          activities:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          candidates:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          colleagues:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          custom-field-values:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          custom-fields:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          locations:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          picked-questions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          regions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          requisition:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          stages:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          team:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          team-memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  job-applications:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          changed-stage-at:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          row-order:
+            type:
+              - number
+              - "null"
+          sourced:
+            type:
+              - boolean
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          candidate:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          job:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          nps-responses:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          reject-reason:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          stage:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  job-offers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          answered-at:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          details:
+            type:
+              - object
+              - "null"
+            properties:
+              acceptance-message:
+                type:
+                  - string
+                  - "null"
+              rejection-message:
+                type:
+                  - string
+                  - "null"
+              salary:
+                type:
+                  - string
+                  - "null"
+          response:
+            type:
+              - string
+              - "null"
+          sent-at:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          job-application:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          address:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          headquarters:
+            type:
+              - boolean
+              - "null"
+          lat:
+            type:
+              - string
+              - "null"
+          long:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          zip:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          teams:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          login-email:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          role-addons:
+            type:
+              - array
+              - "null"
+          signature:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          activities:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          jobs:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          notification-settings:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          team-memberships:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          teams:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  todos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          assignee:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          assigner:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          candidate:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          emoji:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          no-department:
+            type:
+              - boolean
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          departments:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          jobs:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          locations:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          roles:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          users:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  team_memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          team:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          active-job-applications-count:
+            type:
+              - number
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          legacy-stage-type-name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rejected-job-applications-count:
+            type:
+              - number
+              - "null"
+          row-order:
+            type:
+              - number
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          job:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          job-applications:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          stage-type:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          triggers:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          teams:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  regions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          locations:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  referrals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          comment:
+            type:
+              - string
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          candidate:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          department:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          job:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  questions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          question-type:
+            type:
+              - string
+              - "null"
+          single-line:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          candidate-id:
+            type:
+              - number
+              - "null"
+          created-at:
+            type:
+              - string
+              - "null"
+          created-by-trigger:
+            type:
+              - boolean
+              - "null"
+          mentioned-user-ids:
+            type:
+              - array
+              - "null"
+          note:
+            type:
+              - string
+              - "null"
+          private-note:
+            type:
+              - boolean
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+          user-id:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          candidate:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  nps_responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created-at:
+            type:
+              - string
+              - "null"
+          feedback:
+            type:
+              - string
+              - "null"
+          on-reject:
+            type:
+              - boolean
+              - "null"
+          score:
+            type:
+              - number
+              - "null"
+          scored-at:
+            type:
+              - string
+              - "null"
+          sent-at:
+            type:
+              - string
+              - "null"
+          updated-at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          candidate:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          job-application:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+          stage:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+                  self:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id

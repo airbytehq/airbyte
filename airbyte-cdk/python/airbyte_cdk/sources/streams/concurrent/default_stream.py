@@ -67,12 +67,13 @@ class DefaultStream(AbstractStream):
 
         if self._cursor_field:
             stream.source_defined_cursor = True
+            stream.is_resumable = True
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = [self._cursor_field]
 
         keys = self._primary_key
         if keys and len(keys) > 0:
-            stream.source_defined_primary_key = [keys]
+            stream.source_defined_primary_key = [[key] for key in keys]
 
         return stream
 

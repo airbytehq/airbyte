@@ -30,6 +30,7 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.2 | 2024-10-09 | [46660](https://github.com/airbytehq/airbyte/pull/46660) | Update dependencies |
 | 0.0.1 | 2024-08-12 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>

@@ -5,11 +5,57 @@
 import copy
 import logging
 import typing
-from typing import Any, Mapping, Optional, Set, Type
+from typing import Any, Dict, Mapping, Optional, Set, Type
 
 from pydantic import BaseModel
 
-from .declarative_component_schema import *
+from .declarative_component_schema import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    CompositeErrorHandler,
+    ConstantBackoffStrategy,
+    CursorPagination,
+    CustomAuthenticator,
+    CustomBackoffStrategy,
+    CustomErrorHandler,
+    CustomIncrementalSync,
+    CustomPaginationStrategy,
+    CustomPartitionRouter,
+    CustomRecordExtractor,
+    CustomRecordFilter,
+    CustomRequester,
+    CustomRetriever,
+    CustomSchemaLoader,
+    CustomStateMigration,
+    CustomTransformation,
+    DatetimeBasedCursor,
+    DeclarativeSource,
+    DeclarativeStream,
+    DefaultErrorHandler,
+    DefaultPaginator,
+    DpathExtractor,
+    ExponentialBackoffStrategy,
+    HttpRequester,
+    HttpResponseFilter,
+    JsonFileSchemaLoader,
+    JwtAuthenticator,
+    LegacySessionTokenAuthenticator,
+    ListPartitionRouter,
+    MinMaxDatetime,
+    OAuthAuthenticator,
+    OffsetIncrement,
+    PageIncrement,
+    ParentStreamConfig,
+    RecordFilter,
+    RecordSelector,
+    SelectiveAuthenticator,
+    SessionTokenAuthenticator,
+    SimpleRetriever,
+    SubstreamPartitionRouter,
+    WaitTimeFromHeader,
+    WaitUntilTimeFromHeader,
+)
 
 PARAMETERS_STR = "$parameters"
 

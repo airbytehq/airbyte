@@ -12,15 +12,16 @@ import com.deblock.jsondiff.matcher.LenientJsonObjectPartialMatcher
 import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
 import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -41,16 +42,18 @@ abstract class SpecTest :
     ) {
     @Test
     fun testSpecOss() {
-        testSpec(TestDeploymentMode.OSS)
+        testSpec("expected-spec-oss.json")
     }
 
     @Test
     fun testSpecCloud() {
-        testSpec(TestDeploymentMode.CLOUD)
+        testSpec("expected-spec-cloud.json", FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
     }
 
-    private fun testSpec(deploymentMode: TestDeploymentMode) {
-        val expectedSpecFilename = "expected-spec-${deploymentMode.name.lowercase()}.json"
+    private fun testSpec(
+        expectedSpecFilename: String,
+        vararg featureFlags: FeatureFlag,
+    ) {
         val expectedSpecPath = Path.of("src/test-integration/resources", expectedSpecFilename)
 
         if (!Files.exists(expectedSpecPath)) {
@@ -58,11 +61,8 @@ abstract class SpecTest :
         }
         val expectedSpec = Files.readString(expectedSpecPath)
         val process =
-            destinationProcessFactory.createDestinationProcess(
-                "spec",
-                deploymentMode = deploymentMode
-            )
-        process.run()
+            destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags)
+        runBlocking { process.run() }
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }
 

@@ -4,6 +4,8 @@ import json
 from unittest import TestCase
 from unittest.mock import patch
 
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -15,8 +17,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
 
 from .ad_requests import OAuthRequestBuilder, ProfilesRequestBuilder, SponsoredBrandsRequestBuilder
 from .ad_responses import ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder, SponsoredBrandsResponseBuilder

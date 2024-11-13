@@ -31,14 +31,14 @@ class TestAcceptanceTests:
         container = (
             dagger_client.container()
             .from_("bash:latest")
-            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_TEST_INPUT_DIRECTORY])
-            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY])
+            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_TEST_INPUT_DIRECTORY], use_entrypoint=True)
+            .with_exec(["mkdir", "-p", common.AcceptanceTests.CONTAINER_SECRETS_DIRECTORY], use_entrypoint=True)
         )
 
         for secret_file_path in secret_file_paths:
             secret_dir_name = str(pathlib.Path(secret_file_path).parent)
-            container = container.with_exec(["mkdir", "-p", secret_dir_name])
-            container = container.with_exec(["sh", "-c", f"echo foo > {secret_file_path}"])
+            container = container.with_exec(["mkdir", "-p", secret_dir_name], use_entrypoint=True)
+            container = container.with_exec(["sh", "-c", f"echo foo > {secret_file_path}"], use_entrypoint=True)
         return container.with_new_file("/stupid_bash_script.sh", contents=f"echo {stdout}; echo {stderr} >&2; exit {exit_code}")
 
     @pytest.fixture
@@ -192,12 +192,19 @@ class TestAcceptanceTests:
 
         acceptance_test_step = self.get_patched_acceptance_test_step(mocker, test_context_ci, test_input_dir)
         cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_container, test_input_dir)
-        assert (await cat_container.with_exec(["pwd"]).stdout()).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
-        test_input_ls_result = await cat_container.with_exec(["ls"]).stdout()
+        assert (
+            await cat_container.with_exec(["pwd"], use_entrypoint=True).stdout()
+        ).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
+        test_input_ls_result = await cat_container.with_exec(["ls"], use_entrypoint=True).stdout()
         assert all(
             file_or_directory in test_input_ls_result.splitlines() for file_or_directory in ["secrets", "acceptance-test-config.yml"]
         )
-        assert await cat_container.with_exec(["cat", f"{acceptance_test_step.CONTAINER_SECRETS_DIRECTORY}/config.json"]).stdout() == "***"
+        assert (
+            await cat_container.with_exec(
+                ["cat", f"{acceptance_test_step.CONTAINER_SECRETS_DIRECTORY}/config.json"], use_entrypoint=True
+            ).stdout()
+            == "***"
+        )
         env_vars = {await env_var.name(): await env_var.value() for env_var in await cat_container.env_variables()}
         assert "CACHEBUSTER" in env_vars
 
@@ -223,7 +230,7 @@ class TestAcceptanceTests:
             first_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            fist_date_result = await first_cat_container.with_exec(["date"]).stdout()
+            fist_date_result = await first_cat_container.with_exec(["date"], use_entrypoint=True).stdout()
 
             frozen_datetime.tick(delta=datetime.timedelta(hours=5))
             # Check that cache is used in the same day
@@ -231,7 +238,7 @@ class TestAcceptanceTests:
                 dummy_connector_under_test_container, test_input_dir
             )
 
-            second_date_result = await second_cat_container.with_exec(["date"]).stdout()
+            second_date_result = await second_cat_container.with_exec(["date"], use_entrypoint=True).stdout()
             assert fist_date_result == second_date_result
 
             # Check that cache bursted after a day
@@ -239,7 +246,7 @@ class TestAcceptanceTests:
             third_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            third_date_result = await third_cat_container.with_exec(["date"]).stdout()
+            third_date_result = await third_cat_container.with_exec(["date"], use_entrypoint=True).stdout()
             assert third_date_result != second_date_result
 
             time.sleep(1)
@@ -247,7 +254,7 @@ class TestAcceptanceTests:
             fourth_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 another_dummy_connector_under_test_container, test_input_dir
             )
-            fourth_date_result = await fourth_cat_container.with_exec(["date"]).stdout()
+            fourth_date_result = await fourth_cat_container.with_exec(["date"], use_entrypoint=True).stdout()
             assert fourth_date_result != third_date_result
 
     async def test_params(self, dagger_client, mocker, test_context_ci, test_input_dir):

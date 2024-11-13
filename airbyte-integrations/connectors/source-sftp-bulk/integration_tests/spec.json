@@ -332,6 +332,66 @@
                           },
                           "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
                           "required": ["mode"]
+                        },
+                        {
+                          "title": "via API",
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "title": "Mode",
+                              "default": "api",
+                              "const": "api",
+                              "enum": ["api"],
+                              "type": "string"
+                            },
+                            "api_key": {
+                              "title": "API Key",
+                              "description": "The API key to use matching the environment",
+                              "default": "",
+                              "always_show": true,
+                              "airbyte_secret": true,
+                              "type": "string"
+                            },
+                            "api_url": {
+                              "title": "API URL",
+                              "description": "The URL of the unstructured API to use",
+                              "default": "https://api.unstructured.io",
+                              "always_show": true,
+                              "examples": ["https://api.unstructured.com"],
+                              "type": "string"
+                            },
+                            "parameters": {
+                              "title": "Additional URL Parameters",
+                              "description": "List of parameters send to the API",
+                              "default": [],
+                              "always_show": true,
+                              "type": "array",
+                              "items": {
+                                "title": "APIParameterConfigModel",
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "title": "Parameter name",
+                                    "description": "The name of the unstructured API parameter to use",
+                                    "examples": [
+                                      "combine_under_n_chars",
+                                      "languages"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "title": "Value",
+                                    "description": "The value of the parameter",
+                                    "examples": ["true", "hi_res"],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": ["name", "value"]
+                              }
+                            }
+                          },
+                          "description": "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
+                          "required": ["mode"]
                         }
                       ]
                     }
@@ -369,6 +429,46 @@
           },
           "required": ["name", "format"]
         }
+      },
+      "delivery_method": {
+        "title": "Delivery Method",
+        "default": "use_records_transfer",
+        "type": "object",
+        "order": 7,
+        "display_type": "radio",
+        "group": "advanced",
+        "oneOf": [
+          {
+            "title": "Replicate Records",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_records_transfer",
+                "const": "use_records_transfer",
+                "enum": ["use_records_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
+            "required": ["delivery_type"]
+          },
+          {
+            "title": "Copy Raw Files",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_file_transfer",
+                "const": "use_file_transfer",
+                "enum": ["use_file_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
+            "required": ["delivery_type"]
+          }
+        ]
       },
       "host": {
         "title": "Host Address",
@@ -424,6 +524,7 @@
               "private_key": {
                 "title": "Private key",
                 "description": "The Private key",
+                "airbyte_secret": true,
                 "multiline": true,
                 "order": 4,
                 "type": "string"

@@ -1,0 +1,954 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+description: >-
+  Tremendous connector  enables seamless integration with Tremendous API. This
+  connector allows organizations to automate and sync reward, incentive, and
+  payout data, tapping into 2000+ payout methods, including ACH, gift cards,
+  PayPal, and prepaid cards, all from a single platform.
+
+check:
+  type: CheckStream
+  stream_names:
+    - orders
+
+definitions:
+  streams:
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    funding_sources:
+      type: DeclarativeStream
+      name: funding_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/funding_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - funding_sources
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/funding_sources"
+    account_members:
+      type: DeclarativeStream
+      name: account_members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_members"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    balance_transactions:
+      type: DeclarativeStream
+      name: balance_transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/balance_transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transactions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balance_transactions"
+    rewards:
+      type: DeclarativeStream
+      name: rewards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/rewards
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rewards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rewards"
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config["environment"] }}.tremendous.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/funding_sources"
+  - $ref: "#/definitions/streams/account_members"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/balance_transactions"
+  - $ref: "#/definitions/streams/rewards"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/invoices"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - environment
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. You can generate an API key through the Tremendous
+          dashboard under Team Settings > Developers. Save the key once you’ve
+          generated it.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      environment:
+        type: string
+        enum:
+          - api
+          - testflight
+        order: 1
+        title: Environment
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    orders: true
+    products: true
+    funding_sources: true
+    account_members: true
+    campaigns: true
+    organizations: true
+    balance_transactions: true
+    rewards: true
+    members: true
+    invoices: true
+  testedStreams:
+    orders:
+      hasRecords: true
+      streamHash: dd9ac3e7308d44dfed6de40252f859c99e04c1c8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: c6cb16800a3e12c9eebc9c9fbd449f959d7ebec1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    funding_sources:
+      hasRecords: true
+      streamHash: 06dcd4a04c1ebd97832ba7c747bfbadb3f6cdb1e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account_members:
+      hasRecords: true
+      streamHash: 371cc88527067daa1f8b1752d31f516a2c676da7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 15fed638e51342240d46f6efb8f3cb8e384db2aa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    organizations:
+      hasRecords: true
+      streamHash: c1ab194ed5a9d57adf721f9d3d66ef97702cdbd3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    balance_transactions:
+      hasRecords: true
+      streamHash: dae4c687de6c466303e9dae084c6249dbb9e7cab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    rewards:
+      hasRecords: true
+      streamHash: 30f243c223daae7ffb4d35b4acfc8e6774daa11b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    members:
+      streamHash: efe28ca3fd698fd3e3b911c2691cf3552f887a01
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoices:
+      streamHash: e889a596aaf7abae9f180dfe83617f44b71acfe3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.tremendous.com/docs/introduction
+
+schemas:
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaign_id:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      payment:
+        type:
+          - object
+          - "null"
+        properties:
+          discount:
+            type:
+              - number
+              - "null"
+          fees:
+            type:
+              - number
+              - "null"
+          subtotal:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+      rewards:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            delivery:
+              type:
+                - object
+                - "null"
+              properties:
+                method:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            order_id:
+              type:
+                - string
+                - "null"
+            recipient:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                currency_code:
+                  type:
+                    - string
+                    - "null"
+                denomination:
+                  type:
+                    - number
+                    - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      countries:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            abbr:
+              type:
+                - string
+                - "null"
+      currency_codes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      disclosure:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      images:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            src:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      skus:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            max:
+              type:
+                - number
+                - "null"
+            min:
+              type:
+                - number
+                - "null"
+  funding_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          available_cents:
+            type:
+              - number
+              - "null"
+          pending_cents:
+            type:
+              - number
+              - "null"
+      method:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  account_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email_style:
+        type:
+          - object
+          - "null"
+        properties:
+          sender_name:
+            type:
+              - string
+              - "null"
+          subject_line:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      webpage_style:
+        type:
+          - object
+          - "null"
+        properties:
+          background_color:
+            type:
+              - string
+              - "null"
+          headline:
+            type:
+              - string
+              - "null"
+          logo_background_color:
+            type:
+              - string
+              - "null"
+          logo_image_height_px:
+            type:
+              - number
+              - "null"
+          logo_image_url:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  balance_transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          payment:
+            type:
+              - object
+              - "null"
+            properties:
+              discount:
+                type:
+                  - number
+                  - "null"
+              fees:
+                type:
+                  - number
+                  - "null"
+              subtotal:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+  rewards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          method:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      order_id:
+        type:
+          - string
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+      value:
+        type:
+          - object
+          - "null"
+        properties:
+          currency_code:
+            type:
+              - string
+              - "null"
+          denomination:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

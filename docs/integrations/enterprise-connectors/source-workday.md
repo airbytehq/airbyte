@@ -25,6 +25,7 @@ Airbyte's incubating Workday enterprise source connector currently offers the fo
 
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
 
+- 0.2.0
 - 0.1.0
 
 </details>

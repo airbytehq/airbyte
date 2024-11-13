@@ -116,28 +116,13 @@ class SourceGoogleAds(AbstractSource):
     def get_customers(self, google_api: GoogleAds, config: Mapping[str, Any]) -> List[CustomerModel]:
         customer_status_filter = config.get("customer_status_filter", [])
         accounts = self._get_all_connected_accounts(google_api, customer_status_filter)
-        customers = CustomerModel.from_accounts(accounts)
-
-        # filter duplicates as one customer can be accessible from mutiple connected accounts
-        unique_customers = []
-        seen_ids = set()
-        for customer in customers:
-            if customer.id in seen_ids:
-                continue
-            seen_ids.add(customer.id)
-            unique_customers.append(customer)
-        customers = unique_customers
-        customers_dict = {customer.id: customer for customer in customers}
 
         # filter only selected accounts
         if config.get("customer_ids"):
-            customers = []
-            for customer_id in config["customer_ids"]:
-                if customer_id not in customers_dict:
-                    logging.warning(f"Customer with id {customer_id} is not accessible. Skipping it.")
-                else:
-                    customers.append(customers_dict[customer_id])
-        return customers
+            return CustomerModel.from_accounts_by_id(accounts, config["customer_ids"])
+
+        # all unique accounts
+        return CustomerModel.from_accounts(accounts)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:

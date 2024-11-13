@@ -1,0 +1,1702 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for [TicketTailor](https://tickettailor.com) enables
+  seamless extraction of key event data, including details on events, products,
+  vouchers, discounts, check-ins, issued tickets, orders, and waitlists. This
+  integration allows businesses to analyze ticket sales, attendance, and
+  customer interactions, streamlining event management insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - events_series
+
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_series/{{ stream_partition.event_series_id }}/events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events_series"
+              parent_key: id
+              partition_field: event_series_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /orders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    products:
+      type: DeclarativeStream
+      name: products
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    vouchers:
+      type: DeclarativeStream
+      name: vouchers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vouchers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vouchers"
+    check_ins:
+      type: DeclarativeStream
+      name: check_ins
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /check_ins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/check_ins"
+    discounts:
+      type: DeclarativeStream
+      name: discounts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /discounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discounts"
+    waitlists:
+      type: DeclarativeStream
+      name: waitlists
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /event_series/{{ stream_partition.event_series_id
+            }}/waitlist_signups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/events_series"
+              parent_key: id
+              partition_field: event_series_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/waitlists"
+    events_series:
+      type: DeclarativeStream
+      name: events_series
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_series
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events_series"
+    issued_tickets:
+      type: DeclarativeStream
+      name: issued_tickets
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /issued_tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issued_tickets"
+    vouchers_codes:
+      type: DeclarativeStream
+      name: vouchers_codes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ last_record['id'] }}"
+            stop_condition: "{{ response.links.next is none }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vouchers/{{ stream_partition.voucher_id }}/codes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/vouchers"
+              parent_key: id
+              partition_field: voucher_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vouchers_codes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tickettailor.com/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/events_series"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/vouchers"
+  - $ref: "#/definitions/streams/discounts"
+  - $ref: "#/definitions/streams/check_ins"
+  - $ref: "#/definitions/streams/issued_tickets"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/waitlists"
+  - $ref: "#/definitions/streams/vouchers_codes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: API key to use. Find it at https://www.getdrip.com/user/edit
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.tickettailor.com/
+  testedStreams:
+    events:
+      hasRecords: true
+      streamHash: 4c7e6383c411206fda1cd6fb8b3f1907af4ac154
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: true
+      streamHash: 22469a462b78e7c6bec358fbda0b953ee34c61e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: 5c343c5681138d3959a81f5150fd053edc381c83
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vouchers:
+      hasRecords: true
+      streamHash: 46718e9c71f7dcd6d5b5c9e8de5fcf0a76bd14a9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    check_ins:
+      hasRecords: true
+      streamHash: b77c3fb88b9fb6929fae8929e7cb269e50cf4b5e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    discounts:
+      hasRecords: true
+      streamHash: 00b8b496bee85bb5d2c21f3879830d73b0ce5d01
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    waitlists:
+      hasRecords: true
+      streamHash: a6980ff5fc3e0602c1f89e98149d3c066a74e5ac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events_series:
+      hasRecords: true
+      streamHash: 8edc6149c41ac5f309b997d506e5a331bb215a65
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    issued_tickets:
+      hasRecords: true
+      streamHash: 1790e3cd3a801aeabd8fe92cbeefca72505ee4a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vouchers_codes:
+      hasRecords: true
+      streamHash: b20f977fbefd70df0ded312917929285c04800b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  yamlComponents:
+    global:
+      - authenticator
+  autoImportSchema:
+    events: false
+    orders: true
+    products: true
+    vouchers: true
+    check_ins: true
+    discounts: true
+    waitlists: true
+    events_series: false
+    issued_tickets: false
+    vouchers_codes: true
+
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      chk:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      hidden:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      bundles:
+        type:
+          - array
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      unavailable:
+        type:
+          - string
+          - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+      ticket_groups:
+        type:
+          - array
+          - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
+      tickets_available:
+        type:
+          - string
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      tax:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      txn_id:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          base_multiplier:
+            type:
+              - number
+              - "null"
+      subtotal:
+        type:
+          - number
+          - "null"
+      meta_data:
+        type:
+          - array
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            total:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            item_id:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+      total_paid:
+        type:
+          - number
+          - "null"
+      buyer_details:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - object
+              - "null"
+            properties:
+              address_1:
+                type:
+                  - string
+                  - "null"
+              address_2:
+                type:
+                  - string
+                  - "null"
+              address_3:
+                type:
+                  - string
+                  - "null"
+              postal_code:
+                type:
+                  - string
+                  - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          custom_questions:
+            type:
+              - array
+              - "null"
+      event_summary:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          venue:
+            type:
+              - object
+              - "null"
+            properties:
+              postal_code:
+                type:
+                  - string
+                  - "null"
+          end_date:
+            type:
+              - object
+              - "null"
+            properties:
+              iso:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - string
+                  - "null"
+              unix:
+                type:
+                  - number
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              formatted:
+                type:
+                  - string
+                  - "null"
+          event_id:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - object
+              - "null"
+            properties:
+              iso:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - string
+                  - "null"
+              unix:
+                type:
+                  - number
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              formatted:
+                type:
+                  - string
+                  - "null"
+          event_series_id:
+            type:
+              - string
+              - "null"
+      refund_amount:
+        type:
+          - number
+          - "null"
+      tax_treatment:
+        type:
+          - string
+          - "null"
+      issued_tickets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            barcode:
+              type:
+                - string
+                - "null"
+            event_id:
+              type:
+                - string
+                - "null"
+            order_id:
+              type:
+                - string
+                - "null"
+            checked_in:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
+            barcode_url:
+              type:
+                - string
+                - "null"
+            qr_code_url:
+              type:
+                - string
+                - "null"
+            ticket_type_id:
+              type:
+                - string
+                - "null"
+            event_series_id:
+              type:
+                - string
+                - "null"
+            custom_questions:
+              type:
+                - array
+                - "null"
+      payment_method:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      credited_out_amount:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      fulfilment_type:
+        type:
+          - string
+          - "null"
+      linked_to_all_event_series:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  vouchers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      expiry:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      object:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      total_codes:
+        type:
+          - number
+          - "null"
+      available_codes:
+        type:
+          - number
+          - "null"
+      event_series_ids:
+        type:
+          - array
+          - "null"
+      partial_redemption:
+        type:
+          - string
+          - "null"
+      usable_on_any_event:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  check_ins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      object:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      check_in_at:
+        type:
+          - number
+          - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
+      issued_ticket_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  discounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      face_value_amount:
+        type:
+          - number
+          - "null"
+      booking_fee_amount:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  waitlists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  events_series:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - object
+          - "null"
+        properties:
+          postal_code:
+            type:
+              - string
+              - "null"
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          header:
+            type:
+              - string
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+      object:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      add_ons:
+        type:
+          - array
+          - "null"
+      bundles:
+        type:
+          - array
+          - "null"
+      private:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      voucher_ids:
+        type:
+          - array
+          - "null"
+      online_event:
+        type:
+          - string
+          - "null"
+      call_to_action:
+        type:
+          - string
+          - "null"
+      payment_methods:
+        type:
+          - array
+          - "null"
+      total_occurrences:
+        type:
+          - number
+          - "null"
+      default_ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+      next_occurrence_date:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      upcoming_occurrences:
+        type:
+          - number
+          - "null"
+      default_ticket_groups:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  issued_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      email:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      barcode:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      order_id:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      checked_in:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+      barcode_url:
+        type:
+          - string
+          - "null"
+      qr_code_url:
+        type:
+          - string
+          - "null"
+      ticket_type_id:
+        type:
+          - string
+          - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
+      custom_questions:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  vouchers_codes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      code:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      expiry:
+        type:
+          - object
+          - "null"
+        properties:
+          iso:
+            type:
+              - string
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+      object:
+        type:
+          - string
+          - "null"
+      voucher_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

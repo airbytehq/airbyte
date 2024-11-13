@@ -208,6 +208,15 @@ def validate_environment(is_local: bool) -> None:
     type=bool,
 )
 @click.option(
+    "--use-cdk-ref",
+    help=(
+        "Build with the airbyte-cdk from the specified git ref. "
+        "This is useful for testing against dev versions or previous versions of the CDK. "
+        "Ignored for java connectors and if `--use-local-cdk` is set."
+    ),
+    type=str,
+)
+@click.option(
     "--enable-report-auto-open/--disable-report-auto-open",
     is_flag=True,
     help=("When enabled, finishes by opening a browser window to display an HTML report."),

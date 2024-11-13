@@ -17,6 +17,7 @@ class ConcurrencyCompatibleStateType(Enum):
 class AbstractStreamStateConverter(ABC):
     START_KEY = "start"
     END_KEY = "end"
+    MOST_RECENT_RECORD_KEY = "most_recent_cursor_value"
 
     @abstractmethod
     def _from_state_message(self, value: Any) -> Any:
@@ -71,12 +72,13 @@ class AbstractStreamStateConverter(ABC):
         """
         serialized_slices = []
         for stream_slice in state.get("slices", []):
-            serialized_slices.append(
-                {
-                    self.START_KEY: self._to_state_message(stream_slice[self.START_KEY]),
-                    self.END_KEY: self._to_state_message(stream_slice[self.END_KEY]),
-                }
-            )
+            serialized_slice = {
+                self.START_KEY: self._to_state_message(stream_slice[self.START_KEY]),
+                self.END_KEY: self._to_state_message(stream_slice[self.END_KEY]),
+            }
+            if stream_slice.get(self.MOST_RECENT_RECORD_KEY):
+                serialized_slice[self.MOST_RECENT_RECORD_KEY] = self._to_state_message(stream_slice[self.MOST_RECENT_RECORD_KEY])
+            serialized_slices.append(serialized_slice)
         return {"slices": serialized_slices, "state_type": state_type.value}
 
     @staticmethod

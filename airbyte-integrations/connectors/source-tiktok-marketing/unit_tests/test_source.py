@@ -53,12 +53,29 @@ def test_source_check_connection_ok(config, requests_mock):
     assert SourceTiktokMarketing().check_connection(logger_mock, config) == (True, None)
 
 
-def test_source_check_connection_failed(config, requests_mock):
+@pytest.mark.parametrize(
+    "json_response, expected_result, expected_message",
+    [
+        ({"code": 40105, "message": "Access token is incorrect or has been revoked."},
+         (False, "Access token is incorrect or has been revoked."),
+         None),
+        ({"code": 40100, "message": "App reaches the QPS limit."},
+         None,
+         38)
+    ]
+)
+@pytest.mark.usefixtures("mock_sleep")
+def test_source_check_connection_failed(config, requests_mock, capsys, json_response, expected_result, expected_message):
     requests_mock.get(
         "https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/",
-        json={"code": 40105, "message": "Access token is incorrect or has been revoked."}
+        json=json_response
     )
+
     logger_mock = MagicMock()
-    assert SourceTiktokMarketing().check_connection(logger_mock, config) == (
-        False, "Access token is incorrect or has been revoked."
-    )
+    result = SourceTiktokMarketing().check_connection(logger_mock, config)
+
+    if expected_result is not None:
+        assert result == expected_result
+    if expected_message is not None:
+        trace_messages = capsys.readouterr().out.split()
+        assert len(trace_messages) == expected_message

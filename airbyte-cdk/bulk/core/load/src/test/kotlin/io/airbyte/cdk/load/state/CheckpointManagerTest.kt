@@ -149,7 +149,7 @@ class CheckpointManagerTest {
                         expectedStreamOutput =
                             mapOf(
                                 stream1.descriptor to listOf("11", "12"),
-                                stream2.descriptor to listOf("22", "21")
+                                stream2.descriptor to listOf("21", "22")
                             )
                     ),
                     TestCase(

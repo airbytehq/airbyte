@@ -1525,6 +1525,7 @@ abstract class BaseTypingDedupingTest {
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
+                fileTransferMountSource = null,
                 "host",
                 emptyMap()
             )

@@ -110,7 +110,7 @@ async def generate(
             for connector in connectors:
                 soon_results.append(
                     connector_task_group.soonify(generate_insights_for_connector)(
-                        dagger_client.pipeline(connector.technical_name),
+                        dagger_client,
                         connector,
                         semaphore,
                         rewrite,

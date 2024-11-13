@@ -49,6 +49,12 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.7.10  | 2024-11-08 | [48429](https://github.com/airbytehq/airbyte/pull/48429) | Bugfix: correctly handle state ID field                                                      |
+| 0.7.9   | 2024-11-07 | [48417](https://github.com/airbytehq/airbyte/pull/48417) | Only pass through the state ID field, not all additional properties                          |
+| 0.7.8   | 2024-11-07 | [48416](https://github.com/airbytehq/airbyte/pull/48416) | Bugfix: global state correclty sends additional properties                                   |
+| 0.7.7   | 2024-10-17 | [46692](https://github.com/airbytehq/airbyte/pull/46692) | Internal code changes                                                                        |
+| 0.7.6   | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: pick up checkpoint safety check fix                                                  |
+| 0.7.5   | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: checkpoints in order, all checkpoints processed before shutdown                      |
 | 0.7.4   | 2024-10-08 | [46650](https://github.com/airbytehq/airbyte/pull/46650) | Internal code changes                                                                        |
 | 0.7.3   | 2024-10-01 | [46559](https://github.com/airbytehq/airbyte/pull/46559) | From load CDK: async improvements, stream incomplete, additionalProperties on state messages |
 | 0.7.2   | 2024-10-01 | [45929](https://github.com/airbytehq/airbyte/pull/45929) | Internal code changes                                                                        |

@@ -25,6 +25,12 @@ definitions:
       message:
         description: Descriptive message detailing the breaking change.
         type: string
+      deadlineAction:
+        description: Action to do when the deadline is reached.
+        type: string
+        enum:
+          - auto_upgrade
+          - disable
       migrationDocumentationUrl:
         description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
         type: string

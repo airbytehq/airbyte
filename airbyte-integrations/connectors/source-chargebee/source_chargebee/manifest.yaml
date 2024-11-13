@@ -21,10 +21,11 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - error_message_contains: "This API operation is not enabled for this site"
+            - predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
               action: IGNORE
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
+          max_retries: 10
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: "Retry-After"
@@ -464,3 +465,15 @@ streams:
 check:
   stream_names:
     - "event"
+
+# Chargebee offers three tiers of rate limits:
+# - Starter: 150 req/min (2.5 req/sec)
+# - Performance: 1000 req/min (16 req/sec)
+# - Enterprise: 3500 req/min (58 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 50

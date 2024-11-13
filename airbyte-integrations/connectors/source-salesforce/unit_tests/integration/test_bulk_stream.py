@@ -588,7 +588,7 @@ class BulkStreamTest(TestCase):
         return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM {stream_name}")
 
     def _generate_random_records(self, fields: List[str], record_count: int) -> List[Dict[str, str]]:
-        record = {field: f"{field}_value" for field in fields}
+        record = {field: "2021-01-18T21:18:20.000Z" if field in {"SystemModstamp"} else f"{field}_value" for field in fields}
         return [record for _ in range(record_count)]
 
     def _generate_csv(self, records: List[Dict[str, str]]) -> str:

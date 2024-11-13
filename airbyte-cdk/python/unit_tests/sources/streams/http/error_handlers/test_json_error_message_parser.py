@@ -35,4 +35,4 @@ def test_given_invalid_json_body_parse_response_error_message_returns_none():
     response = requests.Response()
     response._content = b"invalid json body"
     error_message = JsonErrorMessageParser().parse_response_error_message(response)
-    assert error_message is None
+    assert error_message == "invalid json body"

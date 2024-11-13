@@ -53,7 +53,7 @@ private fun resolveValues(
             log.warn { "File '$jsonFile' not found for '$cliOptionKey'." }
             continue
         }
-        values["$prefix.json"] = jsonFile.readText()
+        values["$prefix.json"] = jsonFile.readText().replace("$", "\${:$}")
     }
     return values
 }

@@ -57,6 +57,8 @@ class HttpMocker(contextlib.ContextDecorator):
             responses = [responses]
 
         matcher = HttpRequestMatcher(request, len(responses))
+        if matcher in self._matchers:
+            raise ValueError(f"Request {matcher.request} already mocked")
         self._matchers.append(matcher)
 
         getattr(self._mocker, method)(
@@ -131,3 +133,7 @@ class HttpMocker(contextlib.ContextDecorator):
                 return result
 
         return wrapper
+
+    def clear_all_matchers(self) -> None:
+        """Clears all stored matchers by resetting the _matchers list to an empty state."""
+        self._matchers = []

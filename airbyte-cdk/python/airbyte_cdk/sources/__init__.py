@@ -19,4 +19,8 @@ from .source import Source
 # this will not be thread-safe.
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-__all__ = ["AbstractSource", "BaseConfig", "Source"]
+__all__ = [
+    "AbstractSource",
+    "BaseConfig",
+    "Source",
+]

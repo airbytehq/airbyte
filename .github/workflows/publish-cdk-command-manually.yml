@@ -224,9 +224,7 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master" # TODO: figure out why changing this yells with `The ci_gcs_credentials was not set on this PipelineContext.`
-          # Disable the dagger_cloud_token to disable remote cache access.
-          # See https://github.com/airbytehq/airbyte-internal-issues/issues/6439#issuecomment-2109503985 for context
-          #dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

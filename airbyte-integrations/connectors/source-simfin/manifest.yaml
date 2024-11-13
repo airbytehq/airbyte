@@ -1,0 +1,1340 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  Simfin provides financial data .
+
+  With this connector we can extract data from price data , financial statements
+  and company info streams .
+
+  Docs https://simfin.readme.io/reference/getting-started-1
+
+check:
+  type: CheckStream
+  stream_names:
+    - "Company Info "
+
+definitions:
+  streams:
+    "Company Info ":
+      type: DeclarativeStream
+      name: "Company Info "
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/general/verbose
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company Info "
+    Financial Statements:
+      type: DeclarativeStream
+      name: Financial Statements
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/statements/verbose
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+            statements: pl,bs,cf,derived
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - statements
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/Company Info "
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Financial Statements"
+    Price Data:
+      type: DeclarativeStream
+      name: Price Data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/prices/verbose
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/Company Info "
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Price Data"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    common_shares_outstanding:
+      type: DeclarativeStream
+      name: common_shares_outstanding
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/common-shares-outstanding
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/common_shares_outstanding"
+    weighted_shares_outstanding:
+      type: DeclarativeStream
+      name: weighted_shares_outstanding
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies/weighted-shares-outstanding
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/weighted_shares_outstanding"
+    filings_by_company:
+      type: DeclarativeStream
+      name: filings_by_company
+      primary_key:
+        - filingIdentifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filings/by-company
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filings_by_company"
+    filings_list:
+      type: DeclarativeStream
+      name: filings_list
+      primary_key:
+        - filingIdentifier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: filings/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per-page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/filings_list"
+  base_requester:
+    type: HttpRequester
+    url_base: https://backend.simfin.com/api/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Company Info "
+  - $ref: "#/definitions/streams/Financial Statements"
+  - $ref: "#/definitions/streams/Price Data"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/common_shares_outstanding"
+  - $ref: "#/definitions/streams/weighted_shares_outstanding"
+  - $ref: "#/definitions/streams/filings_by_company"
+  - $ref: "#/definitions/streams/filings_list"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    "Company Info ": true
+    Financial Statements: true
+    Price Data: true
+    companies: true
+    common_shares_outstanding: true
+    weighted_shares_outstanding: true
+    filings_by_company: true
+    filings_list: true
+  testedStreams:
+    "Company Info ":
+      hasRecords: true
+      streamHash: 9e726c6019d4e63cb31fbfe032148c1fc2c10686
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Financial Statements:
+      hasRecords: true
+      streamHash: 357824c43d7efbc949979761302521bde147930e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Price Data:
+      hasRecords: true
+      streamHash: 71296e2297941f727e87526862586d1ebcdf86fd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      streamHash: 20ea91a757a266dd3d6d43000d3d2f20aa9a39ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    common_shares_outstanding:
+      streamHash: 2ad66097feb064e4b52190d057083a791a238a20
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    weighted_shares_outstanding:
+      streamHash: e5dc0ebf850f05a23a3d4557f6a5c00fd976125d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filings_by_company:
+      streamHash: 3478504d337269c01e6ebdf9c2902849216949f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    filings_list:
+      streamHash: 42b5d87568d79b3a55a518f9e3ed0997405bd482
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  "Company Info ":
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      companyDescription:
+        type:
+          - string
+          - "null"
+      endFy:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      industryName:
+        type:
+          - string
+          - "null"
+      isin:
+        type:
+          - string
+          - "null"
+      market:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      numEmployees:
+        type:
+          - number
+          - "null"
+      sectorCode:
+        type:
+          - number
+          - "null"
+      sectorName:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Financial Statements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      checks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            dataModel:
+              type:
+                - number
+                - "null"
+            includedInBulkDownload:
+              type:
+                - boolean
+                - "null"
+            valueCheck:
+              type:
+                - boolean
+                - "null"
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Abnormal Gains (Losses):
+              type:
+                - number
+                - "null"
+            Accounts & Notes Receivable:
+              type:
+                - number
+                - "null"
+            Accounts Payable:
+              type:
+                - number
+                - "null"
+            Accounts Receivable, Net:
+              type:
+                - number
+                - "null"
+            Accrued Taxes:
+              type:
+                - number
+                - "null"
+            Acquisition of Fixed Assets & Intangibles:
+              type:
+                - number
+                - "null"
+            Additional Paid in Capital:
+              type:
+                - number
+                - "null"
+            Cash & Cash Equivalents:
+              type:
+                - number
+                - "null"
+            Cash From (Repayment of) Debt:
+              type:
+                - number
+                - "null"
+            Cash From (Repurchase of) Equity:
+              type:
+                - number
+                - "null"
+            Cash Return On Invested Capital:
+              type:
+                - number
+                - "null"
+            Cash from Financing Activities:
+              type:
+                - number
+                - "null"
+            Cash from Investing Activities:
+              type:
+                - number
+                - "null"
+            Cash from Operating Activities:
+              type:
+                - number
+                - "null"
+            Cash, Cash Equivalents & Short Term Investments:
+              type:
+                - number
+                - "null"
+            Change in Fixed Assets & Intangibles:
+              type:
+                - number
+                - "null"
+            Change in Working Capital:
+              type:
+                - number
+                - "null"
+            Commissions & Fees Earned:
+              type:
+                - number
+                - "null"
+            Commissions & Fees Paid:
+              type:
+                - number
+                - "null"
+            Common Stock:
+              type:
+                - number
+                - "null"
+            Cost of revenue:
+              type:
+                - number
+                - "null"
+            Current Ratio:
+              type:
+                - number
+                - "null"
+            Customer Acceptances & Liabilities:
+              type:
+                - number
+                - "null"
+            Data Model:
+              type:
+                - number
+                - "null"
+            Debt Ratio:
+              type:
+                - number
+                - "null"
+            Deferred Revenue (Long Term):
+              type:
+                - number
+                - "null"
+            Deferred Revenue (Short Term):
+              type:
+                - number
+                - "null"
+            Deferred Tax Assets (Long Term):
+              type:
+                - number
+                - "null"
+            Deferred Tax Assets (Short Term):
+              type:
+                - number
+                - "null"
+            Deferred Tax Liabilities (Long Term):
+              type:
+                - number
+                - "null"
+            Deferred Tax Liabilities (Short Term):
+              type:
+                - number
+                - "null"
+            Depreciation & Amortization:
+              type:
+                - number
+                - "null"
+            Derivative & Hedging Assets (Short Term):
+              type:
+                - number
+                - "null"
+            Dividend Payout Ratio:
+              type:
+                - number
+                - "null"
+            Dividends Paid:
+              type:
+                - number
+                - "null"
+            Dividends Per Share:
+              type:
+                - number
+                - "null"
+            EBITDA:
+              type:
+                - number
+                - "null"
+            Earnings Per Share, Basic:
+              type:
+                - number
+                - "null"
+            Earnings Per Share, Diluted:
+              type:
+                - number
+                - "null"
+            Effect of Foreign Exchange Rates:
+              type:
+                - number
+                - "null"
+            Equity Before Minority Interest:
+              type:
+                - number
+                - "null"
+            Equity Per Share:
+              type:
+                - number
+                - "null"
+            Fiscal Period:
+              type:
+                - string
+                - "null"
+            Fiscal Year:
+              type:
+                - number
+                - "null"
+            Foreign Exchange Gain (Loss):
+              type:
+                - number
+                - "null"
+            Free Cash Flow:
+              type:
+                - number
+                - "null"
+            Free Cash Flow Per Share:
+              type:
+                - number
+                - "null"
+            Free Cash Flow to Net Income:
+              type:
+                - number
+                - "null"
+            Free Cash Flow to Net Income (Adjusted):
+              type:
+                - number
+                - "null"
+            General & Administrative:
+              type:
+                - number
+                - "null"
+            Goodwill:
+              type:
+                - number
+                - "null"
+            Gross Profit:
+              type:
+                - number
+                - "null"
+            Gross Profit Margin:
+              type:
+                - number
+                - "null"
+            Income (Loss) Including Minority Interest:
+              type:
+                - number
+                - "null"
+            Income (Loss) from Continuing Operations:
+              type:
+                - number
+                - "null"
+            Income Tax (Expense) Benefit, net:
+              type:
+                - number
+                - "null"
+            Income Taxes Receivable:
+              type:
+                - number
+                - "null"
+            Increase in Capital Stock:
+              type:
+                - number
+                - "null"
+            Intangible Assets:
+              type:
+                - number
+                - "null"
+            Interest Expense, net:
+              type:
+                - number
+                - "null"
+            Interest Income:
+              type:
+                - number
+                - "null"
+            Investment Income (Loss):
+              type:
+                - number
+                - "null"
+            Liabilities from Derivatives & Hedging (Short Term):
+              type:
+                - number
+                - "null"
+            Liabilities to Equity Ratio:
+              type:
+                - number
+                - "null"
+            Long Term Capital Leases:
+              type:
+                - number
+                - "null"
+            Long Term Debt:
+              type:
+                - number
+                - "null"
+            Long Term Investments & Receivables:
+              type:
+                - number
+                - "null"
+            Minority Interest:
+              type:
+                - number
+                - "null"
+            Miscellaneous Long Term Assets:
+              type:
+                - number
+                - "null"
+            Miscellaneous Long Term Liabilities:
+              type:
+                - number
+                - "null"
+            Miscellaneous Short Term Assets:
+              type:
+                - number
+                - "null"
+            Miscellaneous Short Term Liabilities:
+              type:
+                - number
+                - "null"
+            Net Cash Before Disc. Operations and FX:
+              type:
+                - number
+                - "null"
+            Net Cash Before FX:
+              type:
+                - number
+                - "null"
+            Net Cash From Acquisitions & Divestitures:
+              type:
+                - number
+                - "null"
+            Net Cash From Discontinued Operations (financing):
+              type:
+                - number
+                - "null"
+            Net Change In Deposits:
+              type:
+                - number
+                - "null"
+            Net Change in Investments:
+              type:
+                - number
+                - "null"
+            Net Change in Loans & Interbank:
+              type:
+                - number
+                - "null"
+            Net Change in Long Term Investment:
+              type:
+                - number
+                - "null"
+            Net Change in Operating Capital:
+              type:
+                - number
+                - "null"
+            Net Changes in Cash:
+              type:
+                - number
+                - "null"
+            Net Debt / EBIT:
+              type:
+                - number
+                - "null"
+            Net Debt / EBITDA:
+              type:
+                - number
+                - "null"
+            Net Fixed Assets:
+              type:
+                - number
+                - "null"
+            Net Income:
+              type:
+                - number
+                - "null"
+            Net Income (Adjusted):
+              type:
+                - number
+                - "null"
+            Net Income Available to Common Shareholders:
+              type:
+                - number
+                - "null"
+            Net Income/Starting Line:
+              type:
+                - number
+                - "null"
+            Net Loans:
+              type:
+                - number
+                - "null"
+            Net Profit Margin:
+              type:
+                - number
+                - "null"
+            Net Profit Margin (Adjusted):
+              type:
+                - number
+                - "null"
+            Net Revenue:
+              type:
+                - number
+                - "null"
+            Net Revenue after Provisions:
+              type:
+                - number
+                - "null"
+            Net interest income:
+              type:
+                - number
+                - "null"
+            Non-Cash Items:
+              type:
+                - number
+                - "null"
+            Non-Operating Income (Loss):
+              type:
+                - number
+                - "null"
+            Operating Expenses:
+              type:
+                - number
+                - "null"
+            Operating Income (Loss):
+              type:
+                - number
+                - "null"
+            Operating Margin:
+              type:
+                - number
+                - "null"
+            Other Assets:
+              type:
+                - number
+                - "null"
+            Other Equity:
+              type:
+                - number
+                - "null"
+            Other Financing Activities:
+              type:
+                - number
+                - "null"
+            Other Investing Activities:
+              type:
+                - number
+                - "null"
+            Other Liabilities:
+              type:
+                - number
+                - "null"
+            Other Long Term Assets:
+              type:
+                - number
+                - "null"
+            Other Long Term Liabilities:
+              type:
+                - number
+                - "null"
+            Other Non-Cash Adjustments:
+              type:
+                - number
+                - "null"
+            Other Non-Interest Income:
+              type:
+                - number
+                - "null"
+            Other Non-Operating Income (Loss):
+              type:
+                - number
+                - "null"
+            Other Operating Expense:
+              type:
+                - number
+                - "null"
+            Other Payables & Accruals:
+              type:
+                - number
+                - "null"
+            Other Short Term Assets:
+              type:
+                - number
+                - "null"
+            Other Short Term Liabilities:
+              type:
+                - number
+                - "null"
+            Payables & Accruals:
+              type:
+                - number
+                - "null"
+            Pension Liabilities:
+              type:
+                - number
+                - "null"
+            Preferred Dividends:
+              type:
+                - number
+                - "null"
+            Prepaid Expenses:
+              type:
+                - number
+                - "null"
+            Pretax Income (Loss):
+              type:
+                - number
+                - "null"
+            Pretax Income (Loss), Adjusted:
+              type:
+                - number
+                - "null"
+            Property, Plant & Equipment:
+              type:
+                - number
+                - "null"
+            Property, Plant & Equipment, Net:
+              type:
+                - number
+                - "null"
+            Provision for Loan Losses:
+              type:
+                - number
+                - "null"
+            Publish Date:
+              type:
+                - string
+                - "null"
+            Repayments of Long Term Debt:
+              type:
+                - number
+                - "null"
+            Report Date:
+              type:
+                - string
+                - "null"
+            Research & Development:
+              type:
+                - number
+                - "null"
+            Reserve for Loan Losses:
+              type:
+                - number
+                - "null"
+            Restated:
+              type:
+                - number
+                - "null"
+            Retained Earnings:
+              type:
+                - number
+                - "null"
+            Return On Invested Capital:
+              type:
+                - number
+                - "null"
+            Return On Invested Capital (Adjusted):
+              type:
+                - number
+                - "null"
+            Return on Assets:
+              type:
+                - number
+                - "null"
+            Return on Assets (Adjusted):
+              type:
+                - number
+                - "null"
+            Return on Equity:
+              type:
+                - number
+                - "null"
+            Return on Equity (Adjusted):
+              type:
+                - number
+                - "null"
+            Revenue:
+              type:
+                - number
+                - "null"
+            Sales Per Share:
+              type:
+                - number
+                - "null"
+            Selling & Marketing:
+              type:
+                - number
+                - "null"
+            Selling, General & Administrative:
+              type:
+                - number
+                - "null"
+            Share Capital & Additional Paid-In Capital:
+              type:
+                - number
+                - "null"
+            Short Term Borrowings & Repos:
+              type:
+                - number
+                - "null"
+            Short Term Capital Leases:
+              type:
+                - number
+                - "null"
+            Short Term Debt:
+              type:
+                - number
+                - "null"
+            Short Term Investments:
+              type:
+                - number
+                - "null"
+            Short and Long Term Investments:
+              type:
+                - number
+                - "null"
+            Source:
+              type:
+                - string
+                - "null"
+            Stock-Based Compensation:
+              type:
+                - number
+                - "null"
+            TTM:
+              type:
+                - number
+                - "null"
+            Total Assets:
+              type:
+                - number
+                - "null"
+            Total Current Assets:
+              type:
+                - number
+                - "null"
+            Total Current Liabilities:
+              type:
+                - number
+                - "null"
+            Total Debt:
+              type:
+                - number
+                - "null"
+            Total Deposits:
+              type:
+                - number
+                - "null"
+            Total Equity:
+              type:
+                - number
+                - "null"
+            Total Interest Expense:
+              type:
+                - number
+                - "null"
+            Total Interest Income:
+              type:
+                - number
+                - "null"
+            Total Liabilities:
+              type:
+                - number
+                - "null"
+            Total Liabilities & Equity:
+              type:
+                - number
+                - "null"
+            Total Loans:
+              type:
+                - number
+                - "null"
+            Total Non-Interest Expense:
+              type:
+                - number
+                - "null"
+            Total Non-Interest Income:
+              type:
+                - number
+                - "null"
+            Total Noncurrent Assets:
+              type:
+                - number
+                - "null"
+            Total Noncurrent Liabilities:
+              type:
+                - number
+                - "null"
+            Treasury Stock:
+              type:
+                - number
+                - "null"
+            Value Check:
+              type:
+                - number
+                - "null"
+      statement:
+        type:
+          - string
+          - "null"
+  Price Data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Adjusted Closing Price:
+        type:
+          - number
+          - "null"
+      Common Shares Outstanding:
+        type:
+          - number
+          - "null"
+      Date:
+        type:
+          - string
+          - "null"
+      Dividend Paid:
+        type:
+          - number
+          - "null"
+      Highest Price:
+        type:
+          - number
+          - "null"
+      Last Closing Price:
+        type:
+          - number
+          - "null"
+      Lowest Price:
+        type:
+          - number
+          - "null"
+      Opening Price:
+        type:
+          - number
+          - "null"
+      Trading Volume:
+        type:
+          - number
+          - "null"
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      industryName:
+        type:
+          - string
+          - "null"
+      isin:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sectorCode:
+        type:
+          - number
+          - "null"
+      sectorName:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+  common_shares_outstanding:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      endDate:
+        type:
+          - string
+          - "null"
+      pid:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  weighted_shares_outstanding:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      basic:
+        type:
+          - number
+          - "null"
+      diluted:
+        type:
+          - number
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      pid:
+        type:
+          - number
+          - "null"
+  filings_by_company:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          industryName:
+            type:
+              - string
+              - "null"
+          isin:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sectorCode:
+            type:
+              - number
+              - "null"
+          sectorName:
+            type:
+              - string
+              - "null"
+          ticker:
+            type:
+              - string
+              - "null"
+      filingDate:
+        type:
+          - string
+          - "null"
+      filingIdentifier:
+        type: string
+      filingType:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      sourceLink:
+        type:
+          - string
+          - "null"
+    required:
+      - filingIdentifier
+  filings_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          industryName:
+            type:
+              - string
+              - "null"
+          isin:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sectorCode:
+            type:
+              - number
+              - "null"
+          sectorName:
+            type:
+              - string
+              - "null"
+          ticker:
+            type:
+              - string
+              - "null"
+      filingDate:
+        type:
+          - string
+          - "null"
+      filingIdentifier:
+        type: string
+      filingType:
+        type:
+          - string
+          - "null"
+      fyear:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      sourceLink:
+        type:
+          - string
+          - "null"
+    required:
+      - filingIdentifier

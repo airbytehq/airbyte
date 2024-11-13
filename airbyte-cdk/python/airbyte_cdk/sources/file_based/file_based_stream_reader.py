@@ -7,7 +7,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from os import makedirs, path
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -92,6 +93,16 @@ class AbstractFileBasedStreamReader(ABC):
                     seen.add(file.uri)
                     yield file
 
+    @abstractmethod
+    def file_size(self, file: RemoteFile) -> int:
+        """Utility method to get size of the remote file.
+
+        This is required for connectors that will support writing to
+        files. If the connector does not support writing files, then the
+        subclass can simply `return 0`.
+        """
+        ...
+
     @staticmethod
     def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:
         # Use the GLOBSTAR flag to enable recursive ** matching
@@ -105,3 +116,44 @@ class AbstractFileBasedStreamReader(ABC):
         """
         prefixes = {glob.split("*")[0] for glob in globs}
         return set(filter(lambda x: bool(x), prefixes))
+
+    def use_file_transfer(self) -> bool:
+        if self.config:
+            use_file_transfer = (
+                hasattr(self.config.delivery_method, "delivery_type") and self.config.delivery_method.delivery_type == "use_file_transfer"
+            )
+            return use_file_transfer
+        return False
+
+    @abstractmethod
+    def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, Any]:
+        """
+        This is required for connectors that will support writing to
+        files. It will handle the logic to download,get,read,acquire or
+        whatever is more efficient to get a file from the source.
+
+        Args:
+               file (RemoteFile): The remote file object containing URI and metadata.
+               local_directory (str): The local directory path where the file will be downloaded.
+               logger (logging.Logger): Logger for logging information and errors.
+
+           Returns:
+               dict: A dictionary containing the following:
+                   - "file_url" (str): The absolute path of the downloaded file.
+                   - "bytes" (int): The file size in bytes.
+                   - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
+                   this a mounted volume in the pod container.
+
+        """
+        ...
+
+    @staticmethod
+    def _get_file_transfer_paths(file: RemoteFile, local_directory: str) -> List[str]:
+        # Remove left slashes from source path format to make relative path for writing locally
+        file_relative_path = file.uri.lstrip("/")
+        local_file_path = path.join(local_directory, file_relative_path)
+
+        # Ensure the local directory exists
+        makedirs(path.dirname(local_file_path), exist_ok=True)
+        absolute_file_path = path.abspath(local_file_path)
+        return [file_relative_path, local_file_path, absolute_file_path]

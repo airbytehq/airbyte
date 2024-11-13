@@ -9,10 +9,8 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
-import io.airbyte.cdk.load.file.DefaultLocalFile
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -38,6 +36,7 @@ import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
@@ -66,11 +65,11 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest {
+class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var mockScopeProvider: MockScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
-    @Inject lateinit var mockExceptionHandler: MockExceptionHandler
+    @Inject lateinit var mockExceptionHandler: MockExceptionHandler<T>
 
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTask
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
@@ -167,7 +166,7 @@ class DestinationTaskLauncherTest {
         override fun make(
             taskLauncher: DestinationTaskLauncher,
             stream: DestinationStream,
-            fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>
+            file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
                 override val stream: DestinationStream = stream
@@ -272,22 +271,37 @@ class DestinationTaskLauncherTest {
 
     @Singleton
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockExceptionHandler : TaskExceptionHandler<LeveledTask, ScopedTask> {
+    class MockExceptionHandler<T> : TaskExceptionHandler<T, WrappedTask<ScopedTask>> where
+    T : LeveledTask,
+    T : ScopedTask {
         val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
+        val callbacks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
-        override fun withExceptionHandling(task: LeveledTask): ScopedTask {
-            runBlocking { wrappedTasks.send(task) }
-            return object : InternalTask {
-                override suspend fun execute() {
-                    task.execute()
-                }
+        inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
+            override suspend fun execute() {
+                innerTask.execute()
             }
+        }
+
+        override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+            runBlocking { wrappedTasks.send(task) }
+            val innerTask =
+                object : InternalScope {
+                    override suspend fun execute() {
+                        task.execute()
+                    }
+                }
+            return IdentityWrapper(innerTask)
+        }
+
+        override suspend fun setCallback(callback: suspend () -> Unit) {
+            callbacks.send(callback)
         }
     }
 
     @Test
-    fun testStart() = runTest {
-        taskLauncher.start()
+    fun testRun() = runTest {
+        val job = launch { taskLauncher.run() }
 
         Assertions.assertTrue(
             mockInputConsumerTask.hasRun.receive(),
@@ -317,6 +331,7 @@ class DestinationTaskLauncherTest {
             mockSpillToDiskTaskFactory.streamHasRun.size,
             taskList.filterIsInstance<SpillToDiskTask>().size
         )
+        job.cancel()
     }
 
     @Test
@@ -338,10 +353,7 @@ class DestinationTaskLauncherTest {
     fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
         taskLauncher.handleNewSpilledFile(
             MockDestinationCatalogFactory.stream1,
-            BatchEnvelope(
-                SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
-            ),
-            false
+            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0))
         )
 
         processRecordsTaskFactory.hasRun.receive()
@@ -355,10 +367,7 @@ class DestinationTaskLauncherTest {
         launch {
             taskLauncher.handleNewSpilledFile(
                 MockDestinationCatalogFactory.stream1,
-                BatchEnvelope(
-                    SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
-                ),
-                true
+                SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0), true)
             )
         }
 
@@ -421,7 +430,19 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleTeardownComplete() = runTest {
         // This should close the scope provider.
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didClose)
+        }
         taskLauncher.handleTeardownComplete()
-        Assertions.assertTrue(mockScopeProvider.didClose)
+    }
+
+    @Test
+    fun testHandleCallbackWithFailure() = runTest {
+        launch {
+            taskLauncher.run()
+            Assertions.assertTrue(mockScopeProvider.didKill)
+        }
+        mockExceptionHandler.callbacks.receive().invoke()
     }
 }

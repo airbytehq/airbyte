@@ -7,14 +7,14 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.util.concurrent.atomic.AtomicBoolean
 
-interface TeardownTask : SyncTask
+interface TeardownTask : SyncLevel, ImplementorScope
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.
@@ -25,30 +25,25 @@ class DefaultTeardownTask(
     private val checkpointManager: CheckpointManager<*, *>,
     private val syncManager: SyncManager,
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationTaskLauncher,
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
 
-    private val teardownHasRun = AtomicBoolean(false)
-
     override suspend fun execute() {
-        // TODO: This should be its own task, dispatched on a timer or something.
-        checkpointManager.flushReadyCheckpointMessages()
+        syncManager.awaitInputProcessingComplete()
+        checkpointManager.awaitAllCheckpointsFlushed()
 
-        // Run the task exactly once, and only after all streams have closed.
-        if (teardownHasRun.compareAndSet(false, true)) {
-            log.info { "Teardown task awaiting stream completion" }
-            if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
-                log.info { "Streams failed to complete successfully, doing nothing." }
-                return
-            }
-
-            log.info { "Starting teardown task" }
-            destination.teardown()
-            log.info { "Teardown task complete, marking sync succeeded." }
-            syncManager.markSucceeded()
-            taskLauncher.handleTeardownComplete()
+        log.info { "Teardown task awaiting stream completion" }
+        if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
+            log.info { "Streams failed to complete successfully, doing nothing." }
+            return
         }
+
+        log.info { "Starting teardown task" }
+        destination.teardown()
+        log.info { "Teardown task complete, marking sync succeeded." }
+        syncManager.markSucceeded()
+        taskLauncher.handleTeardownComplete()
     }
 }
 

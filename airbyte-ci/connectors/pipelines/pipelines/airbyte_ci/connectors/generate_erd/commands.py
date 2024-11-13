@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import List, Optional
+from typing import List
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID

@@ -125,3 +125,6 @@ properties:
         default: false
       generated:
         "$ref": GeneratedFields.yaml
+      supportsFileTransfer:
+        type: boolean
+        default: false

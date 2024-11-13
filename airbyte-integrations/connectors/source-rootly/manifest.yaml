@@ -1,0 +1,5915 @@
+version: 5.8.1
+
+type: DeclarativeSource
+
+description: "Documentation: https://rootly.com/api#/"
+
+check:
+  type: CheckStream
+  stream_names:
+    - dashboards
+
+definitions:
+  streams:
+    dashboards:
+      type: DeclarativeStream
+      name: dashboards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dashboards
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboards"
+    incidents:
+      type: DeclarativeStream
+      name: incidents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incidents
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents"
+    authorizations:
+      type: DeclarativeStream
+      name: authorizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: authorizations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/authorizations"
+    dashboards_panels:
+      type: DeclarativeStream
+      name: dashboards_panels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dashboards/{{ stream_partition.d_id }}/panels
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: d_id
+              stream:
+                $ref: "#/definitions/streams/dashboards"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboards_panels"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    incident_types:
+      type: DeclarativeStream
+      name: incident_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incident_types
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_types"
+    ip_ranges:
+      type: DeclarativeStream
+      name: ip_ranges
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: ip_ranges
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ip_ranges"
+    users_notification_rules:
+      type: DeclarativeStream
+      name: users_notification_rules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/{{ stream_partition.user_id }}/notification_rules
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users_notification_rules"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: teams
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    sub_statuses:
+      type: DeclarativeStream
+      name: sub_statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sub_statuses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sub_statuses"
+    incidents_sub_statuses:
+      type: DeclarativeStream
+      name: incidents_sub_statuses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incidents/{{ stream_partition.incident_id }}/sub_statuses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_id
+              stream:
+                $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents_sub_statuses"
+    incident_roles:
+      type: DeclarativeStream
+      name: incident_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incident_roles
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_roles"
+    post_mortems:
+      type: DeclarativeStream
+      name: post_mortems
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: post_mortems
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/post_mortems"
+    status-pages:
+      type: DeclarativeStream
+      name: status-pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: status-pages
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/status-pages"
+    severities:
+      type: DeclarativeStream
+      name: severities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: severities
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/severities"
+    services:
+      type: DeclarativeStream
+      name: services
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: services
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/services"
+    incident_permission_sets:
+      type: DeclarativeStream
+      name: incident_permission_sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incident_permission_sets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_permission_sets"
+    incident_permission_sets_resources:
+      type: DeclarativeStream
+      name: incident_permission_sets_resources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            incident_permission_sets/{{
+            stream_partition.incident_permission_set_id }}/resources
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_permission_set_id
+              stream:
+                $ref: "#/definitions/streams/incident_permission_sets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_permission_sets_resources"
+    incident_permission_sets_booleans:
+      type: DeclarativeStream
+      name: incident_permission_sets_booleans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            incident_permission_sets/{{
+            stream_partition.incident_permission_set_id }}/booleans
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_permission_set_id
+              stream:
+                $ref: "#/definitions/streams/incident_permission_sets"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incident_permission_sets_booleans"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: roles
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    incidents_events:
+      type: DeclarativeStream
+      name: incidents_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incidents/{{ stream_partition.incident_id }}/events
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_id
+              stream:
+                $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents_events"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workflows
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    workflow_groups:
+      type: DeclarativeStream
+      name: workflow_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workflow_groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflow_groups"
+    workflows_tasks:
+      type: DeclarativeStream
+      name: workflows_tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workflows/{{stream_partition.workflow_id }}/workflow_tasks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: workflow_id
+              stream:
+                $ref: "#/definitions/streams/workflows"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows_tasks"
+    form_sets:
+      type: DeclarativeStream
+      name: form_sets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: form_sets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_sets"
+    form_fields:
+      type: DeclarativeStream
+      name: form_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: form_fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_fields"
+    playbooks:
+      type: DeclarativeStream
+      name: playbooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: playbooks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/playbooks"
+    incidents_action_items:
+      type: DeclarativeStream
+      name: incidents_action_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: incidents/{{ stream_partition.incident_id }}/action_items
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_id
+              stream:
+                $ref: "#/definitions/streams/incidents"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incidents_action_items"
+    retrospective_configurations:
+      type: DeclarativeStream
+      name: retrospective_configurations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: retrospective_configurations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/retrospective_configurations"
+    retrospective_processes:
+      type: DeclarativeStream
+      name: retrospective_processes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: retrospective_processes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][gte]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[updated_at][lte]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record[\"attributes\"][\"updated_at\"] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/retrospective_processes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.rootly.com/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/incidents"
+  - $ref: "#/definitions/streams/authorizations"
+  - $ref: "#/definitions/streams/dashboards_panels"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/incident_types"
+  - $ref: "#/definitions/streams/ip_ranges"
+  - $ref: "#/definitions/streams/users_notification_rules"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/sub_statuses"
+  - $ref: "#/definitions/streams/incidents_sub_statuses"
+  - $ref: "#/definitions/streams/incident_roles"
+  - $ref: "#/definitions/streams/post_mortems"
+  - $ref: "#/definitions/streams/status-pages"
+  - $ref: "#/definitions/streams/severities"
+  - $ref: "#/definitions/streams/services"
+  - $ref: "#/definitions/streams/incident_permission_sets"
+  - $ref: "#/definitions/streams/incident_permission_sets_resources"
+  - $ref: "#/definitions/streams/incident_permission_sets_booleans"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/incidents_events"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/workflow_groups"
+  - $ref: "#/definitions/streams/workflows_tasks"
+  - $ref: "#/definitions/streams/form_sets"
+  - $ref: "#/definitions/streams/form_fields"
+  - $ref: "#/definitions/streams/playbooks"
+  - $ref: "#/definitions/streams/incidents_action_items"
+  - $ref: "#/definitions/streams/retrospective_configurations"
+  - $ref: "#/definitions/streams/retrospective_processes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    dashboards: true
+    incidents: true
+    authorizations: true
+    dashboards_panels: true
+    users: true
+    incident_types: true
+    ip_ranges: true
+    users_notification_rules: true
+    teams: true
+    sub_statuses: true
+    incidents_sub_statuses: true
+    incident_roles: true
+    post_mortems: true
+    status-pages: true
+    severities: true
+    services: true
+    incident_permission_sets: true
+    incident_permission_sets_resources: true
+    incident_permission_sets_booleans: true
+    roles: true
+    incidents_events: true
+    workflows: true
+    workflow_groups: true
+    workflows_tasks: true
+    form_sets: true
+    form_fields: true
+    playbooks: true
+    incidents_action_items: true
+    retrospective_configurations: true
+    retrospective_processes: true
+  testedStreams:
+    dashboards:
+      streamHash: 7f26654fcb63b5671f5879b175acdcddbf2fcbb2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    incidents:
+      hasRecords: true
+      streamHash: 6a7d207eb35ceb79d35b7dcbb455e4f4ef9c2647
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    authorizations:
+      hasRecords: true
+      streamHash: 74a7b9ea0b11731c530acfc924cb2661a9fc7c43
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboards_panels:
+      hasRecords: true
+      streamHash: 41f7aeceb88938f537ddb87fe92acee51723b391
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: ba10b5956d03a8e0a7d6cd81c9b9d882708177cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incident_types:
+      hasRecords: true
+      streamHash: 31960d0485524c090d944c4e19e81badf3a77ecf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ip_ranges:
+      hasRecords: true
+      streamHash: 03a611935c0a06a36b86dc9d7867c53a7de119fa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users_notification_rules:
+      hasRecords: true
+      streamHash: 25232360f06af63d53be7edd48eb599a34d8dd10
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: 889a8457c7765ab4e6290850acc39c8b0810fd9d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sub_statuses:
+      hasRecords: true
+      streamHash: 1d11236c0f61bf3d26ad1a56e97d64353d35cdd4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incidents_sub_statuses:
+      hasRecords: true
+      streamHash: 9e51697eeed1469cfea6397022ec19f15115a5da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incident_roles:
+      hasRecords: true
+      streamHash: c31c9f2d608f2b466f36e556731315b514dc9e8b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    post_mortems:
+      hasRecords: true
+      streamHash: 136891857f9eb58458c0c334d1f3e1f9051f6b70
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    status-pages:
+      hasRecords: true
+      streamHash: 97bf2f422f4cb3f54d880ab4019297871b04870e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    severities:
+      hasRecords: true
+      streamHash: 11fec3ba47b3084fd55e66410cd5c3515006dcb4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    services:
+      hasRecords: true
+      streamHash: aa372f42eee4de89d971658a8d7bf3d082cef1bc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incident_permission_sets:
+      hasRecords: true
+      streamHash: 33f35e12a06e62e845a2b7e25f615adb731e959d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incident_permission_sets_resources:
+      hasRecords: true
+      streamHash: 4252923f5e8f17c1ae6fd3cab903185379bbd659
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incident_permission_sets_booleans:
+      hasRecords: true
+      streamHash: 61ec8859ccdd483f3392dd3e5768ce3e83eb3ee0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    roles:
+      hasRecords: true
+      streamHash: 0addd78402f7c6082b7aca0dbb468e51a7aba3b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incidents_events:
+      hasRecords: true
+      streamHash: 0d1a6deeca567b4994f5727899ba2f8392ae00f4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflows:
+      hasRecords: true
+      streamHash: 3e606d99bbec0d1e335f8532ef89c5aa965b195b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflow_groups:
+      hasRecords: true
+      streamHash: da93655201d233695656bcd3c63443c225fc9d1e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    workflows_tasks:
+      hasRecords: true
+      streamHash: 76f9a13abeb6127601fda71e1668b3904c1f67e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_sets:
+      hasRecords: true
+      streamHash: 2e1d4fd567620031a426f9b6b015a6281461260b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_fields:
+      hasRecords: true
+      streamHash: 8aa7de53cd01c513548d2b95cd451b6923bbc2d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    playbooks:
+      hasRecords: true
+      streamHash: 328f96ffc9545af67ba5091d45592f7df3e0bec9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    incidents_action_items:
+      hasRecords: true
+      streamHash: 1958e0c126ec0df890003ebf59f0fa19a1264237
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    retrospective_configurations:
+      hasRecords: true
+      streamHash: f70cb6c7cfbe315f9351ca2cad7e07be6650cf56
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    retrospective_processes:
+      hasRecords: true
+      streamHash: 28c03f525598090d7fb65e55067c5b626f420242
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  dashboards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          auto_refresh:
+            type:
+              - boolean
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          owner:
+            type:
+              - string
+              - "null"
+          period:
+            type:
+              - string
+              - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          range:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          team_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          panels:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incidents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          labels:
+            type:
+              - object
+              - "null"
+            properties:
+              infrastructure:
+                type:
+                  - string
+                  - "null"
+              product:
+                type:
+                  - string
+                  - "null"
+              system:
+                type:
+                  - string
+                  - "null"
+              web:
+                type:
+                  - boolean
+                  - "null"
+          mitigated_at:
+            type:
+              - string
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          resolved_at:
+            type:
+              - string
+              - "null"
+          retrospective_progress_status:
+            type:
+              - string
+              - "null"
+          sequential_id:
+            type:
+              - number
+              - "null"
+          severity:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  attributes:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      color:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      notify_emails:
+                        type:
+                          - array
+                          - "null"
+                      position:
+                        type:
+                          - number
+                          - "null"
+                      severity:
+                        type:
+                          - string
+                          - "null"
+                      slack_aliases:
+                        type:
+                          - array
+                          - "null"
+                      slack_channels:
+                        type:
+                          - array
+                          - "null"
+                      slug:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          short_url:
+            type:
+              - string
+              - "null"
+          slack_channel_archived:
+            type:
+              - boolean
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+          started_by:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  attributes:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      full_name:
+                        type:
+                          - string
+                          - "null"
+                      full_name_with_team:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      time_zone:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  relationships:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      devices:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      email_addresses:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                      phone_numbers:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  attributes:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      full_name:
+                        type:
+                          - string
+                          - "null"
+                      full_name_with_team:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      time_zone:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  relationships:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      devices:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                      email_addresses:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                      phone_numbers:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          data:
+                            type:
+                              - array
+                              - "null"
+          zoom_meeting_global_dial_in_numbers:
+            type:
+              - array
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          action_items:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          causes:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          custom_field_selections:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          environments:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          events:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          feedbacks:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          functionalities:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          groups:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          incident_post_mortem:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          incident_types:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          roles:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          services:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          subscribers:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  authorizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          authorizable_id:
+            type:
+              - string
+              - "null"
+          authorizable_type:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          grantee_id:
+            type:
+              - string
+              - "null"
+          grantee_type:
+            type:
+              - string
+              - "null"
+          permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  dashboards_panels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          dashboard_id:
+            type:
+              - string
+              - "null"
+          data:
+            anyOf:
+              - type:
+                  - "null"
+                  - number
+              - type: array
+                items:
+                  type: object
+                  properties:
+                    color:
+                      type:
+                        - "null"
+                        - string
+                    data:
+                      type: object
+                      properties:
+                        "2024-10-02":
+                          type: number
+                        "2024-10-03":
+                          type: number
+                        "2024-10-04":
+                          type: number
+                        "2024-10-05":
+                          type: number
+                        "2024-10-06":
+                          type: number
+                        "2024-10-07":
+                          type: number
+                        "2024-10-08":
+                          type: number
+                        "2024-10-09":
+                          type: number
+                    first_name:
+                      type: string
+                    hours_until_mitigated:
+                      type: number
+                    hours_until_resolved:
+                      type: number
+                    hours_until_triaged:
+                      type: number
+                    incidents:
+                      type: number
+                    last_name:
+                      type: string
+                    name:
+                      type: string
+          name:
+            type:
+              - string
+              - "null"
+          params:
+            type:
+              - object
+              - "null"
+            properties:
+              datasets:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    aggregate:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        cumulative:
+                          type:
+                            - boolean
+                            - "null"
+                        key:
+                          type:
+                            - string
+                            - "null"
+                        operation:
+                          type:
+                            - string
+                            - "null"
+                    collection:
+                      type:
+                        - string
+                        - "null"
+                    filter:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          operation:
+                            type:
+                              - string
+                              - "null"
+                          rules:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                condition:
+                                  type:
+                                    - string
+                                    - "null"
+                                key:
+                                  type:
+                                    - string
+                                    - "null"
+                                operation:
+                                  type:
+                                    - string
+                                    - "null"
+                                value:
+                                  type:
+                                    - string
+                                    - "null"
+                    group_by:
+                      type:
+                        - string
+                        - "null"
+              display:
+                type:
+                  - string
+                  - "null"
+          position:
+            type:
+              - object
+              - "null"
+            properties:
+              h:
+                type:
+                  - number
+                  - "null"
+              w:
+                type:
+                  - number
+                  - "null"
+              x:
+                type:
+                  - number
+                  - "null"
+              "y":
+                type:
+                  - number
+                  - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          full_name_with_team:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          devices:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          email_addresses:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          phone_numbers:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incident_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          notify_emails:
+            type:
+              - array
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          slack_aliases:
+            type:
+              - array
+              - "null"
+          slack_channels:
+            type:
+              - array
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  ip_ranges:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          integrations_ipv4:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          integrations_ipv6:
+            type:
+              - array
+              - "null"
+          webhooks_ipv4:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          webhooks_ipv6:
+            type:
+              - array
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  users_notification_rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          delay:
+            type:
+              - number
+              - "null"
+          enabled_contact_types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          position:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          user_email_address_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          incidents_count:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          notify_emails:
+            type:
+              - array
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          slack_aliases:
+            type:
+              - array
+              - "null"
+          slack_channels:
+            type:
+              - array
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          user_ids:
+            type:
+              - array
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          users:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  sub_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          parent_status:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incidents_sub_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          assigned_at:
+            type:
+              - string
+              - "null"
+          assigned_by_user_id:
+            type:
+              - number
+              - "null"
+          incident_id:
+            type:
+              - string
+              - "null"
+          sub_status_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          assigned_by_user:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+          sub_status:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incident_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allow_multi_user_assignment:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          optional:
+            type:
+              - boolean
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  post_mortems:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          incident_id:
+            type:
+              - string
+              - "null"
+          mitigated_at:
+            type:
+              - string
+              - "null"
+          resolved_at:
+            type:
+              - string
+              - "null"
+          short_url:
+            type:
+              - string
+              - "null"
+          show_action_items:
+            type:
+              - boolean
+              - "null"
+          show_functionalities_impacted:
+            type:
+              - boolean
+              - "null"
+          show_groups_impacted:
+            type:
+              - boolean
+              - "null"
+          show_services_impacted:
+            type:
+              - boolean
+              - "null"
+          show_timeline:
+            type:
+              - boolean
+              - "null"
+          show_timeline_action_items:
+            type:
+              - boolean
+              - "null"
+          show_timeline_genius:
+            type:
+              - boolean
+              - "null"
+          show_timeline_order:
+            type:
+              - string
+              - "null"
+          show_timeline_starred_only:
+            type:
+              - boolean
+              - "null"
+          show_timeline_tasks:
+            type:
+              - boolean
+              - "null"
+          show_timeline_trail:
+            type:
+              - boolean
+              - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  status-pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          allow_email_subscribers:
+            type:
+              - boolean
+              - "null"
+          allow_rss_atom_feeds:
+            type:
+              - boolean
+              - "null"
+          allow_search_engine_index:
+            type:
+              - boolean
+              - "null"
+          allow_sms_subscribers:
+            type:
+              - boolean
+              - "null"
+          authentication_enabled:
+            type:
+              - boolean
+              - "null"
+          authentication_password:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          failure_message:
+            type:
+              - string
+              - "null"
+          footer_color:
+            type:
+              - string
+              - "null"
+          functionality_ids:
+            type:
+              - array
+              - "null"
+          header_color:
+            type:
+              - string
+              - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          public_title:
+            type:
+              - string
+              - "null"
+          service_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          success_message:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  severities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          notify_emails:
+            type:
+              - array
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          severity:
+            type:
+              - string
+              - "null"
+          slack_aliases:
+            type:
+              - array
+              - "null"
+          slack_channels:
+            type:
+              - array
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  services:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          environment_ids:
+            type:
+              - array
+              - "null"
+          github_repository_branch:
+            type:
+              - string
+              - "null"
+          gitlab_repository_branch:
+            type:
+              - string
+              - "null"
+          incidents_count:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          notify_emails:
+            type:
+              - array
+              - "null"
+          owners_group_ids:
+            type:
+              - array
+              - "null"
+          owners_user_ids:
+            type:
+              - array
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          public_description:
+            type:
+              - string
+              - "null"
+          service_ids:
+            type:
+              - array
+              - "null"
+          show_uptime:
+            type:
+              - boolean
+              - "null"
+          show_uptime_last_days:
+            type:
+              - number
+              - "null"
+          slack_aliases:
+            type:
+              - array
+              - "null"
+          slack_channels:
+            type:
+              - array
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incident_permission_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          private_incident_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          public_incident_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          team_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incident_permission_sets_resources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          incident_permission_set_id:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          resource_id:
+            type:
+              - string
+              - "null"
+          resource_type:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incident_permission_sets_booleans:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          incident_permission_set_id:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          api_keys_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          audits_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          billing_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          environments_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          form_fields_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          functionalities_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          groups_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          incident_causes_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          incident_feedbacks_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          incident_permission_set_id:
+            type:
+              - string
+              - "null"
+          incident_roles_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          incident_types_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          incidents_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          invitations_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          is_deletable:
+            type:
+              - boolean
+              - "null"
+          is_editable:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          playbooks_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          private_incidents_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          retrospective_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          roles_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          secrets_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          services_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          severities_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          status_pages_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          team_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          webhooks_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          workflows_permissions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incidents_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          event:
+            type:
+              - string
+              - "null"
+          event_raw:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          occurred_at:
+            type:
+              - string
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          user_display_name:
+            type:
+              - string
+              - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          command:
+            type:
+              - string
+              - "null"
+          command_feedback_enabled:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          environment_ids:
+            type:
+              - array
+              - "null"
+          functionality_ids:
+            type:
+              - array
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+          incident_role_ids:
+            type:
+              - array
+              - "null"
+          incident_type_ids:
+            type:
+              - array
+              - "null"
+          locked:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          repeat_on:
+            type:
+              - array
+              - "null"
+          service_ids:
+            type:
+              - array
+              - "null"
+          severity_ids:
+            type:
+              - array
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          trigger_params:
+            type:
+              - object
+              - "null"
+            properties:
+              incident_condition:
+                type:
+                  - string
+                  - "null"
+              incident_condition_cause:
+                type:
+                  - string
+                  - "null"
+              incident_condition_environment:
+                type:
+                  - string
+                  - "null"
+              incident_condition_functionality:
+                type:
+                  - string
+                  - "null"
+              incident_condition_group:
+                type:
+                  - string
+                  - "null"
+              incident_condition_incident_roles:
+                type:
+                  - string
+                  - "null"
+              incident_condition_incident_type:
+                type:
+                  - string
+                  - "null"
+              incident_condition_kind:
+                type:
+                  - string
+                  - "null"
+              incident_condition_service:
+                type:
+                  - string
+                  - "null"
+              incident_condition_severity:
+                type:
+                  - string
+                  - "null"
+              incident_condition_status:
+                type:
+                  - string
+                  - "null"
+              incident_condition_visibility:
+                type:
+                  - string
+                  - "null"
+              incident_kinds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              incident_post_mortem_condition_cause:
+                type:
+                  - string
+                  - "null"
+              incident_statuses:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              incident_visibilities:
+                type:
+                  - array
+                  - "null"
+              trigger_type:
+                type:
+                  - string
+                  - "null"
+              triggers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          wait:
+            type:
+              - string
+              - "null"
+          workflow_group_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          custom_field_selections:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          workflow_runs:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          workflow_tasks:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  workflow_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          expanded:
+            type:
+              - boolean
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  workflows_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          skip_on_failure:
+            type:
+              - boolean
+              - "null"
+          task_params:
+            type:
+              - object
+              - "null"
+            properties:
+              bcc:
+                type:
+                  - array
+                  - "null"
+              body:
+                type:
+                  - string
+                  - "null"
+              cc:
+                type:
+                  - array
+                  - "null"
+              from:
+                type:
+                  - string
+                  - "null"
+              include_footer:
+                type:
+                  - boolean
+                  - "null"
+              include_header:
+                type:
+                  - boolean
+                  - "null"
+              subject:
+                type:
+                  - string
+                  - "null"
+              task_type:
+                type:
+                  - string
+                  - "null"
+              to:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          workflow_id:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  form_sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          forms:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  form_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          default_values:
+            type:
+              - array
+              - "null"
+          enabled:
+            type:
+              - boolean
+              - "null"
+          input_kind:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          required:
+            type:
+              - array
+              - "null"
+          show_on_incident_details:
+            type:
+              - boolean
+              - "null"
+          shown:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          team_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          value_kind:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          options:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          positions:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  playbooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          cause_ids:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          environment_ids:
+            type:
+              - array
+              - "null"
+          external_url:
+            type:
+              - string
+              - "null"
+          functionality_ids:
+            type:
+              - array
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+          incident_type_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          service_ids:
+            type:
+              - array
+              - "null"
+          severity_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          causes:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          environments:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          functionalities:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          groups:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          incident_types:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+          services:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          severities:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  incidents_action_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          assigned_to:
+            type:
+              - object
+              - "null"
+            properties:
+              ability_cache:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  administrating_team_ids:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - number
+                        - "null"
+                  team_ids:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - number
+                        - "null"
+              accept_marketing:
+                type:
+                  - boolean
+                  - "null"
+              accept_terms:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              created_through_sso:
+                type:
+                  - boolean
+                  - "null"
+              current_team_id:
+                type:
+                  - number
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              first_name:
+                type:
+                  - string
+                  - "null"
+              has_impersonate_write_permission:
+                type:
+                  - boolean
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              incidents_backfilled_count:
+                type:
+                  - number
+                  - "null"
+              incidents_count:
+                type:
+                  - number
+                  - "null"
+              incidents_example_count:
+                type:
+                  - number
+                  - "null"
+              incidents_normal_count:
+                type:
+                  - number
+                  - "null"
+              incidents_scheduled_count:
+                type:
+                  - number
+                  - "null"
+              incidents_test_count:
+                type:
+                  - number
+                  - "null"
+              is_super_admin:
+                type:
+                  - boolean
+                  - "null"
+              jti:
+                type:
+                  - string
+                  - "null"
+              last_name:
+                type:
+                  - string
+                  - "null"
+              last_seen_at:
+                type:
+                  - string
+                  - "null"
+              onboarding_completed:
+                type:
+                  - boolean
+                  - "null"
+              push_notification_new_alert_sound:
+                type:
+                  - string
+                  - "null"
+              push_notification_shift_ends_sound:
+                type:
+                  - string
+                  - "null"
+              push_notification_shift_starts_sound:
+                type:
+                  - string
+                  - "null"
+              service_user:
+                type:
+                  - boolean
+                  - "null"
+              skip_tutorial:
+                type:
+                  - boolean
+                  - "null"
+              teams_count:
+                type:
+                  - number
+                  - "null"
+              theme:
+                type:
+                  - string
+                  - "null"
+              time_zone:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              view_multiple_schedules:
+                type:
+                  - boolean
+                  - "null"
+          assigned_to_group_ids:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          incident_id:
+            type:
+              - string
+              - "null"
+          incident_title:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          priority:
+            type:
+              - string
+              - "null"
+          short_url:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  retrospective_configurations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          group_ids:
+            type:
+              - array
+              - "null"
+          incident_type_ids:
+            type:
+              - array
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          severity_ids:
+            type:
+              - array
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          groups:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          incident_types:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+          severities:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  retrospective_processes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          retrospective_steps:
+            type:
+              - object
+              - "null"
+            properties:
+              data:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at

@@ -14,7 +14,7 @@ data:
       packageName: airbyte-source-plaid
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha

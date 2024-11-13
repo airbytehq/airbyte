@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository

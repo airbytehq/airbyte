@@ -4,12 +4,31 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import dpath
+from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic.v1 import AnyUrl, BaseModel, Field
+
+
+class DeliverRecords(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Replicate Records"
+        description = "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination."
+        discriminator = "delivery_type"
+
+    delivery_type: Literal["use_records_transfer"] = Field("use_records_transfer", const=True)
+
+
+class DeliverRawFiles(BaseModel):
+    class Config(OneOfOptionConfig):
+        title = "Copy Raw Files"
+        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files."
+        discriminator = "delivery_type"
+
+    delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)
 
 
 class AbstractFileBasedSpec(BaseModel):
@@ -32,6 +51,17 @@ class AbstractFileBasedSpec(BaseModel):
         title="The list of streams to sync",
         description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
         order=10,
+    )
+
+    delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=7,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+        airbyte_hidden=True,
     )
 
     @classmethod

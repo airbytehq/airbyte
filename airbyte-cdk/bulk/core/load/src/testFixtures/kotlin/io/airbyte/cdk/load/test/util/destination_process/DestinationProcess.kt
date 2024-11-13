@@ -4,9 +4,14 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import io.airbyte.cdk.command.ConfigurationSpecification
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.micronaut.context.env.yaml.YamlPropertySourceLoader
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -22,30 +27,62 @@ interface DestinationProcess {
      * Run the destination process. Callers who want to interact with the destination should
      * `launch` this method.
      */
-    fun run()
+    suspend fun run()
 
     fun sendMessage(message: AirbyteMessage)
+    fun sendMessages(vararg messages: AirbyteMessage) {
+        messages.forEach { sendMessage(it) }
+    }
 
     /** Return all messages the destination emitted since the last call to [readMessages]. */
     fun readMessages(): List<AirbyteMessage>
 
     /**
-     * Wait for the destination to terminate, then return all messages it emitted since the last
-     * call to [readMessages].
+     * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
-    fun shutdown()
+    suspend fun shutdown()
+
+    /** Terminate the destination as immediately as possible. */
+    fun kill()
 }
 
-enum class TestDeploymentMode {
-    CLOUD,
-    OSS
-}
+@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
+abstract class DestinationProcessFactory {
+    /**
+     * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
+     * TestInfo, and how Micronaut injects everything else. Instead, we'll rely on [IntegrationTest]
+     * to set this in a BeforeEach function.
+     */
+    lateinit var testName: String
 
-interface DestinationProcessFactory {
-    fun createDestinationProcess(
+    abstract fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
-        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess
+
+    companion object {
+        fun get(): DestinationProcessFactory =
+            when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
+                null,
+                "non-docker" -> NonDockerizedDestinationFactory()
+                "docker" -> {
+                    val rawProperties: Map<String, Any?> =
+                        YamlPropertySourceLoader()
+                            .read(
+                                "irrelevant",
+                                Files.readAllBytes(Path.of("metadata.yaml")),
+                            )
+                    DockerizedDestinationFactory(
+                        rawProperties["data.dockerRepository"] as String,
+                        "dev"
+                    )
+                }
+                else ->
+                    throw IllegalArgumentException(
+                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner"
+                    )
+            }
+    }
 }

@@ -12,17 +12,24 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Singleton
 @Primary
 @Requires(env = ["MockScopeProvider"])
-class MockScopeProvider : TaskScopeProvider<ScopedTask> {
+class MockScopeProvider : TaskScopeProvider<WrappedTask<ScopedTask>> {
     private val didCloseAB = AtomicBoolean(false)
+    private val didKillAB = AtomicBoolean(false)
 
     val didClose
         get() = didCloseAB.get()
+    val didKill
+        get() = didKillAB.get()
 
-    override suspend fun launch(task: ScopedTask) {
+    override suspend fun launch(task: WrappedTask<ScopedTask>) {
         task.execute()
     }
 
     override suspend fun close() {
         didCloseAB.set(true)
+    }
+
+    override suspend fun kill() {
+        didKillAB.set(true)
     }
 }

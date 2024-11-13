@@ -4,14 +4,6 @@
 
 from typing import Any, Mapping
 
-from source_amazon_ads.schemas import (
-    DisplayAdGroup,
-    DisplayBudgetRules,
-    DisplayCampaign,
-    DisplayCreatives,
-    DisplayProductAds,
-    DisplayTargeting,
-)
 from source_amazon_ads.streams.common import SubProfilesStream
 
 
@@ -27,7 +19,6 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
 
     primary_key = "campaignId"
     state_filter = None
-    model = DisplayCampaign
 
     def path(self, **kwargs) -> str:
         return "sd/campaigns"
@@ -46,7 +37,6 @@ class SponsoredDisplayAdGroups(SubProfilesStream):
     """
 
     primary_key = "adGroupId"
-    model = DisplayAdGroup
 
     def path(self, **kwargs) -> str:
         return "sd/adGroups"
@@ -59,7 +49,6 @@ class SponsoredDisplayProductAds(SubProfilesStream):
     """
 
     primary_key = "adId"
-    model = DisplayProductAds
 
     def path(self, **kwargs) -> str:
         return "sd/productAds"
@@ -72,7 +61,6 @@ class SponsoredDisplayTargetings(SubProfilesStream):
     """
 
     primary_key = "targetId"
-    model = DisplayTargeting
 
     def path(self, **kwargs) -> str:
         return "sd/targets"
@@ -85,7 +73,6 @@ class SponsoredDisplayCreatives(SubProfilesStream):
     """
 
     primary_key = "creativeId"
-    model = DisplayCreatives
 
     def path(self, **kwargs) -> str:
         return "/sd/creatives"
@@ -102,7 +89,6 @@ class SponsoredDisplayBudgetRules(SubProfilesStream):
     """
 
     primary_key = "ruleId"
-    model = DisplayBudgetRules
     data_field = "budgetRulesForAdvertiserResponse"
     page_size = 30
 

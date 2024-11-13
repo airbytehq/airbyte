@@ -61,10 +61,6 @@ allprojects {
     }
 }
 
-tasks.register('bulkCdkIntegrationTest').configure {
-    dependsOn allprojects.collect {it.tasks.matching { it.name == 'integrationTest' }}
-}
-
 if (buildNumberFile.exists()) {
     tasks.register('bulkCdkBuild').configure {
         dependsOn allprojects.collect {it.tasks.named('build')}

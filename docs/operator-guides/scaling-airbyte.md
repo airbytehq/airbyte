@@ -12,11 +12,11 @@ As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 10
 
 ## What To Scale
 
-[Workers](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. A worker is responsible for executing Airbyte operations \(e.g. Discover, Read, Sync etc\), and is created on demand whenever these operations are requested. Thus, every job has a corresponding worker executing its work.
+[Workloads](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. The workload system is responsible for launching the pods that execute Airbyte operations \(e.g. Discover, Read, Sync etc\).
 
-How a worker executes work depends on the Airbyte deployment. In the Docker deployment, an Airbyte worker spins up at least one Docker container. In the Kubernetes deployment, an Airbyte worker will create at least one Kubernetes pod. The created resource \(Docker container or Kubernetes pod\) does all the actual work.
+The workload launcher will create one Kubernetes pod. The connector and sidecar images then do all the actual work.
 
-Thus, scaling Airbyte is a matter of ensuring that the Docker container or Kubernetes Pod running the jobs has sufficient resources to execute its work.
+Thus, scaling Airbyte is a matter of ensuring that the Kubernetes cluster Airbyte runs on has sufficient resources to schedule its various job pods.
 
 Jobs-wise, we are mainly concerned with Sync jobs when thinking about scale. Sync jobs sync data from sources to destinations and are the majority of jobs run. Sync jobs use two workers. One worker reads from the source; the other worker writes to the destination.
 
@@ -30,7 +30,7 @@ As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Syn
 
 This is because the Source worker reads up to 10,000 records in memory. This can present problems for database sources with tables that have large row sizes. e.g. a table with an average row size of 0.5MBs will require 0.5 \* 10000 / 1000 = 5GBs of RAM. See [this issue](https://github.com/airbytehq/airbyte/issues/3439) for more information.
 
-Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. e.g. On a Docker agent with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher. The same applies to Kubernetes pods.
+Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. e.g. On a Kubernetes cluster with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher.
 You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` and `JOB_MAIN_CONTAINER_MEMORY_LIMIT` environment variables to custom values.
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
@@ -41,7 +41,7 @@ Airbyte uses backpressure to try to read the minimal amount of logs required. In
 
 However, disk space might become an issue for the following reasons:
 
-1. Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
+1. Long-running syncs can produce a fair amount of logs. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
 2. Although Airbyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with multiple connectors can easily use up to 10GBs of disk space.
 
 Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you be safe than sorry, so err on the side of over-provisioning.
@@ -52,15 +52,13 @@ Users running Airbyte Kubernetes also have to make sure the Kubernetes cluster c
 
 To be safe, make sure the Kubernetes cluster can schedule up to `2 x <number-of-possible-concurrent-connections>` pods at once. This is the worse case estimate, and most users should be fine with `2 x <number-of-possible-concurrent-connections>` as a rule of thumb.
 
-This is a **non-issue** for users running Airbyte Docker.
-
 ### Temporal DB
 
 Temporal maintains multiple idle connections. By the default value is `20` and you may want to lower or increase this number. One issue we noticed is
-that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable of the `docker.compose.yaml` file
+that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable and
 might end up allowing 4-5 times more connections than expected.
 
-If you want to increase the amount of allowed idle connexion, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
+If you want to increase the amount of allowed idle connections, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
 is capped by `SQL_MAX_CONNS`.
 
 ## Feedback

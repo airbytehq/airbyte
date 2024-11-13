@@ -4,8 +4,10 @@
 
 
 import logging
+import os
 from copy import deepcopy
 from typing import Any, Mapping
+from unittest.mock import ANY
 
 import pytest
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
@@ -90,3 +92,14 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_with_wrong_glob_pattern, state=None)
     output = read(source=source, config=config_with_wrong_glob_pattern, catalog=configured_catalog)
     assert len(output.records) == 0
+
+def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
+    output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
+    expected_file_data = {'bytes': 37, 'file_relative_path': 'files/csv/test_1.csv', 'file_url': '/tmp/airbyte-file-transfer/files/csv/test_1.csv', 'modified': ANY, 'source_file_url': '/files/csv/test_1.csv'}
+    assert len(output.records) == 1
+    assert list(map(lambda record: record.record.file, output.records)) == [expected_file_data]
+
+    # Additional assertion to check if the file exists at the file_url path
+    file_path = expected_file_data['file_url']
+    assert os.path.exists(file_path), f"File not found at path: {file_path}"

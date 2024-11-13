@@ -5,5 +5,6 @@
   "username": "username",
   "password": "password",
   "database": "default",
-  "table": "default"
+  "table": "default",
+  "ssl": false
 }

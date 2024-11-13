@@ -7,7 +7,8 @@ acceptance_tests:
     tests:
       - spec_path: "source_amplitude/spec.yaml"
         backward_compatibility_tests_config:
-          disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
+          # added new `active_users_group_by_country` prop to toggle grouping by country
+          disable_for_version: 0.6.10
   connection:
     tests:
       - config_path: "secrets/config.json"

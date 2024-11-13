@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 3.1.1
+  dockerImageTag: 3.3.0-rc.1
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
@@ -30,6 +30,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
         message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."

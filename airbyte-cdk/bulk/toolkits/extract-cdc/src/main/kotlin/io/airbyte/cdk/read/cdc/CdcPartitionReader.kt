@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.read.cdc
 
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.StreamRecordConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.debezium.embedded.EmbeddedEngineChangeEvent
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
@@ -29,7 +29,7 @@ import org.apache.kafka.connect.source.SourceRecord
 /** [PartitionReader] implementation for CDC with Debezium. */
 class CdcPartitionReader<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val outputConsumer: OutputConsumer,
+    val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val input: DebeziumInput,
@@ -44,7 +44,8 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numEvents = AtomicLong()
     internal val numTombstones = AtomicLong()
     internal val numHeartbeats = AtomicLong()
-    internal val numRecords = AtomicLong()
+    internal val numDiscardedRecords = AtomicLong()
+    internal val numEmittedRecords = AtomicLong()
     internal val numEventsWithoutSourceRecord = AtomicLong()
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
@@ -87,12 +88,20 @@ class CdcPartitionReader<T : Comparable<T>>(
         val thread = Thread(engine, "debezium-engine")
         thread.setUncaughtExceptionHandler { _, e: Throwable -> engineException.set(e) }
         thread.start()
-        withContext(Dispatchers.IO) { thread.join() }
+        try {
+            withContext(Dispatchers.IO) { thread.join() }
+        } catch (e: Throwable) {
+            // This catches any exceptions thrown by join()
+            // but also by the kotlin coroutine dispatcher, like TimeoutCancellationException.
+            engineException.compareAndSet(null, e)
+        }
+        // Print a nice log message and re-throw any exception.
         val exception: Throwable? = engineException.get()
         val summary: Map<String, Any?> =
             mapOf(
                     "debezium-version" to debeziumVersion,
-                    "records" to numRecords.get(),
+                    "records-emitted" to numEmittedRecords.get(),
+                    "records-discarded" to numDiscardedRecords.get(),
                     "heartbeats" to numHeartbeats.get(),
                     "tombstones" to numTombstones.get(),
                     "events" to numEvents.get(),
@@ -116,7 +125,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 null
             }
         val output = DebeziumState(offset, schemaHistory)
-        return PartitionReadCheckpoint(readerOps.serialize(output), numRecords.get())
+        return PartitionReadCheckpoint(readerOps.serialize(output), numEmittedRecords.get())
     }
 
     inner class EventConsumer(
@@ -136,43 +145,64 @@ class CdcPartitionReader<T : Comparable<T>>(
             val debeziumRecordValue: DebeziumRecordValue? =
                 event.value()?.let { DebeziumRecordValue(Jsons.readTree(it)) }
             // Process records, ignoring heartbeats which are only used for completion checks.
-            val isRecord: Boolean
-            if (debeziumRecordValue == null) {
-                isRecord = false
-                numTombstones.incrementAndGet()
-            } else if (debeziumRecordValue.isHeartbeat) {
-                isRecord = false
-                numHeartbeats.incrementAndGet()
-            } else {
-                isRecord = true
+            val eventType: EventType = run {
+                if (debeziumRecordValue == null) return@run EventType.TOMBSTONE
+                if (debeziumRecordValue.isHeartbeat) return@run EventType.HEARTBEAT
                 val debeziumRecordKey = DebeziumRecordKey(Jsons.readTree(event.key()))
-                val airbyteRecord: AirbyteRecordMessage =
-                    readerOps.toAirbyteRecordMessage(debeziumRecordKey, debeziumRecordValue)
-                outputConsumer.accept(airbyteRecord)
-                numRecords.incrementAndGet()
+                val deserializedRecord: DeserializedRecord =
+                    readerOps.deserialize(debeziumRecordKey, debeziumRecordValue)
+                        ?: return@run EventType.RECORD_DISCARDED_BY_DESERIALIZE
+                val streamRecordConsumer: StreamRecordConsumer =
+                    streamRecordConsumers[deserializedRecord.streamID]
+                        ?: return@run EventType.RECORD_DISCARDED_BY_STREAM_ID
+                streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
+                return@run EventType.RECORD_EMITTED
             }
+            // Update counters.
+            when (eventType) {
+                EventType.TOMBSTONE -> numTombstones
+                EventType.HEARTBEAT -> numHeartbeats
+                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
+                EventType.RECORD_EMITTED -> numEmittedRecords
+            }.incrementAndGet()
             // Look for reasons to close down the engine.
-            val closeReason: CloseReason? = run {
+            val closeReason: CloseReason = run {
+                if (input.isSynthetic && eventType != EventType.HEARTBEAT) {
+                    // Special case where the engine started with a synthetic offset:
+                    // don't even consider closing the engine unless handling a heartbeat event.
+                    // For some databases, such as Oracle, Debezium actually needs to snapshot the
+                    // schema in order to collect the database schema history and there's no point
+                    // in interrupting it until the snapshot is done.
+                    return
+                }
                 if (!coroutineContext.isActive) {
                     return@run CloseReason.TIMEOUT
                 }
                 val currentPosition: T? = position(sourceRecord) ?: position(debeziumRecordValue)
                 if (currentPosition == null || currentPosition < upperBound) {
-                    return@run null
+                    return
                 }
                 // Close because the current event is past the sync upper bound.
-                if (isRecord) {
-                    CloseReason.RECORD_REACHED_TARGET_POSITION
-                } else {
-                    CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                when (eventType) {
+                    EventType.TOMBSTONE,
+                    EventType.HEARTBEAT ->
+                        CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                    EventType.RECORD_EMITTED,
+                    EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                    EventType.RECORD_DISCARDED_BY_STREAM_ID ->
+                        CloseReason.RECORD_REACHED_TARGET_POSITION
                 }
             }
-            // Idempotent engine shutdown.
-            if (closeReason != null && closeReasonReference.compareAndSet(null, closeReason)) {
-                log.info { "Shutting down Debezium engine: ${closeReason.message}." }
-                // TODO : send close analytics message
-                Thread({ engine.close() }, "debezium-close").start()
+            // At this point, if we haven't returned already, we want to close down the engine.
+            if (!closeReasonReference.compareAndSet(null, closeReason)) {
+                // An earlier event has already triggered closing down the engine, do nothing.
+                return
             }
+            // At this point, if we haven't returned already, we need to close down the engine.
+            log.info { "Shutting down Debezium engine: ${closeReason.message}." }
+            // TODO : send close analytics message
+            Thread({ engine.close() }, "debezium-close").start()
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {
@@ -194,6 +224,14 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
             return debeziumRecordValuePosition
         }
+    }
+
+    private enum class EventType {
+        TOMBSTONE,
+        HEARTBEAT,
+        RECORD_DISCARDED_BY_DESERIALIZE,
+        RECORD_DISCARDED_BY_STREAM_ID,
+        RECORD_EMITTED,
     }
 
     inner class CompletionCallback : DebeziumEngine.CompletionCallback {

@@ -49,21 +49,22 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
-| 0.3.0   | 2024-08-09 | [43439](https://github.com/airbytehq/airbyte/pull/43439) | Refactor connector to manifest-only format |
-| 0.2.12  | 2024-08-03 | [43191](https://github.com/airbytehq/airbyte/pull/43191) | Update dependencies |
-| 0.2.11  | 2024-07-27 | [42633](https://github.com/airbytehq/airbyte/pull/42633) | Update dependencies |
-| 0.2.10  | 2024-07-20 | [42239](https://github.com/airbytehq/airbyte/pull/42239) | Update dependencies |
-| 0.2.9   | 2024-07-13 | [41728](https://github.com/airbytehq/airbyte/pull/41728) | Update dependencies |
-| 0.2.8   | 2024-07-10 | [41508](https://github.com/airbytehq/airbyte/pull/41508) | Update dependencies |
-| 0.2.7   | 2024-07-09 | [41260](https://github.com/airbytehq/airbyte/pull/41260) | Update dependencies |
-| 0.2.6   | 2024-07-06 | [40911](https://github.com/airbytehq/airbyte/pull/40911) | Update dependencies |
-| 0.2.5   | 2024-06-25 | [40386](https://github.com/airbytehq/airbyte/pull/40386) | Update dependencies |
-| 0.2.4   | 2024-06-22 | [39963](https://github.com/airbytehq/airbyte/pull/39963) | Update dependencies |
-| 0.2.3   | 2024-06-12 | [38776](https://github.com/airbytehq/airbyte/pull/38776) | Make connector compatible with Builder |
-| 0.2.2   | 2024-06-06 | [39163](https://github.com/airbytehq/airbyte/pull/39163) | [autopull] Upgrade base image to v1.2.2 |
-| 0.2.1   | 2024-05-21 | [38523](https://github.com/airbytehq/airbyte/pull/38523) | [autopull] base image + poetry + up_to_date |
-| 0.2.0   | 2023-08-24 | [29314](https://github.com/airbytehq/airbyte/pull/29314) | Migrate to Low Code |
-| 0.1.0   | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |
+| 0.3.2 | 2024-10-28 | [47631](https://github.com/airbytehq/airbyte/pull/47631) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-09 | [43439](https://github.com/airbytehq/airbyte/pull/43439) | Refactor connector to manifest-only format |
+| 0.2.12 | 2024-08-03 | [43191](https://github.com/airbytehq/airbyte/pull/43191) | Update dependencies |
+| 0.2.11 | 2024-07-27 | [42633](https://github.com/airbytehq/airbyte/pull/42633) | Update dependencies |
+| 0.2.10 | 2024-07-20 | [42239](https://github.com/airbytehq/airbyte/pull/42239) | Update dependencies |
+| 0.2.9 | 2024-07-13 | [41728](https://github.com/airbytehq/airbyte/pull/41728) | Update dependencies |
+| 0.2.8 | 2024-07-10 | [41508](https://github.com/airbytehq/airbyte/pull/41508) | Update dependencies |
+| 0.2.7 | 2024-07-09 | [41260](https://github.com/airbytehq/airbyte/pull/41260) | Update dependencies |
+| 0.2.6 | 2024-07-06 | [40911](https://github.com/airbytehq/airbyte/pull/40911) | Update dependencies |
+| 0.2.5 | 2024-06-25 | [40386](https://github.com/airbytehq/airbyte/pull/40386) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [39963](https://github.com/airbytehq/airbyte/pull/39963) | Update dependencies |
+| 0.2.3 | 2024-06-12 | [38776](https://github.com/airbytehq/airbyte/pull/38776) | Make connector compatible with Builder |
+| 0.2.2 | 2024-06-06 | [39163](https://github.com/airbytehq/airbyte/pull/39163) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.1 | 2024-05-21 | [38523](https://github.com/airbytehq/airbyte/pull/38523) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-24 | [29314](https://github.com/airbytehq/airbyte/pull/29314) | Migrate to Low Code |
+| 0.1.0 | 2022-05-09 | [12700](https://github.com/airbytehq/airbyte/pull/12700) | Introduce Babelforce source |
 
 </details>

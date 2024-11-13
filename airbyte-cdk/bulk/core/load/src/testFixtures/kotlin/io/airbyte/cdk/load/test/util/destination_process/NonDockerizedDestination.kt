@@ -4,25 +4,36 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
+import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
-import javax.inject.Singleton
+import java.util.concurrent.Executors
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
-    testDeploymentMode: TestDeploymentMode,
+    vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
+    private val destinationComplete = CompletableDeferred<Unit>()
+    // The destination has a runBlocking inside WriteOperation.
+    // This means that normal coroutine cancellation doesn't work.
+    // So we start our own thread pool, which we can forcibly kill if needed.
+    private val executor = Executors.newSingleThreadExecutor()
+    private val coroutineDispatcher = executor.asCoroutineDispatcher()
 
     init {
         val destinationStdin = PipedInputStream()
@@ -34,25 +45,32 @@ class NonDockerizedDestination(
             // from PrintWriter(outputStream) ).
             // Thanks, spotbugs.
             PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
-        val testEnvironments =
-            when (testDeploymentMode) {
-                // the env var is DEPLOYMENT_MODE, which micronaut parses to
-                // a property called deployment.mode.
-                TestDeploymentMode.CLOUD -> mapOf("deployment.mode" to "CLOUD")
-                TestDeploymentMode.OSS -> mapOf("deployment.mode" to "OSS")
-            }
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configContents = configContents,
                 catalog = catalog,
-                testProperties = testEnvironments,
                 inputStream = destinationStdin,
+                featureFlags = featureFlags,
             )
     }
 
-    override fun run() {
-        destination.run()
+    override suspend fun run() {
+        withContext(coroutineDispatcher) {
+                launch {
+                    try {
+                        destination.run()
+                    } catch (e: ConnectorUncleanExitException) {
+                        throw DestinationUncleanExitException.of(
+                            e.exitCode,
+                            destination.results.traces(),
+                            destination.results.states(),
+                        )
+                    }
+                    destinationComplete.complete(Unit)
+                }
+            }
+            .invokeOnCompletion { executor.shutdownNow() }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
@@ -61,23 +79,27 @@ class NonDockerizedDestination(
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
 
-    override fun shutdown() {
+    override suspend fun shutdown() {
         destinationStdinPipe.close()
+        destinationComplete.join()
+    }
+
+    override fun kill() {
+        // In addition to preventing the executor from accepting new tasks,
+        // this also sends a Thread.interrupt() to running tasks.
+        // Coroutines interpret this as a cancellation.
+        executor.shutdownNow()
     }
 }
 
-// Notably, not actually a Micronaut factory. We want to inject the actual
-// factory into our tests, not a pre-instantiated destination, because we want
-// to run multiple destination processes per test.
-// TODO only inject this when not running in CI, a la @Requires(notEnv = "CI_master_merge")
-@Singleton
-class NonDockerizedDestinationFactory : DestinationProcessFactory {
+class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
-        deploymentMode: TestDeploymentMode,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
-        return NonDockerizedDestination(command, config, catalog, deploymentMode)
+        // TODO pass test name into the destination process
+        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
     }
 }

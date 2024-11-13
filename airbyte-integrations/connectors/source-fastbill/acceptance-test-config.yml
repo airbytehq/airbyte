@@ -3,29 +3,29 @@
 # Airbyte doesn't have a Fastbill test account to run tests
 connector_image: airbyte/source-fastbill:dev
 acceptance_tests:
-  # spec:
-  #   tests:
-  #     - spec_path: "source_fastbill/spec.yaml"
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
     tests:
-      #     - config_path: "secrets/config.json"
-      #       status: "succeed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
-  # discovery:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  # basic_read:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
-  #       empty_streams:
-  #         - name: products
-  #         - name: recurring_invoices
-  #         - name: revenues
-  # incremental:
-  #   bypass_reason: "This connector does not implement incremental sync"
-  # full_refresh:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: products
+          - name: recurring_invoices
+          - name: revenues
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

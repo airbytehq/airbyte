@@ -1,4 +1,0 @@
-[run]
-omit = 
-    source_sendgrid/run.py
-    source_sendgrid/__init__.py

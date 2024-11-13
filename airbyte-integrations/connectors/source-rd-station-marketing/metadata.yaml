@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.3
   dockerRepository: airbyte/source-rd-station-marketing
   githubIssueLabel: source-rd-station-marketing
   icon: rdstation.svg
@@ -36,5 +36,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
 metadataSpecVersion: "1.0"

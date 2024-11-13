@@ -45,6 +45,15 @@
         "description": "Set lower value in case of failing long running sync of Activity Logs stream.",
         "examples": [30, 10, 5],
         "order": 3
+      },
+      "lookback_window": {
+        "title": "Lookback window",
+        "description": "The number of days to shift the state value backward for record sync",
+        "examples": [60],
+        "default": 0,
+        "minimum": 0,
+        "type": "integer",
+        "order": 4
       }
     }
   },

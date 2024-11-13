@@ -55,4 +55,8 @@ class MockCheckpointManager : CheckpointManager<DestinationStream.Descriptor, Ch
     override suspend fun getNextCheckpointIndexes(): Map<DestinationStream.Descriptor, Long> {
         return mockCheckpointIndexes
     }
+
+    override suspend fun awaitAllCheckpointsFlushed() {
+        throw NotImplementedError()
+    }
 }

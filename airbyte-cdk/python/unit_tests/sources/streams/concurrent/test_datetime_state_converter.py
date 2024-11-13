@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomFormatConcurrentStreamStateConverter,
     EpochValueConcurrentStreamStateConverter,
     IsoMillisConcurrentStreamStateConverter,
 )
@@ -367,3 +368,23 @@ def test_convert_to_sequential_state(converter, concurrent_state, expected_outpu
 def test_convert_to_sequential_state_no_slices_returns_legacy_state(converter, concurrent_state, expected_output_state):
     with pytest.raises(RuntimeError):
         converter.convert_to_state_message(CursorField("created"), concurrent_state)
+
+
+def test_given_multiple_input_datetime_format_when_parse_timestamp_then_iterate_until_successful_parsing():
+    output_format = "%Y-%m-%dT%H:%M:%S"
+    input_formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d"]
+    converter = CustomFormatConcurrentStreamStateConverter(output_format, input_formats)
+
+    parsed_datetime = converter.parse_timestamp("2024-01-01")
+
+    assert parsed_datetime == datetime(2024, 1, 1, tzinfo=timezone.utc)
+
+
+def test_given_when_parse_timestamp_then_eventually_fallback_on_output_format():
+    output_format = "%Y-%m-%dT%H:%M:%S"
+    input_formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d"]
+    converter = CustomFormatConcurrentStreamStateConverter(output_format, input_formats)
+
+    parsed_datetime = converter.parse_timestamp("2024-01-01T02:00:00")
+
+    assert parsed_datetime == datetime(2024, 1, 1, 2, 0, 0, tzinfo=timezone.utc)

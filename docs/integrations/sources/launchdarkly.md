@@ -37,7 +37,8 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.2 | 2024-10-28 | [47620](https://github.com/airbytehq/airbyte/pull/47620) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44135](https://github.com/airbytehq/airbyte/pull/44135) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-12 | [43791](https://github.com/airbytehq/airbyte/pull/43791) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43587](https://github.com/airbytehq/airbyte/pull/43587) | Update dependencies |

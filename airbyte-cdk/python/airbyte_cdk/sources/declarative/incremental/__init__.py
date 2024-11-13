@@ -6,7 +6,11 @@ from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import Da
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
-from airbyte_cdk.sources.declarative.incremental.resumable_full_refresh_cursor import ResumableFullRefreshCursor, ChildPartitionResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental.per_partition_with_global import PerPartitionWithGlobalCursor
+from airbyte_cdk.sources.declarative.incremental.resumable_full_refresh_cursor import (
+    ChildPartitionResumableFullRefreshCursor,
+    ResumableFullRefreshCursor,
+)
 
 __all__ = [
     "CursorFactory",
@@ -14,6 +18,7 @@ __all__ = [
     "DeclarativeCursor",
     "GlobalSubstreamCursor",
     "PerPartitionCursor",
+    "PerPartitionWithGlobalCursor",
     "ResumableFullRefreshCursor",
-    "ChildPartitionResumableFullRefreshCursor"
+    "ChildPartitionResumableFullRefreshCursor",
 ]

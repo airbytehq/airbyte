@@ -99,3 +99,33 @@ def test_error_on_create_for_both_request_json_and_data():
     request_data = "interpolate_me=5&invalid={{ config['option'] }}"
     with pytest.raises(ValueError):
         InterpolatedRequestOptionsProvider(config=config, request_body_json=request_json, request_body_data=request_data, parameters={})
+
+
+@pytest.mark.parametrize(
+    "request_option_type,request_input,contains_state",
+    [
+        pytest.param("request_parameter", {"start": "{{ stream_state.get('start_date') }}"}, True, id="test_request_parameter_has_state"),
+        pytest.param("request_parameter", {"start": "{{ slice_interval.get('start_date') }}"}, False, id="test_request_parameter_no_state"),
+        pytest.param("request_header", {"start": "{{ stream_state.get('start_date') }}"}, True, id="test_request_header_has_state"),
+        pytest.param("request_header", {"start": "{{ slice_interval.get('start_date') }}"}, False, id="test_request_header_no_state"),
+        pytest.param("request_body_data", "[{'query': {'type': 'timestamp', 'value': stream_state.get('start_date')}}]", True, id="test_request_body_data_has_state"),
+        pytest.param("request_body_data", "[{'query': {'type': 'timestamp', 'value': stream_interval.get('start_date')}}]", False, id="test_request_body_data_no_state"),
+        pytest.param("request_body_json", {"start": "{{ stream_state.get('start_date') }}"}, True, id="test_request_body_json_has_state"),
+        pytest.param("request_body_json", {"start": "{{ slice_interval.get('start_date') }}"}, False, id="test_request_request_body_json_no_state"),
+    ]
+)
+def test_request_options_contain_stream_state(request_option_type, request_input, contains_state):
+    request_options_provider: InterpolatedRequestOptionsProvider
+    match request_option_type:
+        case "request_parameter":
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config, request_parameters=request_input, parameters={})
+        case "request_header":
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config, request_headers=request_input, parameters={})
+        case "request_body_data":
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config, request_body_data=request_input, parameters={})
+        case "request_body_json":
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config, request_body_json=request_input, parameters={})
+        case _:
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config, parameters={})
+
+    assert request_options_provider.request_options_contain_stream_state() == contains_state

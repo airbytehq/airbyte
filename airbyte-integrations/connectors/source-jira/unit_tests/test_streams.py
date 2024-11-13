@@ -2,15 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import re
-
 import pendulum
 import pytest
 import responses
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
 from conftest import find_stream
 from responses import matchers
 from source_jira.source import SourceJira
@@ -772,7 +770,7 @@ def test_issues_stream_jql_compare_date(config, start_date, lookback_window, str
 def test_python_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/10627/comment?maxResults=50",
         json=issue_comments_response,
     )
 
@@ -882,7 +880,7 @@ def test_labels_stream(config, labels_response):
 def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_worklogs_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/worklog?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/10627/worklog?maxResults=50",
         json=issue_worklogs_response,
     )
 
