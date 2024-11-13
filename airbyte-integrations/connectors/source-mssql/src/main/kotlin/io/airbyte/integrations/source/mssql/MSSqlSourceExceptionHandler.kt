@@ -9,7 +9,7 @@ import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.cdk.integrations.util.FailureType
 
 class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
-    override fun initializeErrorDictionary() { //the function from the superclass that we are modifying
+    override fun initializeErrorDictionary() {
 
         val DATABASE_READ_ERROR = "Encountered an error while reading the database, will retry"
 
@@ -19,16 +19,14 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
         // adding connector specific error profiles
         add(
             ConnectorErrorProfile(
-                errorClass = "MS SQL Exception", //which should we use?
-                regexMatchingPattern = ".*returned an incomplete response. The connection has been closed.*",
+                errorClass = "MS SQL Exception", // which should we use?
+                regexMatchingPattern =
+                    ".*returned an incomplete response. The connection has been closed.*",
                 failureType = FailureType.TRANSIENT,
                 externalMessage = DATABASE_READ_ERROR,
                 sampleInternalMessage =
-                "com.microsoft.sqlserver.jdbc.SQLServerException: SQL Server returned an incomplete response. The connection has been closed.",
-                referenceLinks =
-                listOf(
-                    "https://github.com/airbytehq/oncall/issues/6623"
-                )
+                    "com.microsoft.sqlserver.jdbc.SQLServerException: SQL Server returned an incomplete response. The connection has been closed.",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/6623")
             )
         )
     }
