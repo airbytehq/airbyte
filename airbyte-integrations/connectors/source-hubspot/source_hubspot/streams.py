@@ -18,6 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -337,6 +338,7 @@ class Stream(HttpStream, ABC):
     properties_scopes: Set = None
     unnest_fields: Optional[List[str]] = None
     checkpoint_by_page = False
+    _transformations: Optional[List[RecordTransformation]] = None
 
     @cached_property
     def record_unnester(self):
@@ -689,6 +691,10 @@ class Stream(HttpStream, ABC):
             record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
+            if self._transformations:
+                transformations = [transformation() for transformation in self._transformations]
+                for transformation in transformations:
+                    record = transformation.transform(record=record)
             yield record
 
     @staticmethod
@@ -823,6 +829,11 @@ class Stream(HttpStream, ABC):
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
+        if self._transformations:
+            transformations = [transformation() for transformation in self._transformations]
+            for transformation in transformations:
+                props = transformation.transform(props)
+
         return props
 
     def properties_scope_is_granted(self):
@@ -851,27 +862,6 @@ class Stream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
         return HubspotAvailabilityStrategy()
-
-
-class LegacyFieldMigrationMixin:
-
-    _transformations = [NewtoLegacyFieldTransformation]
-
-    @property
-    @lru_cache()
-    def properties(self) -> Mapping[str, Any]:
-        transformations = [transformation() for transformation in self._transformations]
-        props = super().properties
-        for transformation in transformations:
-            props = transformation.transform(props)
-        return props
-
-    def _transform(self, records: Iterable) -> Iterable:
-        transformations = [transformation() for transformation in self._transformations]
-        for record in super()._transform(records):
-            for transformation in transformations:
-                record = transformation.transform(record=record)
-            yield record
 
 
 class ClientSideIncrementalStream(Stream, CheckpointMixin):
@@ -1527,7 +1517,7 @@ class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
 
-class Deals(LegacyFieldMigrationMixin, CRMSearchStream):
+class Deals(CRMSearchStream):
     """Deals, API v3"""
 
     entity = "deal"
@@ -1535,9 +1525,10 @@ class Deals(LegacyFieldMigrationMixin, CRMSearchStream):
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation]
 
 
-class DealsArchived(LegacyFieldMigrationMixin, ClientSideIncrementalStream):
+class DealsArchived(ClientSideIncrementalStream):
     """Archived Deals, API v3"""
 
     url = "/crm/v3/objects/deals"
@@ -1548,6 +1539,7 @@ class DealsArchived(LegacyFieldMigrationMixin, ClientSideIncrementalStream):
     cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation]
 
     def request_params(
         self,
@@ -2214,12 +2206,13 @@ class Companies(CRMSearchStream):
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
-class Contacts(LegacyFieldMigrationMixin, CRMSearchStream):
+class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+    _transformations = [NewtoLegacyFieldTransformation]
 
 
 class EngagementsCalls(CRMSearchStream):
