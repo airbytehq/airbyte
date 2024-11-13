@@ -5,6 +5,7 @@ import pytest
 from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.streams import Deals
 
+
 @pytest.mark.parametrize(
     "input, expected",
     [
