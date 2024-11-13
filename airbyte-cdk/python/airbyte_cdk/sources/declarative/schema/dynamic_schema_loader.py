@@ -9,41 +9,27 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus, FailureType, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
 
+from airbyte_cdk.sources.declarative.requesters.requester import Requester
+
+
 @dataclass
 class DynamicSchemaLoader(SchemaLoader):
-
-    stream: DeclarativeStream
+    schema_requester: Requester
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        for schema_record in self.stream.read_only_records():
+        response = self.schema_requester.send_request()
+        response_json = response.json()
+        fields = response_json['values'][0]
 
-            if isinstance(schema_record, AirbyteMessage) and schema_record.type == MessageType.RECORD:
-                schema_record = schema_record.record.data
-            else:
-                continue
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            # For simplicity, the type of every cell is a string
+            "properties": {field: {"type": "string"} for field in fields},
+        }
 
-
-
-
-            # if isinstance(schema_record, AirbyteMessage):
-            #     if schema_record.type == MessageType.RECORD:
-            #         schema_record = schema_record.record.data
-            #     else:
-            #         continue
-            # elif isinstance(schema_record, Record):
-            #     schema_record = schema_record.data
-
-            schema = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": ["null", "object"],
-                "additionalProperties": True,
-                "properties": {
-                    **schema_record,
-                },
-            }
-
-            return schema
+        return json_schema

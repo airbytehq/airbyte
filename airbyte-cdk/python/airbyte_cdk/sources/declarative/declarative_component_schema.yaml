@@ -1210,9 +1210,9 @@ definitions:
         title: Schema Loader
         description: Component used to retrieve the schema for the current stream.
         anyOf:
+          - "$ref": "#/definitions/DynamicSchemaLoader"
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
-          - "$ref": "#/definitions/DynamicSchemaLoader"
           - "$ref": "#/definitions/CustomSchemaLoader"
       # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
       # compatibility reason. We should eventually move this to align with the code.
@@ -1709,10 +1709,11 @@ definitions:
       type:
         type: string
         enum: [DynamicSchemaLoader]
-      stream:
-        title: Stream
-        description: placeholder
-        type: object
+      schema_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
   JsonDecoder:
     title: Json Decoder
     type: object

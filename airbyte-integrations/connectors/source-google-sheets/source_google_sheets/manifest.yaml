@@ -1,0 +1,57 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - custom_object
+
+definitions:
+  streams:
+    custom_object:
+      type: DeclarativeStream
+      name: custom_object
+      retriever:
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:10
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: DynamicSchemaLoader
+        schema_requester:
+          $ref: "#/definitions/base_requester"
+          path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:1
+          http_method: GET
+  base_requester:
+    type: HttpRequester
+    url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    authenticator: "#/definitions/authenticator"
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/bearer_authenticator"
+
+
+
+streams:
+  - $ref: "#/definitions/streams/custom_object"

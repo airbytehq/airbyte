@@ -657,6 +657,17 @@ class InlineSchemaLoader(BaseModel):
     )
 
 
+class DynamicSchemaLoader(BaseModel):
+    type: Literal['DynamicSchemaLoader']
+    schema_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API.',
+    )
+    decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
+        None, description='Component used to decode the response.', title='Decoder'
+    )
+
+
 class JsonFileSchemaLoader(BaseModel):
     type: Literal['JsonFileSchemaLoader']
     file_path: Optional[str] = Field(
@@ -1401,7 +1412,7 @@ class DeclarativeStream(BaseModel):
         '', description='The primary key of the stream.', title='Primary Key'
     )
     schema_loader: Optional[
-        Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
+        Union[DynamicSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
     ] = Field(
         None,
         description='Component used to retrieve the schema for the current stream.',
@@ -1727,3 +1738,4 @@ DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()
 AsyncRetriever.update_forward_refs()
+DynamicSchemaLoader.update_forward_refs()

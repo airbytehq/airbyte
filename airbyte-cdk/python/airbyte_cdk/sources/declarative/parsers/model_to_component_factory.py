@@ -296,6 +296,7 @@ class ModelToComponentFactory:
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
 
+        print(component_definition)
         declarative_component_model = model_type.parse_obj(component_definition)
 
         if not isinstance(declarative_component_model, model_type):
@@ -902,7 +903,7 @@ class ModelToComponentFactory:
             state_transformations = []
 
         if model.schema_loader:
-            schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
+            schema_loader = self._create_component_from_model(model=model.schema_loader, config=config, name=model.name)
         else:
             options = model.parameters or {}
             if "name" not in options:
@@ -1108,8 +1109,12 @@ class ModelToComponentFactory:
     def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
         return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
 
-    def create_dynamic_schema_loader(self, model: DynamicSchemaLoaderModel, config: Config, **kwargs: Any) -> DynamicSchemaLoader:
-        return DynamicSchemaLoader(stream=self._create_component_from_model(model.stream, config=config))
+    def create_dynamic_schema_loader(self, model: DynamicSchemaLoaderModel, config: Config, name: str, **kwargs: Any) -> DynamicSchemaLoader:
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        schema_requester = self._create_component_from_model(
+            model=model.schema_requester, config=config, name=f"{name}_schema_requester", decoder=decoder
+        )
+        return DynamicSchemaLoader(schema_requester=schema_requester)
 
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:

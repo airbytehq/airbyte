@@ -11,14 +11,16 @@ definitions:
   streams:
     accounts:
       type: DeclarativeStream
-      name: accounts
+      name: custom_object
+      $parameters:
+        fully_qualified_name: ""
       primary_key:
         - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: adAccounts
+          path: /crm/v3/objects/{{parameters["fully_qualified_name"]}}
           http_method: GET
           request_parameters:
             q: search
@@ -84,7 +86,7 @@ definitions:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_method"]
     authenticators:
-      oAuth2.0: "#/definitions/oauth_authenticator"
-      access_token: "#/definitions/bearer_authenticator"
+      OAuth Credentials: "#/definitions/oauth_authenticator"
+      Private App Credentials: "#/definitions/bearer_authenticator"
 streams:
-  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/custom_object"
