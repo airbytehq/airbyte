@@ -19,7 +19,7 @@ abstract class S3V2WriteTest(
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
     /** This is false for staging mode, and true for non-staging mode. */
-    commitDataIncrementally: Boolean = false,
+    commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
 ) :
@@ -38,64 +38,10 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
     ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
     @Disabled
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
-    }
-
-    @Test
-    override fun testAppend() {
-        super.testAppend()
-    }
-
-    @Disabled("append mode doesn't yet work")
-    @Test
-    override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
-
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Disabled("connector doesn't yet do refreshes correctly - data from failed sync is lost")
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
     }
 }
 
@@ -124,6 +70,7 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        commitDataIncrementally = false,
     )
 
 class S3V2WriteTestJsonGzip :
