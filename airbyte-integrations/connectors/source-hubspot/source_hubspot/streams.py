@@ -2291,13 +2291,13 @@ class Leads(CRMSearchStream):
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"e-commerce", "crm.objects.line_items.read"}
 
 
 class Products(CRMObjectIncrementalStream):
     entity = "product"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"e-commerce", "crm.objects.products.read"}
 
 
 class Tickets(CRMSearchStream):
