@@ -1113,6 +1113,12 @@ definitions:
               partition_field: coupon_id
               stream:
                 $ref: "#/definitions/streams/coupons"
+                retriever:
+                  $ref: "#/definitions/streams/coupons/retriever"
+                  record_selector:
+                    $ref: "#/definitions/streams/coupons/retriever/record_selector"
+                    record_filter:
+                      condition: "{{ record['coupon_type'] == 'bulk' }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
