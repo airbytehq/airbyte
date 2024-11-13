@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - access_key
     - secret_key
+    - fromDate
   properties:
     access_key:
       type: string
@@ -14,6 +15,7 @@ connectionSpecification:
     secret_key:
       type: string
       description: "Secret key for Magnite API"
+      order: 1
       airbyte_secret: true
     source:
       type: string
@@ -50,13 +52,13 @@ connectionSpecification:
             type: string
           field:
             type: string
-    range:
-      type: object
-      required:
-        - fromDate
-        - toDate
-      properties:
-        fromDate:
-          type: string
-        toDate:
-          type: string
+    fromDate:
+      type: string
+      format: date
+      title: "From Date (YYYY-MM-DD)"
+      description: "Start date for data extraction"
+    toDate:
+      type: string
+      format: date
+      title: "To Date (YYYY-MM-DD)"
+      description: "End date for data extraction"
