@@ -1113,7 +1113,7 @@ class ModelToComponentFactory:
         schema_requester = self._create_component_from_model(
             model=model.schema_requester, config=config, name=f"{name}_schema_requester", decoder=decoder
         )
-        return DynamicSchemaLoader(schema_requester=schema_requester)
+        return DynamicSchemaLoader(schema_requester=schema_requester, config=config, decoder=decoder, schema_pointer=model.schema_pointer, key_pointer=model.key_pointer, type_pointer=model.type_pointer, parameters=model.parameters or {})
 
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:

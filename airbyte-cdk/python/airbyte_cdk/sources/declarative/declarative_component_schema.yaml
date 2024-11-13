@@ -1705,6 +1705,7 @@ definitions:
     type: object
     required:
       - type
+      - schema_requester
     properties:
       type:
         type: string
@@ -1714,6 +1715,39 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
+      decoder:
+        title: Decoder
+        description: Component used to decode the response.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
+      schema_pointer:
+        title: Schema Path
+        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).
+        type: array
+        items:
+          - type: string
+        interpolation_content:
+          - config
+      key_pointer:
+        title: Key Path
+        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).
+        type: array
+        items:
+          - type: string
+        interpolation_content:
+          - config
+      type_pointer:
+        title: Type Path
+        description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).
+        type: array
+        items:
+          - type: string
+        interpolation_content:
+          - config
+      $parameters:
+        type: object
+        additionalProperties: true
   JsonDecoder:
     title: Json Decoder
     type: object

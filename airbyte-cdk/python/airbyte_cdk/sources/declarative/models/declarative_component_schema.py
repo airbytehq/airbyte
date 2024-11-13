@@ -666,6 +666,40 @@ class DynamicSchemaLoader(BaseModel):
     decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
         None, description='Component used to decode the response.', title='Decoder'
     )
+    schema_pointer: List[str] = Field(
+        ...,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        examples=[
+            ['data'],
+            ['data', 'records'],
+            ['data', '{{ parameters.name }}'],
+            ['data', '*', 'record'],
+        ],
+        title='Field Path',
+    )
+    key_pointer: List[str] = Field(
+        ...,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        examples=[
+            ['data'],
+            ['data', 'records'],
+            ['data', '{{ parameters.name }}'],
+            ['data', '*', 'record'],
+        ],
+        title='Field Path',
+    )
+    type_pointer: Optional[List[str]] = Field(
+        None,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        examples=[
+            ['data'],
+            ['data', 'records'],
+            ['data', '{{ parameters.name }}'],
+            ['data', '*', 'record'],
+        ],
+        title='Field Path',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class JsonFileSchemaLoader(BaseModel):
