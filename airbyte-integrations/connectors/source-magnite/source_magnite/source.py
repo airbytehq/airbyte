@@ -103,6 +103,17 @@ class MagniteStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 412:
+            return True
+        return super().should_retry(response)
+    
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == 412:
+            self.logger.warning("Precondition failed! A query is already running.")
+            return POLLING_IN_SECONDS * 2
+        return super().backoff_time(response)
+    
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if self._data_field:
