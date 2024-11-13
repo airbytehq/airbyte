@@ -21,6 +21,7 @@ abstract class S3V2WriteTest(
     /** This is false for staging mode, and true for non-staging mode. */
     commitDataIncrementally: Boolean = false,
     allTypesBehavior: AllTypesBehavior,
+    nullEqualsUnset: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -35,6 +36,7 @@ abstract class S3V2WriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
+        nullEqualsUnset = nullEqualsUnset,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -173,6 +175,7 @@ class S3V2WriteTestAvroUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
+        nullEqualsUnset = true,
     ) {
     @Test
     override fun testBasicTypes() {
@@ -187,6 +190,7 @@ class S3V2WriteTestAvroBzip2 :
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
+        nullEqualsUnset = true,
     ) {
     @Test
     override fun testBasicTypes() {
@@ -201,6 +205,7 @@ class S3V2WriteTestParquetUncompressed :
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
+        nullEqualsUnset = true,
     ) {
     @Test
     override fun testBasicTypes() {
@@ -215,6 +220,7 @@ class S3V2WriteTestParquetSnappy :
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
+        nullEqualsUnset = true,
     ) {
     @Test
     override fun testBasicTypes() {

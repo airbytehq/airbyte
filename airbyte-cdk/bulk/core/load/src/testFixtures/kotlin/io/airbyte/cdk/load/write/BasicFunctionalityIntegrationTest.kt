@@ -124,7 +124,8 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
+    nullEqualsUnset: Boolean = false,
+) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
     @Test
