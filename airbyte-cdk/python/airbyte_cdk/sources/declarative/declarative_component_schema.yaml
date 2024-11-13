@@ -1212,6 +1212,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
+          - "$ref": "#/definitions/DynamicSchemaLoader"
           - "$ref": "#/definitions/CustomSchemaLoader"
       # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
       # compatibility reason. We should eventually move this to align with the code.
@@ -1698,6 +1699,20 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  DynamicSchemaLoader:
+    title: Dynamic Schema Loader
+    description: placeholder
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [DynamicSchemaLoader]
+      stream:
+        title: Stream
+        description: placeholder
+        type: object
   JsonDecoder:
     title: Json Decoder
     type: object
