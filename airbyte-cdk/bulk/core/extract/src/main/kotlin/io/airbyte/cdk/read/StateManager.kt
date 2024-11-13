@@ -37,18 +37,15 @@ class StateManager(
                     .mapKeys { it.key.id }
         } else {
             val globalStreams: Map<Stream, OpaqueStateValue?> =
-                global.streams.associateWith { initialStreamStates[it] }
+                global.streams.associateWith { initialStreamStates[it] } +
+                    initialStreamStates.filterKeys { global.streams.contains(it).not() }
             this.global =
                 GlobalStateManager(
                     global = global,
                     initialGlobalState = initialGlobalState,
                     initialStreamStates = globalStreams,
                 )
-            nonGlobal =
-                initialStreamStates
-                    .filterKeys { !globalStreams.containsKey(it) }
-                    .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.id }
+            nonGlobal = emptyMap()
         }
     }
 
