@@ -204,26 +204,21 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
     abstract val inputStream: InputStream
 
     override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        val reservation = memoryManager.reserveRatio(config.maxMessageQueueMemoryUsageRatio, this)
-        val reservationManager = reservation.getReservationManager()
+        log.info { "Reserved ${memoryManager.totalMemoryBytes/1024}mb memory for input processing" }
 
-        log.info { "Reserved ${reservation.bytesReserved/1024}mb memory for input processing" }
+        inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
+            if (line.isEmpty()) {
+                return@forEachIndexed
+            }
 
-        reservation.use { _ ->
-            inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
-                if (line.isEmpty()) {
-                    return@forEachIndexed
-                }
+            val lineSize = line.length.toLong()
+            val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
+            val reserved = memoryManager.reserve(estimatedSize.toLong(), line)
+            val message = deserializer.deserialize(line)
+            collector.emit(Pair(lineSize, reserved.replace(message)))
 
-                val lineSize = line.length.toLong()
-                val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
-                val reserved = reservationManager.reserveBlocking(estimatedSize.toLong(), line)
-                val message = deserializer.deserialize(line)
-                collector.emit(Pair(lineSize, reserved.replace(message)))
-
-                if (index % 10_000 == 0) {
-                    log.info { "Processed $index lines" }
-                }
+            if (index % 10_000 == 0) {
+                log.info { "Processed $index lines" }
             }
         }
 
