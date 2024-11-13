@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -35,6 +37,8 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MysqlJdbcPartition(
