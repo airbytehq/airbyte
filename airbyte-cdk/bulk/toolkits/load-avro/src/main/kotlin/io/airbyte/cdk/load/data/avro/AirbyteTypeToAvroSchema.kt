@@ -89,7 +89,7 @@ class AirbyteTypeToAvroSchema {
                 LogicalTypes.timestampMicros().addToSchema(schema)
             }
             is UnionType -> Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
-            is UnknownType -> SchemaBuilder.builder().nullType()
+            is UnknownType -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
 }
