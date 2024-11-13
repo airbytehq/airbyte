@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - "api.tremorhub.com"
   registries:
     oss:
       enabled: true
@@ -22,13 +22,13 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-magnite
   githubIssueLabel: source-magnite
-  icon: magnite.svg
+  icon: icon.svg
   license: MIT
   name: Magnite
   releaseDate: TODO
   supportLevel: community
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/magnite
+  documentationUrl: https://api.tremorhub.com/v1/guide.html
   tags:
     - language:python
 metadataSpecVersion: "1.0"
