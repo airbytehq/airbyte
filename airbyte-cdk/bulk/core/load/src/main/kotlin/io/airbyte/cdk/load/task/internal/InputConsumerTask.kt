@@ -27,8 +27,6 @@ import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamFileCompleteWrapped
-import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
@@ -65,8 +63,6 @@ class DefaultInputConsumerTask(
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
-    private val fileQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationFileWrapped>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher

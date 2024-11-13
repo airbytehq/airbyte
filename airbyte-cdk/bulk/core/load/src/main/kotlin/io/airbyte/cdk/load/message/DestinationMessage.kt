@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.json.AirbyteValueToJson
@@ -63,15 +62,15 @@ data class DestinationRecord(
         emittedAtMs: Long,
         changes: MutableList<Change> = mutableListOf(),
     ) : this(
-        stream = DestinationStream(
-            descriptor = DestinationStream.Descriptor(namespace, name),
-            importType = Append,
-            schema = ObjectTypeWithoutSchema,
-            generationId = 0,
-            minimumGenerationId = 0,
-            syncId = 0,
-
-        ),
+        stream =
+            DestinationStream(
+                descriptor = DestinationStream.Descriptor(namespace, name),
+                importType = Append,
+                schema = ObjectTypeWithoutSchema,
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0,
+            ),
         data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
@@ -134,7 +133,6 @@ data class DestinationFile(
     val fileMessage: AirbyteRecordMessageFile
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
-
     class AirbyteRecordMessageFile {
         constructor(
             fileUrl: String? = null,

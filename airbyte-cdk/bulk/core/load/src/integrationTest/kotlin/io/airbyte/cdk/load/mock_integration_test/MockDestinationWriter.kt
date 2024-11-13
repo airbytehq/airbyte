@@ -31,6 +31,9 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     data class LocalBatch(val records: List<DestinationRecord>) : Batch {
         override val state = Batch.State.LOCAL
     }
+    data class LocalFileBatch(val file: DestinationFile) : Batch {
+        override val state = Batch.State.LOCAL
+    }
     data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
         override val state = Batch.State.PERSISTED
     }
@@ -69,14 +72,14 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
-        TODO("Not yet implemented")
+        return LocalFileBatch(file)
     }
 
     override suspend fun processBatch(batch: Batch): Batch {
         return when (batch) {
             is LocalBatch -> {
                 batch.records.forEach {
-                    val filename = getFilename(it.stream, staging = true)
+                    val filename = getFilename(it.stream.descriptor, staging = true)
                     val record =
                         OutputRecord(
                             UUID.randomUUID(),
