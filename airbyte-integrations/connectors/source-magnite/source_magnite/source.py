@@ -237,4 +237,10 @@ class SourceMagnite(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = CookieAuthenticator(config)
-        return [MagniteStream(config, name="queries", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)]
+        streams = [
+            MagniteStream(config, name="adstats-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
+            MagniteStream(config, name="deals-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
+            MagniteStream(config, name="platform-adsource-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
+            MagniteStream(config, name="platform-supply-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)
+        ]
+        return streams
