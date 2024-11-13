@@ -23,6 +23,58 @@ DATE_FORMAT = "%Y-%m-%d"
 WINDOW_IN_DAYS = 45
 POLLING_IN_SECONDS = 30
 
+class BaseResourceStream(HttpStream, ABC):
+    http_method = "GET"
+
+    def __init__(self, name: str, resource_type: str, **kwargs: Any) -> None:
+        self._name = name
+        self._path = f"v1/resources/queries/sources/{name}/{resource_type}"
+        self._primary_key = None
+        super().__init__(**kwargs)
+
+    url_base = "https://api.tremorhub.com/"
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield from response_json
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return self._path
+
+class DimensionsStream(BaseResourceStream):
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        super().__init__(name, "dimensions", **kwargs)
+
+class MetricsStream(BaseResourceStream):
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        super().__init__(name, "metrics", **kwargs)
+
 class MagniteStream(HttpStream, ABC):
     http_method = "POST"
     def __init__(self, config: Mapping[str, Any], name: str, path: str, primary_key: Union[str, List[str]], data_field: str, **kwargs: Any) -> None:
