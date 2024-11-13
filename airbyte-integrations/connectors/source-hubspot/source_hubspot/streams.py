@@ -860,15 +860,17 @@ class LegacyFieldMigrationMixin:
     @property
     @lru_cache()
     def properties(self) -> Mapping[str, Any]:
+        transformations = [transformation() for transformation in self._transformations]
         props = super().properties
-        for transformation in self._transformations:
-            props = transformation().transform(props)
+        for transformation in transformations:
+            props = transformation.transform(props)
         return props
 
     def _transform(self, records: Iterable) -> Iterable:
+        transformations = [transformation() for transformation in self._transformations]
         for record in super()._transform(records):
-            for transformation in self._transformations:
-                record = transformation().transform(record=record)
+            for transformation in transformations:
+                record = transformation.transform(record=record)
             yield record
 
 
