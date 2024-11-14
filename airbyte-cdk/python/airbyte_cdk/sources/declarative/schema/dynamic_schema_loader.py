@@ -4,7 +4,7 @@
 
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Mapping, List, Optional, Union
 
 import dpath
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -15,13 +15,24 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.types import Config
 
 
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+
+
+@dataclass(frozen=True)
+class TypesPair:
+    target_type: str
+    current_type: Union[InterpolatedString, str]
+
+
 @dataclass
 class DynamicSchemaLoader(SchemaLoader):
-    schema_requester: Requester
+    stream: "DeclarativeStream"
     config: Config
     schema_pointer: List[Union[InterpolatedString, str]]
     key_pointer: List[Union[InterpolatedString, str]]
     parameters: InitVar[Mapping[str, Any]]
+    types_map: List[TypesPair]
     type_pointer: Optional[List[Union[InterpolatedString, str]]] = None
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
@@ -39,9 +50,16 @@ class DynamicSchemaLoader(SchemaLoader):
 
         return _pointer
 
+    def _replace_type_if_not_valid(self, field_type):
+        for types_pair in self.types_map:
+            if field_type == types_pair.current_type:
+                return types_pair.target_type
+        return field_type
+
     def get_json_schema(self) -> Mapping[str, Any]:
-        response_json = self.schema_requester.send_request().json()
-        raw_schema = self._extract_data(response_json, self.schema_pointer)
+        response_json = next(self.stream.read_only_records(), None)
+
+        raw_schema = self._extract_data(response_json, self.schema_pointer) if response_json else []
 
         # For each property definition in the raw schema:
         # - Extract `field_key` using `self.key_pointer` and ensure it's a valid string.
@@ -55,7 +73,7 @@ class DynamicSchemaLoader(SchemaLoader):
             for property_definition in raw_schema
             if (field_key := self._extract_data(property_definition, self.key_pointer))
                and isinstance(field_key, str)
-               and (field_type := self._extract_data(property_definition, self.type_pointer) if self.type_pointer else "string")
+               and (field_type := self._replace_type_if_not_valid(self._extract_data(property_definition, self.type_pointer, default="string")) if self.type_pointer else "string")
                and (isinstance(field_type, str) or (
                         isinstance(field_type, list) and len(field_type) == 2 and all(isinstance(item, str) for item in field_type)))
         }

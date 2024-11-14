@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 
 from .auth import AirtableAuth
 from .schema_helpers import SchemaHelpers

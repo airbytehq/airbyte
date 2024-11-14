@@ -5,55 +5,140 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - custom_object
+    - tables
 
 definitions:
   streams:
-    custom_object:
+    bases:
       type: DeclarativeStream
-      name: custom_object
+      name: bases
       retriever:
         requester:
           $ref: "#/definitions/base_requester"
-          path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:10
+          path: meta/bases
           http_method: GET
         record_selector:
-          type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path: ["bases"]
+    tables:
+      type: DeclarativeStream
+      name: tables
+      retriever:
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases/{{stream_partition['id']}}/tables
+          http_method: GET
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/bases"
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: ["tables"]
+
+    custom_object:
+      type: DeclarativeStream
+      name: custom_object
+      $parameters:
+        table_id: "table_id"
+      retriever:
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{stream_partition['parent_slice']['id']}}/{{parameters['table_id']}}
+          http_method: GET
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/tables"
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: ["records"]
       schema_loader:
         type: DynamicSchemaLoader
-        schema_requester:
-          $ref: "#/definitions/base_requester"
-          path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:1
-          http_method: GET
-        schema_pointer: ["values", "0"]
-        key_pointer: []
+        stream:
+          type: DeclarativeStream
+          name: tables
+          $parameters:
+            table_id: "table_id"
+          retriever:
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: meta/bases/{{stream_partition['id']}}/tables
+              http_method: GET
+            partition_router:
+              type: SubstreamPartitionRouter
+              parent_stream_configs:
+                - type: ParentStreamConfig
+                  parent_key: id
+                  partition_field: id
+                  stream:
+                    $ref: "#/definitions/streams/bases"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path: [ "tables" ]
+              record_filter:
+                condition: "{{ record['id'] == parameters['table_id'] }}"
+        schema_pointer: ["fields"]
+        key_pointer: ["name"]
+        type_pointer: ["type"]
+        types_map:
+          - target_type: string
+            current_type: singleLineText
+          - target_type: string
+            current_type: multilineText
   base_requester:
     type: HttpRequester
-    url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    url_base: https://api.airtable.com/v0
     authenticator: "#/definitions/authenticator"
   # Authenticators
   bearer_authenticator:
     type: BearerAuthenticator
-    api_token: "{{ config['credentials']['access_token'] }}"
+    api_token: "{{ config['credentials']['api_key'] }}"
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
-    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    token_refresh_endpoint: https://airtable.com/oauth2/v1/token
     grant_type: refresh_token
     client_id: '{{ config["credentials"]["client_id"] }}'
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
   authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticator_selection_path: ["credentials", "auth_method"]
     authenticators:
-      Client: "#/definitions/oauth_authenticator"
-      Service: "#/definitions/bearer_authenticator"
+      oauth2: "#/definitions/oauth_authenticator"
+      api_key: "#/definitions/bearer_authenticator"
 
 
 
 streams:
   - $ref: "#/definitions/streams/custom_object"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_object"
+    components_parser:
+      type: DynamicComponentsParser
+      components_values_stream:
+        $ref: "#/definitions/streams/tables"
+      components_mapping:
+        - type: MapComponentsDefinition
+          key: name
+          value: "{{ components_value['name'] }}"
+          condition: "{{ td['name'] == 'custom_object' }}"
+        - type: MapComponentsDefinition
+          key: table_id
+          value: "{{ components_value['id'] }}"

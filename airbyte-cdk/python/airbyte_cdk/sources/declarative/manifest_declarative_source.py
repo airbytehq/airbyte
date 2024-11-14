@@ -22,6 +22,7 @@ from airbyte_cdk.sources.declarative.checks.connection_checker import Connection
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DynamicComponentsParser as DynamicComponentsParserModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
@@ -91,6 +92,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
         stream_configs = self._stream_configs(self._source_config)
+
+        stream_configs += self._dynamic_streams_configs(self._source_config, config)
 
         source_streams = [
             self._constructor.create_component(
@@ -230,6 +233,20 @@ class ManifestDeclarativeSource(DeclarativeSource):
         for s in stream_configs:
             if "type" not in s:
                 s["type"] = "DeclarativeStream"
+        return stream_configs
+
+    def _dynamic_streams_configs(self, manifest: Mapping[str, Any], config: Mapping[str, Any]) -> List[Dict[str, Any]]:
+        dynamic_stream_configs: List[Dict[str, Any]] = manifest.get("dynamic_streams", [])
+        stream_configs = []
+
+        for ds in dynamic_stream_configs:
+            components_parser = self._constructor.create_component(DynamicComponentsParserModel, ds["components_parser"], config)
+            stream_template_config = ds["stream_template"]
+
+            if "type" not in stream_template_config:
+                stream_template_config["type"] = "DeclarativeStream"
+
+            stream_configs = [stream_config for stream_config in components_parser.parse_stream_components(stream_template_config=stream_template_config)]
         return stream_configs
 
     def _emit_manifest_debug_message(self, extra_args: dict[str, Any]) -> None:

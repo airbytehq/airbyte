@@ -19,6 +19,10 @@ properties:
     type: array
     items:
       "$ref": "#/definitions/DeclarativeStream"
+  dynamic_streams:
+    type: array
+    items:
+      "$ref": "#/definitions/DynamicDeclarativeStream"
   version:
     type: string
     description: The version of the Airbyte CDK used to build and test the source.
@@ -1699,22 +1703,112 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  MapComponentsDefinition:
+    title: Definition Of Component Mapping To Add
+    description: Defines the field to add on a record.
+    type: object
+    required:
+      - type
+      - key
+      - value
+    properties:
+      type:
+        type: string
+        enum: [MapComponentsDefinition]
+      key:
+        title: Key
+        type: string
+      value:
+        title: Value
+        type: string
+        interpolation_context:
+          - config
+          - stream_template_config
+          - components_value
+        examples:
+          - "{{ record['updates'] }}"
+          - "{{ record['MetaData']['LastUpdatedTime'] }}"
+          - "{{ stream_partition['segment_id'] }}"
+      condition:
+        type: string
+        default: ""
+        interpolation_context:
+          - config
+          - stream_template_config
+          - components_value
+        examples:
+          - "{{ record['created_at'] >= stream_interval['start_time'] }}"
+          - "{{ record.status in ['active', 'expired'] }}"
+      $parameters:
+        type: object
+        additionalProperties: true
+  DynamicComponentsParser:
+    type: object
+    properties:
+      type:
+        type: string
+        enum: [DynamicComponentsParser]
+      components_values_stream:
+        title: Stream
+        description: Reference to the stream.
+        "$ref": "#/definitions/DeclarativeStream"
+      components_mapping:
+        type: array
+        items:
+          - "$ref": "#/definitions/MapComponentsDefinition"
+      $parameters:
+        type: object
+        additionalProperties: true
+    required:
+      - type
+      - components_values_stream
+      - components_mapping
+  StaticComponentsParser:
+    type: object
+    properties:
+      type:
+        type: string
+        enum: [StaticComponentsParser]
+    required:
+      - type
+  DynamicDeclarativeStream:
+    type: object
+    properties:
+      stream_template:
+        title: Stream
+        description: Reference to the stream.
+        "$ref": "#/definitions/DeclarativeStream"
+      components_parser:
+        anyOf:
+          - "$ref": "#/definitions/DynamicComponentsParser"
+          - "$ref": "#/definitions/StaticComponentsParser"
+  TypesPair:
+    title: Types Pair
+    description: placeholder
+    type: object
+    required:
+      - target_type
+      - current_type
+    properties:
+      target_type:
+        type: string
+      current_type:
+        type: string
   DynamicSchemaLoader:
     title: Dynamic Schema Loader
     description: placeholder
     type: object
     required:
       - type
-      - schema_requester
+      - stream
     properties:
       type:
         type: string
         enum: [DynamicSchemaLoader]
-      schema_requester:
-        description: Requester component that describes how to prepare HTTP requests to send to the source API.
-        anyOf:
-          - "$ref": "#/definitions/CustomRequester"
-          - "$ref": "#/definitions/HttpRequester"
+      stream:
+        title: Stream
+        description: Reference to the stream.
+        "$ref": "#/definitions/DeclarativeStream"
       decoder:
         title: Decoder
         description: Component used to decode the response.
@@ -1745,6 +1839,10 @@ definitions:
           - type: string
         interpolation_content:
           - config
+      types_map:
+        type: array
+        items:
+          - "$ref": "#/definitions/TypesPair"
       $parameters:
         type: object
         additionalProperties: true
