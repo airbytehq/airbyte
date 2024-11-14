@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fae4092b-fcb4-4dba-8ad4-f8bf9a32d25e
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-fillout
   githubIssueLabel: source-fillout
   icon: icon.svg
