@@ -1,8 +1,11 @@
-version: 5.14.0
+version: 6.1.0
 
 type: DeclarativeSource
 
 description: >-
+  ✅ Added the `formId` value to `submissions` stream.
+
+
   The Airbyte connector for Fillout.com enables seamless data synchronization
   between Fillout forms and various target destinations. This connector allows
   you to extract form submissions and related data from Fillout and transfer it
@@ -126,6 +129,12 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - formId
+              value: "{{ stream_partition.form_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -172,24 +181,24 @@ metadata:
   autoImportSchema:
     forms: true
     form_metadata: true
-    submissions: true
+    submissions: false
   testedStreams:
     forms:
+      hasRecords: true
       streamHash: ed5a5bcc98a75c0ee799db522a659dc89c16344e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     form_metadata:
+      hasRecords: true
       streamHash: 9701fd2020429ea05b4611e4185d634aa669712a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     submissions:
-      streamHash: 615b40e78b07d3f97d5db304dc1ae28dfd782c5e
+      streamHash: 618af7b9b7be9ff9b37106ce75863fe568048443
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -361,6 +370,8 @@ schemas:
           - "null"
       submissionId:
         type: string
+      formId:
+        type: string
       submissionTime:
         type: string
       urlParameters:
@@ -368,5 +379,6 @@ schemas:
           - array
           - "null"
     required:
+      - formId
       - submissionId
       - submissionTime
