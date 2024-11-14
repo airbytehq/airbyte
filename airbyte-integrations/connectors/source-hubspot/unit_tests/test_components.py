@@ -95,6 +95,6 @@ from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
     ],
 )
 def test_new_to_legacy_field_transformation(input, expected):
-    transformation = NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
-    actual_properties = transformation.transform(input)
-    assert actual_properties == expected
+    transformer = NewtoLegacyFieldTransformation(DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
+    transformer.transform(input)
+    assert input == expected

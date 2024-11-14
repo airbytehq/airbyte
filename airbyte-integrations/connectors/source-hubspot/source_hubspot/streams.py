@@ -78,13 +78,13 @@ CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items(
 CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING = {
     "hs_lifecyclestage_": "hs_v2_date_entered_",
     "hs_date_exited_": "hs_v2_date_exited_",
-    "hs_time_in": "hs_v2_latest_time_in_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
 }
 
 DEALS_NEW_TO_LEGACY_FIELDS_MAPPING = {
     "hs_date_entered_": "hs_v2_date_entered_",
     "hs_date_exited_": "hs_v2_date_exited_",
-    "hs_time_in": "hs_v2_latest_time_in_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
 }
 
 
@@ -705,7 +705,7 @@ class Stream(HttpStream, ABC):
                 record[self.updated_at_field] = record[self.created_at_field]
             if self._transformations:
                 for transformation in self._transformations:
-                    record = transformation.transform(record=record)
+                    transformation.transform(record=record)
             yield record
 
     @staticmethod
@@ -842,7 +842,7 @@ class Stream(HttpStream, ABC):
 
         if self._transformations:
             for transformation in self._transformations:
-                props = transformation.transform(props)
+                transformation.transform(props)
 
         return props
 
