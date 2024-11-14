@@ -40,7 +40,7 @@ class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -98,7 +98,10 @@ class DefaultSpillToDiskTask(
 }
 
 interface SpillToDiskTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream.Descriptor
+    ): SpillToDiskTask
 }
 
 @Singleton
@@ -110,11 +113,11 @@ class DefaultSpillToDiskTaskFactory(
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(
             spillFileProvider,
-            queueSupplier.get(stream.descriptor),
+            queueSupplier.get(stream),
             flushStrategy,
             stream,
             taskLauncher,

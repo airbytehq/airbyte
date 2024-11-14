@@ -33,7 +33,7 @@ import io.airbyte.cdk.load.state.StreamIncompleteResult
  * If there are failed batches, they are passed in as an argument.
  */
 interface StreamLoader {
-    val stream: DestinationStream
+    val stream: DestinationStream.Descriptor
 
     suspend fun start() {}
     suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch

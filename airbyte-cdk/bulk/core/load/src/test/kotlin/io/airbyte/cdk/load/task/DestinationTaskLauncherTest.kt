@@ -123,12 +123,12 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
+            stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
-                override val stream: DestinationStream = stream
+                override val stream: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
-                    streamHasRun[stream.descriptor]?.send(Unit)
+                    streamHasRun[stream]?.send(Unit)
                 }
             }
         }
@@ -138,18 +138,18 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
+        val streamHasRun = mutableMapOf<DestinationStream.Descriptor, Channel<Unit>>()
 
         init {
-            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
+            catalog.streams.forEach { streamHasRun[it.descriptor] = Channel(Channel.UNLIMITED) }
         }
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
+            stream: DestinationStream.Descriptor
         ): OpenStreamTask {
             return object : OpenStreamTask {
-                override val stream: DestinationStream = stream
+                override val stream: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -165,11 +165,11 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
             file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
-                override val stream: DestinationStream = stream
+                override val stream: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -185,11 +185,11 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
             batchEnvelope: BatchEnvelope<*>
         ): ProcessBatchTask {
             return object : ProcessBatchTask {
-                override val stream: DestinationStream = stream
+                override val stream: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(batchEnvelope)
                 }
@@ -205,10 +205,10 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
-                override val stream: DestinationStream = stream
+                override val stream: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -352,7 +352,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Test
     fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
         taskLauncher.handleNewSpilledFile(
-            MockDestinationCatalogFactory.stream1,
+            MockDestinationCatalogFactory.stream1.descriptor,
             SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0))
         )
 
@@ -366,7 +366,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     fun testHandleSpilledFileCompleteEndOfStream() = runTest {
         launch {
             taskLauncher.handleNewSpilledFile(
-                MockDestinationCatalogFactory.stream1,
+                MockDestinationCatalogFactory.stream1.descriptor,
                 SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0), true)
             )
         }
@@ -392,7 +392,10 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         // Verify incomplete batch triggers process batch
         val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range)
-        taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1, incompleteBatch)
+        taskLauncher.handleNewBatch(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            incompleteBatch
+        )
         Assertions.assertFalse(streamManager.areRecordsPersistedUntil(100L))
 
         val batchReceived = processBatchTaskFactory.hasRun.receive()
@@ -401,21 +404,30 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.tryReceive().isFailure)
 
         val persistedBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)
-        taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1, persistedBatch)
+        taskLauncher.handleNewBatch(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            persistedBatch
+        )
         Assertions.assertTrue(streamManager.areRecordsPersistedUntil(100L))
         Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.receive())
 
         // Verify complete batch w/o batch processing complete does nothing
         val halfRange = TreeRangeSet.create(listOf(Range.closed(0L, 50L)))
         val completeBatchHalf = BatchEnvelope(MockBatch(Batch.State.COMPLETE), halfRange)
-        taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1, completeBatchHalf)
+        taskLauncher.handleNewBatch(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            completeBatchHalf
+        )
         delay(1000)
         Assertions.assertTrue(closeStreamTaskFactory.hasRun.tryReceive().isFailure)
 
         // Verify complete batch w/ batch processing complete triggers close stream
         val secondHalf = TreeRangeSet.create(listOf(Range.closed(51L, 100L)))
         val completingBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), secondHalf)
-        taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1, completingBatch)
+        taskLauncher.handleNewBatch(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            completingBatch
+        )
         closeStreamTaskFactory.hasRun.receive()
         Assertions.assertTrue(true)
     }
@@ -423,7 +435,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Test
     fun testHandleStreamClosed() = runTest {
         // This should run teardown unconditionally.
-        launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1) }
+        launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1.descriptor) }
         teardownTaskFactory.hasRun.receive()
     }
 

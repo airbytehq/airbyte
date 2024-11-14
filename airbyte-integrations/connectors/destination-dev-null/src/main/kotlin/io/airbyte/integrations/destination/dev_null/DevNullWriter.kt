@@ -23,30 +23,40 @@ import kotlinx.coroutines.delay
 class DevNullWriter(private val config: DevNullConfiguration) : DestinationWriter {
     private val log = KotlinLogging.logger {}
 
-    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream.Descriptor): StreamLoader {
         return when (config.type) {
             is Logging -> {
-                log.info { "Creating LoggingStreamLoader for LoggingDestination. The File messages will be ignored" }
+                log.info {
+                    "Creating LoggingStreamLoader for LoggingDestination. The File messages will be ignored"
+                }
                 LoggingStreamLoader(stream, config.type)
             }
             is Silent -> {
-                log.info { "Creating SilentStreamLoader for SilentDestination. The File messages will be ignored" }
+                log.info {
+                    "Creating SilentStreamLoader for SilentDestination. The File messages will be ignored"
+                }
                 SilentStreamLoader(stream)
             }
             is Throttled -> {
-                log.info { "Creating ThrottledStreamLoader for ThrottledDestination. The File messages will be ignored" }
+                log.info {
+                    "Creating ThrottledStreamLoader for ThrottledDestination. The File messages will be ignored"
+                }
                 ThrottledStreamLoader(stream, config.type.millisPerRecord)
             }
             is Failing -> {
-                log.info { "Creating FailingStreamLoader for FailingDestination. The File messages will be ignored" }
+                log.info {
+                    "Creating FailingStreamLoader for FailingDestination. The File messages will be ignored"
+                }
                 FailingStreamLoader(stream, config.type.numMessages)
             }
         }
     }
 }
 
-class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig: Logging) :
-    StreamLoader {
+class LoggingStreamLoader(
+    override val stream: DestinationStream.Descriptor,
+    loggingConfig: Logging
+) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
     private val maxEntryCount: Int = loggingConfig.maxEntryCount
@@ -70,7 +80,7 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
                 if (sampleRate == 1.0 || prng.nextDouble() < sampleRate) {
                     if (logCount.incrementAndGet() < maxEntryCount) {
                         log.info {
-                            "Logging Destination(stream=${stream.descriptor}, recordIndex=$recordCount, logEntry=$logCount/$maxEntryCount): $record"
+                            "Logging Destination(stream=$stream, recordIndex=$recordCount, logEntry=$logCount/$maxEntryCount): $record"
                         }
                     }
                 }
@@ -89,7 +99,7 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
     }
 }
 
-class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader {
+class SilentStreamLoader(override val stream: DestinationStream.Descriptor) : StreamLoader {
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
         totalSizeBytes: Long
@@ -107,7 +117,7 @@ class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader 
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 class ThrottledStreamLoader(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     private val millisPerRecord: Long
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
@@ -133,8 +143,10 @@ class ThrottledStreamLoader(
     }
 }
 
-class FailingStreamLoader(override val stream: DestinationStream, private val numMessages: Int) :
-    StreamLoader {
+class FailingStreamLoader(
+    override val stream: DestinationStream.Descriptor,
+    private val numMessages: Int
+) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
     companion object {
@@ -151,7 +163,7 @@ class FailingStreamLoader(override val stream: DestinationStream, private val nu
             messageCount.getAndIncrement().let { messageCount ->
                 if (messageCount > numMessages) {
                     val message =
-                        "Failing Destination(stream=${stream.descriptor}, numMessages=$numMessages: failing at $record"
+                        "Failing Destination(stream=$stream, numMessages=$numMessages: failing at $record"
                     log.info { message }
                     throw RuntimeException(message)
                 }
@@ -168,7 +180,7 @@ class FailingStreamLoader(override val stream: DestinationStream, private val nu
         messageCount.getAndIncrement().let { messageCount ->
             if (messageCount > numMessages) {
                 val message =
-                    "Failing Destination(stream=${stream.descriptor}, numMessages=$numMessages: failing at $file"
+                    "Failing Destination(stream=$stream, numMessages=$numMessages: failing at $file"
                 log.info { message }
                 throw RuntimeException(message)
             }

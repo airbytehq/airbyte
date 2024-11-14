@@ -35,7 +35,7 @@ interface ProcessRecordsTask : StreamLevel, ImplementorScope
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val file: SpilledRawMessagesLocalFile,
     private val deserializer: Deserializer<DestinationMessage>,
@@ -44,8 +44,8 @@ class DefaultProcessRecordsTask(
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
 
-        log.info { "Fetching stream loader for ${stream.descriptor}" }
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        log.info { "Fetching stream loader for $stream" }
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream)
 
         log.info { "Processing records from $file" }
         val batch =
@@ -84,7 +84,7 @@ class DefaultProcessRecordsTask(
 interface ProcessRecordsTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask
 }
@@ -97,7 +97,7 @@ class DefaultProcessRecordsTaskFactory(
 ) : ProcessRecordsTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask {
         return DefaultProcessRecordsTask(stream, taskLauncher, file, deserializer, syncManager)

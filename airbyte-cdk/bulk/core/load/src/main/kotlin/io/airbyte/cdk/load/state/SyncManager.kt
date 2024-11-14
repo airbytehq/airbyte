@@ -64,9 +64,7 @@ class DefaultSyncManager(
     }
 
     override fun registerStartedStreamLoader(streamLoader: StreamLoader) {
-        streamLoaders
-            .getOrPut(streamLoader.stream.descriptor) { CompletableDeferred() }
-            .complete(streamLoader)
+        streamLoaders.getOrPut(streamLoader.stream) { CompletableDeferred() }.complete(streamLoader)
     }
 
     override suspend fun getOrAwaitStreamLoader(

@@ -50,7 +50,8 @@ class ProcessRecordsTaskTest {
     ) : Batch
 
     class MockStreamLoader : StreamLoader {
-        override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
+        override val stream: DestinationStream.Descriptor =
+            MockDestinationCatalogFactory.stream1.descriptor
 
         data class SumAndCount(val sum: Long = 0, val count: Long = 0)
 
@@ -112,7 +113,7 @@ class ProcessRecordsTaskTest {
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = MockDestinationCatalogFactory.stream1,
+                stream = MockDestinationCatalogFactory.stream1.descriptor,
                 file = file
             )
         mockFile.outputStream().use { outputStream ->

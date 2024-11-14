@@ -36,10 +36,13 @@ import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
-    suspend fun handleStreamStarted(stream: DestinationStream)
-    suspend fun handleNewSpilledFile(stream: DestinationStream, file: SpilledRawMessagesLocalFile)
+    suspend fun handleStreamStarted(stream: DestinationStream.Descriptor)
+    suspend fun handleNewSpilledFile(
+        stream: DestinationStream.Descriptor,
+        file: SpilledRawMessagesLocalFile
+    )
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
-    suspend fun handleStreamClosed(stream: DestinationStream)
+    suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
     suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile)
 }
@@ -134,7 +137,7 @@ class DefaultDestinationTaskLauncher(
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
                 log.info { "Starting spill-to-disk task for $stream" }
-                val spillTask = spillToDiskTaskFactory.make(this, stream)
+                val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
                 enqueue(spillTask)
             }
         }
@@ -158,23 +161,23 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleSetupComplete() {
         catalog.streams.forEach {
             log.info { "Starting open stream task for $it" }
-            val openStreamTask = openStreamTaskFactory.make(this, it)
+            val openStreamTask = openStreamTaskFactory.make(this, it.descriptor)
             enqueue(openStreamTask)
         }
     }
 
     /** Called when a stream is ready for loading. */
-    override suspend fun handleStreamStarted(stream: DestinationStream) {
+    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         // Nothing to do because the SpillToDiskTask will trigger the next calls
-        log.info { "Stream ${stream.descriptor} successfully opened for writing." }
+        log.info { "Stream $stream successfully opened for writing." }
     }
 
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile
     ) {
-        log.info { "Starting process records task for ${stream.descriptor}, file $file" }
+        log.info { "Starting process records task for $stream, file $file" }
         val task = processRecordsTaskFactory.make(this, stream, file)
         enqueue(task)
         if (!file.endOfStream) {
@@ -223,7 +226,7 @@ class DefaultDestinationTaskLauncher(
     }
 
     /** Called when a stream is closed. */
-    override suspend fun handleStreamClosed(stream: DestinationStream) {
+    override suspend fun handleStreamClosed(stream: DestinationStream.Descriptor) {
         if (teardownIsEnqueued.setOnce()) {
             enqueue(teardownTaskFactory.make(this))
         } else {
