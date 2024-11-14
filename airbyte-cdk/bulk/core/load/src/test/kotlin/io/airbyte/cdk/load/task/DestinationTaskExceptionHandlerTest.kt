@@ -92,7 +92,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream = MockDestinationCatalogFactory.stream1.descriptor
+                override val streamDescriptor = MockDestinationCatalogFactory.stream1.descriptor
                 override suspend fun execute() {
                     throw RuntimeException("StreamTask failure")
                 }
@@ -199,7 +199,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream.Descriptor =
+                override val streamDescriptor: DestinationStream.Descriptor =
                     MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {
@@ -236,7 +236,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream.Descriptor =
+                override val streamDescriptor: DestinationStream.Descriptor =
                     MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {

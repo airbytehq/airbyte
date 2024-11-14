@@ -161,7 +161,7 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleSetupComplete() {
         catalog.streams.forEach {
             log.info { "Starting open stream task for $it" }
-            val openStreamTask = openStreamTaskFactory.make(this, it.descriptor)
+            val openStreamTask = openStreamTaskFactory.make(this, it)
             enqueue(openStreamTask)
         }
     }

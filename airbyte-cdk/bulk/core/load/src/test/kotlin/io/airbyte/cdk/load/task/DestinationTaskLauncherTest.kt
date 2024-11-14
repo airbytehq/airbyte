@@ -126,7 +126,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
-                override val stream: DestinationStream.Descriptor = stream
+                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -138,18 +138,18 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream.Descriptor, Channel<Unit>>()
+        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
 
         init {
-            catalog.streams.forEach { streamHasRun[it.descriptor] = Channel(Channel.UNLIMITED) }
+            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
         }
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream.Descriptor
+            stream: DestinationStream
         ): OpenStreamTask {
             return object : OpenStreamTask {
-                override val stream: DestinationStream.Descriptor = stream
+                override val streamDescriptor: DestinationStream.Descriptor = stream.descriptor
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -169,7 +169,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
-                override val stream: DestinationStream.Descriptor = stream
+                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -189,7 +189,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             batchEnvelope: BatchEnvelope<*>
         ): ProcessBatchTask {
             return object : ProcessBatchTask {
-                override val stream: DestinationStream.Descriptor = stream
+                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(batchEnvelope)
                 }
@@ -208,7 +208,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
-                override val stream: DestinationStream.Descriptor = stream
+                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }

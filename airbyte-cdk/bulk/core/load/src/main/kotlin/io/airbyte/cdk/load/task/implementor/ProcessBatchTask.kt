@@ -20,14 +20,14 @@ interface ProcessBatchTask : StreamLevel, ImplementorScope
 class DefaultProcessBatchTask(
     private val syncManager: SyncManager,
     private val batchEnvelope: BatchEnvelope<*>,
-    override val stream: DestinationStream.Descriptor,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         val nextBatch = streamLoader.processBatch(batchEnvelope.batch)
         val nextWrapped = batchEnvelope.withBatch(nextBatch)
-        taskLauncher.handleNewBatch(stream, nextWrapped)
+        taskLauncher.handleNewBatch(streamDescriptor, nextWrapped)
     }
 }
 

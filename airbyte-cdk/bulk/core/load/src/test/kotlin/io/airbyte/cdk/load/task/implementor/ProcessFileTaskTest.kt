@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -15,7 +19,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class ProcessFileTaskTest {
-    private val stream: DestinationStream.Descriptor = DestinationStream.Descriptor("namespace", "name")
+    private val stream: DestinationStream.Descriptor =
+        DestinationStream.Descriptor("namespace", "name")
     private val taskLauncher: DestinationTaskLauncher = mockk(relaxed = true)
     private val syncManager: SyncManager = mockk(relaxed = true)
     private val file: DestinationFile = mockk(relaxed = true)

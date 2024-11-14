@@ -30,7 +30,7 @@ sealed interface LeveledTask : Task
 interface SyncLevel : LeveledTask
 
 interface StreamLevel : LeveledTask {
-    val stream: DestinationStream.Descriptor
+    val streamDescriptor: DestinationStream.Descriptor
 }
 
 interface DestinationTaskExceptionHandler<T : Task, U : Task> : TaskExceptionHandler<T, U> {
@@ -159,7 +159,7 @@ T : ScopedTask {
     override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
         return when (task) {
             is SyncLevel -> SyncTaskWrapper(syncManager, task)
-            is StreamLevel -> StreamTaskWrapper(task.stream, syncManager, task)
+            is StreamLevel -> StreamTaskWrapper(task.streamDescriptor, syncManager, task)
             else -> throw IllegalArgumentException("Task without level: $task")
         }
     }

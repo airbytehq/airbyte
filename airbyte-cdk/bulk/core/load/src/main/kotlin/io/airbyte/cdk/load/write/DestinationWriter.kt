@@ -18,7 +18,7 @@ interface DestinationWriter {
     suspend fun setup() {}
 
     // Return a StreamLoader for the given stream
-    fun createStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
+    fun createStreamLoader(stream: DestinationStream): StreamLoader
 
     // Called once at the end of the job, unconditionally.
     // NOTE: we don't pass Success here, because it depends on this completing successfully.
@@ -34,7 +34,7 @@ class DefaultDestinationWriter : DestinationWriter {
         )
     }
 
-    override fun createStreamLoader(stream: DestinationStream.Descriptor): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         throw NotImplementedError()
     }
 }

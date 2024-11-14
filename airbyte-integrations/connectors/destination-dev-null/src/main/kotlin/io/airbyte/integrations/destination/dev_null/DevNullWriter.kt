@@ -23,7 +23,7 @@ import kotlinx.coroutines.delay
 class DevNullWriter(private val config: DevNullConfiguration) : DestinationWriter {
     private val log = KotlinLogging.logger {}
 
-    override fun createStreamLoader(stream: DestinationStream.Descriptor): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return when (config.type) {
             is Logging -> {
                 log.info {
@@ -53,10 +53,8 @@ class DevNullWriter(private val config: DevNullConfiguration) : DestinationWrite
     }
 }
 
-class LoggingStreamLoader(
-    override val stream: DestinationStream.Descriptor,
-    loggingConfig: Logging
-) : StreamLoader {
+class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig: Logging) :
+    StreamLoader {
     private val log = KotlinLogging.logger {}
 
     private val maxEntryCount: Int = loggingConfig.maxEntryCount
@@ -99,7 +97,7 @@ class LoggingStreamLoader(
     }
 }
 
-class SilentStreamLoader(override val stream: DestinationStream.Descriptor) : StreamLoader {
+class SilentStreamLoader(override val stream: DestinationStream) : StreamLoader {
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
         totalSizeBytes: Long
@@ -117,7 +115,7 @@ class SilentStreamLoader(override val stream: DestinationStream.Descriptor) : St
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 class ThrottledStreamLoader(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     private val millisPerRecord: Long
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
@@ -143,10 +141,8 @@ class ThrottledStreamLoader(
     }
 }
 
-class FailingStreamLoader(
-    override val stream: DestinationStream.Descriptor,
-    private val numMessages: Int
-) : StreamLoader {
+class FailingStreamLoader(override val stream: DestinationStream, private val numMessages: Int) :
+    StreamLoader {
     private val log = KotlinLogging.logger {}
 
     companion object {

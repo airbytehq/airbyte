@@ -40,7 +40,7 @@ class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
-    override val stream: DestinationStream.Descriptor,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -67,7 +67,11 @@ class DefaultSpillToDiskTask(
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
                                     val nextSize = sizeBytes + wrapped.sizeBytes
                                     val forceFlush =
-                                        flushStrategy.shouldFlush(stream, nextRange, nextSize)
+                                        flushStrategy.shouldFlush(
+                                            streamDescriptor,
+                                            nextRange,
+                                            nextSize
+                                        )
                                     ReadResult(nextRange, nextSize, forceFlush = forceFlush)
                                 }
                                 is StreamRecordCompleteWrapped -> {
@@ -93,7 +97,7 @@ class DefaultSpillToDiskTask(
         }
 
         val file = SpilledRawMessagesLocalFile(tmpFile, sizeBytes, range, endOfStream)
-        launcher.handleNewSpilledFile(stream, file)
+        launcher.handleNewSpilledFile(streamDescriptor, file)
     }
 }
 
