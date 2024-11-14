@@ -77,6 +77,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
@@ -119,6 +124,11 @@
               "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
               "title" : "Compression",
               "type" : "object"
+            },
+            "flattening" : {
+              "type" : "string",
+              "enum" : [ "No Flattening", "Root level flattening" ],
+              "title" : "Flattening"
             }
           },
           "required" : [ "format_type", "compression" ]
@@ -306,6 +316,12 @@
         "description" : "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files.",
         "title" : "S3 Staging Prefix",
         "examples" : [ "__staging/data_sync/test" ]
+      },
+      "max_concurrent_uploads" : {
+        "type" : "integer"
+      },
+      "upload_part_size" : {
+        "type" : "integer"
       }
     },
     "required" : [ "access_key_id", "secret_access_key", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "format" ]

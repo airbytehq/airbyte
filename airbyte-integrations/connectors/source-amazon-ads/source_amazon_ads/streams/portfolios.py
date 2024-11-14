@@ -13,6 +13,7 @@ class Portfolios(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios
     """
 
+    is_resumable = False
     primary_key = "portfolioId"
 
     def path(self, **kwargs) -> str:

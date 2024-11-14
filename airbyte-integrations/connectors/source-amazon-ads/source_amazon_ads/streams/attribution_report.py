@@ -53,6 +53,7 @@ class AttributionReport(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
     """
 
+    is_resumable = False
     primary_key = None
     data_field = "reports"
     page_size = 300

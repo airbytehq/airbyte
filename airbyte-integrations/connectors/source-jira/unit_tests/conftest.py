@@ -548,7 +548,7 @@ def mock_sprints_response(config, sprints_response):
 
 
 def find_stream(stream_name, config):
-    for stream in SourceJira().streams(config=config):
+    for stream in SourceJira(config=config, catalog=None, state=None).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")

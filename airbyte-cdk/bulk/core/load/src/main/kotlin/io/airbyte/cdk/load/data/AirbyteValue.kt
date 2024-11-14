@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
+import com.fasterxml.jackson.databind.JsonNode
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -161,4 +162,4 @@ value class ObjectValue(val values: LinkedHashMap<String, AirbyteValue>) : Airby
     }
 }
 
-@JvmInline value class UnknownValue(val what: String) : AirbyteValue
+@JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue

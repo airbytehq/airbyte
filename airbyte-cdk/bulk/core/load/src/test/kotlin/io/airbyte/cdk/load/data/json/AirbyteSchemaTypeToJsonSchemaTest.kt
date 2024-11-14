@@ -35,7 +35,7 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                     "friends" to ArrayType(FieldType(StringType, true)),
                     "mixed_array" to
                         ArrayType(
-                            FieldType(UnionType(listOf(StringType, IntegerType)), nullable = true)
+                            FieldType(UnionType.of(StringType, IntegerType), nullable = true)
                         ),
                     "address" to
                         ObjectType(
@@ -44,11 +44,10 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                                 "city" to FieldType(StringType, true)
                             )
                         ),
-                    "nonnullable_union" to UnionType(listOf(StringType)),
                     "combined_denormalized" to
                         ObjectType(linkedMapOf("name" to FieldType(StringType, true))),
                     "union_array" to
-                        ArrayType(FieldType(UnionType(listOf(StringType, IntegerType)), true)),
+                        ArrayType(FieldType(UnionType.of(StringType, IntegerType), true)),
                     "date" to DateType,
                     "time" to TimeTypeWithTimezone,
                     "time_without_timezone" to TimeTypeWithoutTimezone,
@@ -109,13 +108,6 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                   "type": "string"
                 }
               }
-            },
-            "nonnullable_union": {
-              "oneOf": [
-                {
-                  "type": "string"
-                }
-              ]
             },
             "combined_denormalized": {
               "type": "object",
