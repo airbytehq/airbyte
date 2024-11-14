@@ -77,7 +77,7 @@ class SourceAmazonAds(YamlDeclarativeSource):
         stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
             SponsoredDisplayReportStream,
-            SponsoredBrandsV3ReportStream,
+            # SponsoredBrandsV3ReportStream,
             SponsoredProductsReportStream,
         ]
         return super().streams(config=config) + [
