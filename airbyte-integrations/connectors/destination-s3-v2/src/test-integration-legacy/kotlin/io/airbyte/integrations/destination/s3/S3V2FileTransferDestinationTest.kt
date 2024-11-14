@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test
 private val LOGGER = KotlinLogging.logger {}
 
 class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
+    override val imageName: String = "airbyte/destination-s3-v2:dev"
     override val supportsFileTransfer = true
     override val formatConfig: JsonNode
         get() =

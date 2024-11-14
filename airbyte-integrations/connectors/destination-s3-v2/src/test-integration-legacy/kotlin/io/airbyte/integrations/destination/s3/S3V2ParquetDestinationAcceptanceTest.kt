@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers
 import org.junit.jupiter.api.Test
 
 class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
+    override val imageName: String = "airbyte/destination-s3-v2:dev"
     override fun getProtocolVersion(): ProtocolVersion {
         return ProtocolVersion.V1
     }
