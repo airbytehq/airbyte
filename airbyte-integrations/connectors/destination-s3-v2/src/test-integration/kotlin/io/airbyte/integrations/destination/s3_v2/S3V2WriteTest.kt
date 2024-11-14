@@ -181,6 +181,11 @@ class S3V2WriteTestAvroUncompressed :
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
+
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 }
 
 class S3V2WriteTestAvroBzip2 :
