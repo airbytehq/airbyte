@@ -73,8 +73,8 @@ class DefaultInputConsumerTask(
         sizeBytes: Long
     ) {
         val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream.descriptor)
-        val recordQueue = recordQueueSupplier.get(stream.descriptor)
+        val manager = syncManager.getStreamManager(stream)
+        val recordQueue = recordQueueSupplier.get(stream)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
