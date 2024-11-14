@@ -8,6 +8,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3BaseCsvGzipDestinationAccept
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 
 class S3V2CsvGzipDestinationAcceptanceTest : S3BaseCsvGzipDestinationAcceptanceTest() {
+    override val imageName: String = "airbyte/destination-s3-v2:dev"
     override fun getProtocolVersion(): ProtocolVersion {
         return ProtocolVersion.V1
     }
