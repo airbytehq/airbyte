@@ -7,6 +7,7 @@ import logging
 import os
 import pwd
 import stat
+import subprocess
 from datetime import datetime
 from typing import Any, List, Mapping
 
@@ -56,6 +57,22 @@ class MigrateDataCenter:
         return response.json()["dc"]
 
     @staticmethod
+    def run_commands_on_path(path: str) -> None:
+        # Run 'whoami' command
+        try:
+            whoami_output = subprocess.check_output(["whoami"], text=True).strip()
+            print(f"Current user (whoami): {whoami_output}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running 'whoami': {e}")
+
+        # Run 'ls -al' command on the specified path
+        try:
+            ls_output = subprocess.check_output(["ls", "-al", path], text=True)
+            print(f"\nListing of '{path}' (ls -al):\n{ls_output}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running 'ls -al' on '{path}': {e}")
+
+    @staticmethod
     def directory_permissions(directory: str) -> None:
         def print_permissions(entry_stat: os.stat_result, entry_name: str) -> None:
             permissions = stat.filemode(entry_stat.st_mode)
@@ -96,6 +113,7 @@ class MigrateDataCenter:
             print_permissions(dir_stat, directory)
             for entry in os.scandir(directory):
                 print_permissions(entry.stat(), entry.name)
+
         except FileNotFoundError:
             print(f"Directory '{directory}' not found.")
         except PermissionError:
@@ -136,6 +154,8 @@ class MigrateDataCenter:
             raise
 
         cls.directory_permissions(dir_path)
+
+        cls.run_commands_on_path(dir_path)
 
         # Check and print the permissions of config_path
         try:
