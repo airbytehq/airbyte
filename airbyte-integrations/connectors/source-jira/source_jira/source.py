@@ -71,12 +71,12 @@ class SourceJira(YamlDeclarativeSource):
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        return BasicHttpAuthenticator(config["email"], config["api_token"])
+        return BasicHttpAuthenticator(config.get("email"), config["api_token"])
 
     def get_non_portable_streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform_config(config.copy())
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+        args = {"authenticator": authenticator, "domain": config.get("domain"), "projects": config["projects"]}
         incremental_args = {
             **args,
             "start_date": config.get("start_date"),
