@@ -21,11 +21,11 @@ definitions:
           path: accounts
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -39,8 +39,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -60,12 +60,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -88,11 +88,11 @@ definitions:
           path: /accounts/{{ stream_partition['account_id'] }}/coupon_redemptions
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -106,8 +106,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -135,12 +135,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -163,11 +163,11 @@ definitions:
           path: /accounts/{{ stream_partition['account_id'] }}/notes
           http_method: GET
           request_parameters:
-            order: asc
             sort: created_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -181,8 +181,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -210,12 +210,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -238,11 +238,11 @@ definitions:
           path: /add_ons
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -256,8 +256,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -277,12 +277,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -305,11 +305,11 @@ definitions:
           path: /accounts/{{ stream_partition['account_id'] }}/billing_infos
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -323,8 +323,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -352,12 +352,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -380,11 +380,11 @@ definitions:
           path: coupons
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -398,8 +398,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -419,12 +419,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -447,11 +447,11 @@ definitions:
           path: credit_payments
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -465,8 +465,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -486,12 +486,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -512,8 +512,8 @@ definitions:
           path: export_dates
           http_method: GET
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -536,11 +536,11 @@ definitions:
           path: invoices
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -554,8 +554,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -575,12 +575,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -603,11 +603,11 @@ definitions:
           path: line_items
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -621,8 +621,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -642,12 +642,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -670,11 +670,11 @@ definitions:
           path: measured_units
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -688,8 +688,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -709,12 +709,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -737,11 +737,11 @@ definitions:
           path: plans
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -755,8 +755,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -776,12 +776,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -804,11 +804,11 @@ definitions:
           path: /accounts/{{ stream_partition['account_id'] }}/shipping_addresses
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -822,8 +822,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -851,12 +851,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -879,11 +879,11 @@ definitions:
           path: shipping_methods
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -897,8 +897,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -918,12 +918,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -946,11 +946,11 @@ definitions:
           path: subscriptions
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -964,8 +964,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -985,12 +985,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -1013,11 +1013,11 @@ definitions:
           path: transactions
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -1031,8 +1031,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1052,12 +1052,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -1080,11 +1080,11 @@ definitions:
           path: /coupons/{{ stream_partition['coupon_id'] }}/unique_coupon_codes
           http_method: GET
           request_parameters:
-            order: asc
             sort: updated_at
+            order: asc
           request_headers:
-            User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
             Content-Type: application/json
         record_selector:
           type: RecordSelector
@@ -1098,8 +1098,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -1112,13 +1112,7 @@ definitions:
               parent_key: id
               partition_field: coupon_id
               stream:
-                $ref: "#/definitions/streams/coupons"
-                retriever:
-                  $ref: "#/definitions/streams/coupons/retriever"
-                  record_selector:
-                    $ref: "#/definitions/streams/coupons/retriever/record_selector"
-                    record_filter:
-                      condition: "{{ record['coupon_type'] == 'bulk' }}"
+                $ref: "#/definitions/streams/unique_coupons_parent"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1133,12 +1127,12 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: begin_time
+          inject_into: request_parameter
         end_time_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: end_time
+          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -1149,6 +1143,76 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/unique_coupons"
+    unique_coupons_parent:
+      type: DeclarativeStream
+      name: unique_coupons_parent
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: coupons
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['coupon_type'] == 'bulk' }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['begin_time'] if config['begin_time'] else (now_utc() -
+            duration('P5Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_time'] if config['end_time'] else
+            now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unique_coupons_parent"
   base_requester:
     type: HttpRequester
     url_base: https://v3.recurly.com
@@ -1174,6 +1238,7 @@ streams:
   - $ref: "#/definitions/streams/subscriptions"
   - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/unique_coupons"
+  - $ref: "#/definitions/streams/unique_coupons_parent"
 
 spec:
   type: Spec
@@ -1189,27 +1254,27 @@ spec:
           Recurly API Key. See the  <a
           href="https://docs.airbyte.com/integrations/sources/recurly">docs</a>
           for more information on how to generate this key.
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       begin_time:
         type: string
         description: >-
           ISO8601 timestamp from which the replication from Recurly API will
           start from.
+        order: 1
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         examples:
           - "2021-12-01T00:00:00"
-        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
-        order: 1
       end_time:
         type: string
         description: >-
           ISO8601 timestamp to which the replication from Recurly API will stop.
           Records after that date won't be imported.
+        order: 2
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         examples:
           - "2021-12-01T00:00:00"
-        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -1231,6 +1296,7 @@ metadata:
     subscriptions: false
     transactions: false
     unique_coupons: false
+    unique_coupons_parent: false
   yamlComponents:
     streams:
       export_dates:
@@ -1239,12 +1305,46 @@ metadata:
       - authenticator
   testedStreams:
     accounts:
+      hasRecords: false
       streamHash: 11d3bfcfbacd601ab5efcc68218a6cdef23b6f47
       hasResponse: true
-      responsesAreSuccessful: false
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: false
+    account_coupon_redemptions:
+      streamHash: d724e45e08324b43a94e0e500e664403fe80332c
+    account_notes:
+      streamHash: 9db06dff3323ea995b085cf95342db9b2029bb7c
+    add_ons:
+      streamHash: 94072f96983e4e96f54c7baaa24b0375f57331e1
+    billing_infos:
+      streamHash: f8f164bc26871caaa7fd5cd8ca27310eec6dcfcc
+    coupons:
+      streamHash: 4d8f143623054d6cf60e5e350d8b476830a29840
+    credit_payments:
+      streamHash: 434c5210f63cdd1583ecc09d1b606a5e453e3932
+    export_dates:
+      streamHash: d0aade1accdb8ac55ebc1669020c001b02fb3307
+    invoices:
+      streamHash: 8bd7d5dd7d691a0198ad949b14a637af241e3525
+    line_items:
+      streamHash: 1542034779aaf8c8dae770fd352618fbe3543b90
+    measured_units:
+      streamHash: a07fb60b432098f1cada954a3830c698ae37a21c
+    plans:
+      streamHash: b8d262d1c35ffeae577ca07dfe497cd16c81ecef
+    shipping_addresses:
+      streamHash: 8c103ffaa8b1b579b830aaf66df7d20cbf96cf7e
+    shipping_methods:
+      streamHash: 26109dca0fcc6c5c236b80f42caf2db14472d433
+    subscriptions:
+      streamHash: ddab1a73c61da0588d7af3f3f28acdeb0f683a48
+    transactions:
+      streamHash: a4690ee75cbd87be5f86185f97b4e7e4132a9c1f
+    unique_coupons:
+      streamHash: 77350b0ed677a69005a8a776d424b298df028776
+    unique_coupons_parent:
+      streamHash: null
   assist: {}
 
 schemas:
@@ -6455,3 +6555,286 @@ schemas:
         format: date-time
         readOnly: true
         title: Updated at
+  unique_coupons_parent:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      applies_to_all_items:
+        type:
+          - "null"
+          - boolean
+      applies_to_all_plans:
+        type:
+          - "null"
+          - boolean
+      applies_to_non_plan_charges:
+        type:
+          - "null"
+          - boolean
+      code:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      coupon_type:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      discount:
+        type:
+          - "null"
+          - object
+        description: >
+          Details of the discount a coupon applies. Will contain a `type`
+
+          property and one of the following properties: `percent`, `fixed`,
+          `trial`.
+        properties:
+          type:
+            type: string
+            maxLength: 256
+          currencies:
+            type: array
+            description: This is only present when `type=fixed`.
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type: number
+                  description: Value of the fixed discount that this coupon applies.
+                  format: float
+                  title: Discount Amount
+                currency:
+                  type: string
+                  description: 3-letter ISO 4217 currency code.
+                  maxLength: 3
+                  title: Currency
+          percent:
+            type: integer
+            description: This is only present when `type=percent`.
+          trial:
+            type: object
+            description: This is only present when `type=free_trial`.
+            properties:
+              length:
+                type: integer
+                description: >-
+                  Trial length measured in the units specified by the sibling
+                  `unit` property
+                title: Trial length
+              unit:
+                type: string
+                description: Temporal unit of the free trial
+                maxLength: 256
+                title: Trial unit
+      duration:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      expired_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      free_trial_amount:
+        type:
+          - "null"
+          - number
+      free_trial_unit:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      hosted_page_description:
+        type:
+          - "null"
+          - string
+        maxLength: 1024
+      id:
+        type:
+          - "null"
+          - string
+        maxLength: 13
+      invoice_description:
+        type:
+          - "null"
+          - string
+        maxLength: 1024
+      items:
+        type:
+          - "null"
+          - array
+        description: |
+          A list of items for which this coupon applies. This will be
+          `null` if `applies_to_all_items=true`.
+        items:
+          type:
+            - "null"
+            - object
+          description: Just the important parts.
+          properties:
+            id:
+              type: string
+              maxLength: 13
+              readOnly: true
+              title: Item ID
+          title: Item mini details
+        title: Items
+      max_redemptions:
+        type:
+          - "null"
+          - number
+      max_redemptions_per_account:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      object:
+        type:
+          - "null"
+          - string
+      plans:
+        type:
+          - "null"
+          - array
+        description: >-
+          A list of plans for which this coupon applies. This will be `null` if
+          `applies_to_all_plans=true`.
+        items:
+          type: object
+          description: Just the important parts.
+          properties:
+            code:
+              type: string
+              description: >-
+                Unique code to identify the plan. This is used in Hosted Payment
+                Page URLs and in the invoice exports.
+              maxLength: 13
+              title: Plan code
+            id:
+              type: string
+              maxLength: 13
+              readOnly: true
+              title: Plan ID
+          title: Plan mini details
+        title: Plans
+      redeem_by:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      redemption_resource:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      state:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      temporal_amount:
+        type:
+          - "null"
+          - number
+      temporal_unit:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      unique_code_template:
+        type:
+          - "null"
+          - string
+        maxLength: 256
+      unique_coupon_code:
+        type:
+          - "null"
+          - object
+        description: A unique coupon code for a bulk coupon.
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          bulk_coupon_code:
+            type:
+              - "null"
+              - string
+            description: The Coupon code of the parent Bulk Coupon
+            maxLength: 256
+            title: Bulk Coupon code
+          bulk_coupon_id:
+            type:
+              - "null"
+              - string
+            description: The Coupon ID of the parent Bulk Coupon
+            maxLength: 13
+            readOnly: true
+            title: Bulk Coupon ID
+          code:
+            type: string
+            description: The code the customer enters to redeem the coupon.
+            maxLength: 256
+            title: Coupon code
+          created_at:
+            type: string
+            format: date-time
+            readOnly: true
+            title: Created at
+          expired_at:
+            type:
+              - "null"
+              - string
+            description: >-
+              The date and time the coupon was expired early or reached its
+              `max_redemptions`.
+            format: date-time
+            title: Expired at
+          id:
+            type: string
+            maxLength: 13
+            readOnly: true
+            title: Unique Coupon Code ID
+          object:
+            type: string
+          redeemed_at:
+            type:
+              - "null"
+              - string
+            description: The date and time the unique coupon code was redeemed.
+            format: date-time
+            readOnly: true
+            title: Redeemed at
+          state:
+            type:
+              - "null"
+              - string
+            description: Indicates if the unique coupon code is redeemable or why not.
+            maxLength: 256
+            title: State
+          updated_at:
+            type: string
+            format: date-time
+            readOnly: true
+            title: Updated at
+      unique_coupon_codes_count:
+        type:
+          - "null"
+          - number
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
