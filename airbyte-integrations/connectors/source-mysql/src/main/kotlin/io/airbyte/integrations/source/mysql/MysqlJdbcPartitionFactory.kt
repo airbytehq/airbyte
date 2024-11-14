@@ -306,6 +306,7 @@ class MysqlJdbcPartitionFactory(
                                 DateTimeFormatter.ofPattern(timestampInStatePattern)
                             Jsons.valueToTree(
                                 LocalDateTime.parse(stateValue, formatter)
+                                    .minusDays(1)
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )

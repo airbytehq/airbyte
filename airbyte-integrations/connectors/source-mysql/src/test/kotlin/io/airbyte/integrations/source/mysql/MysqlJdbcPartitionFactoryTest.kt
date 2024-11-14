@@ -209,7 +209,7 @@ class MysqlJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
 
         assertEquals(
-            Jsons.valueToTree("2025-09-03T05:23:35.000000Z"),
+            Jsons.valueToTree("2025-09-02T05:23:35.000000Z"),
             (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
