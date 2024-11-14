@@ -5,7 +5,9 @@
 
 import logging
 import os
+import pwd
 import stat
+from datetime import datetime
 from typing import Any, List, Mapping
 
 import requests
@@ -53,6 +55,52 @@ class MigrateDataCenter:
             )
         return response.json()["dc"]
 
+    @staticmethod
+    def directory_permissions(directory: str) -> None:
+        def print_permissions(entry_stat: os.stat_result, entry_name: str) -> None:
+            permissions = stat.filemode(entry_stat.st_mode)
+
+            # Get owner and group names with error handling for missing entries
+            try:
+                owner = pwd.getpwuid(entry_stat.st_uid).pw_name
+            except KeyError:
+                owner = f"UID {entry_stat.st_uid}"
+
+            try:
+                group = pwd.getpwuid(entry_stat.st_gid).pw_name
+            except KeyError:
+                group = f"GID {entry_stat.st_gid}"
+
+            size = entry_stat.st_size
+            mtime = datetime.fromtimestamp(entry_stat.st_mtime).strftime("%b %d %H:%M")
+
+            message = f"{permissions} {owner} {group} {size} {mtime} {entry_name}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+
+        # Convert to absolute path if a relative path is provided
+        if not os.path.isabs(directory):
+            directory = os.path.abspath(directory)
+
+        # Equivalent to `whoami`
+        try:
+            current_user = pwd.getpwuid(os.getuid()).pw_name
+            message = f"Current user (whoami): {current_user}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+        except KeyError:
+            print("Unable to determine the current user")
+
+        print(f"\nListing of '{directory}'")
+
+        try:
+            dir_stat = os.stat(directory)
+            print_permissions(dir_stat, directory)
+            for entry in os.scandir(directory):
+                print_permissions(entry.stat(), entry.name)
+        except FileNotFoundError:
+            print(f"Directory '{directory}' not found.")
+        except PermissionError:
+            print(f"Permission denied to access '{directory}'.")
+
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -86,6 +134,8 @@ class MigrateDataCenter:
             error_message = f"Directory not found: {dir_path}"
             print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message)).json())
             raise
+
+        cls.directory_permissions(dir_path)
 
         # Check and print the permissions of config_path
         try:
