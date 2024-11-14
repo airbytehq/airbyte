@@ -9,6 +9,8 @@ import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 
 class S3V2AvroDestinationAcceptanceTest : S3BaseAvroDestinationAcceptanceTest() {
+    override val imageName: String = "airbyte/destination-s3-v2:dev"
+
     override fun getProtocolVersion(): ProtocolVersion {
         return ProtocolVersion.V1
     }
