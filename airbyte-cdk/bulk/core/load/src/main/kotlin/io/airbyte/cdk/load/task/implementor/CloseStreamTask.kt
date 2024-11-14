@@ -21,20 +21,23 @@ interface CloseStreamTask : StreamLevel, ImplementorScope
  */
 class DefaultCloseStreamTask(
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : CloseStreamTask {
 
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream)
         streamLoader.close()
-        syncManager.getStreamManager(stream.descriptor).markSucceeded()
+        syncManager.getStreamManager(stream).markSucceeded()
         taskLauncher.handleStreamClosed(streamLoader.stream)
     }
 }
 
 interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): CloseStreamTask
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream.Descriptor
+    ): CloseStreamTask
 }
 
 @Singleton
@@ -42,7 +45,7 @@ interface CloseStreamTaskFactory {
 class DefaultCloseStreamTaskFactory(private val syncManager: SyncManager) : CloseStreamTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        stream: DestinationStream.Descriptor
     ): CloseStreamTask {
         return DefaultCloseStreamTask(syncManager, stream, taskLauncher)
     }

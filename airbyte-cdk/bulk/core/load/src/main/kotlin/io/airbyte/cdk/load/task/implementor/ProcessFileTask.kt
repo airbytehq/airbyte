@@ -18,7 +18,7 @@ import jakarta.inject.Singleton
 interface ProcessFileTask : StreamLevel, ImplementorScope
 
 class DefaultProcessFileTask(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
     private val file: DestinationFile
@@ -26,7 +26,7 @@ class DefaultProcessFileTask(
     val log = KotlinLogging.logger {}
 
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream)
 
         val batch = streamLoader.processFile(file)
 
@@ -38,7 +38,7 @@ class DefaultProcessFileTask(
 interface ProcessFileTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: DestinationFile,
     ): ProcessFileTask
 }
@@ -50,7 +50,7 @@ class DefaultFileRecordsTaskFactory(
 ) : ProcessFileTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: DestinationFile,
     ): ProcessFileTask {
         return DefaultProcessFileTask(stream, taskLauncher, syncManager, file)
