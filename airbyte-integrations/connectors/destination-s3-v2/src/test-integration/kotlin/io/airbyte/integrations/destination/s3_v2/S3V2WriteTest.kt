@@ -13,6 +13,9 @@ import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+val avroAllTypesBehavior =
+    StronglyTyped(topLevelFloatLosesPrecision = false, nestedFloatLosesPrecision = false)
+
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -174,7 +177,7 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = avroAllTypesBehavior,
         nullEqualsUnset = true,
     ) {
     @Test
@@ -194,7 +197,7 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = avroAllTypesBehavior,
         nullEqualsUnset = true,
     ) {
     @Test
