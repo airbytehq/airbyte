@@ -1,27 +1,25 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
-from typing import TYPE_CHECKING, Any, Mapping, List, Optional, Union, Dict
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 import dpath
-from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString, InterpolatedBoolean
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
-from abc import abstractmethod
-from dataclasses import dataclass
-from typing import Any, Mapping
+
 if TYPE_CHECKING:
     from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
 class ComponentsParser:
-
     @abstractmethod
     def parse_stream_components(self, stream_template_config: Dict[str, Any]):
         pass
@@ -74,7 +72,12 @@ class DynamicComponentsParser(ComponentsParser):
                     )
             else:
                 self._parsed_components_mapping.append(
-                    ParsedMapComponentsDefinition(component_mapping.key, component_mapping.value, condition=InterpolatedBoolean(condition=condition, parameters=parameters), parameters={})
+                    ParsedMapComponentsDefinition(
+                        component_mapping.key,
+                        component_mapping.value,
+                        condition=InterpolatedBoolean(condition=condition, parameters=parameters),
+                        parameters={},
+                    )
                 )
 
     def _update_config_specific_key(self, target_dict, target_key, target_value, interpolated_condition=None, **kwargs):
@@ -88,15 +91,16 @@ class DynamicComponentsParser(ComponentsParser):
                 target_dict[key] = self._update_config_specific_key(value, target_key, target_value, interpolated_condition, **kwargs)
             elif isinstance(value, list):
                 target_dict[key] = [
-                    self._update_config_specific_key(item, target_key, target_value, interpolated_condition, **kwargs) if isinstance(item, dict) else item for item in value
+                    self._update_config_specific_key(item, target_key, target_value, interpolated_condition, **kwargs)
+                    if isinstance(item, dict)
+                    else item
+                    for item in value
                 ]
 
         return target_dict
 
     def parse_stream_components(self, stream_template_config: Dict[str, Any]) -> Dict[str, Any]:
-        kwargs = {
-            "stream_template_config": stream_template_config
-        }
+        kwargs = {"stream_template_config": stream_template_config}
 
         for components_value in self.components_values_stream.read_only_records():
             updated_config = deepcopy(stream_template_config)
@@ -112,7 +116,3 @@ class DynamicComponentsParser(ComponentsParser):
                 )
 
             yield updated_config
-
-
-
-

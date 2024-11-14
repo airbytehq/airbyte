@@ -60,7 +60,5 @@ definitions:
       Client: "#/definitions/oauth_authenticator"
       Service: "#/definitions/bearer_authenticator"
 
-
-
 streams:
   - $ref: "#/definitions/streams/custom_object"

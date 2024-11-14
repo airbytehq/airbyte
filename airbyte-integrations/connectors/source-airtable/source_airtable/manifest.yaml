@@ -87,7 +87,7 @@ definitions:
             record_selector:
               extractor:
                 type: DpathExtractor
-                field_path: [ "tables" ]
+                field_path: ["tables"]
               record_filter:
                 condition: "{{ record['id'] == parameters['table_id'] }}"
         schema_pointer: ["fields"]
@@ -120,8 +120,6 @@ definitions:
     authenticators:
       oauth2: "#/definitions/oauth_authenticator"
       api_key: "#/definitions/bearer_authenticator"
-
-
 
 streams:
   - $ref: "#/definitions/streams/custom_object"

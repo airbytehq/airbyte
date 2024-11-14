@@ -6,11 +6,10 @@
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.models import SyncMode
 
 from .auth import AirtableAuth
 from .schema_helpers import SchemaHelpers

@@ -246,7 +246,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
             if "type" not in stream_template_config:
                 stream_template_config["type"] = "DeclarativeStream"
 
-            stream_configs = [stream_config for stream_config in components_parser.parse_stream_components(stream_template_config=stream_template_config)]
+            stream_configs = [
+                stream_config for stream_config in components_parser.parse_stream_components(stream_template_config=stream_template_config)
+            ]
         return stream_configs
 
     def _emit_manifest_debug_message(self, extra_args: dict[str, Any]) -> None:
