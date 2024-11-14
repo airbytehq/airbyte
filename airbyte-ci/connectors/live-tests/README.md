@@ -179,13 +179,22 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.3
+Update `get_container_from_id` with the correct new Dagger API.
+
+### 0.19.2
+Update Dagger to 0.13.3
+### 0.19.1
+
+Fixed the `UserDict` type annotation not found bug.
+
 ### 0.19.0
 
 Delete the `debug`command.
 
 ### 0.18.8
 
-Improve error message when failing to retrieve connection. 
+Improve error message when failing to retrieve connection.
 Ask to double-check that a sync ran with the control version on the selected connection.
 
 ### 0.18.7

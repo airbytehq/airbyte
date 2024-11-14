@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "adGroupId": { "type": ["null", "integer"] },
+    "suggestedKeywords": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "keywordText": { "type": ["null", "string"] },
+          "matchType": { "type": ["null", "string"] }
+        }
+      }
+    }
+  },
+  "title": "sponsored_product_ad_group_suggested_keywords",
+  "type": ["null", "object"]
+}

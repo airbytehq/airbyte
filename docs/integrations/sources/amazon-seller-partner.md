@@ -229,7 +229,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.5.0   | 2024-02-15 | [#](https://github.com/airbytehq/airbyte/pull/) | Add `VendorOrdersStatus` stream  
+| 4.5.0 | 2024-02-15 | [46332](https://github.com/airbytehq/airbyte/pull/46332) | Add `VendorOrdersStatus` stream  
 | 4.4.4 | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817) | Update dependencies |
 | 4.4.3 | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473) | Update dependencies |
 | 4.4.2 | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748) | Update dependencies |

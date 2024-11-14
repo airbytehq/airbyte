@@ -7,9 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import dagger
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
@@ -35,17 +34,6 @@ CHANGELOG_ENTRY_COMMENT = "Update dependencies"
 
 
 ## HELPER FUNCTIONS
-async def export_modified_files(
-    step_with_modified_files: UpdateBaseImageMetadata | PoetryUpdate | BumpConnectorVersion | AddChangelogEntry,
-    directory_modified_by_step: dagger.Directory,
-    export_to_directory: Path,
-) -> Set[Path]:
-    modified_files = set()
-    for modified_file in step_with_modified_files.modified_files:
-        local_path = export_to_directory / modified_file
-        await directory_modified_by_step.file(str(modified_file)).export(str(local_path))
-        modified_files.add(local_path)
-    return modified_files
 
 
 def get_pr_body(context: ConnectorContext, step_results: Iterable[StepResult], dependency_updates: Iterable[DependencyUpdate]) -> str:
@@ -96,43 +84,38 @@ async def run_connector_up_to_date_pipeline(
             new_version: str | None = None
 
             connector_directory = await context.get_connector_dir()
-            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory=connector_directory)
+            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory)
             upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
             step_results.append(upgrade_base_image_in_metadata_result)
             if upgrade_base_image_in_metadata_result.success:
                 connector_directory = upgrade_base_image_in_metadata_result.output
-                exported_modified_files = await export_modified_files(
-                    upgrade_base_image_in_metadata, connector_directory, context.connector.code_directory
-                )
+                exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(context.connector.code_directory)
                 context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
                 all_modified_files.update(exported_modified_files)
+                connector_directory = upgrade_base_image_in_metadata_result.output
 
             if context.connector.is_using_poetry:
                 # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
-                poetry_update = PoetryUpdate(context, specific_dependencies=specific_dependencies, connector_directory=connector_directory)
+                poetry_update = PoetryUpdate(context, connector_directory, specific_dependencies=specific_dependencies)
                 poetry_update_result = await poetry_update.run()
                 step_results.append(poetry_update_result)
                 if poetry_update_result.success:
-                    connector_directory = poetry_update_result.output
-                    exported_modified_files = await export_modified_files(
-                        poetry_update, connector_directory, context.connector.code_directory
-                    )
+                    exported_modified_files = await poetry_update.export_modified_files(context.connector.code_directory)
                     context.logger.info(f"Exported files following the Poetry update: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
+                    connector_directory = poetry_update_result.output
 
             one_previous_step_is_successful = any(step_result.success for step_result in step_results)
 
             # NOTE:
             # BumpConnectorVersion will already work for manifest-only and Java connectors too
             if bump_connector_version and one_previous_step_is_successful:
-                bump_version = BumpConnectorVersion(context, BUMP_TYPE, connector_directory=connector_directory)
+                bump_version = BumpConnectorVersion(context, connector_directory, BUMP_TYPE)
                 bump_version_result = await bump_version.run()
                 step_results.append(bump_version_result)
                 if bump_version_result.success:
                     new_version = bump_version.new_version
-                    exported_modified_files = await export_modified_files(
-                        bump_version, bump_version_result.output, context.connector.code_directory
-                    )
+                    exported_modified_files = await bump_version.export_modified_files(context.connector.code_directory)
                     context.logger.info(f"Exported files following the version bump: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
 
@@ -143,7 +126,7 @@ async def run_connector_up_to_date_pipeline(
             # to fill the PR body with the correct information about what exactly got updated.
             if create_pull_request:
                 # Building connector images is also universal across connector technologies.
-                build_result = await BuildConnectorImages(context).run()
+                build_result = await run_connector_build(context)
                 step_results.append(build_result)
                 dependency_updates: List[DependencyUpdate] = []
 
@@ -171,12 +154,19 @@ async def run_connector_up_to_date_pipeline(
                     created_pr = initial_pr_creation_result.output
 
             if new_version and created_pr:
-                add_changelog_entry = AddChangelogEntry(context, new_version, CHANGELOG_ENTRY_COMMENT, created_pr.number)
+                documentation_directory = await context.get_repo_dir(
+                    include=[str(context.connector.local_connector_documentation_directory)]
+                ).directory(str(context.connector.local_connector_documentation_directory))
+                add_changelog_entry = AddChangelogEntry(
+                    context, documentation_directory, new_version, CHANGELOG_ENTRY_COMMENT, created_pr.number
+                )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 step_results.append(add_changelog_entry_result)
                 if add_changelog_entry_result.success:
                     # File path modified by the changelog entry step are relative to the repo root
-                    exported_modified_files = await export_modified_files(add_changelog_entry, add_changelog_entry_result.output, Path("."))
+                    exported_modified_files = await add_changelog_entry.export_modified_files(
+                        context.connector.local_connector_documentation_directory
+                    )
                     context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS

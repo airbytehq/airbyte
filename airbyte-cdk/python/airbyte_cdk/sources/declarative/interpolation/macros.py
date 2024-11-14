@@ -37,6 +37,16 @@ def today_utc() -> datetime.date:
     return datetime.datetime.now(datetime.timezone.utc).date()
 
 
+def today_with_timezone(timezone: str) -> datetime.date:
+    """
+    Current date in custom timezone
+
+    :param timezone: timezone expressed as IANA keys format. Example: "Pacific/Tarawa"
+    :return:
+    """
+    return datetime.datetime.now(tz=pytz.timezone(timezone)).date()
+
+
 def timestamp(dt: Union[float, str]) -> Union[int, float]:
     """
     Converts a number or a string to a timestamp
@@ -126,5 +136,5 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str, input_format
     return dt_datetime.strftime(format)
 
 
-_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime, today_with_timezone]
 macros = {f.__name__: f for f in _macros_list}
