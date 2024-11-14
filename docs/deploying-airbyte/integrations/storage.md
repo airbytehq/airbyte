@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 # State and Logging Storage
 
 Airbyte recommends using an object storage solution for such as S3 and GCS for storing [State](../../understanding-airbyte/airbyte-protocol/#state--checkpointing) and [Logging information](../../operator-guides/browsing-output-logs).
-You must select which type of blob store that you wish to use. Currently, S3 and GCS are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
+You must select which type of blob store that you wish to use. Currently, S3, GCS, and Azure are supported. If you are using an S3 compatible solution, use the S3 type and provide an `endpoint` key/value as needed.
 
 Adding external storage details to your `values.yaml` disables the default internal Minio instance (`airbyte/minio`). While there are three separate buckets presented in the Values section below, Airbyte recommends that you use a single bucket across all three values.
 
@@ -40,18 +40,19 @@ metadata:
   name: airbyte-config-secrets
 type: Opaque
 stringData:
-  gcp.json: ## {
-  "type": "service_account",
-  "project_id": "cloud-proj",
-  "private_key_id": "2f3b9c8e7d5a1b4f23e697c0d84af6e1",
-  "private_key": "-----BEGIN PRIVATE KEY-----<REDACTED>\n-----END PRIVATE KEY-----\n",
-  "client_email": "cloud-proj.iam.gserviceaccount.com",
-  "client_id": "9876543210987654321",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
-}
+  gcp.json: |
+  {
+    "type": "service_account",
+    "project_id": "cloud-proj",
+    "private_key_id": "2f3b9c8e7d5a1b4f23e697c0d84af6e1",
+    "private_key": "-----BEGIN PRIVATE KEY-----<REDACTED>\n-----END PRIVATE KEY-----\n",
+    "client_email": "cloud-proj.iam.gserviceaccount.com",
+    "client_id": "9876543210987654321",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
+  }
 ```
 </TabItem>
 
@@ -84,7 +85,7 @@ Ensure you've already created a Kubernetes secret containing both your S3 access
 global:
   storage:
     type: "S3"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
@@ -105,7 +106,7 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   storage:
     type: "GCS"
-    storageSecretName: airbyte-config-secrets
+    secretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
@@ -123,7 +124,7 @@ global:
 global:
   storage:
     type: "Azure"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
