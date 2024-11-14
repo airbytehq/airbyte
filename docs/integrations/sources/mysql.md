@@ -226,7 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:-----------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.9.0-rc.4 | 2024-11-05 | [48369](https://github.com/airbytehq/airbyte/pull/48369)   | Progressive rollout test.                                                                                                                       |
+| 3.9.0-rc.5 | 2024-11-05 | [48369](https://github.com/airbytehq/airbyte/pull/48369)   | Progressive rollout test.                                                                                                                       |
 | 3.7.3      | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639)   | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests.                                                            |
 | 3.7.2      | 2024-09-05 | [45181](https://github.com/airbytehq/airbyte/pull/45181)   | Fix incorrect categorizing resumable/nonresumable full refresh streams.                                                                         |
 | 3.7.1      | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK.                                                                                                                               |

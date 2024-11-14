@@ -5,18 +5,13 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
- * Releasable reservation of memory. For large blocks (ie, from [MemoryManager.reserveRatio],
- * provides a submanager that can be used to manage allocating the reservation).
- */
+/** Releasable reservation of memory. */
 class Reserved<T>(
     private val memoryManager: MemoryManager,
     val bytesReserved: Long,
@@ -30,8 +25,6 @@ class Reserved<T>(
         }
         memoryManager.release(bytesReserved)
     }
-
-    fun getReservationManager(): MemoryManager = MemoryManager(bytesReserved)
 
     fun <U> replace(value: U): Reserved<U> = Reserved(memoryManager, bytesReserved, value)
 
@@ -47,18 +40,8 @@ class Reserved<T>(
  *
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
-@Singleton
-class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
-    // This is slightly awkward, but Micronaut only injects the primary constructor
-    constructor(
-        availableMemory: Long
-    ) : this(
-        object : AvailableMemoryProvider {
-            override val availableMemoryBytes: Long = availableMemory
-        }
-    )
+class MemoryManager(val totalMemoryBytes: Long) {
 
-    private val totalMemoryBytes = availableMemoryProvider.availableMemoryBytes
     private var usedMemoryBytes = AtomicLong(0L)
     private val mutex = Mutex()
     private val syncChannel = Channel<Unit>(Channel.UNLIMITED)
@@ -67,7 +50,7 @@ class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
         get() = totalMemoryBytes - usedMemoryBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-    suspend fun <T> reserveBlocking(memoryBytes: Long, reservedFor: T): Reserved<T> {
+    suspend fun <T> reserve(memoryBytes: Long, reservedFor: T): Reserved<T> {
         if (memoryBytes > totalMemoryBytes) {
             throw IllegalArgumentException(
                 "Requested ${memoryBytes}b memory exceeds ${totalMemoryBytes}b total"
@@ -84,23 +67,8 @@ class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
         }
     }
 
-    suspend fun <T> reserveRatio(ratio: Double, reservedFor: T): Reserved<T> {
-        val estimatedSize = (totalMemoryBytes.toDouble() * ratio).toLong()
-        return reserveBlocking(estimatedSize, reservedFor)
-    }
-
     suspend fun release(memoryBytes: Long) {
         usedMemoryBytes.addAndGet(-memoryBytes)
         syncChannel.send(Unit)
     }
-}
-
-interface AvailableMemoryProvider {
-    val availableMemoryBytes: Long
-}
-
-@Singleton
-@Secondary
-class JavaRuntimeAvailableMemoryProvider : AvailableMemoryProvider {
-    override val availableMemoryBytes: Long = Runtime.getRuntime().maxMemory()
 }
