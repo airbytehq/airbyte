@@ -25,6 +25,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
@@ -118,9 +119,9 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
     override suspend fun processFile(file: DestinationFile): Batch {
         val key =
-            pathFactory
-                .getPathToFile(stream, partNumber = null, isStaging = pathFactory.supportsStaging)
+            Path.of(pathFactory.getStagingDirectory(stream).toString(), file.fileMessage.fileUrl!!)
                 .toString()
+
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->

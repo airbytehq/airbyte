@@ -26,19 +26,19 @@ class DevNullWriter(private val config: DevNullConfiguration) : DestinationWrite
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return when (config.type) {
             is Logging -> {
-                log.info { "Creating LoggingStreamLoader for LoggingDestination" }
+                log.info { "Creating LoggingStreamLoader for LoggingDestination. The File messages will be ignored" }
                 LoggingStreamLoader(stream, config.type)
             }
             is Silent -> {
-                log.info { "Creating SilentStreamLoader for SilentDestination" }
+                log.info { "Creating SilentStreamLoader for SilentDestination. The File messages will be ignored" }
                 SilentStreamLoader(stream)
             }
             is Throttled -> {
-                log.info { "Creating ThrottledStreamLoader for ThrottledDestination" }
+                log.info { "Creating ThrottledStreamLoader for ThrottledDestination. The File messages will be ignored" }
                 ThrottledStreamLoader(stream, config.type.millisPerRecord)
             }
             is Failing -> {
-                log.info { "Creating FailingStreamLoader for FailingDestination" }
+                log.info { "Creating FailingStreamLoader for FailingDestination. The File messages will be ignored" }
                 FailingStreamLoader(stream, config.type.numMessages)
             }
         }
@@ -83,17 +83,7 @@ class LoggingStreamLoader(override val stream: DestinationStream, loggingConfig:
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
-        log.info { "Processing file with logging" }
-
-        if (sampleRate == 1.0 || prng.nextDouble() < sampleRate) {
-            if (logCount.incrementAndGet() < maxEntryCount) {
-                log.info {
-                    "Logging Destination(stream=${stream.descriptor}, recordIndex=$recordCount, logEntry=$logCount/$maxEntryCount): $file"
-                }
-            }
-        }
-
-        log.info { "Completed file." }
+        log.info { "Ignoring file" }
 
         return SimpleBatch(state = Batch.State.COMPLETE)
     }
@@ -136,7 +126,6 @@ class ThrottledStreamLoader(
 
     override suspend fun processFile(file: DestinationFile): Batch {
         log.info { "Processing a file with delay of $millisPerRecord" }
-
         delay(millisPerRecord)
         log.info { "Completed file." }
 
