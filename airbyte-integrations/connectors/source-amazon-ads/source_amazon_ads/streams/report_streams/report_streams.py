@@ -307,9 +307,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def state(self, value):
         self._state = deepcopy(value)
 
-    def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self._state
-
     def _update_state(self, profile: dict[str, Any], report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
         look_back_date = pendulum.today(tz=profile["timezone"]).date().subtract(days=self._look_back_window - 1)

@@ -7,7 +7,7 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.models import FailureType
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -100,8 +100,6 @@ class BasicAmazonAdsStream(Stream, ABC):
     Base class for all Amazon Ads streams.
     """
 
-    is_resumable = False
-
     def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]] = None):
         self._profiles = profiles or []
         self._client_id = config["client_id"]
@@ -183,6 +181,7 @@ class SubProfilesStream(AmazonAdsStream):
     Stream for getting resources with pagination support and getting resources based on list of profiles set by source.
     """
 
+    is_resumable = False
     page_size = 100
 
     def __init__(self, *args, **kwargs):

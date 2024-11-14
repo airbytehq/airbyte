@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -162,7 +162,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }
