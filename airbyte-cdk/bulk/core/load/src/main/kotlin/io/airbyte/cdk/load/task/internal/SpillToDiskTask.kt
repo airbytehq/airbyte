@@ -70,12 +70,9 @@ class DefaultSpillToDiskTask(
                                     diskManager.reserve(wrapped.sizeBytes)
 
                                     // calculate whether we should flush
-                                    val saturated = diskManager.remainingCapacityBytes <
-                                        StreamReadConstraints.DEFAULT_MAX_STRING_LEN
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
                                     val bytesProcessed = sizeBytes + wrapped.sizeBytes
-                                    val forceFlush = saturated ||
-                                        flushStrategy.shouldFlush(stream, rangeProcessed, bytesProcessed)
+                                    val forceFlush = flushStrategy.shouldFlush(stream, rangeProcessed, bytesProcessed)
 
                                     // write and return output
                                     outputStream.write(wrapped.record.serialized)
