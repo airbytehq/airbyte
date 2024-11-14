@@ -1213,9 +1213,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: [ ]
-        decoder:
-          type: "CustomDecoder"
-          class_name: "source_amazon_ads.components.GzipDecoder"
         status_extractor:
           type: DpathExtractor
           field_path:
@@ -1290,7 +1287,12 @@ definitions:
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-
+        download_decoder:
+          type: GzipJsonDecoder
+          encoding: utf
+        download_extractor:
+          type: DpathExtractor
+          field_path: [ ]
 
 
 streams:
