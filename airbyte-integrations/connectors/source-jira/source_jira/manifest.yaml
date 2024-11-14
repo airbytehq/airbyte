@@ -1417,6 +1417,7 @@ check:
     - issues
     - sprint_issues
 
+# This feature is currently not used, as only incremental streams with DatetimeBasedCursor are supported.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
