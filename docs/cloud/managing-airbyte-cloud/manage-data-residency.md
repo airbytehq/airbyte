@@ -37,3 +37,9 @@ To choose a custom data residency for your connection, click **Connections** in 
 Changes to data residency will not affect any sync in progress.
 
 :::
+
+## Connector Builder data residency
+
+The Connector Builder currently processes all data through US data planes, regardless of your workspace's default data residency settings. This limitation applies to the development and testing of connectors within the builder interface.
+
+If your use case requires strict data residency compliance outside the US, you can still publish a custom connector from the builder which will respect your workspace's data residency settings during syncs. However, you will be unable to verify the connector's behavior within the builder itself.

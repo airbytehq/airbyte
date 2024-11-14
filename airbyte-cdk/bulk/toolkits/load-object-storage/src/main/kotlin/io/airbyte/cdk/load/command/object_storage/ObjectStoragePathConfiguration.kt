@@ -8,7 +8,8 @@ data class ObjectStoragePathConfiguration(
     val prefix: String,
     val stagingPrefix: String?,
     val pathSuffixPattern: String?,
-    val fileNamePattern: String?
+    val fileNamePattern: String?,
+    val usesStagingDirectory: Boolean
 )
 
 interface ObjectStoragePathConfigurationProvider {
