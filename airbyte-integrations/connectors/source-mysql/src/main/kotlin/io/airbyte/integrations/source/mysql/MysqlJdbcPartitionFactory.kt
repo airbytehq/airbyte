@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.BinaryNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -24,6 +26,7 @@ import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
+import org.apache.mina.util.Base64.*
 
 @Primary
 @Singleton
@@ -56,8 +59,8 @@ class MysqlJdbcPartitionFactory(
             val rs = stmt.executeQuery()
 
             if (rs.next()) {
-                val pkUpperBound: JsonNode =
-                    stateValueToJsonNode(pkChosenFromCatalog.first(), rs.getString(1))
+                val jdbcFieldType = pkChosenFromCatalog[0].type as JdbcFieldType<*>
+                val pkUpperBound: JsonNode = jdbcFieldType.get(rs, 1)
                 return pkUpperBound
             } else {
                 // Table might be empty thus there is no max PK value.
@@ -79,7 +82,6 @@ class MysqlJdbcPartitionFactory(
             }
 
             val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-
             if (sharedState.configuration.global) {
                 return MysqlJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
@@ -293,6 +295,10 @@ class MysqlJdbcPartitionFactory(
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())
+                    }
+                    LeafAirbyteSchemaType.BINARY -> {
+                        val ba = decodeBase64(stateValue!!.toByteArray())
+                        Jsons.valueToTree<BinaryNode>(ba)
                     }
                     else -> Jsons.valueToTree(stateValue)
                 }
