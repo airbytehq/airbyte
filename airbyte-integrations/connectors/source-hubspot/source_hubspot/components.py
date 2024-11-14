@@ -8,18 +8,14 @@ from typing import Any, Dict, Optional
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
-NEW_TO_LEGACY_FIELDS_MAPPING = {
-    "hs_lifecyclestage_": "hs_v2_date_entered_",
-    "hs_date_entered_": "hs_v2_date_entered_",
-    "hs_date_exited_": "hs_v2_date_exited_",
-    "hs_time_in": "hs_v2_latest_time_in_",
-}
-
 
 class NewtoLegacyFieldTransformation(RecordTransformation):
     """
     Implements a custom transformation which maps a "new" field to the legacy equivalent of the field for streams which contain Deals and Contacts entities.
     """
+
+    def __init__(self, field_mapping: Dict[str, str]) -> None:
+        self._field_mapping = field_mapping
 
     def transform(
         self,
@@ -37,17 +33,19 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
         :param stream_slice: The stream slice
         :return: The transformed record
         """
-        updated_record = deepcopy(record)
+        record_copy = deepcopy(record)
 
         for field, value in record.get("properties", record).items():
-            for legacy_field, new_field in NEW_TO_LEGACY_FIELDS_MAPPING.items():
+            for legacy_field, new_field in self._field_mapping.items():
                 if new_field in field:
                     transformed_field = field.replace(new_field, legacy_field)
-                    if legacy_field == "hs_lifecyclestage_":
+
+                    if legacy_field == "hs_lifecyclestage_" and not transformed_field.endswith("_date"):
                         transformed_field += "_date"
-                    if updated_record.get("properties", updated_record).get(transformed_field) is None:
-                        if updated_record.get("properties"):
-                            updated_record["properties"][transformed_field] = value
-                        else:
-                            updated_record[transformed_field] = value
-        return updated_record
+
+                    if record_copy.get("properties") is not None:
+                        if record_copy.get("properties", {}).get(transformed_field) is None:
+                            record_copy["properties"][transformed_field] = value
+                    elif record_copy.get(transformed_field) is None:
+                        record_copy[transformed_field] = value
+        return record_copy

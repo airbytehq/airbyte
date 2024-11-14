@@ -75,6 +75,18 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
+CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_lifecyclestage_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in": "hs_v2_latest_time_in_",
+}
+
+DEALS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_date_entered_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in": "hs_v2_latest_time_in_",
+}
+
 
 def retry_token_expired_handler(**kwargs):
     """Retry helper when token expired"""
@@ -692,8 +704,7 @@ class Stream(HttpStream, ABC):
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             if self._transformations:
-                transformations = [transformation() for transformation in self._transformations]
-                for transformation in transformations:
+                for transformation in self._transformations:
                     record = transformation.transform(record=record)
             yield record
 
@@ -830,8 +841,7 @@ class Stream(HttpStream, ABC):
             props[row["name"]] = self._get_field_props(row["type"])
 
         if self._transformations:
-            transformations = [transformation() for transformation in self._transformations]
-            for transformation in transformations:
+            for transformation in self._transformations:
                 props = transformation.transform(props)
 
         return props
@@ -1525,7 +1535,7 @@ class Deals(CRMSearchStream):
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
-    _transformations = [NewtoLegacyFieldTransformation]
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class DealsArchived(ClientSideIncrementalStream):
@@ -1539,7 +1549,7 @@ class DealsArchived(ClientSideIncrementalStream):
     cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
-    _transformations = [NewtoLegacyFieldTransformation]
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
     def request_params(
         self,
@@ -2212,7 +2222,7 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
-    _transformations = [NewtoLegacyFieldTransformation]
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class EngagementsCalls(CRMSearchStream):

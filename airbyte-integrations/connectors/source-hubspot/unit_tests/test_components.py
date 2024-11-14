@@ -3,7 +3,7 @@
 #
 import pytest
 from source_hubspot.components import NewtoLegacyFieldTransformation
-from source_hubspot.streams import Deals
+from source_hubspot.streams import DEALS_NEW_TO_LEGACY_FIELDS_MAPPING
 
 
 @pytest.mark.parametrize(
@@ -22,7 +22,6 @@ from source_hubspot.streams import Deals
                 "hs_v2_cumulative_time_in_prospect": {"type": ["null", "string"]},
                 "hs_v2_date_entered_prospect": {"type": ["null", "string"]},
                 "hs_date_entered_prospect": {"type": ["null", "string"]},
-                "hs_lifecyclestage_prospect_date": {"type": ["null", "string"]},
                 "hs_v2_date_exited_prospect": {"type": ["null", "string"]},
                 "hs_date_exited_prospect": {"type": ["null", "string"]},
                 "hs_v2_some_other_field": {"type": ["null", "string"]},
@@ -41,7 +40,6 @@ from source_hubspot.streams import Deals
                 "birthplace": "Boston",
                 "hs_v2_date_entered_poetry": 1827,
                 "hs_date_entered_poetry": 1827,
-                "hs_lifecyclestage_poetry_date": 1827
             }
         ),
         (
@@ -60,7 +58,6 @@ from source_hubspot.streams import Deals
                 "properties": {
                     "hs_v2_date_entered_poetry": 1827,
                     "hs_date_entered_poetry": 1827,
-                    "hs_lifecyclestage_poetry_date": 1827
                 }
             }
         ),
@@ -86,7 +83,6 @@ from source_hubspot.streams import Deals
                 "name": "Edgar Allen Poe",
                 "hs_v2_date_entered_poetry": 1827,
                 "hs_date_entered_poetry": 9999,
-                "hs_lifecyclestage_poetry_date": 1827
             }
         ),
     ],
@@ -99,6 +95,6 @@ from source_hubspot.streams import Deals
     ],
 )
 def test_new_to_legacy_field_transformation(input, expected):
-    transformation = NewtoLegacyFieldTransformation()
+    transformation = NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)
     actual_properties = transformation.transform(input)
     assert actual_properties == expected
