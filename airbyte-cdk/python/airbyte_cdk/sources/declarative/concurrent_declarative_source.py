@@ -187,7 +187,7 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
                         declarative_stream.retriever.cursor = None
 
                     partition_generator = CursorPartitionGenerator(
-                        stream=self._create_new_instance(declarative_stream, config),
+                        stream=declarative_stream,
                         message_repository=self.message_repository,  # type: ignore  # message_repository is always instantiated with a value by factory
                         cursor=cursor,
                         connector_state_converter=connector_state_converter,
@@ -282,13 +282,3 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource, Generic[TState]):
         concurrent_stream_names: set[str],
     ) -> ConfiguredAirbyteCatalog:
         return ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name not in concurrent_stream_names])
-
-    def _create_new_instance(self, stream_to_copy: Stream, config: Mapping[str, Any]) -> Stream:
-        """
-        Some of the declarative components are stateful. Therefore, we create one stream per thread in order to avoid threads updating
-        the same field for a specific instance.
-        """
-        streams_with_same_name = list(filter(lambda stream: stream.name == stream_to_copy.name, self.streams(config)))
-        if len(streams_with_same_name) == 1:
-            return streams_with_same_name[0]
-        raise ValueError(f"Expected one stream with name `{stream_to_copy.name}` but got {len(streams_with_same_name)}")
