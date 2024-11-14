@@ -1,7 +1,51 @@
-#
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
-#
+"""
+# Welcome to the Airbyte Python CDK!
 
+The Airbyte Python CDK is a Python library that provides a set of tools to help you build
+connectors for the Airbyte platform.
+
+## Building Source Connectors
+
+To build a source connector, you will want to refer to
+the following classes and modules:
+
+- `airbyte_cdk.sources`
+- `airbyte_cdk.sources.concurrent_source`
+- `airbyte_cdk.sources.config`
+- `airbyte_cdk.sources.file_based`
+- `airbyte_cdk.sources.streams`
+
+## Building Destination Connectors
+
+To build a destination connector, you will want to refer to
+the following classes and modules:
+
+- `airbyte_cdk.destinations`
+- `airbyte_cdk.destinations.Destination`
+- `airbyte_cdk.destinations.vector_db_based`
+
+## Working with Airbyte Protocol Models
+
+The Airbyte CDK provides a set of classes that help you work with the Airbyte protocol models:
+
+- `airbyte_cdk.models.airbyte_protocol`
+- `airbyte_cdk.models.airbyte_protocol_serializers`
+
+---
+
+API Reference
+
+---
+
+"""
+
+# Warning: The below imports are not stable and will cause circular
+# dependencies if auto-sorted with isort. Please keep them in the same order.
+# TODO: Submodules should import from lower-level modules, rather than importing from here.
+# Imports should also be placed in `if TYPE_CHECKING` blocks if they are only used as type
+# hints - again, to avoid circular dependencies.
+# Once those issues are resolved, the below can be sorted with isort.
 from importlib import metadata
 
 from .destinations import Destination
@@ -88,11 +132,9 @@ __all__ = [
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
-
     # Checkpoint
     "LegacyCursor",
     "ResumableFullRefreshCursor",
-
     # Concurrent
     "ConcurrentCursor",
     "ConcurrentSource",
@@ -104,11 +146,9 @@ __all__ = [
     "FinalStateCursor",
     "IsoMillisConcurrentStreamStateConverter",
     "StreamFacade",
-
     # Config observation
     "create_connector_config_control_message",
     "emit_configuration_as_airbyte_control_message",
-
     # Connector
     "AbstractSource",
     "BaseConfig",
@@ -117,7 +157,6 @@ __all__ = [
     "Destination",
     "Source",
     "TState",
-
     # Declarative
     "AddFields",
     "AddedFieldDefinition",
@@ -167,11 +206,9 @@ __all__ = [
     "StreamSlice",
     "SubstreamPartitionRouter",
     "YamlDeclarativeSource",
-
     # Entrypoint
     "launch",
     "AirbyteEntrypoint",
-
     # HTTP
     "AbstractAPIBudget",
     "AbstractHeaderAuthenticator",
@@ -192,11 +229,9 @@ __all__ = [
     "SingleUseRefreshTokenOauth2Authenticator",
     "TokenAuthenticator",
     "UserDefinedBackoffException",
-
     # Logger
     "AirbyteLogFormatter",
     "init_logger",
-
     # Protocol classes
     "AirbyteStream",
     "AirbyteConnectionStatus",
@@ -215,20 +250,16 @@ __all__ = [
     "ConnectorSpecification",
     "Level",
     "AirbyteRecordMessage",
-
     # Repository
     "InMemoryMessageRepository",
     "MessageRepository",
-
     # State management
     "ConnectorStateManager",
-
     # Stream
     "IncrementalMixin",
     "Stream",
     "StreamData",
     "package_name_from_class",
-
     # Utils
     "AirbyteTracedException",
     "is_cloud_environment",
@@ -244,7 +275,6 @@ __all__ = [
     "OneOfOptionConfig",
     "resolve_refs",
     "as_airbyte_message",
-
     # Types
     "Config",
     "Record",
