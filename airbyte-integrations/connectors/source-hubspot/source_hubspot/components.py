@@ -11,6 +11,11 @@ from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 class NewtoLegacyFieldTransformation(RecordTransformation):
     """
     Implements a custom transformation which adds the legacy field equivalent of v2 fields for streams which contain Deals and Contacts entities.
+
+    This custom implmentation was developed in lieu of the AddFields component due to the dynamic-nature of the record properties for the HubSpot source. Each
+
+    For example:
+    hs_v2_date_exited_{stage_id} -> hs_date_exited_{stage_id} where {stage_id} is a user-generated value
     """
 
     def __init__(self, field_mapping: Dict[str, str]) -> None:
@@ -18,7 +23,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
 
     def transform(
         self,
-        record: Dict[str, Any],
+        record_or_schema: Dict[str, Any],
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
@@ -28,7 +33,7 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
 
         :param record: The input record to be transformed
         """
-        for field, value in list(record.get("properties", record).items()):
+        for field, value in list(record_or_schema.get("properties", record_or_schema).items()):
             for legacy_field, new_field in self._field_mapping.items():
                 if new_field in field:
                     transformed_field = field.replace(new_field, legacy_field)
@@ -36,8 +41,8 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
                     if legacy_field == "hs_lifecyclestage_" and not transformed_field.endswith("_date"):
                         transformed_field += "_date"
 
-                    if record.get("properties") is not None:
-                        if record["properties"].get(transformed_field) is None:
-                            record["properties"][transformed_field] = value
-                    elif record.get(transformed_field) is None:
-                        record[transformed_field] = value
+                    if record_or_schema.get("properties") is not None:
+                        if record_or_schema["properties"].get(transformed_field) is None:
+                            record_or_schema["properties"][transformed_field] = value
+                    elif record_or_schema.get(transformed_field) is None:
+                        record_or_schema[transformed_field] = value

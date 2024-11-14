@@ -215,6 +215,7 @@ def test_stream_read_with_legacy_field_transformation(stream, endpoint, cursor_v
                         "created": "2022-02-25T16:43:11Z",
                         "hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
                         "hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
+                        "hs_v2_latest_time_in_prospect": "1 month",
                         "hs_v2_cumulative_time_in_prsopect": "1 month",
                         "hs_v2_some_other_property_in_prospect": "Great property"
                     }
@@ -246,6 +247,8 @@ def test_stream_read_with_legacy_field_transformation(stream, endpoint, cursor_v
             "hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
             "hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
             "hs_date_exited_prospect": "2024-02-01T00:00:00Z",
+            "hs_time_in_prospect": "1 month",
+            "hs_v2_latest_time_in_prospect": "1 month",
             "hs_v2_cumulative_time_in_prsopect": "1 month",
             "hs_v2_some_other_property_in_prospect": "Great property"
         } | cursor_value

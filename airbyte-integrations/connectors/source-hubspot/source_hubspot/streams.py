@@ -705,7 +705,7 @@ class Stream(HttpStream, ABC):
                 record[self.updated_at_field] = record[self.created_at_field]
             if self._transformations:
                 for transformation in self._transformations:
-                    transformation.transform(record=record)
+                    transformation.transform(record_or_schema=record)
             yield record
 
     @staticmethod
@@ -842,7 +842,7 @@ class Stream(HttpStream, ABC):
 
         if self._transformations:
             for transformation in self._transformations:
-                transformation.transform(props)
+                transformation.transform(record_or_schema=props)
 
         return props
 
