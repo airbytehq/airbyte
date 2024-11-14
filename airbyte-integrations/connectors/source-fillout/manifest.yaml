@@ -3,9 +3,6 @@ version: 6.1.0
 type: DeclarativeSource
 
 description: >-
-  ✅ Added the `formId` value to `submissions` stream.
-
-
   The Airbyte connector for Fillout.com enables seamless data synchronization
   between Fillout forms and various target destinations. This connector allows
   you to extract form submissions and related data from Fillout and transfer it
@@ -181,7 +178,7 @@ metadata:
   autoImportSchema:
     forms: true
     form_metadata: true
-    submissions: false
+    submissions: true
   testedStreams:
     forms:
       hasRecords: true

@@ -22,7 +22,7 @@ data:
   githubIssueLabel: source-fillout
   icon: icon.svg
   license: MIT
-  name: Fillout - Modified
+  name: Fillout
   releaseDate: 2024-11-14
   releaseStage: alpha
   supportLevel: community
