@@ -24,9 +24,9 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
+import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
-import org.apache.mina.util.Base64.*
 
 @Primary
 @Singleton
@@ -297,7 +297,7 @@ class MysqlJdbcPartitionFactory(
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
                     LeafAirbyteSchemaType.BINARY -> {
-                        val ba = decodeBase64(stateValue!!.toByteArray())
+                        val ba = Base64.getDecoder().decode(stateValue!!)
                         Jsons.valueToTree<BinaryNode>(ba)
                     }
                     else -> Jsons.valueToTree(stateValue)
