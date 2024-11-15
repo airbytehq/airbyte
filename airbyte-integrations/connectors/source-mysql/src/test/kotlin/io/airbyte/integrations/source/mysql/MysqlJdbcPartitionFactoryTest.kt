@@ -65,9 +65,9 @@ class MysqlJdbcPartitionFactoryTest {
         val binaryStream =
             Stream(
                 id =
-                StreamIdentifier.from(
-                    StreamDescriptor().withNamespace("test").withName("stream3")
-                ),
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("stream3")
+                    ),
                 schema = setOf(binaryFieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(binaryFieldId),
@@ -265,9 +265,7 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(
-                streamFeedBootstrap(binaryStream, incomingStateValue)
-            )
+            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(binaryStream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
 
         assertEquals(
