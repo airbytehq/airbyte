@@ -1617,6 +1617,7 @@ class ModelToComponentFactory:
         return MapComponentsDefinition(
             key=model.key,
             value=interpolated_value,
+            value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
             condition=model.condition or "",
             parameters=model.parameters or {},
         )
@@ -1624,7 +1625,11 @@ class ModelToComponentFactory:
     def create_dynamic_components_parser(self, model: DynamicComponentsParserModel, config: Config) -> Any:
         declarative_stream = self._create_component_from_model(model.components_values_stream, config=config)
         components_mapping = [
-            self._create_component_from_model(model=map_components_definition_model, config=config)
+            self._create_component_from_model(
+                model=map_components_definition_model,
+                value_type=ModelToComponentFactory._json_schema_type_name_to_type(map_components_definition_model.value_type),
+                config=config
+            )
             for map_components_definition_model in model.components_mapping
         ]
 

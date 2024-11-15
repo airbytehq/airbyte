@@ -4,7 +4,7 @@
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, Type
 
 import dpath
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -31,6 +31,7 @@ class MapComponentsDefinition:
 
     key: str
     value: Union[InterpolatedString, str]
+    value_type: Optional[Type[Any]]
     parameters: InitVar[Mapping[str, Any]]
     condition: str = ""
 
@@ -41,6 +42,7 @@ class ParsedMapComponentsDefinition:
 
     key: str
     value: Union[InterpolatedString, str]
+    value_type: Optional[Type[Any]]
     parameters: InitVar[Mapping[str, Any]]
     condition: str = ""
 
@@ -66,6 +68,7 @@ class DynamicComponentsParser(ComponentsParser):
                         ParsedMapComponentsDefinition(
                             component_mapping.key,
                             InterpolatedString.create(component_mapping.value, parameters=parameters),
+                            value_type=component_mapping.value_type,
                             condition=InterpolatedBoolean(condition=condition, parameters=parameters),
                             parameters=parameters,
                         )
@@ -75,6 +78,7 @@ class DynamicComponentsParser(ComponentsParser):
                     ParsedMapComponentsDefinition(
                         component_mapping.key,
                         component_mapping.value,
+                        value_type=component_mapping.value_type,
                         condition=InterpolatedBoolean(condition=condition, parameters=parameters),
                         parameters={},
                     )
@@ -107,7 +111,8 @@ class DynamicComponentsParser(ComponentsParser):
             kwargs["components_value"] = components_value
 
             for parsed_component_mapping in self._parsed_components_mapping:
-                value = parsed_component_mapping.value.eval(self.config, **kwargs)
+                valid_types = (parsed_component_mapping.value_type,) if parsed_component_mapping.value_type else None
+                value = parsed_component_mapping.value.eval(self.config, valid_types=valid_types, **kwargs)
                 key = parsed_component_mapping.key
                 interpolated_condition = parsed_component_mapping.condition
 

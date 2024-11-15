@@ -668,28 +668,6 @@ class JsonFileSchemaLoader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
-class MapComponentsDefinition(BaseModel):
-    type: Literal['MapComponentsDefinition']
-    key: str = Field(..., title='Key')
-    value: str = Field(
-        ...,
-        examples=[
-            "{{ record['updates'] }}",
-            "{{ record['MetaData']['LastUpdatedTime'] }}",
-            "{{ stream_partition['segment_id'] }}",
-        ],
-        title='Value',
-    )
-    condition: Optional[str] = Field(
-        '',
-        examples=[
-            "{{ record['created_at'] >= stream_interval['start_time'] }}",
-            "{{ record.status in ['active', 'expired'] }}",
-        ],
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
 class StaticComponentsParser(BaseModel):
     type: Literal['StaticComponentsParser']
 
@@ -1276,6 +1254,33 @@ class SessionTokenRequestApiKeyAuthenticator(BaseModel):
         ],
         title='Inject API Key Into Outgoing HTTP Request',
     )
+
+
+class MapComponentsDefinition(BaseModel):
+    type: Literal['MapComponentsDefinition']
+    key: str = Field(..., title='Key')
+    value: str = Field(
+        ...,
+        examples=[
+            "{{ record['updates'] }}",
+            "{{ record['MetaData']['LastUpdatedTime'] }}",
+            "{{ stream_partition['segment_id'] }}",
+        ],
+        title='Value',
+    )
+    value_type: Optional[ValueType] = Field(
+        None,
+        description='Type of the value. If not specified, the type will be inferred from the value.',
+        title='Value Type',
+    )
+    condition: Optional[str] = Field(
+        '',
+        examples=[
+            "{{ record['created_at'] >= stream_interval['start_time'] }}",
+            "{{ record.status in ['active', 'expired'] }}",
+        ],
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class ListPartitionRouter(BaseModel):

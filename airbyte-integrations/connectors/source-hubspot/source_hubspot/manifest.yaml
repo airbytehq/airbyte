@@ -1,0 +1,103 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - tables
+
+definitions:
+  streams:
+    custom_object:
+      type: DeclarativeStream
+      name: custom_object
+      $parameters:
+        stream_name: "stream_name"
+      retriever:
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm/v3/objects/{{parameters["stream_name"]}}
+          http_method: GET
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: DynamicSchemaLoader
+        stream:
+          type: DeclarativeStream
+          $parameters:
+            schema_id: "schema_id"
+          retriever:
+            requester:
+              $ref: "#/definitions/base_requester"
+              path: /crm/v3/schemas
+              http_method: GET
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path: ["results"]
+              record_filter:
+                condition: "{{ record['id'] == parameters['schema_id'] }}"
+        schema_pointer: [ "properties" ]
+        key_pointer: [ "name" ]
+        type_pointer: [ "type" ]
+        types_map:
+          - target_type: string
+            current_type: enumeration
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.hubapi.com
+    authenticator: "#/definitions/authenticator"
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_key'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://api.hubapi.com/oauth/v1/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "credentials_title"]
+    authenticators:
+      OAuth Credentials: "#/definitions/oauth_authenticator"
+      Private App Credentials: "#/definitions/bearer_authenticator"
+
+streams:
+  - $ref: "#/definitions/streams/custom_object"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_object"
+    components_parser:
+      type: DynamicComponentsParser
+      components_values_stream:
+        type: DeclarativeStream
+        retriever:
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: /crm/v3/schemas
+            http_method: GET
+          record_selector:
+            extractor:
+              type: DpathExtractor
+              field_path: [ "results" ]
+      components_mapping:
+        - type: MapComponentsDefinition
+          key: name
+          value: "{{ components_value['name'] }}"
+          condition: "{{ td['name'] == 'custom_object' }}"
+        - type: MapComponentsDefinition
+          key: stream_name
+          value: "{{ components_value['name'] }}"
+        - type: MapComponentsDefinition
+          key: schema_id
+          value: "{{ components_value['id'] }}"
+          value_type: string

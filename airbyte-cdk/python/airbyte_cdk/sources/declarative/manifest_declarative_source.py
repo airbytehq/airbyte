@@ -249,6 +249,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             stream_configs = [
                 stream_config for stream_config in components_parser.parse_stream_components(stream_template_config=stream_template_config)
             ]
+        print(stream_configs)
         return stream_configs
 
     def _emit_manifest_debug_message(self, extra_args: dict[str, Any]) -> None:
