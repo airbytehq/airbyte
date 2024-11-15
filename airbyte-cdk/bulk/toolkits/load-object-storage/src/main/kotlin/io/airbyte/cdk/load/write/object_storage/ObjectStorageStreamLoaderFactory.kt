@@ -28,6 +28,9 @@ import java.io.File
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
 
 @Singleton
 @Secondary
@@ -84,6 +87,18 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val nextPartNumber = state.nextPartNumber
         log.info { "Got next part number from destination state: $nextPartNumber" }
         partNumber.set(nextPartNumber)
+        if (stream.descriptor.name == "products") {
+            throw RuntimeException("Synthetic exception (product stream only)")
+        }
+    }
+
+    fun test(recordsIn: Flow<DestinationRecord>): Flow<Flow<DestinationRecord>> {
+        // Turn `recordsIn` into a series of (lazily evaluated flows) of
+        // 100 records each; NOTE: there is no `chunked` function available.
+        return flow {
+            val chunk = recordsIn.take(100)
+            emit(chunk)
+        }
     }
 
     override suspend fun processRecords(
