@@ -31,8 +31,10 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
         """
         Transform a record in place by adding fields directly to the record by manipulating the injected fields into a legacy field to avoid breaking syncs.
 
-        :param record: The input record to be transformed
+        :param record_or_schema: The input record or schema to be transformed.
         """
+        is_record = record_or_schema.get("properties") is not None
+
         for field, value in list(record_or_schema.get("properties", record_or_schema).items()):
             for legacy_field, new_field in self._field_mapping.items():
                 if new_field in field:
@@ -41,8 +43,9 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
                     if legacy_field == "hs_lifecyclestage_" and not transformed_field.endswith("_date"):
                         transformed_field += "_date"
 
-                    if record_or_schema.get("properties") is not None:
+                    if is_record:
                         if record_or_schema["properties"].get(transformed_field) is None:
                             record_or_schema["properties"][transformed_field] = value
-                    elif record_or_schema.get(transformed_field) is None:
-                        record_or_schema[transformed_field] = value
+                    else:
+                        if record_or_schema.get(transformed_field) is None:
+                            record_or_schema[transformed_field] = value
