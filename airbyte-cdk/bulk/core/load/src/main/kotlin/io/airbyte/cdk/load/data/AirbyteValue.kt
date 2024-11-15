@@ -22,7 +22,7 @@ sealed interface AirbyteValue {
                 null -> NullValue
                 is String -> StringValue(value)
                 is Boolean -> BooleanValue(value)
-                is Int -> IntegerValue(value.toLong())
+                is Int -> IntValue(value)
                 is Long -> IntegerValue(value)
                 is BigInteger -> IntegerValue(value)
                 is Double -> NumberValue(BigDecimal.valueOf(value))
