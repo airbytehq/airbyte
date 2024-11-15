@@ -42,11 +42,16 @@ class S3V2Specification :
     override val useStagingDirectory: Boolean? = null
     override val s3StagingPrefix: String? = null
 
+    // Temporary to expose internal config for tuning
     @JsonProperty("max_concurrent_uploads")
     val maxConcurrentUploads: Int? =
         ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
     @JsonProperty("upload_part_size")
     val uploadPartSize: Long? = ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE
+    @JsonProperty("max_message_queue_memory_usage_ratio")
+    val maxMessageQueueMemoryUsageRatio: Double? = 0.2
+    @JsonProperty("estimated_record_memory_overhead_ratio")
+    val estimatedRecordMemoryOverheadRatio: Double? = 1.1
 }
 
 @Singleton
