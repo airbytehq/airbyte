@@ -45,6 +45,10 @@ abstract class IntegrationTest(
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
+    /**
+     * See [RecordDiffer.nullEqualsUnset].
+     */
+    val nullEqualsUnset: Boolean = false,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
     // because some tests want to run multiple syncs, so we need to run the destination
@@ -95,8 +99,9 @@ abstract class IntegrationTest(
             canonicalExpectedRecords.map { recordMangler.mapRecord(it) }
 
         RecordDiffer(
-                primaryKey.map { nameMapper.mapFieldName(it) },
-                cursor?.let { nameMapper.mapFieldName(it) },
+                primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },
+                cursor = cursor?.let { nameMapper.mapFieldName(it) },
+                nullEqualsUnset = nullEqualsUnset,
             )
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
