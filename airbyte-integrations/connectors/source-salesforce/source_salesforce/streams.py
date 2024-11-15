@@ -427,15 +427,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
         if not self._cursor:
             yield from [StreamSlice(partition={}, cursor_slice={})]
             return
-
-        for slice_start, slice_end in self._cursor.generate_slices():
-            yield StreamSlice(
-                partition={},
-                cursor_slice={
-                    "start_date": slice_start.isoformat(timespec="milliseconds"),
-                    "end_date": slice_end.isoformat(timespec="milliseconds"),
-                },
-            )
+        yield from self._cursor.generate_slices()
 
 
 class BulkParentStreamStreamSlicer(StreamSlicer):
@@ -894,11 +886,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         if not self._stream_slicer_cursor:
             raise ValueError("Cursor should be set at this point")
 
-        for slice_start, slice_end in self._stream_slicer_cursor.generate_slices():
-            yield {
-                "start_date": slice_start.isoformat(timespec="milliseconds"),
-                "end_date": slice_end.isoformat(timespec="milliseconds"),
-            }
+        yield from self._stream_slicer_cursor.generate_slices()
 
     @property
     def stream_slice_step(self) -> pendulum.Duration:
