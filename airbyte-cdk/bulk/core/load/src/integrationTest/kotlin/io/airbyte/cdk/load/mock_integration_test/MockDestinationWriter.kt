@@ -79,7 +79,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         return when (batch) {
             is LocalBatch -> {
                 batch.records.forEach {
-                    val filename = getFilename(it.stream.descriptor, staging = true)
+                    val filename = getFilename(it.stream, staging = true)
                     val record =
                         OutputRecord(
                             UUID.randomUUID(),
