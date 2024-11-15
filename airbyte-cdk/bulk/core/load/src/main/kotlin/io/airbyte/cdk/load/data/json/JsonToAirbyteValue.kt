@@ -150,7 +150,7 @@ class JsonToAirbyteValue {
         return convert(json, option)
     }
 
-    private fun fromJson(json: JsonNode): AirbyteValue {
+    fun fromJson(json: JsonNode): AirbyteValue {
         return when {
             json.isBoolean -> toBoolean(json)
             json.isIntegralNumber -> toInteger(json)
