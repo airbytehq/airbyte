@@ -266,7 +266,7 @@ data object LocalTimeCodec : JsonCodec<LocalTime> {
         }
     }
 
-    const val PATTERN = "HH:mm:ss.SSSSSS"
+    const val PATTERN = "HH:mm:ss[.SSSSSS]"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
@@ -283,7 +283,7 @@ data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
         }
     }
 
-    const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+    const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
@@ -299,7 +299,7 @@ data object OffsetTimeCodec : JsonCodec<OffsetTime> {
         }
     }
 
-    const val PATTERN = "HH:mm:ss.SSSSSSXXX"
+    const val PATTERN = "HH:mm:ss[.SSSSSSXXX]"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
@@ -316,7 +316,7 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
         }
     }
 
-    const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+    const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss[.SSSSSSXXX]"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
