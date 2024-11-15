@@ -792,7 +792,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: ["bidRecommendations"]
+            field_path: []
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -812,8 +812,10 @@ definitions:
           fields:
             - path: ["adGroupId"]
               value: '{{ stream_slice["adGroupId"] }}'
+              value_type: string
             - path: ["campaignId"]
               value: '{{ stream_slice.extra_fields["campaignId"] }}'
+              value_type: string
 
     sponsored_product_ad_group_suggested_keywords:
       type: DeclarativeStream
