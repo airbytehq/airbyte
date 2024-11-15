@@ -26,6 +26,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -118,10 +119,14 @@ class DestinationTaskLauncherUTest {
         coVerify { exceptionHandler.withExceptionHandling(spillToDiskTask) }
     }
 
+    class MockedTaskWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
+        override suspend fun execute() {}
+    }
+
     @Test
     fun `test handle file`() = runTest {
-        coEvery { exceptionHandler.withExceptionHandling(any()) } returns mockk(relaxed = true)
-        coEvery { taskScopeProvider.launch(any()) } returns Unit
+        val wrappedTask = MockedTaskWrapper(mockk(relaxed = true))
+        coEvery { exceptionHandler.withExceptionHandling(any()) } returns wrappedTask
         val processFileTask = mockk<ProcessFileTask>(relaxed = true)
         every { processFileTaskFactory.make(any(), any(), any()) } returns processFileTask
 
@@ -129,5 +134,6 @@ class DestinationTaskLauncherUTest {
         destinationTaskLauncher.handleFile(mockk(), mockk())
 
         coVerify { exceptionHandler.withExceptionHandling(processFileTask) }
+        coVerify { taskScopeProvider.launch(wrappedTask) }
     }
 }
