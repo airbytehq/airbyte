@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetReader
 import org.apache.parquet.avro.AvroReadSupport
 import org.apache.parquet.hadoop.ParquetReader as ApacheParquetReader
+import io.airbyte.cdk.load.command.DestinationStream
 
 class ParquetReader(
     private val reader: ApacheParquetReader<GenericRecord>,
@@ -31,11 +32,10 @@ class ParquetReader(
     }
 }
 
-fun InputStream.toParquetReader(avroSchema: Schema): ParquetReader {
-
+fun InputStream.toParquetReader(descriptor: DestinationStream.Descriptor): ParquetReader {
     val tmpFile =
         kotlin.io.path.createTempFile(
-            prefix = "${avroSchema.namespace}.${avroSchema.name}",
+            prefix = "${descriptor.namespace}.${descriptor.name}",
             suffix = ".avro"
         )
     tmpFile.outputStream().use { outputStream -> this.copyTo(outputStream) }

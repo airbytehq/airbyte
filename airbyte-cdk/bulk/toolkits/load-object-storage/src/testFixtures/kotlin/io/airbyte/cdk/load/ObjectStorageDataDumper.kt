@@ -15,11 +15,13 @@ import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toAirbyteValue
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.file.avro.toAirbyteType
 import io.airbyte.cdk.load.file.avro.toAvroReader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
@@ -46,9 +48,6 @@ class ObjectStorageDataDumper(
     private val formatConfig: ObjectStorageFormatConfiguration,
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
-    private val avroMapperPipeline = AvroMapperPipelineFactory().create(stream)
-    private val parquetMapperPipeline = ParquetMapperPipelineFactory().create(stream)
-
     fun dump(): List<OutputRecord> {
         val prefix = pathFactory.getFinalDirectory(stream).toString()
         return runBlocking {
@@ -82,9 +81,7 @@ class ObjectStorageDataDumper(
                     .bufferedReader()
                     .lineSequence()
                     .map { line ->
-                        line
-                            .deserializeToNode()
-                            .toAirbyteValue(stream.schema.withAirbyteMeta(wasFlattened))
+                        JsonToAirbyteValue().fromJson(line.deserializeToNode())
                             .maybeUnflatten(wasFlattened)
                             .toOutputRecord()
                     }
@@ -101,13 +98,12 @@ class ObjectStorageDataDumper(
                 }
             }
             is AvroFormatConfiguration -> {
-                val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
-                inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
+                inputStream.toAvroReader(stream.descriptor).use { reader
                     ->
                     reader
                         .recordSequence()
                         .map {
-                            it.toAirbyteValue(finalSchema)
+                            it.toAirbyteValue(toAirbyteType(it.schema))
                                 .maybeUnflatten(wasFlattened)
                                 .toOutputRecord()
                         }
@@ -115,13 +111,12 @@ class ObjectStorageDataDumper(
                 }
             }
             is ParquetFormatConfiguration -> {
-                val finalSchema = parquetMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
-                inputStream.toParquetReader(finalSchema.toAvroSchema(stream.descriptor)).use {
+                inputStream.toParquetReader(stream.descriptor).use {
                     reader ->
                     reader
                         .recordSequence()
                         .map {
-                            it.toAirbyteValue(finalSchema)
+                            it.toAirbyteValue(toAirbyteType(it.schema))
                                 .maybeUnflatten(wasFlattened)
                                 .toOutputRecord()
                         }

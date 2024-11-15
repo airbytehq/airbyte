@@ -89,7 +89,12 @@ class S3V2WriteTestCsvUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+}
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
