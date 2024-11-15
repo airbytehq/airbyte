@@ -91,7 +91,6 @@ class DestinationTaskLauncherUTest {
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         every { stream.descriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(stream)
-
     }
 
     @Test
