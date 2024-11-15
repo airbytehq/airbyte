@@ -154,13 +154,7 @@ class S3V2WriteTestCsvRootLevelFlattening :
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
-    ) {
-    @Disabled("Does not work yet")
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-}
+    )
 
 class S3V2WriteTestCsvGzip :
     S3V2WriteTest(
@@ -179,17 +173,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = avroAllTypesBehavior,
         nullEqualsUnset = true,
-    ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-}
+    )
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -199,12 +183,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = avroAllTypesBehavior,
         nullEqualsUnset = true,
-    ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-}
+    )
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -214,12 +193,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
         nullEqualsUnset = true,
-    ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-}
+    )
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -229,9 +203,4 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(),
         nullEqualsUnset = true,
-    ) {
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-}
+    )
