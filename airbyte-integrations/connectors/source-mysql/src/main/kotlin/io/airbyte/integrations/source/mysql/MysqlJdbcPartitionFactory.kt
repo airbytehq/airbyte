@@ -26,10 +26,10 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
-import java.util.Base64
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 

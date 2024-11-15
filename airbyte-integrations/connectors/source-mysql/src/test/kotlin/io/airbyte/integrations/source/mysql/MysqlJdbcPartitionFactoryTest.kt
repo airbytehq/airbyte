@@ -292,7 +292,7 @@ class MysqlJdbcPartitionFactoryTest {
     }
 
     @Test
-    fun testResumeFromCompletedCursorBasedReadTimestamp() {
+    fun testResumeFromCompletedCursorBasedReadBinary() {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
