@@ -10,6 +10,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.LocalDateTimeCodec.formatter
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
@@ -304,6 +305,20 @@ class MysqlJdbcPartitionFactory(
                     LeafAirbyteSchemaType.BINARY -> {
                         val ba = Base64.getDecoder().decode(stateValue!!)
                         Jsons.valueToTree<BinaryNode>(ba)
+                    }
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                        try {
+                            val formatter: DateTimeFormatter =
+                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                            Jsons.textNode(
+                                LocalDateTime.parse(stateValue, formatter)
+                                    .format(LocalDateTimeCodec.formatter)
+                            )
+                        } catch (e: DateTimeParseException) {
+                            // Resolve to use the new format.
+                            Jsons.valueToTree(stateValue)
+                        }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
