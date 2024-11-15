@@ -9,15 +9,15 @@ interface AWSArnRoleSpecification {
     @get:JsonSchemaTitle("Role ARN")
     @get:JsonPropertyDescription("The Role ARN.")
     @get:JsonProperty("role_arn")
-    @get:JsonSchemaInject(json = """{"examples":[""arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId""]}""")
-    val roleArn: String
+    @get:JsonSchemaInject(json = """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"]}""")
+    val roleArn: String?
 
-    fun toAWSArnRole(): AWSArnRoleConfiguration {
+    fun toAWSArnRoleConfiguration(): AWSArnRoleConfiguration {
         return AWSArnRoleConfiguration(roleArn)
     }
 }
 
-data class AWSArnRoleConfiguration(val roleArn: String)
+data class AWSArnRoleConfiguration(val roleArn: String?)
 
 interface AWSArnRoleConfigurationProvider {
     val awsArnRoleConfiguration: AWSArnRoleConfiguration

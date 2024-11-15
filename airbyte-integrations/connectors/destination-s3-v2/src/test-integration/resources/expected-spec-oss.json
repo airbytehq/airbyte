@@ -18,6 +18,12 @@
         "title" : "S3 Access Key",
         "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ]
       },
+      "role_arn" : {
+        "type" : "string",
+        "description" : "The Role ARN.",
+        "title" : "Role ARN",
+        "examples" : [ "arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId" ]
+      },
       "s3_bucket_name" : {
         "type" : "string",
         "description" : "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
