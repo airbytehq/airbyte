@@ -4,4 +4,4 @@ airbyte:
     staging-path: ${AIRBYTE_STAGING_DIRECTORY:/staging/files}
   resources:
     disk:
-      bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:107374182400} // 100GB
+      bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:5368709120} // 5GB
