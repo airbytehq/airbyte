@@ -71,12 +71,21 @@ class DefaultSpillToDiskTask(
                                     // calculate whether we should flush
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
                                     val bytesProcessed = sizeBytes + wrapped.sizeBytes
-                                    val forceFlush = flushStrategy.shouldFlush(stream, rangeProcessed, bytesProcessed)
+                                    val forceFlush =
+                                        flushStrategy.shouldFlush(
+                                            stream,
+                                            rangeProcessed,
+                                            bytesProcessed
+                                        )
 
                                     // write and return output
                                     outputStream.write(wrapped.record.serialized)
                                     outputStream.write("\n")
-                                    ReadResult(rangeProcessed, bytesProcessed, forceFlush = forceFlush)
+                                    ReadResult(
+                                        rangeProcessed,
+                                        bytesProcessed,
+                                        forceFlush = forceFlush
+                                    )
                                 }
                                 is StreamRecordCompleteWrapped -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)

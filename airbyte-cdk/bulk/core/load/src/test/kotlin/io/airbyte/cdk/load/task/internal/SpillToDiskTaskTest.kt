@@ -30,11 +30,8 @@ import org.junit.jupiter.api.Test
 @MicronautTest(
     environments =
         [
-            "SpillToDiskTaskTest",
             "MockDestinationConfiguration",
             "MockDestinationCatalog",
-            "MockTempFileProvider",
-            "MockTaskLauncher",
         ]
 )
 class SpillToDiskTaskTest {
@@ -44,8 +41,20 @@ class SpillToDiskTaskTest {
     @Inject
     lateinit var queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
-    @Inject
-    lateinit var spillFileProvider: SpillFileProvider
+    @Inject lateinit var spillFileProvider: SpillFileProvider
+
+    @BeforeEach
+    fun setup() {
+        memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
+        diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
+        spillToDiskTaskFactory =
+            DefaultSpillToDiskTaskFactory(
+                spillFileProvider,
+                queueSupplier,
+                MockFlushStrategy(),
+                diskManager,
+            )
+    }
 
     class MockFlushStrategy : FlushStrategy {
         override suspend fun shouldFlush(
@@ -85,18 +94,6 @@ class SpillToDiskTaskTest {
         return recordsWritten
     }
 
-    @BeforeEach
-    fun setup() {
-        memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
-        diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
-        spillToDiskTaskFactory = DefaultSpillToDiskTaskFactory(
-            spillFileProvider,
-            queueSupplier,
-            MockFlushStrategy(),
-            diskManager,
-        )
-    }
-
     @Test
     fun testSpillToDiskTask() = runTest {
         val messageCount = primeMessageQueue()
@@ -104,7 +101,10 @@ class SpillToDiskTaskTest {
         val bytesReservedDisk = Fixtures.SERIALIZED_SIZE_BYTES * messageCount
 
         // memory manager has reserved bytes for messages
-        Assertions.assertEquals(Fixtures.INITIAL_MEMORY_CAPACITY - bytesReservedMemory, memoryManager.remainingCapacityBytes)
+        Assertions.assertEquals(
+            Fixtures.INITIAL_MEMORY_CAPACITY - bytesReservedMemory,
+            memoryManager.remainingCapacityBytes
+        )
         // disk manager has not reserved any bytes
         Assertions.assertEquals(Fixtures.INITIAL_DISK_CAPACITY, diskManager.remainingCapacityBytes)
 
@@ -136,9 +136,15 @@ class SpillToDiskTaskTest {
         Assertions.assertEquals(expectedLinesSecond, file2.inputStream().lineSequence().toList())
 
         // we have released all memory reservations
-        Assertions.assertEquals(Fixtures.INITIAL_MEMORY_CAPACITY, memoryManager.remainingCapacityBytes)
+        Assertions.assertEquals(
+            Fixtures.INITIAL_MEMORY_CAPACITY,
+            memoryManager.remainingCapacityBytes
+        )
         // we now have equivalent disk reservations
-        Assertions.assertEquals(Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk, diskManager.remainingCapacityBytes)
+        Assertions.assertEquals(
+            Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk,
+            diskManager.remainingCapacityBytes
+        )
 
         file1.toFile().delete()
         file2.toFile().delete()

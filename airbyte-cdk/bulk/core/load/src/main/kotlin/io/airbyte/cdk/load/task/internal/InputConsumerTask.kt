@@ -204,7 +204,9 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
     abstract val inputStream: InputStream
 
     override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        log.info { "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing" }
+        log.info {
+            "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
+        }
 
         inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
             if (line.isEmpty()) {

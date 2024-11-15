@@ -56,8 +56,8 @@ class ReservationManager(val totalCapacityBytes: Long) {
         return Reserved(this, bytes, reservedFor)
     }
 
-   /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-   suspend fun reserve(bytes: Long) {
+    /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
+    suspend fun reserve(bytes: Long) {
         if (bytes > totalCapacityBytes) {
             throw IllegalArgumentException(
                 "Requested ${bytes}b exceeds ${totalCapacityBytes}b total"
