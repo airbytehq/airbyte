@@ -52,7 +52,9 @@ abstract class IntegrationTest(
     val destinationCleaner: DestinationCleaner,
     val recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     val nameMapper: NameMapper = NoopNameMapper,
-    /** See [RecordDiffer.nullEqualsUnset]. */
+    /**
+     * See [RecordDiffer.nullEqualsUnset].
+     */
     val nullEqualsUnset: Boolean = false,
 ) {
     // Intentionally don't inject the actual destination process - we need a full factory
