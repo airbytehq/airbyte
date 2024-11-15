@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DestinationTaskLauncherUTest {
@@ -81,25 +82,8 @@ class DestinationTaskLauncherUTest {
         )
     }
 
-    // private val mainThread = newSingleThreadContext("UI thread")
-
-    @Test
-    fun `test that we don't start the spill-to-disk task when file transfer is enabled`() =
-        runTest {
-            coEvery { exceptionHandler.withExceptionHandling(any()) } returns mockk(relaxed = true)
-            coEvery { taskScopeProvider.launch(any()) } returns Unit
-
-            val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-            // This is needed to let the run method to complete
-            destinationTaskLauncher.handleTeardownComplete()
-            destinationTaskLauncher.run()
-
-            coVerify { catalog wasNot Called }
-            coVerify { spillToDiskTaskFactory wasNot Called }
-        }
-
-    @Test
-    fun `test that we start the spill-to-disk task when file transfer is disabled`() = runTest {
+    @BeforeEach
+    fun init() {
         coEvery { exceptionHandler.withExceptionHandling(any()) } returns mockk(relaxed = true)
         coEvery { taskScopeProvider.launch(any()) } returns Unit
 
@@ -108,6 +92,21 @@ class DestinationTaskLauncherUTest {
         every { stream.descriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(stream)
 
+    }
+
+    @Test
+    fun `test that we don't start the spill-to-disk task when file transfer is enabled`() =
+        runTest {
+            val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
+            // This is needed to let the run method to complete
+            destinationTaskLauncher.handleTeardownComplete()
+            destinationTaskLauncher.run()
+
+            coVerify { spillToDiskTaskFactory wasNot Called }
+        }
+
+    @Test
+    fun `test that we start the spill-to-disk task when file transfer is disabled`() = runTest {
         val spillToDiskTask = mockk<SpillToDiskTask>(relaxed = true)
         coEvery { spillToDiskTaskFactory.make(any(), any()) } returns spillToDiskTask
 
