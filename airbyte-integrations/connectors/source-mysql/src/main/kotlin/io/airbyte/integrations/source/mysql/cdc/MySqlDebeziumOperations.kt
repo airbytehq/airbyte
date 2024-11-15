@@ -117,11 +117,14 @@ class MySqlDebeziumOperations(
      * Validate is not supposed to perform on synthetic state.
      */
     private fun validate(debeziumState: DebeziumState): CdcStateValidateResult {
+        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
         val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
-        if (gtidSet.isNullOrEmpty()) {
+        if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
+            log.info {
+                "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
+            }
             return abortCdcSync()
         }
-        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
 
         val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
         val availableGtidSet = MySqlGtidSet(gtidSet)
