@@ -18,6 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -29,6 +30,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
+from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
@@ -72,6 +74,18 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_lifecyclestage_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
+}
+
+DEALS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_date_entered_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
+}
 
 
 def retry_token_expired_handler(**kwargs):
@@ -336,6 +350,7 @@ class Stream(HttpStream, ABC):
     properties_scopes: Set = None
     unnest_fields: Optional[List[str]] = None
     checkpoint_by_page = False
+    _transformations: Optional[List[RecordTransformation]] = None
 
     @cached_property
     def record_unnester(self):
@@ -688,6 +703,9 @@ class Stream(HttpStream, ABC):
             record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
+            if self._transformations:
+                for transformation in self._transformations:
+                    transformation.transform(record_or_schema=record)
             yield record
 
     @staticmethod
@@ -794,7 +812,7 @@ class Stream(HttpStream, ABC):
 
         if not converted_type:
             converted_type = "string"
-            logger.warn(f"Unsupported type {field_type} found")
+            logger.warning(f"Unsupported type {field_type} found")
 
         field_props = {
             "type": ["null", converted_type or field_type],
@@ -821,6 +839,10 @@ class Stream(HttpStream, ABC):
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
+
+        if self._transformations:
+            for transformation in self._transformations:
+                transformation.transform(record_or_schema=props)
 
         return props
 
@@ -1513,6 +1535,7 @@ class Deals(CRMSearchStream):
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class DealsArchived(ClientSideIncrementalStream):
@@ -1526,6 +1549,7 @@ class DealsArchived(ClientSideIncrementalStream):
     cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
     def request_params(
         self,
@@ -2198,6 +2222,7 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class EngagementsCalls(CRMSearchStream):
