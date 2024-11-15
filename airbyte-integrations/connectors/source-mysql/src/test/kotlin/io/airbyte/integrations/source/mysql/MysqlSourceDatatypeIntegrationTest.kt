@@ -364,8 +364,8 @@ class MysqlSourceDatatypeIntegrationTest {
                     "VARBINARY(255)",
                     binaryValues,
                     airbyteSchemaType = LeafAirbyteSchemaType.BINARY,
-                    cursor = false,
-                    noPK = true
+                    cursor = true,
+                    noPK = false
                 ),
                 TestCase(
                     "BIT",
