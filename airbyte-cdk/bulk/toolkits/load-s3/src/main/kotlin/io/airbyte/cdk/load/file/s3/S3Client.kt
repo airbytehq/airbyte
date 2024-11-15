@@ -16,6 +16,8 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -174,6 +176,7 @@ class S3Client(
 
 @Factory
 class S3ClientFactory(
+    private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConifg: ObjectStorageUploadConfigurationProvider? = null,
@@ -182,8 +185,9 @@ class S3ClientFactory(
         fun <T> make(config: T) where
         T : S3BucketConfigurationProvider,
         T : AWSAccessKeyConfigurationProvider,
+        T : AWSArnRoleConfigurationProvider,
         T : ObjectStorageUploadConfigurationProvider =
-            S3ClientFactory(config, config, config).make()
+            S3ClientFactory(config, config, config, config).make()
     }
 
     @Singleton
