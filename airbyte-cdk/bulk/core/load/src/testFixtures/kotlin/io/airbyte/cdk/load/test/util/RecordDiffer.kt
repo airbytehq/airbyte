@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -275,6 +277,19 @@ class RecordDiffer(
                 ?: 0)
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
+            if (v1 is UnknownValue) {
+                return compare(
+                    JsonToAirbyteValue().fromJson(v1.value),
+                    v2,
+                )
+            }
+            if (v2 is UnknownValue) {
+                return compare(
+                    v1,
+                    JsonToAirbyteValue().fromJson(v2.value),
+                )
+            }
+
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though
