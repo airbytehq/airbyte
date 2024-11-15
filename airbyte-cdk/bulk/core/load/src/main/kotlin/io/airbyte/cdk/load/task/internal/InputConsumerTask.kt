@@ -40,6 +40,7 @@ import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
@@ -232,6 +233,6 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
 class DefaultInputFlow(
     override val config: DestinationConfiguration,
     override val deserializer: Deserializer<DestinationMessage>,
-    override val memoryManager: ReservationManager,
+    @Named("memoryManager") override val memoryManager: ReservationManager,
     override val inputStream: InputStream
 ) : ReservingDeserializingInputFlow<DestinationMessage>()
