@@ -20,11 +20,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from dateutil.relativedelta import relativedelta
+from integration.config import KlaviyoConfigBuilder
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
-from integration.config import KlaviyoConfigBuilder
 
 _ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
