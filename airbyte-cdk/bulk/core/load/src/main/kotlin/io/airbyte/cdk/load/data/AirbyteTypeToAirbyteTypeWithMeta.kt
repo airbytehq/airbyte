@@ -58,7 +58,13 @@ class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
                     FieldType(IntegerType, nullable = false)
             )
         if (flatten) {
-            (schema as ObjectType).properties.forEach { (name, field) -> properties[name] = field }
+            if (schema is ObjectType) {
+                schema.properties.forEach { (name, field) -> properties[name] = field }
+            } else if (schema is ObjectTypeWithEmptySchema) {
+                // Do nothing: no fields to add
+            } else {
+                throw IllegalStateException("Cannot flatten without an object schema")
+            }
         } else {
             properties[DestinationRecord.Meta.COLUMN_NAME_DATA] =
                 FieldType(schema, nullable = false)
