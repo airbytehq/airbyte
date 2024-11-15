@@ -40,9 +40,9 @@ definitions:
                 field_path: ["results"]
               record_filter:
                 condition: "{{ record['id'] == parameters['schema_id'] }}"
-        schema_pointer: [ "properties" ]
-        key_pointer: [ "name" ]
-        type_pointer: [ "type" ]
+        schema_pointer: ["properties"]
+        key_pointer: ["name"]
+        type_pointer: ["type"]
         types_map:
           - target_type: string
             current_type: enumeration
@@ -88,7 +88,7 @@ dynamic_streams:
           record_selector:
             extractor:
               type: DpathExtractor
-              field_path: [ "results" ]
+              field_path: ["results"]
       components_mapping:
         - type: MapComponentsDefinition
           key: name

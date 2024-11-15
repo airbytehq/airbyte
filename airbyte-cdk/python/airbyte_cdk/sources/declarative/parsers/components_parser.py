@@ -4,7 +4,7 @@
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Type, Union
 
 import dpath
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder

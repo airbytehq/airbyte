@@ -1628,7 +1628,7 @@ class ModelToComponentFactory:
             self._create_component_from_model(
                 model=map_components_definition_model,
                 value_type=ModelToComponentFactory._json_schema_type_name_to_type(map_components_definition_model.value_type),
-                config=config
+                config=config,
             )
             for map_components_definition_model in model.components_mapping
         ]
