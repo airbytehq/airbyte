@@ -202,28 +202,43 @@ class S3ClientFactory(
             secretAccessKey = keyConfig.awsAccessKeyConfiguration.secretAccessKey
         }
 
-        val credsProvider = arnRole.awsArnRoleConfiguration.roleArn?.let { roleArn ->
-            val externalId = System.getenv("AWS_ASSUME_ROLE_EXTERNAL_ID") // Consider injecting this dependency
-            val assumeRoleParams = AssumeRoleParameters(
-                roleArn = roleArn,
-                roleSessionName = AIRBYTE_STS_SESSION_NAME,
-                externalId = externalId
-            )
-            StsAssumeRoleCredentialsProvider(
-                bootstrapCredentialsProvider = staticCredentialsProvider,
-                assumeRoleParameters = assumeRoleParams
-            )
-        } ?: staticCredentialsProvider
+        val credsProvider =
+            arnRole.awsArnRoleConfiguration.roleArn?.let { roleArn ->
+                val externalId =
+                    System.getenv(
+                        "AWS_ASSUME_ROLE_EXTERNAL_ID"
+                    ) // Consider injecting this dependency
+                val assumeRoleParams =
+                    AssumeRoleParameters(
+                        roleArn = roleArn,
+                        roleSessionName = AIRBYTE_STS_SESSION_NAME,
+                        externalId = externalId
+                    )
+                StsAssumeRoleCredentialsProvider(
+                    bootstrapCredentialsProvider = staticCredentialsProvider,
+                    assumeRoleParameters = assumeRoleParams
+                )
+            }
+                ?: staticCredentialsProvider
 
-        val s3SdkClient = aws.sdk.kotlin.services.s3.S3Client {
-            region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
-            credentialsProvider = credsProvider
-        }
+        val s3SdkClient =
+            aws.sdk.kotlin.services.s3.S3Client {
+                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+                credentialsProvider = credsProvider
+            }
 
         return S3Client(
             s3SdkClient,
             bucketConfig.s3BucketConfiguration,
             uploadConfig?.objectStorageUploadConfiguration
         )
+    }
+
+}
+
+object MyApp {
+    @JvmStatic
+    fun main(args: Array<String>) {
+
     }
 }
