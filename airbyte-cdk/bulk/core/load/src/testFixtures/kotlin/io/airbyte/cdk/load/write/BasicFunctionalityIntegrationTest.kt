@@ -1478,7 +1478,7 @@ abstract class BasicFunctionalityIntegrationTest(
     // support safe_cast. (or, we move fully to in-connector typing, and we stop worrying about
     // per-destination safe_cast support).
     @Test
-    open fun testAllTypes() {
+    open fun testBasicTypes() {
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(

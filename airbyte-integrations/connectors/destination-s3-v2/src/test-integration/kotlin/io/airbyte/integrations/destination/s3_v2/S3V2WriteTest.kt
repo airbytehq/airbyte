@@ -154,8 +154,8 @@ class S3V2WriteTestCsvRootLevelFlattening :
     ) {
     @Disabled("Does not work yet")
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
@@ -179,8 +179,8 @@ class S3V2WriteTestAvroUncompressed :
     ) {
     @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
@@ -195,8 +195,8 @@ class S3V2WriteTestAvroBzip2 :
     ) {
     @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
@@ -211,8 +211,8 @@ class S3V2WriteTestParquetUncompressed :
     ) {
     @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
@@ -227,7 +227,7 @@ class S3V2WriteTestParquetSnappy :
     ) {
     @Disabled("Test does not support `stringifyShemalessObjects == true`")
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
