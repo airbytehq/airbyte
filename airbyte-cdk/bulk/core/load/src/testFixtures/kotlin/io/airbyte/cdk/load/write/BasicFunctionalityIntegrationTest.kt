@@ -1633,6 +1633,9 @@ abstract class BasicFunctionalityIntegrationTest(
                     (stream.schema as ObjectType)
                         .properties
                         .keys
+                        // id and struct don't have a bad value case here
+                        // (id would make the test unusable; struct is tested in testContainerTypes)
+                        .filter { it != "id" && it != "struct" }
                         .map { key ->
                             Change(
                                 key,
