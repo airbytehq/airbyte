@@ -350,6 +350,12 @@
       },
       "upload_part_size" : {
         "type" : "integer"
+      },
+      "max_message_queue_memory_usage_ratio" : {
+        "type" : "number"
+      },
+      "estimated_record_memory_overhead_ratio" : {
+        "type" : "number"
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "format" ]
