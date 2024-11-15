@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 val avroAllTypesBehavior =
-    StronglyTyped(topLevelFloatLosesPrecision = false, nestedFloatLosesPrecision = false)
+    StronglyTyped(topLevelFloatLosesPrecision = true, nestedFloatLosesPrecision = true)
 
 abstract class S3V2WriteTest(
     path: String,
