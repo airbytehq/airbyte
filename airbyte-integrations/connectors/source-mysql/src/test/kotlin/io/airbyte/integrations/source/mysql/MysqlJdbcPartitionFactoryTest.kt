@@ -15,6 +15,7 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -32,6 +33,7 @@ import java.time.OffsetDateTime
 import java.util.Base64
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -58,6 +60,19 @@ class MysqlJdbcPartitionFactoryTest {
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
+            )
+        val timestampFieldId = Field("id2", OffsetDateTimeFieldType)
+
+        val timestampStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("stream2")
+                    ),
+                schema = setOf(timestampFieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(timestampFieldId),
+                configuredCursor = timestampFieldId,
             )
 
         val binaryFieldId = Field("id3", BinaryStreamFieldType)
@@ -151,7 +166,7 @@ class MysqlJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream2")
+                        StreamDescriptor().withNamespace("test").withName("stream7")
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -184,6 +199,37 @@ class MysqlJdbcPartitionFactoryTest {
         val jdbcPartition =
             mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+    }
+
+    @Test
+    fun testResumeFromCompletedCursorBasedReadTimestamp() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2025-09-03T05:23:35",
+                  "version": 2,
+                  "state_type": "cursor_based",
+                  "stream_name": "stream2",
+                  "cursor_field": [
+                    "id2"
+                  ],
+                  "stream_namespace": "test",
+                  "cursor_record_count": 1 
+              } 
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(
+                streamFeedBootstrap(timestampStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+
+        assertEquals(
+            Jsons.valueToTree("2025-09-02T05:23:35.000000Z"),
+            (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
+        )
     }
 
     @Test

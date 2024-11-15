@@ -10,6 +10,8 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateTimeCodec.formatter
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
@@ -25,6 +27,9 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.util.Base64
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
@@ -299,6 +304,22 @@ class MysqlJdbcPartitionFactory(
                     LeafAirbyteSchemaType.BINARY -> {
                         val ba = Base64.getDecoder().decode(stateValue!!)
                         Jsons.valueToTree<BinaryNode>(ba)
+                    }
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
+                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                        try {
+                            val formatter: DateTimeFormatter =
+                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                            Jsons.valueToTree(
+                                LocalDateTime.parse(stateValue, formatter)
+                                    .minusDays(1)
+                                    .atOffset(java.time.ZoneOffset.UTC)
+                                    .format(OffsetDateTimeCodec.formatter)
+                            )
+                        } catch (e: DateTimeParseException) {
+                            // Resolve to use the new format.
+                            Jsons.valueToTree(stateValue)
+                        }
                     }
                     else -> Jsons.valueToTree(stateValue)
                 }
