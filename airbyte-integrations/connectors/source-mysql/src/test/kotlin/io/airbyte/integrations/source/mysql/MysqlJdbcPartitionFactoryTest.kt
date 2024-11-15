@@ -148,7 +148,7 @@ class MysqlJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withNamespace("test").withName("stream2")
+                        StreamDescriptor().withNamespace("test").withName("stream1")
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
