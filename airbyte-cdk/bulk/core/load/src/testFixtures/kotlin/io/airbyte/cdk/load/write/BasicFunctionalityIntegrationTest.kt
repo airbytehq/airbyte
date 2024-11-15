@@ -52,6 +52,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -83,6 +84,8 @@ data class StronglyTyped(
     val topLevelFloatLosesPrecision: Boolean = true,
     /** Whether floats nested inside objects/arrays are represented as float64. */
     val nestedFloatLosesPrecision: Boolean = true,
+    /** Whether the destination supports integers larger than int64 */
+    val integerCanBeLarge: Boolean = true,
 ) : AllTypesBehavior
 
 data object Untyped : AllTypesBehavior
@@ -1561,15 +1564,17 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
                 // A record with all fields unset
                 makeRecord("""{"id": 3}"""),
-                // A record that verifies floating-point behavior.
-                // 67.174118 cannot be represented as a standard float64
-                // (it turns into 67.17411800000001).
+                // A record that verifies numeric behavior.
+                // 99999999999999999999999999999999 is out of range for int64.
+                // 50000.0000000000000001 can't be represented as a standard float64,
+                // and gets rounded off.
                 makeRecord(
                     """
                         {
                           "id": 4,
-                          "struct": {"foo": 67.174118},
-                          "number": 67.174118
+                          "struct": {"foo": 50000.0000000000000001},
+                          "number": 50000.0000000000000001,
+                          "integer": 99999999999999999999999999999999
                         }
                     """.trimIndent(),
                 ),
@@ -1595,22 +1600,28 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val nestedFloat: BigDecimal
         val topLevelFloat: BigDecimal
+        val bigInt: BigInteger?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
             is StronglyTyped -> {
                 nestedFloat =
                     if (allTypesBehavior.nestedFloatLosesPrecision) {
-                        BigDecimal("67.17411800000001")
+                        BigDecimal("50000.0")
                     } else {
-                        BigDecimal("67.174118")
+                        BigDecimal("50000.0000000000000001")
                     }
                 topLevelFloat =
                     if (allTypesBehavior.topLevelFloatLosesPrecision) {
-                        BigDecimal("67.17411800000001")
+                        BigDecimal("50000.0")
                     } else {
-                        BigDecimal("67.174118")
+                        BigDecimal("50000.0000000000000001")
                     }
+                bigInt = if (allTypesBehavior.integerCanBeLarge) {
+                    BigInteger("99999999999999999999999999999999")
+                } else {
+                    null
+                }
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -1650,8 +1661,9 @@ abstract class BasicFunctionalityIntegrationTest(
                         .toMutableList()
             }
             Untyped -> {
-                nestedFloat = BigDecimal("67.174118")
-                topLevelFloat = BigDecimal("67.174118")
+                nestedFloat = BigDecimal("50000.0000000000000001")
+                topLevelFloat = BigDecimal("50000.0000000000000001")
+                bigInt = BigInteger("99999999999999999999999999999999")
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -1727,6 +1739,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 4,
                             "struct" to mapOf("foo" to nestedFloat),
                             "number" to topLevelFloat,
+                            "integer" to bigInt,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
