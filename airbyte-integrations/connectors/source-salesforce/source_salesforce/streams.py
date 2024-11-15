@@ -886,7 +886,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         if not self._stream_slicer_cursor:
             raise ValueError("Cursor should be set at this point")
 
-        yield from self._stream_slicer_cursor.generate_slices()
+        yield from self._stream_slicer_cursor.stream_slices()
 
     @property
     def stream_slice_step(self) -> pendulum.Duration:
