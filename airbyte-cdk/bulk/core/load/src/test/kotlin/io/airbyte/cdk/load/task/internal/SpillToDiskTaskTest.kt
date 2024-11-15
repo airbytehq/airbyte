@@ -8,6 +8,7 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -18,14 +19,12 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.util.lineSequence
-import io.micronaut.context.annotation.Primary
-import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlin.io.path.inputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @MicronautTest(
@@ -39,15 +38,15 @@ import org.junit.jupiter.api.Test
         ]
 )
 class SpillToDiskTaskTest {
-    @Inject lateinit var memoryManager: ReservationManager
-    @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
+    private lateinit var memoryManager: ReservationManager
+    private lateinit var diskManager: ReservationManager
+    private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject
     lateinit var queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+    @Inject
+    lateinit var spillFileProvider: SpillFileProvider
 
-    @Singleton
-    @Primary
-    @Requires(env = ["SpillToDiskTaskTest"])
     class MockFlushStrategy : FlushStrategy {
         override suspend fun shouldFlush(
             stream: DestinationStream,
@@ -62,16 +61,14 @@ class SpillToDiskTaskTest {
         val queue = queueSupplier.get(MockDestinationCatalogFactory.stream1.descriptor)
         val maxRecords = ((1024 * 1.5) / 8).toLong()
         var recordsWritten = 0L
-        var bytesReserved = 0L
         while (recordsWritten < maxRecords) {
             val index = recordsWritten++
-            bytesReserved++
             queue.publish(
                 memoryManager.reserve(
-                    1L,
+                    Fixtures.MEMORY_RESERVATION_SIZE_BYTES,
                     StreamRecordWrapped(
                         index = index,
-                        sizeBytes = 8,
+                        sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
                         record =
                             DestinationRecord(
                                 stream = MockDestinationCatalogFactory.stream1.descriptor,
@@ -85,14 +82,31 @@ class SpillToDiskTaskTest {
             )
         }
         queue.publish(memoryManager.reserve(0L, StreamRecordCompleteWrapped(index = maxRecords)))
-        return bytesReserved
+        return recordsWritten
+    }
+
+    @BeforeEach
+    fun setup() {
+        memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
+        diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
+        spillToDiskTaskFactory = DefaultSpillToDiskTaskFactory(
+            spillFileProvider,
+            queueSupplier,
+            MockFlushStrategy(),
+            diskManager,
+        )
     }
 
     @Test
     fun testSpillToDiskTask() = runTest {
-        val availableMemory = memoryManager.remainingCapacityBytes
-        val bytesReserved = primeMessageQueue()
-        Assertions.assertEquals(availableMemory - bytesReserved, memoryManager.remainingCapacityBytes)
+        val messageCount = primeMessageQueue()
+        val bytesReservedMemory = Fixtures.MEMORY_RESERVATION_SIZE_BYTES * messageCount
+        val bytesReservedDisk = Fixtures.SERIALIZED_SIZE_BYTES * messageCount
+
+        // memory manager has reserved bytes for messages
+        Assertions.assertEquals(Fixtures.INITIAL_MEMORY_CAPACITY - bytesReservedMemory, memoryManager.remainingCapacityBytes)
+        // disk manager has not reserved any bytes
+        Assertions.assertEquals(Fixtures.INITIAL_DISK_CAPACITY, diskManager.remainingCapacityBytes)
 
         val mockTaskLauncher = MockTaskLauncher()
         spillToDiskTaskFactory
@@ -121,9 +135,20 @@ class SpillToDiskTaskTest {
         Assertions.assertEquals(expectedLinesFirst, file1.inputStream().lineSequence().toList())
         Assertions.assertEquals(expectedLinesSecond, file2.inputStream().lineSequence().toList())
 
-        Assertions.assertEquals(availableMemory, memoryManager.remainingCapacityBytes)
+        // we have released all memory reservations
+        Assertions.assertEquals(Fixtures.INITIAL_MEMORY_CAPACITY, memoryManager.remainingCapacityBytes)
+        // we now have equivalent disk reservations
+        Assertions.assertEquals(Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk, diskManager.remainingCapacityBytes)
 
         file1.toFile().delete()
         file2.toFile().delete()
+    }
+
+    object Fixtures {
+        const val INITIAL_DISK_CAPACITY = 100000L
+        const val INITIAL_MEMORY_CAPACITY = 200000L
+
+        const val SERIALIZED_SIZE_BYTES = 8L
+        const val MEMORY_RESERVATION_SIZE_BYTES = 10L
     }
 }

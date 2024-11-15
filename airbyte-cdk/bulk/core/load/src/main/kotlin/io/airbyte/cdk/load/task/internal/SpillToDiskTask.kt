@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import com.fasterxml.jackson.core.StreamReadConstraints
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
