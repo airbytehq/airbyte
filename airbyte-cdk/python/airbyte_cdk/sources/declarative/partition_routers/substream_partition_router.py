@@ -1,9 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import copy
 import logging
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage
@@ -68,7 +69,6 @@ class SubstreamPartitionRouter(PartitionRouter):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
-        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
@@ -143,28 +143,21 @@ class SubstreamPartitionRouter(PartitionRouter):
                 if parent_stream_config.extra_fields:
                     extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]  # type: ignore # extra_fields is always casted to an interpolated string
 
-                incremental_dependency = parent_stream_config.incremental_dependency
-
-                stream_slices_for_parent = []
-                previous_associated_slice = None
-
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
                 for parent_record in parent_stream.read_only_records():
                     parent_partition = None
-                    parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)
                     if isinstance(parent_record, AirbyteMessage):
                         self.logger.warning(
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data  # type: ignore[union-attr]  # record is always a Record
+                            parent_record = parent_record.record.data  # type: ignore[union-attr, assignment]  # record is always a Record
                         else:
                             continue
                     elif isinstance(parent_record, Record):
                         parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
-                        parent_associated_slice = parent_record.associated_slice
                         parent_record = parent_record.data
                     elif not isinstance(parent_record, Mapping):
                         # The parent_record should only take the form of a Record, AirbyteMessage, or Mapping. Anything else is invalid
@@ -172,48 +165,16 @@ class SubstreamPartitionRouter(PartitionRouter):
                     try:
                         partition_value = dpath.get(parent_record, parent_field)
                     except KeyError:
-                        pass
-                    else:
-                        if incremental_dependency:
-                            if previous_associated_slice is None:
-                                previous_associated_slice = parent_associated_slice
-                            elif previous_associated_slice != parent_associated_slice:
-                                # Update the parent state, as parent stream read all record for current slice and state
-                                # is already updated.
-                                #
-                                # When the associated slice of the current record of the parent stream changes, this
-                                # indicates the parent stream has finished processing the current slice and has moved onto
-                                # the next. When this happens, we should update the partition router's current state and
-                                # flush the previous set of collected records and start a new set
-                                #
-                                # Note: One tricky aspect to take note of here is that parent_stream.state will actually
-                                # fetch state of the stream of the previous record's slice NOT the current record's slice.
-                                # This is because in the retriever, we only update stream state after yielding all the
-                                # records. And since we are in the middle of the current slice, parent_stream.state is
-                                # still set to the previous state.
-                                self._parent_state[parent_stream.name] = parent_stream.state
-                                yield from stream_slices_for_parent
+                        continue
 
-                                # Reset stream_slices_for_parent after we've flushed parent records for the previous parent slice
-                                stream_slices_for_parent = []
-                                previous_associated_slice = parent_associated_slice
+                    # Add extra fields
+                    extracted_extra_fields = self._extract_extra_fields(parent_record, extra_fields)
 
-                        # Add extra fields
-                        extracted_extra_fields = self._extract_extra_fields(parent_record, extra_fields)
-
-                        stream_slices_for_parent.append(
-                            StreamSlice(
-                                partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
-                                cursor_slice={},
-                                extra_fields=extracted_extra_fields,
-                            )
-                        )
-
-                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
-                if incremental_dependency:
-                    self._parent_state[parent_stream.name] = parent_stream.state
-
-                yield from stream_slices_for_parent
+                    yield StreamSlice(
+                        partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
+                        cursor_slice={},
+                        extra_fields=extracted_extra_fields,
+                    )
 
     def _extract_extra_fields(
         self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
@@ -245,9 +206,11 @@ class SubstreamPartitionRouter(PartitionRouter):
         """
         Set the state of the parent streams.
 
+        If the `parent_state` key is missing from `stream_state`, migrate the child stream state to the parent stream's state format.
+        This migration applies only to parent streams with incremental dependencies.
+
         Args:
-            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
-            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+            stream_state (StreamState): The state of the streams to be set.
 
         Example of state format:
         {
@@ -260,14 +223,46 @@ class SubstreamPartitionRouter(PartitionRouter):
                 }
             }
         }
+
+        Example of migrating to parent state format:
+        - Initial state:
+        {
+            "updated_at": "2023-05-27T00:00:00Z"
+        }
+        - After migration:
+        {
+            "updated_at": "2023-05-27T00:00:00Z",
+            "parent_state": {
+                "parent_stream_name": {
+                    "parent_stream_cursor": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
         """
         if not stream_state:
             return
 
-        parent_state = stream_state.get("parent_state")
-        if not parent_state:
+        parent_state = stream_state.get("parent_state", {})
+
+        # If `parent_state` doesn't exist and at least one parent stream has an incremental dependency,
+        # copy the child state to parent streams with incremental dependencies.
+        incremental_dependency = any([parent_config.incremental_dependency for parent_config in self.parent_stream_configs])
+        if not parent_state and not incremental_dependency:
             return
 
+        if not parent_state and incremental_dependency:
+            # Attempt to retrieve child state
+            substream_state = list(stream_state.values())
+            substream_state = substream_state[0] if substream_state else {}
+            parent_state = {}
+
+            # Copy child state to parent streams with incremental dependencies
+            if substream_state:
+                for parent_config in self.parent_stream_configs:
+                    if parent_config.incremental_dependency:
+                        parent_state[parent_config.stream.name] = {parent_config.stream.cursor_field: substream_state}
+
+        # Set state for each parent stream with an incremental dependency
         for parent_config in self.parent_stream_configs:
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
@@ -289,7 +284,11 @@ class SubstreamPartitionRouter(PartitionRouter):
             }
         }
         """
-        return self._parent_state
+        parent_state = {}
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_state[parent_config.stream.name] = copy.deepcopy(parent_config.stream.state)
+        return parent_state
 
     @property
     def logger(self) -> logging.Logger:

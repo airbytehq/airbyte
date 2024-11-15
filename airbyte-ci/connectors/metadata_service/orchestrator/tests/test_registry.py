@@ -508,7 +508,7 @@ def test_apply_release_candidates_with_older_rc(mocker):
             "documentationUrl": "https://test_documentation_url.com",
             "spec": {},
             "dockerImageTag": "1.1.0-rc.1",
-            "releases": {"isReleaseCandidate": True},
+            "releases": {"rolloutConfiguration": {"enableProgressiveRollout": True}},
         }
     )
 
@@ -535,7 +535,7 @@ def test_apply_release_candidates_newer_version(mocker):
             "documentationUrl": "https://test_documentation_url.com",
             "spec": {},
             "dockerImageTag": "1.1.0-rc.1",
-            "releases": {"isReleaseCandidate": True},
+            "releases": {"rolloutConfiguration": {"enableProgressiveRollout": True}},
         }
     )
     result = registry.apply_release_candidates(latest_registry_entry, rc_registry_entry)

@@ -89,18 +89,25 @@ def apply_release_candidates(
     latest_registry_entry: dict,
     release_candidate_registry_entry: PolymorphicRegistryEntry,
 ) -> dict:
+    try:
+        if not release_candidate_registry_entry.releases.rolloutConfiguration.enableProgressiveRollout:
+            return latest_registry_entry
+    # Handle if releases or rolloutConfiguration is not present in the release candidate registry entry
+    except AttributeError:
+        return latest_registry_entry
+
     # Ensure that the release candidate is newer than the latest registry entry
-    if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) > semver.Version.parse(
+    if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) < semver.Version.parse(
         latest_registry_entry["dockerImageTag"]
     ):
-        updated_registry_entry = copy.deepcopy(latest_registry_entry)
-        updated_registry_entry.setdefault("releases", {})
-        updated_registry_entry["releases"]["releaseCandidates"] = {
-            release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
-        }
-        return updated_registry_entry
-    else:
         return latest_registry_entry
+
+    updated_registry_entry = copy.deepcopy(latest_registry_entry)
+    updated_registry_entry.setdefault("releases", {})
+    updated_registry_entry["releases"]["releaseCandidates"] = {
+        release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
+    }
+    return updated_registry_entry
 
 
 def apply_release_candidate_entries(registry_entry_dict: dict, docker_repository_to_rc_registry_entry: dict) -> dict:
