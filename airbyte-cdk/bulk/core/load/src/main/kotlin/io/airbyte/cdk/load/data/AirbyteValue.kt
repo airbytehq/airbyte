@@ -22,7 +22,7 @@ sealed interface AirbyteValue {
                 null -> NullValue
                 is String -> StringValue(value)
                 is Boolean -> BooleanValue(value)
-                is Int -> IntegerValue(value.toLong())
+                is Int -> IntValue(value)
                 is Long -> IntegerValue(value)
                 is BigInteger -> IntegerValue(value)
                 is Double -> NumberValue(BigDecimal.valueOf(value))
@@ -63,7 +63,7 @@ value class BooleanValue(val value: Boolean) : AirbyteValue, Comparable<BooleanV
 
 @JvmInline
 value class IntegerValue(val value: BigInteger) : AirbyteValue, Comparable<IntegerValue> {
-    constructor(value: Long) : this(BigInteger.valueOf(value))
+    constructor(value: Long): this(BigInteger.valueOf(value))
     override fun compareTo(other: IntegerValue): Int = value.compareTo(other.value)
 }
 
