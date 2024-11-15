@@ -427,7 +427,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
         if not self._cursor:
             yield from [StreamSlice(partition={}, cursor_slice={})]
             return
-        yield from self._cursor.generate_slices()
+        yield from self._cursor.stream_slices()
 
 
 class BulkParentStreamStreamSlicer(StreamSlicer):
