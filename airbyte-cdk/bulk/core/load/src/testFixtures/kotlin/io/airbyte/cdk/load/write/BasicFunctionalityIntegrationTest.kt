@@ -1494,6 +1494,8 @@ abstract class BasicFunctionalityIntegrationTest(
                           "struct": {"foo": 50000.0000000000000001},
                           "number": 50000.0000000000000001,
                           "integer": 99999999999999999999999999999999
+                          "struct": {"foo": 67.174118},
+                          "number": 67.174118
                         }
                     """.trimIndent(),
                 ),
