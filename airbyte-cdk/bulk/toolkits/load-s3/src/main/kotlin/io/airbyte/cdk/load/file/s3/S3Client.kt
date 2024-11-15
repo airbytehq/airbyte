@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.file.s3
 
+import aws.sdk.kotlin.runtime.auth.credentials.AssumeRoleParameters
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
+import aws.sdk.kotlin.runtime.auth.credentials.StsAssumeRoleCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
 import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadRequest
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
@@ -17,7 +19,6 @@ import aws.smithy.kotlin.runtime.content.toInputStream
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
-import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
@@ -179,7 +180,7 @@ class S3ClientFactory(
     private val arnRole: AWSArnRoleConfigurationProvider,
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
-    private val uploadConifg: ObjectStorageUploadConfigurationProvider? = null,
+    private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
 ) {
     companion object {
         fun <T> make(config: T) where
@@ -190,24 +191,39 @@ class S3ClientFactory(
             S3ClientFactory(config, config, config, config).make()
     }
 
+    private val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
+
     @Singleton
     @Secondary
     fun make(): S3Client {
-        val credentials = StaticCredentialsProvider {
+        // For now always assume credentials exists. Not true.
+        val staticCredentialsProvider = StaticCredentialsProvider {
             accessKeyId = keyConfig.awsAccessKeyConfiguration.accessKeyId
             secretAccessKey = keyConfig.awsAccessKeyConfiguration.secretAccessKey
         }
 
-        val client =
-            aws.sdk.kotlin.services.s3.S3Client {
-                region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
-                credentialsProvider = credentials
-            }
+        val credsProvider = arnRole.awsArnRoleConfiguration.roleArn?.let { roleArn ->
+            val externalId = System.getenv("AWS_ASSUME_ROLE_EXTERNAL_ID") // Consider injecting this dependency
+            val assumeRoleParams = AssumeRoleParameters(
+                roleArn = roleArn,
+                roleSessionName = AIRBYTE_STS_SESSION_NAME,
+                externalId = externalId
+            )
+            StsAssumeRoleCredentialsProvider(
+                bootstrapCredentialsProvider = staticCredentialsProvider,
+                assumeRoleParameters = assumeRoleParams
+            )
+        } ?: staticCredentialsProvider
+
+        val s3SdkClient = aws.sdk.kotlin.services.s3.S3Client {
+            region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
+            credentialsProvider = credsProvider
+        }
 
         return S3Client(
-            client,
+            s3SdkClient,
             bucketConfig.s3BucketConfiguration,
-            uploadConifg?.objectStorageUploadConfiguration,
+            uploadConfig?.objectStorageUploadConfiguration
         )
     }
 }
