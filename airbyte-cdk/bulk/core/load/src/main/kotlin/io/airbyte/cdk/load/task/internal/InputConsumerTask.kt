@@ -6,11 +6,9 @@ package io.airbyte.cdk.load.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
@@ -32,7 +30,6 @@ import io.airbyte.cdk.load.message.StreamFileWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
 import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.KillableScope
@@ -40,11 +37,7 @@ import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.InputStream
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 
 interface InputConsumerTask : SyncLevel, KillableScope
 
@@ -193,46 +186,3 @@ class DefaultInputConsumerTask(
         }
     }
 }
-
-interface SizedInputFlow<T> : Flow<Pair<Long, T>>
-
-abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserved<T>> {
-    val log = KotlinLogging.logger {}
-
-    abstract val config: DestinationConfiguration
-    abstract val deserializer: Deserializer<T>
-    abstract val memoryManager: ReservationManager
-    abstract val inputStream: InputStream
-
-    override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
-        log.info {
-            "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
-        }
-
-        inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
-            if (line.isEmpty()) {
-                return@forEachIndexed
-            }
-
-            val lineSize = line.length.toLong()
-            val estimatedSize = lineSize * config.estimatedRecordMemoryOverheadRatio
-            val reserved = memoryManager.reserve(estimatedSize.toLong(), line)
-            val message = deserializer.deserialize(line)
-            collector.emit(Pair(lineSize, reserved.replace(message)))
-
-            if (index % 10_000 == 0) {
-                log.info { "Processed $index lines" }
-            }
-        }
-
-        log.info { "Finished processing input" }
-    }
-}
-
-@Singleton
-class DefaultInputFlow(
-    override val config: DestinationConfiguration,
-    override val deserializer: Deserializer<DestinationMessage>,
-    @Named("memoryManager") override val memoryManager: ReservationManager,
-    override val inputStream: InputStream
-) : ReservingDeserializingInputFlow<DestinationMessage>()

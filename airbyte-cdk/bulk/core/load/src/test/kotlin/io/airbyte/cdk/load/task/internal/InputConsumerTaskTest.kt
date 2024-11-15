@@ -39,6 +39,7 @@ import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.FlowCollector
@@ -74,7 +75,7 @@ class InputConsumerTaskTest {
     @Singleton
     @Primary
     @Requires(env = ["InputConsumerTaskTest"])
-    class MockInputFlow(val memoryManager: ReservationManager) :
+    class MockInputFlow(@Named("memoryManager") val memoryManager: ReservationManager) :
         SizedInputFlow<Reserved<DestinationMessage>> {
         private val messages = Channel<Pair<Long, Reserved<DestinationMessage>>>(Channel.UNLIMITED)
         val initialMemory = memoryManager.remainingCapacityBytes
