@@ -120,7 +120,9 @@ class MySqlDebeziumOperations(
         val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
         val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
         if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
-            log.info {"Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"};
+            log.info {
+                "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
+            }
             return abortCdcSync()
         }
 
