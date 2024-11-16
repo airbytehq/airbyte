@@ -9,7 +9,6 @@ import io.debezium.spi.converter.RelationalColumn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.apache.kafka.connect.data.SchemaBuilder
-private val log = KotlinLogging.logger {}
 
 class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
     override fun configure(props: Properties?) {}
@@ -36,7 +35,6 @@ class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
         registration: CustomConverter.ConverterRegistration<SchemaBuilder>?
     ) {
         registration?.register(SchemaBuilder.bool()) { x ->
-            log.info { "*** x: $x ${x::class} ${x::class.java}"}
             if (x == null) {
                 return@register if (field!!.isOptional) {
                     null
@@ -49,7 +47,7 @@ class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
             when (x) {
                 is Boolean -> x
                 is String -> x.toBoolean()
-                is Int, is Short, is Long -> x != 0
+                is Number -> x != 0
                 else -> throw IllegalArgumentException("Unsupported type: ${x::class}")
             }
         }

@@ -15,7 +15,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import org.apache.kafka.connect.data.SchemaBuilder
 
-private val log = KotlinLogging.logger {}
 /**
  * This is a custom debezium converter used in MySQL to handle the DATETIME data type. We need a
  * custom converter cause by default debezium returns the DATETIME values as numbers. We need to
@@ -58,7 +57,6 @@ class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> 
         val fieldType = field!!.typeName()
 
         registration?.register(SchemaBuilder.string().optional()) { x ->
-            log.info { "*** x: $x ${x::class} ${x::class.java} $fieldType"}
             if (x == null) {
                 return@register convertDefaultValue(field)
             }
