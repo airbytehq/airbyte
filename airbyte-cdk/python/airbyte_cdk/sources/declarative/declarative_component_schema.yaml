@@ -1717,6 +1717,21 @@ definitions:
       type:
         type: string
         enum: [JsonlDecoder]
+  CsvDecoder:
+    title: CSV Decoder
+    description: Use this if the response is text in CSV format.
+    type: object
+    required:
+      - type
+      - delimiter
+    properties:
+      type:
+        type: string
+        enum: [CsvDecoder]
+      delimiter:
+        type: string
+        description: The delimiter used in the CSV file.
+        default: ","
   KeysToLower:
     title: Keys to Lower Case
     description: A transformation that renames all keys to lower case.
@@ -2408,6 +2423,7 @@ definitions:
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
           - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/CsvDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2524,6 +2540,7 @@ definitions:
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
           - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/CsvDecoder"
       $parameters:
         type: object
         additionalProperties: true
