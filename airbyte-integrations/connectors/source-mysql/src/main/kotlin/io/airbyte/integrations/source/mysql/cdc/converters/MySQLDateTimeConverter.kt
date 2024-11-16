@@ -8,7 +8,6 @@ import io.airbyte.cdk.jdbc.converters.DateTimeConverter
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import io.debezium.time.Conversions
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*

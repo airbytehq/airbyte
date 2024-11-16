@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql.cdc.converters
 
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.apache.kafka.connect.data.SchemaBuilder
 
