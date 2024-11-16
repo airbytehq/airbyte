@@ -1,0 +1,320 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: >-
+  The GreytHR Connector for Airbyte allows seamless integration with the GreytHR
+  platform, enabling users to automate the extraction and synchronization of
+  employee management and payroll data into their preferred destinations for
+  reporting, analytics, or further processing.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Employees
+
+definitions:
+  streams:
+    Employees:
+      type: DeclarativeStream
+      name: Employees
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees"
+    Employees Categories:
+      type: DeclarativeStream
+      name: Employees Categories
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/categories
+          http_method: GET
+          request_parameters:
+            descRequired: "true"
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees Categories"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.greythr.com
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://{{ config['gthost'] }}/uas/v1/oauth2
+        path: client-token
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: "{{ config[\"password\"] }}"
+          username: "{{ config[\"username\"] }}"
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+      session_token_path:
+        - access_token
+      expiration_duration: P1W
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          field_name: ACCESS-TOKEN
+          inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Employees"
+  - $ref: "#/definitions/streams/Employees Categories"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - gthost
+      - username
+    properties:
+      gthost:
+        type: string
+        description: Your GreytHR Host URL
+        order: 0
+        title: Host URL
+      username:
+        type: string
+        order: 1
+        title: Username
+      password:
+        type: string
+        order: 2
+        title: Password
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Employees: true
+    Employees Categories: true
+  testedStreams:
+    Employees:
+      streamHash: 3e95dc20590b8dc1abf16732e980b73fdd1e097b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employees Categories:
+      streamHash: a7195cd9ca3b4212eced68a62431c0ea527601d9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.getknit.dev/blog/greythr-api-guide
+
+schemas:
+  Employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateOfBirth:
+        type:
+          - string
+          - "null"
+      dateOfJoin:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type: number
+      employeeNo:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      lastModified:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      leavingDate:
+        type:
+          - string
+          - "null"
+      leftorg:
+        type:
+          - boolean
+          - "null"
+      middleName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      personalEmail:
+        type:
+          - string
+          - "null"
+      personalEmail2:
+        type:
+          - string
+          - "null"
+      personalEmail3:
+        type:
+          - string
+          - "null"
+      prevExperience:
+        type:
+          - number
+          - "null"
+      probationPeriod:
+        type:
+          - number
+          - "null"
+      relevantExperience:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      yearsInJob:
+        type:
+          - number
+          - "null"
+      yearsInService:
+        type:
+          - number
+          - "null"
+    required:
+      - employeeId
+  Employees Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      categoryList:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            category:
+              type:
+                - number
+                - "null"
+            categoryDesc:
+              type:
+                - string
+                - "null"
+            effectiveFrom:
+              type:
+                - string
+                - "null"
+            effectiveTo:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+            valueDesc:
+              type:
+                - string
+                - "null"
+      employeeId:
+        type: number
+    required:
+      - employeeId
