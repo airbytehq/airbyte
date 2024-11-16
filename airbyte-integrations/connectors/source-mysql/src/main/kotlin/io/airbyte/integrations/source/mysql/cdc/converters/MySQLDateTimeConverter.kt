@@ -58,12 +58,12 @@ class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> 
         val fieldType = field!!.typeName()
 
         registration?.register(SchemaBuilder.string().optional()) { x ->
-            log.info { "*** x: $x ${x::class} ${x::class.java}"}
+            log.info { "*** x: $x ${x::class} ${x::class.java} $fieldType"}
             if (x == null) {
-                convertDefaultValue(field)
+                return@register convertDefaultValue(field)
             }
 
-            when (fieldType.uppercase()) {
+            return@register when (fieldType.uppercase()) {
                 "DATETIME" -> {
                     if (x is Long) {
                         if (getTimePrecision(field) <= 3) {
