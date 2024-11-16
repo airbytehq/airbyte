@@ -49,7 +49,7 @@ class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
             when (x) {
                 is Boolean -> x
                 is String -> x.toBoolean()
-                is Int, Short, Long-> x != 0
+                is Int, is Short, is Long -> x != 0
                 else -> throw IllegalArgumentException("Unsupported type: ${x::class}")
             }
         }
