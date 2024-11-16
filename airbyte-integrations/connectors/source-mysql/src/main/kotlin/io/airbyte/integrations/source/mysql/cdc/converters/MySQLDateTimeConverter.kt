@@ -63,16 +63,16 @@ class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> 
                 return@register convertDefaultValue(field)
             }
 
-            return@register when (fieldType.uppercase()) {
+            when (fieldType.uppercase()) {
                 "DATETIME" -> {
                     if (x is Long) {
                         if (getTimePrecision(field) <= 3) {
-                            DateTimeConverter.convertToTimestamp(
+                            return@register DateTimeConverter.convertToTimestamp(
                                 Conversions.toInstantFromMillis(x),
                             )
                         }
                         if (getTimePrecision(field) <= 6) {
-                            DateTimeConverter.convertToTimestamp(
+                            return@register DateTimeConverter.convertToTimestamp(
                                 Conversions.toInstantFromMicros(x),
                             )
                         }
@@ -81,7 +81,7 @@ class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> 
                 }
                 "DATE" -> {
                     if (x is Int) {
-                        DateTimeConverter.convertToDate(
+                        return@register DateTimeConverter.convertToDate(
                             LocalDate.ofEpochDay(
                                 x.toLong(),
                             ),
@@ -92,7 +92,7 @@ class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> 
                 "TIME" -> {
                     if (x is Long) {
                         val l = Math.multiplyExact(x, TimeUnit.MICROSECONDS.toNanos(1))
-                        DateTimeConverter.convertToTime(
+                        return@register DateTimeConverter.convertToTime(
                             LocalTime.ofNanoOfDay(
                                 l,
                             ),
