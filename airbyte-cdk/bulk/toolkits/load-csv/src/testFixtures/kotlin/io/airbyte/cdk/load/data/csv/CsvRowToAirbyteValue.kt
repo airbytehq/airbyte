@@ -47,6 +47,10 @@ class CsvRowToAirbyteValue {
         schema.properties
             .toList()
             .zip(asList)
+            .let {
+                println("zipped: $it")
+                it
+            }
             .map { (property, value) ->
                 property.first to convertInner(value, property.second.type)
             }
