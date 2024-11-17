@@ -28,7 +28,8 @@ class AirbyteValueWithMetaToOutputRecord {
                 Instant.ofEpochMilli(
                     (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT]
                             as IntegerValue)
-                        .value.toLong()
+                        .value
+                        .toLong()
                 ),
             loadedAt = null,
             data = value.values[DestinationRecord.Meta.COLUMN_NAME_DATA] as ObjectValue,
