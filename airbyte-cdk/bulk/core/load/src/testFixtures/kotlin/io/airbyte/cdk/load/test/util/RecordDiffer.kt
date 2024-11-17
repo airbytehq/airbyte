@@ -33,9 +33,9 @@ class RecordDiffer(
     /** The path to the cursor from a record, or null if the stream has no cursor. */
     val cursor: List<String>? = null,
     /**
-     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between
-     * a value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs
-     * `null :: jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
+     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between a
+     * value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs `null ::
+     * jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
      *
      * Set this parameter to true for destinations which do not support this distinction (e.g. Avro
      * files).

@@ -194,7 +194,12 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -204,7 +209,12 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -214,7 +224,12 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -224,4 +239,9 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}

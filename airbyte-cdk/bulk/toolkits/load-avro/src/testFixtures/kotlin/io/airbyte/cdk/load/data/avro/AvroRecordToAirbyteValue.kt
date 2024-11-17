@@ -35,9 +35,6 @@ import io.airbyte.cdk.load.data.UnknownType
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.time.ZonedDateTime
 import org.apache.avro.generic.GenericArray
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
