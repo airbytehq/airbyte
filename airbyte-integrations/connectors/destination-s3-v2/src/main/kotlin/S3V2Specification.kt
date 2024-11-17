@@ -29,8 +29,8 @@ class S3V2Specification :
     S3BucketSpecification,
     S3PathSpecification,
     ObjectStorageFormatSpecificationProvider {
-    override val accessKeyId: String = ""
-    override val secretAccessKey: String = ""
+    override val accessKeyId: String? = null
+    override val secretAccessKey: String? = null
     override val roleArn: String? = null
     override val s3BucketName: String = ""
     override val s3BucketPath: String = ""
