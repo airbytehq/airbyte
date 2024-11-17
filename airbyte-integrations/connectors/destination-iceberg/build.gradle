@@ -44,6 +44,8 @@ dependencies {
     implementation "software.amazon.awssdk:aws-core:2.24.5"
 
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
+    implementation "org.apache.hadoop:hadoop-azure:3.3.2"
+    implementation "org.apache.hadoop:hadoop-azure-datalake:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
     implementation "org.postgresql:postgresql:42.5.0"
