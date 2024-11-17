@@ -14,7 +14,7 @@ class KlaviyoErrorHandler(DefaultErrorHandler):
         if isinstance(response_or_exception, InvalidURL):
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
-                failure_type=FailureType.system_error,
+                failure_type=FailureType.transient_error,
                 error_message="source-klaviyo has faced a temporary DNS resolution issue. Retrying...",
             )
         return super().interpret_response(response_or_exception)
