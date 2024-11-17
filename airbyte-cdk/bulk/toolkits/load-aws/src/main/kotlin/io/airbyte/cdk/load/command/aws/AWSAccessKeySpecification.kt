@@ -37,7 +37,7 @@ interface AWSAccessKeySpecification {
     }
 }
 
-data class AWSAccessKeyConfiguration(val accessKeyId: String, val secretAccessKey: String)
+data class AWSAccessKeyConfiguration(val accessKeyId: String?, val secretAccessKey: String?)
 
 interface AWSAccessKeyConfigurationProvider {
     val awsAccessKeyConfiguration: AWSAccessKeyConfiguration
