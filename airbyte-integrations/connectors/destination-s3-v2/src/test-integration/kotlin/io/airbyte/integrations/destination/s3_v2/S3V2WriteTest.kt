@@ -168,9 +168,14 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -178,9 +183,14 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -188,9 +198,14 @@ class S3V2WriteTestParquetUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -198,6 +213,11 @@ class S3V2WriteTestParquetSnappy :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}

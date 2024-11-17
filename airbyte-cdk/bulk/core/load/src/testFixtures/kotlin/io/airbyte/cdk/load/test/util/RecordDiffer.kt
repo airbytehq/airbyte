@@ -33,9 +33,9 @@ class RecordDiffer(
     /** The path to the cursor from a record, or null if the stream has no cursor. */
     val cursor: List<String>? = null,
     /**
-     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between
-     * a value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs
-     * `null :: jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
+     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between a
+     * value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs `null ::
+     * jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
      *
      * Set this parameter to true for destinations which do not support this distinction (e.g. Avro
      * files).
@@ -240,7 +240,8 @@ class RecordDiffer(
                     }
                 } else if (!expectedPresent && actualPresent) {
                     if (!nullEqualsUnset || actualRecord.data.values[key] !is NullValue) {
-                        // The expected record didn't contain this key, but the actual record contained
+                        // The expected record didn't contain this key, but the actual record
+                        // contained
                         // this key.
                         diff.append(
                             "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"

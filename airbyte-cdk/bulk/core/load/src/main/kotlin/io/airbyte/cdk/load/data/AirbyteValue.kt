@@ -63,7 +63,7 @@ value class BooleanValue(val value: Boolean) : AirbyteValue, Comparable<BooleanV
 
 @JvmInline
 value class IntegerValue(val value: BigInteger) : AirbyteValue, Comparable<IntegerValue> {
-    constructor(value: Long): this(BigInteger.valueOf(value))
+    constructor(value: Long) : this(BigInteger.valueOf(value))
     override fun compareTo(other: IntegerValue): Int = value.compareTo(other.value)
 }
 

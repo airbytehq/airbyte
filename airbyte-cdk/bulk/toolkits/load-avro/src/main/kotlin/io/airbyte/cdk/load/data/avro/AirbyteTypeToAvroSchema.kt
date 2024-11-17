@@ -87,16 +87,10 @@ class AirbyteTypeToAvroSchema {
         avroSchema: Schema,
     ): Schema =
         if (airbyteSchema.nullable && avroSchema.type != Schema.Type.UNION) {
-            SchemaBuilder.unionOf()
-                .nullType()
-                .and()
-                .type(avroSchema)
-                .endUnion()
+            SchemaBuilder.unionOf().nullType().and().type(avroSchema).endUnion()
         } else if (airbyteSchema.nullable && avroSchema.type == Schema.Type.UNION) {
             avroSchema.types
-                .fold(SchemaBuilder.unionOf().nullType()) { acc, type ->
-                    acc.and().type(type)
-                }
+                .fold(SchemaBuilder.unionOf().nullType()) { acc, type -> acc.and().type(type) }
                 .endUnion()
         } else {
             avroSchema

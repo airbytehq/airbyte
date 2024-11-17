@@ -1601,6 +1601,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val nestedFloat: BigDecimal
         val topLevelFloat: BigDecimal
         val bigInt: BigInteger?
+        val bigIntChanges: List<Change>
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -1617,11 +1618,25 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         BigDecimal("50000.0000000000000001")
                     }
-                bigInt = if (allTypesBehavior.integerCanBeLarge) {
-                    BigInteger("99999999999999999999999999999999")
-                } else {
-                    null
-                }
+                bigInt =
+                    if (allTypesBehavior.integerCanBeLarge) {
+                        BigInteger("99999999999999999999999999999999")
+                    } else {
+                        null
+                    }
+                bigIntChanges =
+                    if (allTypesBehavior.integerCanBeLarge) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            Change(
+                                "integer",
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        )
+                    }
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -1664,6 +1679,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 nestedFloat = BigDecimal("50000.0000000000000001")
                 topLevelFloat = BigDecimal("50000.0000000000000001")
                 bigInt = BigInteger("99999999999999999999999999999999")
+                bigIntChanges = emptyList<Change>()
                 badValuesData =
                     mapOf(
                         "id" to 5,
@@ -1741,7 +1757,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "number" to topLevelFloat,
                             "integer" to bigInt,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,

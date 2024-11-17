@@ -34,10 +34,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import org.apache.avro.generic.GenericArray
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
@@ -67,7 +64,14 @@ class AvroRecordToAirbyteValue {
                 throw UnsupportedOperationException("ArrayTypeWithoutSchema is not supported")
             is BooleanType -> return BooleanValue(avroValue as Boolean)
             is DateType ->
-                return DateValue(LocalDateTime.ofInstant(Instant.ofEpochMilli((avroValue as Int).toLong() * 86400000), ZoneOffset.UTC).toLocalDate().toString())
+                return DateValue(
+                    LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli((avroValue as Int).toLong() * 86400000),
+                            ZoneOffset.UTC
+                        )
+                        .toLocalDate()
+                        .toString()
+                )
             is IntegerType -> return IntegerValue(avroValue as Long)
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
             is ObjectTypeWithEmptySchema ->
@@ -84,11 +88,27 @@ class AvroRecordToAirbyteValue {
                     }
                 )
             is TimeTypeWithoutTimezone ->
-                return TimeValue(Instant.ofEpochMilli((avroValue as Long) / 1000).atOffset(ZoneOffset.UTC).toLocalTime().toString())
+                return TimeValue(
+                    Instant.ofEpochMilli((avroValue as Long) / 1000)
+                        .atOffset(ZoneOffset.UTC)
+                        .toLocalTime()
+                        .toString()
+                )
             is TimeTypeWithTimezone ->
-                return TimeValue(Instant.ofEpochMilli((avroValue as Long) / 1000).atOffset(ZoneOffset.UTC).toOffsetTime().toString())
+                return TimeValue(
+                    Instant.ofEpochMilli((avroValue as Long) / 1000)
+                        .atOffset(ZoneOffset.UTC)
+                        .toOffsetTime()
+                        .toString()
+                )
             is TimestampTypeWithoutTimezone ->
-                return TimestampValue(LocalDateTime.ofInstant(Instant.ofEpochMilli((avroValue as Long) / 1000), ZoneOffset.UTC).toString())
+                return TimestampValue(
+                    LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli((avroValue as Long) / 1000),
+                            ZoneOffset.UTC
+                        )
+                        .toString()
+                )
             is TimestampTypeWithTimezone ->
                 return TimestampValue(Instant.ofEpochMilli((avroValue as Long) / 1000).toString())
             is UnionType -> return tryConvertUnion(avroValue, schema)
