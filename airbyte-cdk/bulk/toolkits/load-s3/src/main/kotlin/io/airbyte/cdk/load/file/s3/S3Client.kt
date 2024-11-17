@@ -193,6 +193,9 @@ class S3ClientFactory(
     }
 
     private val AIRBYTE_STS_SESSION_NAME = "airbyte-sts-session"
+    private val EXTERNAL_ID = "AWS_ASSUME_ROLE_EXTERNAL_ID"
+    private val AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
+    private val AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
 
     @Singleton
     @Secondary
@@ -207,9 +210,7 @@ class S3ClientFactory(
             } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
                 // The Platform is expected to inject via credentials if ROLE_ARN is present.
                 val externalId =
-                    System.getenv(
-                        "AWS_ASSUME_ROLE_EXTERNAL_ID"
-                    ) // Consider injecting this dependency
+                    System.getenv(EXTERNAL_ID) // Consider injecting this dependency
                 val assumeRoleParams =
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
@@ -217,12 +218,8 @@ class S3ClientFactory(
                         externalId = externalId
                     )
                 val creds = StaticCredentialsProvider {
-                    accessKeyId = System.getenv(
-                        "AWS_ACCESS_KEY_ID"
-                    )
-                    secretAccessKey = System.getenv(
-                        "AWS_SECRET_ACCESS_KEY"
-                    )
+                    accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
+                    secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
                 }
                 StsAssumeRoleCredentialsProvider(
                     bootstrapCredentialsProvider = creds,
@@ -246,11 +243,4 @@ class S3ClientFactory(
         )
     }
 
-}
-
-object MyApp {
-    @JvmStatic
-    fun main(args: Array<String>) {
-
-    }
 }
