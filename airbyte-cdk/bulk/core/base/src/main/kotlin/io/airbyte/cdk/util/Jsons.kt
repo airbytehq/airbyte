@@ -32,7 +32,9 @@ object Jsons : ObjectMapper() {
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
         configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-        factory.setStreamReadConstraints(StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build())
+        factory.setStreamReadConstraints(
+            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
+        )
     }
 
     fun objectNode(): ObjectNode = createObjectNode()
