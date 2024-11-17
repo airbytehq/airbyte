@@ -13,5 +13,6 @@ class AirbyteTypeToCsvHeader {
 }
 
 fun ObjectType.toCsvHeader(): Array<String> {
+    println("write schema: $this")
     return AirbyteTypeToCsvHeader().convert(this)
 }

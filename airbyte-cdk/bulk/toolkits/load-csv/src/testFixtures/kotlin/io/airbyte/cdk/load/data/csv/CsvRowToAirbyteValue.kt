@@ -48,6 +48,10 @@ class CsvRowToAirbyteValue {
         schema.properties
             .toList()
             .zip(asList)
+            .let {
+                println("zipped: $it")
+                it
+            }
             .map { (property, value) ->
                 property.first to convertInner(value, property.second.type)
             }
@@ -59,60 +63,64 @@ class CsvRowToAirbyteValue {
         if (value.isBlank()) {
             return NullValue
         }
-        return when (field) {
-            is ArrayType -> {
-                value
-                    .deserializeToNode()
-                    .elements()
-                    .asSequence()
-                    .map { it.toAirbyteValue(field.items.type) }
-                    .toList()
-                    .let(::ArrayValue)
-            }
-            is ArrayTypeWithoutSchema ->
-                value.deserializeToNode().toAirbyteValue(ArrayTypeWithoutSchema)
-            is BooleanType -> BooleanValue(value.toBoolean())
-            is IntegerType -> IntegerValue(value.toLong())
-            is NumberType -> NumberValue(value.toBigDecimal())
-            is ObjectType -> {
-                val properties = linkedMapOf<String, AirbyteValue>()
-                value
-                    .deserializeToNode()
-                    .fields()
-                    .asSequence()
-                    .map { entry ->
-                        val type =
-                            field.properties[entry.key]?.type
-                                ?: UnknownType(value.deserializeToNode())
-                        entry.key to entry.value.toAirbyteValue(type)
-                    }
-                    .toMap(properties)
-                ObjectValue(properties)
-            }
-            is ObjectTypeWithEmptySchema ->
-                value.deserializeToNode().toAirbyteValue(ObjectTypeWithEmptySchema)
-            is ObjectTypeWithoutSchema ->
-                value.deserializeToNode().toAirbyteValue(ObjectTypeWithoutSchema)
-            is StringType -> StringValue(value)
-            is UnionType -> {
-                // Use the options sorted with string last since it always works
-                field.options
-                    .sortedBy { it is StringType }
-                    .firstNotNullOfOrNull { option ->
-                        try {
-                            convertInner(value, option)
-                        } catch (e: Exception) {
-                            null
+        return try {
+            when (field) {
+                is ArrayType -> {
+                    value
+                        .deserializeToNode()
+                        .elements()
+                        .asSequence()
+                        .map { it.toAirbyteValue(field.items.type) }
+                        .toList()
+                        .let(::ArrayValue)
+                }
+                is ArrayTypeWithoutSchema ->
+                    value.deserializeToNode().toAirbyteValue(ArrayTypeWithoutSchema)
+                is BooleanType -> BooleanValue(value.toBooleanStrict())
+                is IntegerType -> IntegerValue(value.toBigInteger())
+                is NumberType -> NumberValue(value.toBigDecimal())
+                is ObjectType -> {
+                    val properties = linkedMapOf<String, AirbyteValue>()
+                    value
+                        .deserializeToNode()
+                        .fields()
+                        .asSequence()
+                        .map { entry ->
+                            val type =
+                                field.properties[entry.key]?.type
+                                    ?: UnknownType(value.deserializeToNode())
+                            entry.key to entry.value.toAirbyteValue(type)
                         }
-                    }
-                    ?: NullValue
+                        .toMap(properties)
+                    ObjectValue(properties)
+                }
+                is ObjectTypeWithEmptySchema ->
+                    value.deserializeToNode().toAirbyteValue(ObjectTypeWithEmptySchema)
+                is ObjectTypeWithoutSchema ->
+                    value.deserializeToNode().toAirbyteValue(ObjectTypeWithoutSchema)
+                is StringType -> StringValue(value)
+                is UnionType -> {
+                    // Use the options sorted with string last since it always works
+                    field.options
+                        .sortedBy { it is StringType }
+                        .firstNotNullOfOrNull { option ->
+                            try {
+                                convertInner(value, option)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        ?: NullValue
+                }
+                DateType -> DateValue(value)
+                TimeTypeWithTimezone,
+                TimeTypeWithoutTimezone -> TimeValue(value)
+                TimestampTypeWithTimezone,
+                TimestampTypeWithoutTimezone -> TimestampValue(value)
+                is UnknownType -> UnknownValue(value.deserializeToNode())
             }
-            DateType -> DateValue(value)
-            TimeTypeWithTimezone,
-            TimeTypeWithoutTimezone -> TimeValue(value)
-            TimestampTypeWithTimezone,
-            TimestampTypeWithoutTimezone -> TimestampValue(value)
-            is UnknownType -> UnknownValue(value.deserializeToNode())
+        } catch (e: Exception) {
+            StringValue(value)
         }
     }
 }
