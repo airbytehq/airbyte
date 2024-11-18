@@ -41,6 +41,8 @@ abstract class SpecTest :
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
     ) {
+    private val testResourcesPath = Path.of("src/test-integration/resources")
+
     @Test
     fun testSpecOss() {
         testSpec("expected-spec-oss.json")
@@ -55,9 +57,10 @@ abstract class SpecTest :
         expectedSpecFilename: String,
         vararg featureFlags: FeatureFlag,
     ) {
-        val expectedSpecPath = Path.of("src/test-integration/resources", expectedSpecFilename)
+        val expectedSpecPath = testResourcesPath.resolve(expectedSpecFilename)
 
         if (!Files.exists(expectedSpecPath)) {
+            Files.createDirectories(testResourcesPath)
             Files.createFile(expectedSpecPath)
         }
         val expectedSpec = Files.readString(expectedSpecPath)
