@@ -708,7 +708,7 @@ definitions:
     url_base: https://{{ config['subdomain'] }}.bunny.com
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key_2\"] }}"
+      api_token: "{{ config[\"apikey\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -734,9 +734,9 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - subdomain
-      - api_key_2
+      - apikey
     properties:
-      api_key_2:
+      apikey:
         type: string
         order: 1
         title: API Key
