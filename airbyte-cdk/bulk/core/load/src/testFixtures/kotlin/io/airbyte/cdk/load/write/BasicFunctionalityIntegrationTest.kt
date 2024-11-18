@@ -682,8 +682,8 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream1,
             listOf(
-                makeInputRecord(1, "2024-01-23T01:00Z", 100),
-                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+                makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00:00Z", 100),
             ),
         )
         dumpAndDiffRecords(
@@ -691,14 +691,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -721,7 +721,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -730,14 +730,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOfNotNull(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -745,7 +745,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (commitDataIncrementally) {
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -765,21 +765,21 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream2,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 42,
                     syncId = 42,
@@ -846,7 +846,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -856,7 +856,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -876,21 +876,21 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 42,
                     syncId = 42,
@@ -962,8 +962,8 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream1,
             listOf(
-                makeInputRecord(1, "2024-01-23T01:00Z", 100),
-                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+                makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00:00Z", 100),
             ),
         )
         dumpAndDiffRecords(
@@ -971,14 +971,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -1001,7 +1001,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -1010,14 +1010,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOfNotNull(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -1025,7 +1025,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (commitDataIncrementally) {
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -1051,7 +1051,7 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream3,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1059,14 +1059,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 // records from sync 1
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -1074,7 +1074,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 // sync 2
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
@@ -1082,7 +1082,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 // and sync 3
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 43,
                     syncId = 43,

@@ -91,7 +91,6 @@ class ObjectStorageDataDumper(
                     .toList()
             }
             is CSVFormatConfiguration -> {
-                println("dumper schema: ${stream.schema.withAirbyteMeta(wasFlattened)}")
                 CSVParser(inputStream.bufferedReader(), CSVFormat.DEFAULT.withHeader()).use {
                     it.records.map { record ->
                         record

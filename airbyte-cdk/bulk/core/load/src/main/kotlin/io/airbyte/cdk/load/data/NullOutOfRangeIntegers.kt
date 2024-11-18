@@ -16,11 +16,7 @@ class NullOutOfRangeIntegers(
     private val maxValue: BigInteger = Long.MAX_VALUE.toBigInteger()
 ) : AirbyteValueIdentityMapper() {
     override fun mapInteger(value: IntegerValue, context: Context): Pair<AirbyteValue, Context> {
-        println(value)
         if (value.value < minValue || value.value > maxValue) {
-            println(
-                "nulling out integer value ${value.value} because either > $maxValue or < $minValue"
-            )
             return nulledOut(
                 IntegerType,
                 context,

@@ -19,7 +19,7 @@ abstract class S3V2WriteTest(
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
     /** This is false for staging mode, and true for non-staging mode. */
-    commitDataIncrementally: Boolean = false,
+    commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
 ) :
@@ -48,7 +48,6 @@ abstract class S3V2WriteTest(
         super.testFunkyCharacters()
     }
 
-    @Disabled
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
@@ -59,7 +58,7 @@ abstract class S3V2WriteTest(
         super.testAppend()
     }
 
-    @Disabled("append mode doesn't yet work")
+    @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
@@ -80,19 +79,15 @@ abstract class S3V2WriteTest(
         super.testUnions()
     }
 
-    @Disabled("connector doesn't yet do refreshes correctly - data from failed sync is lost")
     @Test
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
-
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
     @Test
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
     @Test
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()

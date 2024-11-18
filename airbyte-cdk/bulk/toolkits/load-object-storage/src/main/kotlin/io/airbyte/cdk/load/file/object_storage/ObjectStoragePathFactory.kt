@@ -21,8 +21,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 interface PathFactory {
-    fun getStagingDirectory(stream: DestinationStream): Path
-    fun getFinalDirectory(stream: DestinationStream): Path
+    fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
+    fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
@@ -193,10 +193,11 @@ class ObjectStoragePathFactory(
                 PathVariable("EPOCH", """\d+""") { it.time.toEpochMilli().toString() },
                 PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
             )
+        val PATH_VARIABLES_STREAM_CONSTANT = PATH_VARIABLES.filter { it.variable != "UUID" }
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
-                FileVariable("timestamp", """\d+""") { it.time.toEpochMilli().toString() },
+                FileVariable("timestamp", """\d+""") { System.currentTimeMillis().toString() },
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
@@ -218,13 +219,21 @@ class ObjectStoragePathFactory(
         }
     }
 
-    override fun getStagingDirectory(stream: DestinationStream): Path {
-        val path = getFormattedPath(stream)
+    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
+        val path =
+            getFormattedPath(
+                stream,
+                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
+            )
         return Paths.get(stagingPrefix, path)
     }
 
-    override fun getFinalDirectory(stream: DestinationStream): Path {
-        val path = getFormattedPath(stream)
+    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
+        val path =
+            getFormattedPath(
+                stream,
+                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
+            )
         return Paths.get(prefix, path)
     }
 
@@ -247,10 +256,13 @@ class ObjectStoragePathFactory(
         return path.resolve(fileName)
     }
 
-    private fun getFormattedPath(stream: DestinationStream): String {
+    private fun getFormattedPath(
+        stream: DestinationStream,
+        variables: List<PathVariable> = PATH_VARIABLES
+    ): String {
         val pattern = pathPatternResolved
         val context = VariableContext(stream)
-        return PATH_VARIABLES.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
+        return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
     }
 
     private fun getFormattedFileName(context: VariableContext): String {
