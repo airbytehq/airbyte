@@ -46,6 +46,12 @@ data class StreamRecordCompleteWrapped(
     override val sizeBytes: Long = 0L
 }
 
+data class StreamFlushTickMessage(
+    val tickedAtMs: Long,
+) : DestinationRecordWrapped() {
+    override val sizeBytes: Long = 0L
+}
+
 data class StreamFileCompleteWrapped(
     val index: Long,
 ) : DestinationFileWrapped() {

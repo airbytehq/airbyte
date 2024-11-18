@@ -5,3 +5,5 @@ airbyte:
   resources:
     disk:
       bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:5368709120} # 5GB
+  flush:
+    interval-ms: 900000 # 15 minutes
