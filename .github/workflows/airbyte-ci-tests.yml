@@ -80,7 +80,7 @@ jobs:
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
           path: airbyte-python-cdk
       - name: Make symlink to airbyte-python-cdk
-        run: ln -s ../airbyte-python-cdk ./airbyte-python-cdk
+        run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk
       - run: |
           set -x
           pwd && ls -la
