@@ -75,6 +75,7 @@ jobs:
           pwd && ls -la
           ls -la airbyte
           ls -la airbyte-python-cdk
+          sleep 1
           ls -la airbyte/.github || true
           ls -la airbyte/.github/actions || true
           ls -la airbyte/.github/actions/run-airbyte-ci || true
