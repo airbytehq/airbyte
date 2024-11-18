@@ -73,7 +73,7 @@ class DefaultStream(AbstractStream):
 
         keys = self._primary_key
         if keys and len(keys) > 0:
-            stream.source_defined_primary_key = [keys]
+            stream.source_defined_primary_key = [[key] for key in keys]
 
         return stream
 

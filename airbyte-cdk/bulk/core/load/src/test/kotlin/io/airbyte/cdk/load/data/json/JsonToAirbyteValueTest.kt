@@ -15,8 +15,6 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullType
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
@@ -36,11 +34,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonToAirbyteValueTest {
-    @Test
-    fun testNull() {
-        val value = JsonToAirbyteValue().convert(JsonNodeFactory.instance.nullNode(), NullType)
-        Assertions.assertTrue(value is NullValue)
-    }
 
     @Test
     fun testString() {
@@ -143,7 +136,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.textNode("hello"),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(stringValue is StringValue)
         Assertions.assertEquals("hello", (stringValue as StringValue).value)
@@ -152,7 +145,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.numberNode(42),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(intValue is IntegerValue)
         Assertions.assertEquals(42, (intValue as IntegerValue).value)

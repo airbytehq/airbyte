@@ -2667,7 +2667,7 @@ def test_create_concurrent_cursor_from_datetime_based_cursor_all_fields(stream_s
             "end_time": None,
             "cursor_granularity": None,
             "step": None,
-        }, "_slice_range", datetime.timedelta(days=61), None, id="test_uses_a_single_time_interval_when_no_specified_step_and_granularity"),
+        }, "_slice_range", datetime.timedelta.max, None, id="test_uses_a_single_time_interval_when_no_specified_step_and_granularity"),
     ]
 )
 @freezegun.freeze_time("2024-10-01T00:00:00")
