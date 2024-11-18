@@ -39,7 +39,6 @@ import org.apache.commons.csv.CSVRecord
 
 class CsvRowToAirbyteValue {
     fun convert(row: CSVRecord, schema: AirbyteType): AirbyteValue {
-        print("converting row: $row")
         if (schema !is ObjectType) {
             throw IllegalArgumentException("Only object types are supported")
         }

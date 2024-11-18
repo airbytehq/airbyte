@@ -63,7 +63,7 @@ abstract class DestinationConfiguration : Configuration {
 
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double =
-        0.01 // 0 => No limit, 1.0 => 100% of JVM heap
+        0.2 // 0 => No limit, 1.0 => 100% of JVM heap
     open val estimatedRecordMemoryOverheadRatio: Double =
         1.1 // 1.0 => No overhead, 2.0 => 100% overhead
 

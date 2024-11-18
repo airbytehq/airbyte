@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
+import java.math.BigInteger
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -56,7 +57,7 @@ class JsonToAirbyteValueTest {
         val value =
             JsonToAirbyteValue().convert(JsonNodeFactory.instance.numberNode(42), IntegerType)
         Assertions.assertTrue(value is IntegerValue)
-        Assertions.assertEquals(42, (value as IntegerValue).value)
+        Assertions.assertEquals(BigInteger.valueOf(42), (value as IntegerValue).value)
     }
 
     @Test
@@ -148,7 +149,7 @@ class JsonToAirbyteValueTest {
                     UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(intValue is IntegerValue)
-        Assertions.assertEquals(42, (intValue as IntegerValue).value)
+        Assertions.assertEquals(BigInteger.valueOf(42), (intValue as IntegerValue).value)
     }
 
     @Test
