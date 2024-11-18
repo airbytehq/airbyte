@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
@@ -25,18 +27,19 @@ import java.io.OutputStream
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
+    override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
     // Internal configuration
-    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
-        ObjectStorageUploadConfiguration(5L * 1024 * 1024),
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration,
     override val recordBatchSizeBytes: Long = 200L * 1024 * 1024,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
+    AWSArnRoleConfigurationProvider,
     S3BucketConfigurationProvider,
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
@@ -49,10 +52,18 @@ class S3V2ConfigurationFactory :
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
         return S3V2Configuration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
+            awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
-            objectStorageCompressionConfiguration = pojo.toCompressionConfiguration()
+            objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            objectStorageUploadConfiguration =
+                ObjectStorageUploadConfiguration(
+                    pojo.uploadPartSize
+                        ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
+                    pojo.maxConcurrentUploads
+                        ?: ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
+                )
         )
     }
 }

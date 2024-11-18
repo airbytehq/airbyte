@@ -12,34 +12,46 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.context.annotation.Primary
-import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.coVerify
+import io.mockk.mockk
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import java.nio.file.Files
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @MicronautTest(
     environments =
         [
-            "ProcessRecordsTaskTest",
             "MockDestinationCatalog",
-            "MockTaskLauncher",
         ]
 )
 class ProcessRecordsTaskTest {
-    @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
-    @Inject lateinit var launcher: MockTaskLauncher
+    private lateinit var diskManager: ReservationManager
+    private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
+    private lateinit var launcher: MockTaskLauncher
     @Inject lateinit var syncManager: SyncManager
+
+    @BeforeEach
+    fun setup() {
+        diskManager = mockk(relaxed = true)
+        launcher = MockTaskLauncher()
+        processRecordsTaskFactory =
+            DefaultProcessRecordsTaskFactory(
+                MockDeserializer(),
+                syncManager,
+                diskManager,
+            )
+    }
 
     class MockBatch(
         override val state: Batch.State,
@@ -72,9 +84,6 @@ class ProcessRecordsTaskTest {
         }
     }
 
-    @Singleton
-    @Primary
-    @Requires(env = ["ProcessRecordsTaskTest"])
     class MockDeserializer : Deserializer<DestinationMessage> {
         override fun deserialize(serialized: String): DestinationMessage {
             return DestinationRecord(
@@ -119,5 +128,6 @@ class ProcessRecordsTaskTest {
         Assertions.assertEquals(recordCount, batch.recordCount)
         Assertions.assertEquals((0 until recordCount).sum(), batch.pmChecksum)
         Assertions.assertFalse(Files.exists(mockFile), "ensure task deleted file")
+        coVerify { diskManager.release(byteSize) }
     }
 }
