@@ -155,6 +155,12 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.29 | 2024-11-04 | [48281](https://github.com/airbytehq/airbyte/pull/48281) | Update dependencies |
+| 0.2.28 | 2024-10-28 | [47042](https://github.com/airbytehq/airbyte/pull/47042) | Update dependencies |
+| 0.2.27 | 2024-10-12 | [46772](https://github.com/airbytehq/airbyte/pull/46772) | Update dependencies |
+| 0.2.26 | 2024-10-05 | [46464](https://github.com/airbytehq/airbyte/pull/46464) | Update dependencies |
+| 0.2.25 | 2024-09-28 | [46204](https://github.com/airbytehq/airbyte/pull/46204) | Update dependencies |
+| 0.2.24 | 2024-09-21 | [45772](https://github.com/airbytehq/airbyte/pull/45772) | Update dependencies |
 | 0.2.23 | 2024-09-14 | [45577](https://github.com/airbytehq/airbyte/pull/45577) | Update dependencies |
 | 0.2.22 | 2024-09-07 | [45325](https://github.com/airbytehq/airbyte/pull/45325) | Update dependencies |
 | 0.2.21 | 2024-08-31 | [44989](https://github.com/airbytehq/airbyte/pull/44989) | Update dependencies |

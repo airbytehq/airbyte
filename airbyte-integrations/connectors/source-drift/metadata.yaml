@@ -19,7 +19,7 @@ data:
   name: Drift
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2023-08-10

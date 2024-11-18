@@ -436,6 +436,55 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                             "required": ["name", "format"],
                         },
                     },
+                    "delivery_method": {
+                        "airbyte_hidden": True,
+                        "title": "Delivery Method",
+                        "default": "use_records_transfer",
+                        "type": "object",
+                        "order": 7,
+                        "display_type": "radio",
+                        "group": "advanced",
+                        "oneOf": [
+                            {
+                                "title": "Replicate Records",
+                                "type": "object",
+                                "properties": {
+                                    "delivery_type": {
+                                        "title": "Delivery Type",
+                                        "default": "use_records_transfer",
+                                        "const": "use_records_transfer",
+                                        "enum": [
+                                            "use_records_transfer"
+                                        ],
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
+                                "required": [
+                                    "delivery_type"
+                                ]
+                            },
+                            {
+                                "title": "Copy Raw Files",
+                                "type": "object",
+                                "properties": {
+                                    "delivery_type": {
+                                        "title": "Delivery Type",
+                                        "default": "use_file_transfer",
+                                        "const": "use_file_transfer",
+                                        "enum": [
+                                            "use_file_transfer"
+                                        ],
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
+                                "required": [
+                                    "delivery_type"
+                                    ]
+                                }
+                            ]
+                        },
                 },
                 "required": ["streams"],
             },
@@ -1940,7 +1989,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -2030,7 +2079,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
         }
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_check_error(None, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
@@ -3240,7 +3289,6 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
-    .set_expected_check_error(AirbyteTracedException, None)
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3340,5 +3388,4 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
-    .set_expected_check_error(AirbyteTracedException, None)
 ).build()

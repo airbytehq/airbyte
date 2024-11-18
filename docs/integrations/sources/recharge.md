@@ -79,6 +79,13 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.15 | 2024-11-04 | [48242](https://github.com/airbytehq/airbyte/pull/48242) | Update dependencies |
+| 2.4.14 | 2024-10-29 | [47890](https://github.com/airbytehq/airbyte/pull/47890) | Update dependencies |
+| 2.4.13 | 2024-10-28 | [47037](https://github.com/airbytehq/airbyte/pull/47037) | Update dependencies |
+| 2.4.12 | 2024-10-12 | [46797](https://github.com/airbytehq/airbyte/pull/46797) | Update dependencies |
+| 2.4.11 | 2024-10-05 | [46510](https://github.com/airbytehq/airbyte/pull/46510) | Update dependencies |
+| 2.4.10 | 2024-09-28 | [46110](https://github.com/airbytehq/airbyte/pull/46110) | Update dependencies |
+| 2.4.9 | 2024-09-21 | [45739](https://github.com/airbytehq/airbyte/pull/45739) | Update dependencies |
 | 2.4.8 | 2024-09-14 | [45520](https://github.com/airbytehq/airbyte/pull/45520) | Update dependencies |
 | 2.4.7 | 2024-09-07 | [45321](https://github.com/airbytehq/airbyte/pull/45321) | Update dependencies |
 | 2.4.6 | 2024-08-31 | [44995](https://github.com/airbytehq/airbyte/pull/44995) | Update dependencies |

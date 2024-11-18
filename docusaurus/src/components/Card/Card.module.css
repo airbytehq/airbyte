@@ -6,7 +6,7 @@
   gap: 10px;
   border-radius: 24px;
   border: 1px solid var(--color-grey-100);
-  background: #fff;
+  background: var(--color-white);
   height: 100%;
 }
 
@@ -35,11 +35,11 @@
 
 .cardCtaPrimary {
   background-color: var(--color-dark-blue-700);
-  color: #fff;
+  color: var(--color-white);
 }
 .cardCtaPrimary a {
   text-decoration: none;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cardCtaSecondary {

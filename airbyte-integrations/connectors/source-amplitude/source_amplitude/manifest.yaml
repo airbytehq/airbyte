@@ -308,7 +308,7 @@ definitions:
           end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
           m: "active"
           i: "1"
-          g: "country"
+          g: "{{ 'country' if config['active_users_group_by_country'] else '' }}"
       record_selector:
         type: RecordSelector
         extractor:

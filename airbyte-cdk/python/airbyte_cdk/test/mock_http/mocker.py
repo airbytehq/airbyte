@@ -12,6 +12,7 @@ from airbyte_cdk.test.mock_http import HttpRequest, HttpRequestMatcher, HttpResp
 
 class SupportedHttpMethods(str, Enum):
     GET = "get"
+    PATCH = "patch"
     POST = "post"
     DELETE = "delete"
 
@@ -56,6 +57,8 @@ class HttpMocker(contextlib.ContextDecorator):
             responses = [responses]
 
         matcher = HttpRequestMatcher(request, len(responses))
+        if matcher in self._matchers:
+            raise ValueError(f"Request {matcher.request} already mocked")
         self._matchers.append(matcher)
 
         getattr(self._mocker, method)(
@@ -68,6 +71,9 @@ class HttpMocker(contextlib.ContextDecorator):
 
     def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
         self._mock_request_method(SupportedHttpMethods.GET, request, responses)
+
+    def patch(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
+        self._mock_request_method(SupportedHttpMethods.PATCH, request, responses)
 
     def post(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
         self._mock_request_method(SupportedHttpMethods.POST, request, responses)
@@ -127,3 +133,7 @@ class HttpMocker(contextlib.ContextDecorator):
                 return result
 
         return wrapper
+
+    def clear_all_matchers(self) -> None:
+        """Clears all stored matchers by resetting the _matchers list to an empty state."""
+        self._matchers = []

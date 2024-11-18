@@ -127,6 +127,7 @@ class StateManagerStreamStatesTest {
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
         )
+        Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
     }
 
     @Test
@@ -177,6 +178,7 @@ class StateManagerStreamStatesTest {
                 .map { Jsons.readTree(it) },
             checkpoint.map { Jsons.valueToTree<JsonNode>(it) },
         )
+        Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
     }
 
     private fun prelude(

@@ -44,7 +44,6 @@ public class IcebergIntegrationTestUtil {
   public static final String ICEBERG_IMAGE_NAME = "airbyte/destination-iceberg:dev";
   public static final String WAREHOUSE_BUCKET_NAME = "warehouse";
   private static final NamingConventionTransformer namingResolver = new StandardNameTransformer();
-  private static final IcebergCatalogConfigFactory icebergCatalogConfigFactory = new IcebergCatalogConfigFactory();
 
   public static void stopAndCloseContainer(Startable container, String name) {
     container.stop();
@@ -53,7 +52,7 @@ public class IcebergIntegrationTestUtil {
   }
 
   public static void createS3WarehouseBucket(JsonNode config) {
-    IcebergCatalogConfig catalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+    IcebergCatalogConfig catalogConfig = IcebergCatalogConfigFactory.fromJsonNodeConfig(config);
     AmazonS3 client = ((S3Config) catalogConfig.getStorageConfig()).getS3Client();
     Bucket bucket = client.createBucket(WAREHOUSE_BUCKET_NAME);
     LOGGER.info("Created s3 bucket: {}", bucket.getName());
@@ -63,21 +62,22 @@ public class IcebergIntegrationTestUtil {
 
   public static List<JsonNode> retrieveRecords(JsonNode config, String namespace, String streamName)
       throws IOException {
-    IcebergCatalogConfig catalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
+    IcebergCatalogConfig catalogConfig = IcebergCatalogConfigFactory.fromJsonNodeConfig(config);
     Catalog catalog = catalogConfig.genCatalog();
     String dbName = namingResolver.getNamespace(
         isNotBlank(namespace) ? namespace : catalogConfig.defaultOutputDatabase()).toLowerCase();
     String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
     LOGGER.info("Select data from:{}", tableName);
     Table table = catalog.loadTable(TableIdentifier.of(dbName, tableName));
+    ArrayList<Record> records;
     try (CloseableIterable<Record> recordItr = IcebergGenerics.read(table).build()) {
-      ArrayList<Record> records = Lists.newArrayList(recordItr);
-      return records.stream()
-          .sorted(Comparator.comparingLong(r -> offsetDataTimeToTimestamp((OffsetDateTime) r.getField(
-              JavaBaseConstants.COLUMN_NAME_EMITTED_AT))))
-          .map(r -> Jsons.deserialize((String) r.getField(JavaBaseConstants.COLUMN_NAME_DATA)))
-          .collect(Collectors.toList());
+      records = Lists.newArrayList(recordItr);
     }
+    return records.stream()
+        .sorted(Comparator.comparingLong(r -> offsetDataTimeToTimestamp((OffsetDateTime) r.getField(
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT))))
+        .map(r -> Jsons.deserialize((String) r.getField(JavaBaseConstants.COLUMN_NAME_DATA)))
+        .collect(Collectors.toList());
   }
 
   private static long offsetDataTimeToTimestamp(OffsetDateTime offsetDateTime) {

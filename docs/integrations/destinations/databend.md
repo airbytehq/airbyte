@@ -72,6 +72,13 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.29 | 2024-10-19 | [46992](https://github.com/airbytehq/airbyte/pull/46992) | add ssl param for databend destination |
+| 0.1.28 | 2024-11-04 | [48272](https://github.com/airbytehq/airbyte/pull/48272) | Update dependencies |
+| 0.1.27 | 2024-10-28 | [47069](https://github.com/airbytehq/airbyte/pull/47069) | Update dependencies |
+| 0.1.26 | 2024-10-12 | [46811](https://github.com/airbytehq/airbyte/pull/46811) | Update dependencies |
+| 0.1.25 | 2024-10-05 | [46418](https://github.com/airbytehq/airbyte/pull/46418) | Update dependencies |
+| 0.1.24 | 2024-09-28 | [46197](https://github.com/airbytehq/airbyte/pull/46197) | Update dependencies |
+| 0.1.23 | 2024-09-21 | [45824](https://github.com/airbytehq/airbyte/pull/45824) | Update dependencies |
 | 0.1.22 | 2024-09-14 | [45531](https://github.com/airbytehq/airbyte/pull/45531) | Update dependencies |
 | 0.1.21 | 2024-09-07 | [45237](https://github.com/airbytehq/airbyte/pull/45237) | Update dependencies |
 | 0.1.20 | 2024-08-31 | [45001](https://github.com/airbytehq/airbyte/pull/45001) | Update dependencies |
