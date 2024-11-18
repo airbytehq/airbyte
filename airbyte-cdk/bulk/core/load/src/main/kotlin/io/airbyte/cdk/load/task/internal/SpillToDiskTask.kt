@@ -42,7 +42,7 @@ class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
-    override val stream: DestinationStream,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
     private val diskManager: ReservationManager,
 ) : SpillToDiskTask {
@@ -73,7 +73,7 @@ class DefaultSpillToDiskTask(
                                     val bytesProcessed = sizeBytes + wrapped.sizeBytes
                                     val forceFlush =
                                         flushStrategy.shouldFlush(
-                                            stream,
+                                            streamDescriptor,
                                             rangeProcessed,
                                             bytesProcessed
                                         )
@@ -110,12 +110,15 @@ class DefaultSpillToDiskTask(
         }
 
         val file = SpilledRawMessagesLocalFile(tmpFile, sizeBytes, range, endOfStream)
-        launcher.handleNewSpilledFile(stream, file)
+        launcher.handleNewSpilledFile(streamDescriptor, file)
     }
 }
 
 interface SpillToDiskTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream.Descriptor
+    ): SpillToDiskTask
 }
 
 @Singleton
@@ -128,11 +131,11 @@ class DefaultSpillToDiskTaskFactory(
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(
             spillFileProvider,
-            queueSupplier.get(stream.descriptor),
+            queueSupplier.get(stream),
             flushStrategy,
             stream,
             taskLauncher,

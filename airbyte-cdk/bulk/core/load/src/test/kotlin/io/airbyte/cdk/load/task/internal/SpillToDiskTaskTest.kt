@@ -58,7 +58,7 @@ class SpillToDiskTaskTest {
 
     class MockFlushStrategy : FlushStrategy {
         override suspend fun shouldFlush(
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
             rangeRead: Range<Long>,
             bytesProcessed: Long
         ): Boolean {
@@ -110,11 +110,11 @@ class SpillToDiskTaskTest {
 
         val mockTaskLauncher = MockTaskLauncher()
         spillToDiskTaskFactory
-            .make(mockTaskLauncher, MockDestinationCatalogFactory.stream1)
+            .make(mockTaskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
             .execute()
         Assertions.assertEquals(1, mockTaskLauncher.spilledFiles.size)
         spillToDiskTaskFactory
-            .make(mockTaskLauncher, MockDestinationCatalogFactory.stream1)
+            .make(mockTaskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
             .execute()
         Assertions.assertEquals(2, mockTaskLauncher.spilledFiles.size)
 
