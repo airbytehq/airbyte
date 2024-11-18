@@ -226,7 +226,7 @@ class S3ClientFactory(
                     assumeRoleParameters = assumeRoleParams
                 )
             } else {
-                // We should fill this in with a stubbed out credentials provider.
+                // Todo: fill in with a stubbed out credentials provider.
                 throw IllegalStateException("No valid AWS credentials configuration found.")
             }
 
