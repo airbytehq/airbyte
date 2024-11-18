@@ -100,30 +100,31 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockInputFlow: SizedInputFlow<Reserved<DestinationMessage>> {
-        override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>) {
-        }
+    class MockInputFlow : SizedInputFlow<Reserved<DestinationMessage>> {
+        override suspend fun collect(
+            collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
+        ) {}
     }
 
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockQueueWriter: QueueWriter<Reserved<CheckpointMessageWrapped>> {
-        override suspend fun publish(message: Reserved<CheckpointMessageWrapped>) {
-        }
+    class MockQueueWriter : QueueWriter<Reserved<CheckpointMessageWrapped>> {
+        override suspend fun publish(message: Reserved<CheckpointMessageWrapped>) {}
 
-        override suspend fun close() {
-        }
+        override suspend fun close() {}
     }
 
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockMessageQueueSupplier: MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
-        override fun get(key: DestinationStream.Descriptor): MessageQueue<Reserved<DestinationRecordWrapped>> {
+    class MockMessageQueueSupplier :
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
+        override fun get(
+            key: DestinationStream.Descriptor
+        ): MessageQueue<Reserved<DestinationRecordWrapped>> {
             return mockk()
         }
-
     }
 
     @Singleton
@@ -135,7 +136,9 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         override fun make(
             catalog: DestinationCatalog,
             inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
-            recordQueueSupplier: MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+            recordQueueSupplier:
+                MessageQueueSupplier<
+                    DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher
         ): InputConsumerTask {
