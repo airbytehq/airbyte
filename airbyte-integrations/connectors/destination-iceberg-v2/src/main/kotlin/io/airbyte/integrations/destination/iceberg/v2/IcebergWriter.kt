@@ -25,7 +25,7 @@ class IcebergWriter(
         pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toIcebergSchema()
 
     init {
-        if (catalogSchema.sameSchema(tableSchema)) {
+        if (!catalogSchema.sameSchema(tableSchema)) {
             throw IllegalArgumentException("Table schema is different than catalog schema")
         }
     }
