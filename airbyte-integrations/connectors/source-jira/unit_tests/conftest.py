@@ -324,7 +324,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (1) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (1) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -339,7 +339,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (2) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (2) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -354,7 +354,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (3) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (3) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -370,7 +370,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (4) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (4) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
