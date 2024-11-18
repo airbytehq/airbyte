@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -26,22 +26,36 @@ interface Sized {
  */
 sealed class DestinationRecordWrapped : Sized
 
+sealed class DestinationFileWrapped : Sized
+
 data class StreamRecordWrapped(
     val index: Long,
     override val sizeBytes: Long,
     val record: DestinationRecord
 ) : DestinationRecordWrapped()
 
-data class StreamCompleteWrapped(
+data class StreamFileWrapped(
+    val index: Long,
+    override val sizeBytes: Long,
+    val file: DestinationFile
+) : DestinationFileWrapped()
+
+data class StreamRecordCompleteWrapped(
     val index: Long,
 ) : DestinationRecordWrapped() {
+    override val sizeBytes: Long = 0L
+}
+
+data class StreamFileCompleteWrapped(
+    val index: Long,
+) : DestinationFileWrapped() {
     override val sizeBytes: Long = 0L
 }
 
 class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
 
 /**
- * A supplier of message queues to which ([MemoryManager.reserveBlocking]'d) @
+ * A supplier of message queues to which ([ReservationManager.reserve]'d) @
  * [DestinationRecordWrapped] messages can be published on a @ [DestinationStream] key. The queues
  * themselves do not manage memory.
  */

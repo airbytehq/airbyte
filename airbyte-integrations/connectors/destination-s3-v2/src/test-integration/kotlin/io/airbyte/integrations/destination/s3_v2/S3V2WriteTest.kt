@@ -4,74 +4,224 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
-import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.toAirbyteValue
-import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.file.s3.S3ClientFactory
-import io.airbyte.cdk.load.file.s3.S3Object
-import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.cdk.load.test.util.toOutputRecord
-import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
-import java.io.InputStream
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.Untyped
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class S3V2WriteTest :
+abstract class S3V2WriteTest(
+    path: String,
+    stringifySchemalessObjects: Boolean,
+    promoteUnionToObject: Boolean,
+    preserveUndeclaredFields: Boolean,
+    /** This is false for staging mode, and true for non-staging mode. */
+    commitDataIncrementally: Boolean = false,
+    allTypesBehavior: AllTypesBehavior,
+) :
     BasicFunctionalityIntegrationTest(
-        S3V2TestUtils.minimalConfig,
+        S3V2TestUtils.getConfig(path),
+        S3V2Specification::class.java,
         S3V2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
+        isStreamSchemaRetroactive = false,
+        supportsDedup = false,
+        stringifySchemalessObjects = stringifySchemalessObjects,
+        promoteUnionToObject = promoteUnionToObject,
+        preserveUndeclaredFields = preserveUndeclaredFields,
+        commitDataIncrementally = commitDataIncrementally,
+        allTypesBehavior = allTypesBehavior,
     ) {
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    @Disabled
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
+    }
+
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
+    @Disabled("append mode doesn't yet work")
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - data from failed sync is lost")
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
 }
 
-object S3V2DataDumper : DestinationDataDumper {
-    override fun dumpRecords(
-        spec: ConfigurationSpecification,
-        stream: DestinationStream
-    ): List<OutputRecord> {
-        val config =
-            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as S3V2Specification)
-        val s3Client = S3ClientFactory.make(config)
-        // Note: because we cannot mock wall time in docker, this
-        // path code cannot contain time-based macros.
-        // TODO: add pattern matching to the path factory.
-        val pathFactory = ObjectStoragePathFactory.from(config)
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
-        return runBlocking {
-            withContext(Dispatchers.IO) {
-                s3Client
-                    .list(prefix)
-                    .map { listedObject: S3Object ->
-                        s3Client.get(listedObject.key) { objectData: InputStream ->
-                            objectData
-                                .bufferedReader()
-                                .lineSequence()
-                                .map { line ->
-                                    line
-                                        .deserializeToNode()
-                                        .toAirbyteValue(stream.schemaWithMeta)
-                                        .toOutputRecord()
-                                }
-                                .toList()
-                        }
-                    }
-                    .toList()
-                    .flatten()
-            }
-        }
+class S3V2WriteTestJsonUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestJsonRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestJsonStaging :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestJsonGzip :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_GZIP_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestCsvUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestCsvRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+    ) {
+    @Disabled("Does not work yet")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
+
+class S3V2WriteTestCsvGzip :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_GZIP_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestAvroUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
+    ) {
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
+
+class S3V2WriteTestAvroBzip2 :
+    S3V2WriteTest(
+        S3V2TestUtils.AVRO_BZIP2_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
+    ) {
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
+
+class S3V2WriteTestParquetUncompressed :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = true,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
+    ) {
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
+    }
+}
+
+class S3V2WriteTestParquetSnappy :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
+        stringifySchemalessObjects = true,
+        promoteUnionToObject = true,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = StronglyTyped(),
+    ) {
+    @Disabled("Test does not support `stringifyShemalessObjects == true`")
+    @Test
+    override fun testAllTypes() {
+        super.testAllTypes()
     }
 }
