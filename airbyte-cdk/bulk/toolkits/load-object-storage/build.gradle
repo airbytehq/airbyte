@@ -8,6 +8,7 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-avro')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-parquet')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-iceberg-parquet')
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 
