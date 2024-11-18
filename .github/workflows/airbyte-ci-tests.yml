@@ -109,6 +109,8 @@ jobs:
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
         uses: ./.github/actions/run-airbyte-ci
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}/airbyte
         with:
           context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
@@ -125,6 +127,8 @@ jobs:
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
         id: run-airbyte-ci-test-workflow-dispatch
         if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}/airbyte
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
