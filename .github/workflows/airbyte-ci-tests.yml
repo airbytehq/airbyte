@@ -60,7 +60,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          path: airbyte-python-cdk
+          path: airbyte
       - run: pwd
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
           ref: main
           # Clone into same parent directory as Airbyte
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-          path: airbyte
+          path: airbyte-python-cdk
       - run: |
           set -x
           pwd && ls -la
@@ -101,7 +101,7 @@ jobs:
       - name: Run poe tasks for modified internal packages [PULL REQUEST]
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
-        uses: ./.github/actions/run-airbyte-ci
+        uses: ./airbyte/.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
@@ -118,7 +118,7 @@ jobs:
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
         id: run-airbyte-ci-test-workflow-dispatch
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-airbyte-ci
+        uses: ./airbyte/.github/actions/run-airbyte-ci
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
