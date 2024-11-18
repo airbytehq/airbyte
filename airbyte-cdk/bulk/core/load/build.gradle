@@ -21,6 +21,7 @@ dependencies {
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("io.mockk:mockk:1.13.12")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
 }

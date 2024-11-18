@@ -18,4 +18,4 @@ airbyte:
       jdbc:
         queries:
           - >-
-            SELECT 1 where 1 = 0;
+            SELECT 1 FROM dual WHERE 1 = 0;
