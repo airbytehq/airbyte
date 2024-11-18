@@ -1,11 +1,13 @@
-# Bunny, Inc.
-Synchronizes Bunny data
+# Bunny RevOps
+
+Bunny provides a single platform for subscription management, billing, quoting, revenue recognition, and SaaS metrics.
+[API Docs](https://docs.bunny.com/developer)
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `apikey` | `string` | API Key.  |  |
 | `subdomain` | `string` | Subdomain. The subdomain specific to your Bunny account or service. |  |
 | `start_date` | `string` | Start date.  |  |
 
