@@ -82,7 +82,7 @@ class IcebergStreamLoader(
     }
 
     override suspend fun processBatch(batch: Batch): Batch {
-        val stagedObject = batch as ObjectStorageStreamLoader.StagedObject<String>
+        val stagedObject = batch as ObjectStorageStreamLoader.StagedObject<*>
         log.info { "Moving staged object from $stagingBranchName to $mainBranchName" }
         table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
 

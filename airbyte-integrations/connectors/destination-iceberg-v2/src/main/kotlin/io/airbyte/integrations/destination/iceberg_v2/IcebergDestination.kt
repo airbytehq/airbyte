@@ -4,4 +4,11 @@
 
 package io.airbyte.integrations.destination.iceberg_v2
 
-class IcebergDestination {}
+import io.airbyte.cdk.AirbyteDestinationRunner
+
+object IcebergDestination {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        AirbyteDestinationRunner.run(*args)
+    }
+}
