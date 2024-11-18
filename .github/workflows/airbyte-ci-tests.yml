@@ -84,8 +84,9 @@ jobs:
       - run: |
           set -x
           pwd && ls -la
-          ls -la airbyte
-          ls -la airbyte-python-cdk
+          ls -la airbyte || echo "No airbyte directory"
+          ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
+          ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
           sleep 1
           ls -la airbyte/.github || true
           ls -la airbyte/.github/actions || true
