@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg_v2
 
 import io.airbyte.cdk.load.test.util.FakeDataDumper
@@ -6,7 +10,6 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 
 abstract class IcebergV2WriteTest(path: String) :
     BasicFunctionalityIntegrationTest(
