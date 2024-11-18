@@ -58,9 +58,19 @@ jobs:
     # Forked PRs are handled by the community_ci.yml workflow
     # If the condition is not met the job will be skipped (it will not fail)
     if: (github.event_name == 'pull_request' && needs.cdk_changes.outputs.python_cdk == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
-    name: Connectors CI
+    name: Check CDK Changes against '${{matrix.check.connector}}'
     runs-on: connector-test-large
     timeout-minutes: 360 # 6 hours
+    strategy:
+      matrix:
+        include:
+          - check:
+            - connector: source-shopify
+            - connector: source-zendesk-support
+            - connector: source-s3
+              cdk_extra: file-based
+            - connector: destination-pinecone
+              cdk_extra: vector-db-based
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -76,6 +86,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+      # TODO: Bail if the CDK extra (${{matrix.check.connector}}) is specified but not changed.
       - name: Test connectors
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -92,4 +103,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --use-local-cdk --name source-shopify --name source-zendesk-support --execute-timeout=18000 test --global-status-check-context='CDK Changes - Connectors Tests'"
+          subcommand: "connectors --use-local-cdk --name ${{matrix.check.connector}} --execute-timeout=18000 test --global-status-check-context='CDK Changes - Connectors Tests'"
