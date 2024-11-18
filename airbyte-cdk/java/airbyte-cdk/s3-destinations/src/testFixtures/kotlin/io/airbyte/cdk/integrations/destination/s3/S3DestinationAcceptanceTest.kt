@@ -102,8 +102,10 @@ protected constructor(
         streamName: String,
         namespace: String
     ): List<S3ObjectSummary> {
+        println("Getting all synced objects for stream $streamName in namespace $namespace")
         val namespaceStr = s3nameTransformer.getNamespace(namespace)
         val streamNameStr = s3nameTransformer.getIdentifier(streamName)
+        println("Namespace: $namespaceStr, Stream: $streamNameStr")
         val outputPrefix =
             s3StorageOperations!!.getBucketObjectPath(
                 namespaceStr,

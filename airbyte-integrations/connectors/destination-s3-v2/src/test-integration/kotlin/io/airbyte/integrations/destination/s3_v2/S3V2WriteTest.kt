@@ -38,29 +38,6 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
     ) {
-<<<<<<< HEAD
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
-    @Test
-    override fun testMidSyncCheckpointingStreamState() {
-        super.testMidSyncCheckpointingStreamState()
-    }
-
-    @Test
-    override fun testAppend() {
-        super.testAppend()
-    }
-
-=======
->>>>>>> bbef02396a (copy over legacy DATs + enable remaining tests)
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
@@ -103,29 +80,8 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-<<<<<<< HEAD
         commitDataIncrementally = false
-    ) {
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-}
-=======
-        commitDataIncrementally = false,
     )
->>>>>>> bbef02396a (copy over legacy DATs + enable remaining tests)
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(

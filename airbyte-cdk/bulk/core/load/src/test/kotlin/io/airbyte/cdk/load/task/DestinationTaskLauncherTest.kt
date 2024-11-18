@@ -412,6 +412,21 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     }
 
     @Test
+    fun testHandleEmptySpilledFile() = runTest {
+        taskLauncher.handleNewSpilledFile(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 0L, Range.singleton(0))
+        )
+
+        mockSpillToDiskTaskFactory.streamHasRun[MockDestinationCatalogFactory.stream1.descriptor]
+            ?.receive()
+            ?: Assertions.fail("SpillToDiskTask not run")
+
+        delay(500)
+        Assertions.assertTrue(processRecordsTaskFactory.hasRun.tryReceive().isFailure)
+    }
+
+    @Test
     fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
         taskLauncher.handleNewSpilledFile(
             MockDestinationCatalogFactory.stream1.descriptor,
@@ -441,21 +456,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
                 ?.tryReceive()
                 ?.isFailure != false
         )
-    }
-
-    @Test
-    fun testHandleEmptySpilledFile() = runTest {
-        taskLauncher.handleNewSpilledFile(
-            MockDestinationCatalogFactory.stream1.descriptor,
-            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 0L, Range.singleton(0))
-        )
-
-        mockSpillToDiskTaskFactory.streamHasRun[MockDestinationCatalogFactory.stream1.descriptor]
-            ?.receive()
-            ?: Assertions.fail("SpillToDiskTask not run")
-
-        delay(500)
-        Assertions.assertTrue(processRecordsTaskFactory.hasRun.tryReceive().isFailure)
     }
 
     @Test
