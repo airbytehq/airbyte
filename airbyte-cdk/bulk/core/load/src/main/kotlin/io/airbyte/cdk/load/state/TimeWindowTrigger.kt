@@ -27,6 +27,6 @@ data class TimeWindowTrigger(
     * Returns whether window is complete relative to configured @param windowWidthMs. Non-mutative.
     */
     fun isComplete(): Boolean {
-        return openedAtMs?.let { ts -> (clock.millis() - ts) > windowWidthMs } ?: false
+        return openedAtMs?.let { ts -> (clock.millis() - ts) >= windowWidthMs } ?: false
     }
 }

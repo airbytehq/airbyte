@@ -20,7 +20,9 @@ import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.util.lineSequence
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.mockk
 import jakarta.inject.Inject
+import java.time.Clock
 import kotlin.io.path.inputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -38,6 +40,9 @@ class SpillToDiskTaskTest {
     private lateinit var memoryManager: ReservationManager
     private lateinit var diskManager: ReservationManager
     private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
+    private val clock: Clock = mockk()
+    private val flushWindowMs = 60000L
+
     @Inject
     lateinit var queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
@@ -53,6 +58,8 @@ class SpillToDiskTaskTest {
                 queueSupplier,
                 MockFlushStrategy(),
                 diskManager,
+                clock,
+                flushWindowMs,
             )
     }
 
