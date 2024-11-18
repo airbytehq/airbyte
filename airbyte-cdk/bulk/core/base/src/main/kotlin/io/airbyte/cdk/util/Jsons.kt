@@ -3,7 +3,6 @@ package io.airbyte.cdk.util
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -20,21 +19,13 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 
 object Jsons : ObjectMapper() {
-    // allow jackson to deserialize anything under 100 MiB
-    // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
-    private const val JSON_MAX_LENGTH = 100 * 1024 * 1024
-
     init {
         registerKotlinModule()
         registerModule(JavaTimeModule())
         registerModule(AfterburnerModule())
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
         configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
-        factory.setStreamReadConstraints(
-            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
-        )
     }
 
     fun objectNode(): ObjectNode = createObjectNode()
