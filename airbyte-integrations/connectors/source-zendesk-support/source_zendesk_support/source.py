@@ -44,7 +44,11 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
 
 class SourceZendeskSupport(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
-        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+        # Before 2024-11-11, the config was being modified in `streams`. We can't do that anymore because `ConcurrentDeclarativeSource` use
+        # the config to make concurrent components. Hence, the "main" config needs to be the declarative one and if Python sources need
+        # something a bit different, it needs to deduce it from the declarative config
+        declarative_config = SourceZendeskSupport.convert_config_to_declarative_stream_args(config) if config else None
+        super().__init__(catalog=catalog, config=declarative_config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @classmethod
     def get_default_start_date(cls) -> str:
@@ -105,6 +109,18 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             "subdomain": config["subdomain"],
             "start_date": config.get("start_date", cls.get_default_start_date()),
             "authenticator": cls.get_authenticator(config),
+            "ignore_pagination": config.get("ignore_pagination", False),
+        }
+
+    @classmethod
+    def convert_config_to_declarative_stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Sets defaults to `start_date` and `ignore_pagination`.
+        """
+        return {
+            "subdomain": config["subdomain"],
+            "start_date": config.get("start_date", cls.get_default_start_date()),
+            "credentials": config.get("credentials"),
             "ignore_pagination": config.get("ignore_pagination", False),
         }
 
