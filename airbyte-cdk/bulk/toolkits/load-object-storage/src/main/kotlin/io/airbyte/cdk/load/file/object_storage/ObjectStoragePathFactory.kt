@@ -200,6 +200,7 @@ class ObjectStoragePathFactory(
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
 <<<<<<< HEAD
+<<<<<<< HEAD
                 FileVariable("timestamp", """\d+""") {
                     // NOTE: We use a constant time for the path but wall time for the files
                     Instant.now().toEpochMilli().toString()
@@ -207,6 +208,9 @@ class ObjectStoragePathFactory(
 =======
                 FileVariable("timestamp", """\d+""") { System.currentTimeMillis().toString() },
 >>>>>>> 48eacf4a6f (enabled remaining resume tests save 1; fixed: part no during truncate, bad timestamps)
+=======
+                FileVariable("timestamp", """\d+""") { it.time.toEpochMilli().toString() },
+>>>>>>> cf55de84f1 (fixed failing unit test)
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
