@@ -59,7 +59,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          path: airbyte
+          path: .
+      - run: pwd && ls -la
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
         with:
@@ -67,26 +68,33 @@ jobs:
           ref: main
           # Clone into same parent directory as Airbyte
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-          path: airbyte-python-cdk
+          path: .
+      - run: |
+          pwd && ls -la
+          ls -la airbyte
+          ls -la airbyte-python-cdk
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
+        working-directory: airbyte
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
+        working-directory: airbyte
         run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
+        working-directory: airbyte
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
 
       - name: Run poe tasks for modified internal packages [PULL REQUEST]
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
-        uses: ./.github/actions/run-airbyte-ci
+        uses: ./airbyte/.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
@@ -103,7 +111,7 @@ jobs:
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
         id: run-airbyte-ci-test-workflow-dispatch
         if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-airbyte-ci
+        uses: ./airbyte/.github/actions/run-airbyte-ci
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
