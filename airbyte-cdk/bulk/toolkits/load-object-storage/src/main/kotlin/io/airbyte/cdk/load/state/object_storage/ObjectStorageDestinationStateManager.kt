@@ -161,12 +161,14 @@ class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
+    private val log = KotlinLogging.logger {}
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val matcher = pathFactory.getPathMatcher(stream)
         val longestUnambiguous =
-            pathFactory.getFinalDirectory(stream, streamConstant = true).toString().takeWhile {
-                it != '$'
-            }
+            pathFactory
+                .getFinalDirectory(stream, streamConstantPrefix = true)
+                .toString()
+                .takeWhile { it != '$' }
         client
             .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
@@ -182,6 +184,10 @@ class ObjectStorageFallbackPersister(
             }
             .toMutableMap()
             .let {
+                val generationSizes = it.map { gen -> gen.key to gen.value.size }
+                log.info {
+                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId}"
+                }
                 return ObjectStorageDestinationState(
                     mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
                 )

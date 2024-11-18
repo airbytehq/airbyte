@@ -55,9 +55,10 @@ class ObjectStorageDataDumper(
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
         val prefix =
-            pathFactory.getFinalDirectory(stream, streamConstant = true).toString().takeWhile {
-                it != '$'
-            }
+            pathFactory
+                .getFinalDirectory(stream, streamConstantPrefix = true)
+                .toString()
+                .takeWhile { it != '$' }
         val matcher = pathFactory.getPathMatcher(stream)
         return runBlocking {
             withContext(Dispatchers.IO) {

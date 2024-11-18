@@ -33,7 +33,7 @@ object S3V2DestinationTestUtils {
 
     val assumeRoleInternalCredentials: Map<String, String>
         get() = getCredentials(ASSUME_ROLE_INTERNAL_CREDENTIALS_SECRET_PATH)
-    
+
     val policyManagerCredentials: Map<String, String>
         get() = getCredentials(POLICY_MANAGER_CREDENTIALS_SECRET_PATH)
 }

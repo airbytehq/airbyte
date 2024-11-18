@@ -72,9 +72,10 @@ class JsonFormattingWriter(
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
     override fun accept(record: DestinationRecord) {
-        outputStream.write(
+        val data =
             record.dataWithAirbyteMeta(stream, rootLevelFlattening).toJson().serializeToString()
-        )
+        println("data: $data")
+        outputStream.write(data)
         outputStream.write("\n")
     }
 

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
@@ -22,8 +23,8 @@ import java.util.*
 
 interface PathFactory {
     fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
-    fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
-    fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
+    fun getStagingDirectory(stream: DestinationStream, streamConstantPrefix: Boolean = false): Path
+    fun getFinalDirectory(stream: DestinationStream, streamConstantPrefix: Boolean = false): Path
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
@@ -156,8 +157,12 @@ class ObjectStoragePathFactory(
         const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
         val PATH_VARIABLES =
             listOf(
-                PathVariable("NAMESPACE") { it.stream.descriptor.namespace ?: "" },
-                PathVariable("STREAM_NAME") { it.stream.descriptor.name },
+                PathVariable("NAMESPACE") {
+                    Transformations.toS3SafeCharacters(it.stream.descriptor.namespace ?: "")
+                },
+                PathVariable("STREAM_NAME") {
+                    Transformations.toS3SafeCharacters(it.stream.descriptor.name)
+                },
                 PathVariable("YEAR", """\d{4}""") {
                     ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
                 },
@@ -235,21 +240,26 @@ class ObjectStoragePathFactory(
         }
     }
 
-    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
+    override fun getStagingDirectory(
+        stream: DestinationStream,
+        streamConstantPrefix: Boolean
+    ): Path {
         val path =
             getFormattedPath(
-                stream,
-                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
-            )
+                    stream,
+                    if (streamConstantPrefix) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
+                )
+                .takeWhile { it != '$' }
         return Paths.get(stagingPrefix, path)
     }
 
-    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
+    override fun getFinalDirectory(stream: DestinationStream, streamConstantPrefix: Boolean): Path {
         val path =
             getFormattedPath(
-                stream,
-                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
-            )
+                    stream,
+                    if (streamConstantPrefix) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
+                )
+                .takeWhile { it != '$' }
         return Paths.get(prefix, path)
     }
 
@@ -258,9 +268,9 @@ class ObjectStoragePathFactory(
         isStaging: Boolean
     ): String {
         return if (isStaging) {
-                getStagingDirectory(stream, streamConstant = true)
+                getStagingDirectory(stream, streamConstantPrefix = true)
             } else {
-                getFinalDirectory(stream, streamConstant = true)
+                getFinalDirectory(stream, streamConstantPrefix = true)
             }
             .toString()
             .takeWhile { it != '$' }
@@ -321,11 +331,13 @@ class ObjectStoragePathFactory(
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
             val pattern = variableToPattern[variable]
-            if (pattern != null) {
+            if (pattern == null) {
+                variable
+            } else if (pattern.isBlank()) {
+                ""
+            } else {
                 variableToIndex[variable] = variableToIndex.size + 1
                 "($pattern)"
-            } else {
-                variable
             }
         }
     }
@@ -348,7 +360,7 @@ class ObjectStoragePathFactory(
                 pathVariableToPattern,
                 variableToIndex
             )
-        val combined = Path.of(prefix).resolve(replacedForPath).resolve(replacedForFile).toString()
+        val combined = Path.of("$prefix/$replacedForPath").resolve(replacedForFile).toString()
 
         return PathMatcher(Regex(combined), variableToIndex)
     }
