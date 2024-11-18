@@ -60,7 +60,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          path: ../airbyte-python-cdk
+          path: airbyte-python-cdk
       - run: pwd
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
           ref: main
           # Clone into same parent directory as Airbyte
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-          path: .
+          path: airbyte
       - run: |
           pwd && ls -la
           ls -la airbyte
