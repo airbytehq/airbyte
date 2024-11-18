@@ -54,13 +54,14 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
+      - run: pwd
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          path: .
-      - run: pwd && ls -la
+          path: ../airbyte-python-cdk
+      - run: pwd
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
         with:
