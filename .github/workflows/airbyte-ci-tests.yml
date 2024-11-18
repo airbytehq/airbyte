@@ -71,9 +71,12 @@ jobs:
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
           path: airbyte
       - run: |
+          set -x
           pwd && ls -la
           ls -la airbyte
           ls -la airbyte-python-cdk
+          ls -la airbyte/.github/actions/run-airbyte-ci || true
+          ls -la .github/actions/run-airbyte-ci || true
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
@@ -95,7 +98,7 @@ jobs:
       - name: Run poe tasks for modified internal packages [PULL REQUEST]
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
-        uses: ./airbyte/.github/actions/run-airbyte-ci
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
@@ -112,7 +115,7 @@ jobs:
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
         id: run-airbyte-ci-test-workflow-dispatch
         if: github.event_name == 'workflow_dispatch'
-        uses: ./airbyte/.github/actions/run-airbyte-ci
+        uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
