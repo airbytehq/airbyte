@@ -92,7 +92,7 @@ class CSVFormattingWriter(
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     override fun accept(record: DestinationRecord) {
         printer.printRecord(
-            *record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
+            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
         )
     }
 

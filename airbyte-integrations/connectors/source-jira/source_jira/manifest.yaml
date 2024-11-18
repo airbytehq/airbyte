@@ -1111,7 +1111,7 @@ definitions:
         $ref: "#/definitions/requester_v1"
         request_parameters:
           fields: "['key', 'created', 'updated']"
-          jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
         error_handler:
           $ref: "#/definitions/error_handler"
           response_filters:
@@ -1153,7 +1153,7 @@ definitions:
         request_parameters:
           fields: "*all"
           jql: >
-            "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}' "
+            "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }} "
             "{{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id else '' }}"
             "ORDER BY updated asc"
           expand: "renderedFields,transitions,changelog"
@@ -1219,7 +1219,7 @@ definitions:
         $ref: "#/definitions/retriever_v1/requester"
         request_parameters:
           fields: "{{ stream_slice._partition.extra_fields['fields'] }}"
-          jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
     transformations:
       - type: AddFields
         fields:
