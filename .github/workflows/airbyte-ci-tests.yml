@@ -54,23 +54,11 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
-      - run: pwd
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          # path: airbyte
-      # - name: Checkout Airbyte Workflows
-      #   uses: actions/checkout@v4
-      #   with:
-      #     fetch-depth: 0
-      #     ref: ${{ github.event.pull_request.head.ref }}
-      #     path: .
-      #     sparse-checkout: |
-      #       .github
-      #       airbyte-ci
-      - run: pwd
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
         with:
@@ -81,17 +69,13 @@ jobs:
           path: airbyte-python-cdk
       - name: Make symlink to airbyte-python-cdk
         run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk
-      - run: |
+      - name: Show local paths checked out
+        run: |
           set -x
-          pwd && ls -la
-          ls -la airbyte || echo "No airbyte directory"
+          pwd
+          ls -la
           ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
           ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
-          sleep 1
-          ls -la airbyte/.github || true
-          ls -la airbyte/.github/actions || true
-          ls -la airbyte/.github/actions/run-airbyte-ci || true
-          ls -la .github/actions/run-airbyte-ci || true
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
@@ -111,8 +95,6 @@ jobs:
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
         uses: ./.github/actions/run-airbyte-ci
-        env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}/airbyte
         with:
           context: "pull_request"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_5 }}
@@ -129,8 +111,6 @@ jobs:
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
         id: run-airbyte-ci-test-workflow-dispatch
         if: github.event_name == 'workflow_dispatch'
-        env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}/airbyte
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
