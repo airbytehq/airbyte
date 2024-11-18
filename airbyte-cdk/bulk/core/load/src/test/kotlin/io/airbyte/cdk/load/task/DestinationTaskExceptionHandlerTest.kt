@@ -101,7 +101,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         val wrappedTask = exceptionHandler.withExceptionHandling(mockTask as T)
         wrappedTask.execute()
         val (stream, exception) = mockFailStreamTaskFactory.didRunFor.receive()
-        Assertions.assertEquals(MockDestinationCatalogFactory.stream1, stream)
+        Assertions.assertEquals(MockDestinationCatalogFactory.stream1.descriptor, stream)
         Assertions.assertTrue(exception is RuntimeException)
     }
 
