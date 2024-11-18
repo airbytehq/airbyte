@@ -1525,7 +1525,7 @@ abstract class BaseTypingDedupingTest {
                 workspaceRoot,
                 workspaceRoot.toString(),
                 localRoot.toString(),
-                fileTransferMountSource = null,
+                null,
                 "host",
                 emptyMap()
             )
@@ -1535,21 +1535,18 @@ abstract class BaseTypingDedupingTest {
                 .withConnectionId(UUID.randomUUID())
                 .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
                 .withDestinationConnectionConfiguration(transformedConfig)
-
+        val integrationLauncher = AirbyteIntegrationLauncher(
+            "0",
+            0,
+            imageName,
+            processFactory,
+            null,
+            null,
+            false,
+            EnvVariableFeatureFlags()
+        )
         val destination: AirbyteDestination =
-            DefaultAirbyteDestination(
-                integrationLauncher =
-                    AirbyteIntegrationLauncher(
-                        "0",
-                        0,
-                        imageName,
-                        processFactory,
-                        null,
-                        null,
-                        false,
-                        EnvVariableFeatureFlags()
-                    )
-            )
+            DefaultAirbyteDestination(integrationLauncher)
 
         destination.start(destinationConfig, jobRoot, emptyMap())
 
