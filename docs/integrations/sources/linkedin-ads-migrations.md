@@ -2,7 +2,9 @@
 
 ## Upgrading to 5.0.0
 
-Version 5.0.0 introduces changes to primary keys for streams:
+With LinkedIn Ads v5.0.0, we modified primary keys for stream(s): `ad_campaign_analytics`, `Custom Ad Analytics Reports`, `account_users`.
+
+This enhances data integrity and improves the efficiency of your syncs. We highly recommend initiating a connection refresh to ensure your data continues to sync accurately.
 
 - `ad_campaign_analytics`
 - `Custom Ad Analytics Reports`
@@ -11,7 +13,7 @@ Version 5.0.0 introduces changes to primary keys for streams:
 |:-------------------------------------|:--------------------------------------------------------|
 | `[string_of_pivot_values, end_date]` | `[string_of_pivot_values, end_date, sponsoredCampaign]` | 
 
-- account_users
+- `account_users`
 
 | Old PK      | New PK            | 
 |:------------|:------------------|

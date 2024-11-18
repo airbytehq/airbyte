@@ -88,8 +88,9 @@ data:
               - "campaign_groups"
               - "conversions"
       5.0.0:
-        message: This release introduces updated primary keys for streams ad_campaign_analytics and Custom Ad Analytics Reports from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and for stream account_users from [account] to [account, user]. Users using 4.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
+        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-02.
         upgradeDeadline: "2024-12-02"
+        deadlineAction: "auto_upgrade"
   suggestedStreams:
     streams:
       - accounts
