@@ -48,6 +48,7 @@ abstract class S3V2WriteTest(
         super.testFunkyCharacters()
     }
 
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413?")
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
