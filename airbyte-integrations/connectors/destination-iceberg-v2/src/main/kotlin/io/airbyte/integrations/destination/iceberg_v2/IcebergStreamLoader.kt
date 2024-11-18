@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg_v2
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.iceberg_parquet.IcebergParquetWriter
 import io.airbyte.cdk.load.file.iceberg_parquet.IcebergWriter
@@ -22,6 +23,7 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.parquet.GenericParquetWriter
 import org.apache.iceberg.parquet.Parquet
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class IcebergStreamLoader(
     override val stream: DestinationStream,
     private val table: Table,
