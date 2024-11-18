@@ -277,7 +277,7 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint == streamState.cursorUpperBound) {
+            if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
             }

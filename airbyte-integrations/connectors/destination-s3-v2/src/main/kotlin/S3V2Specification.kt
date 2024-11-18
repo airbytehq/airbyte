@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
+import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
@@ -24,11 +25,13 @@ import jakarta.inject.Singleton
 class S3V2Specification :
     ConfigurationSpecification(),
     AWSAccessKeySpecification,
+    AWSArnRoleSpecification,
     S3BucketSpecification,
     S3PathSpecification,
     ObjectStorageFormatSpecificationProvider {
-    override val accessKeyId: String = ""
-    override val secretAccessKey: String = ""
+    override val accessKeyId: String? = null
+    override val secretAccessKey: String? = null
+    override val roleArn: String? = null
     override val s3BucketName: String = ""
     override val s3BucketPath: String = ""
     override val s3BucketRegion: S3BucketRegion = S3BucketRegion.`us-west-1`
@@ -52,7 +55,6 @@ class S3V2SpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
 }

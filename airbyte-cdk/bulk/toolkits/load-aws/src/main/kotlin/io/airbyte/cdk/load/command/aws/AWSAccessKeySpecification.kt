@@ -22,7 +22,7 @@ interface AWSAccessKeySpecification {
     )
     @get:JsonProperty("access_key_id")
     @get:JsonSchemaInject(json = """{"examples":["A012345678910EXAMPLE"]}""")
-    val accessKeyId: String
+    val accessKeyId: String?
 
     @get:JsonSchemaTitle("S3 Access Key")
     @get:JsonPropertyDescription(
@@ -30,14 +30,14 @@ interface AWSAccessKeySpecification {
     )
     @get:JsonProperty("secret_access_key")
     @get:JsonSchemaInject(json = """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]}""")
-    val secretAccessKey: String
+    val secretAccessKey: String?
 
     fun toAWSAccessKeyConfiguration(): AWSAccessKeyConfiguration {
         return AWSAccessKeyConfiguration(accessKeyId, secretAccessKey)
     }
 }
 
-data class AWSAccessKeyConfiguration(val accessKeyId: String, val secretAccessKey: String)
+data class AWSAccessKeyConfiguration(val accessKeyId: String?, val secretAccessKey: String?)
 
 interface AWSAccessKeyConfigurationProvider {
     val awsAccessKeyConfiguration: AWSAccessKeyConfiguration
