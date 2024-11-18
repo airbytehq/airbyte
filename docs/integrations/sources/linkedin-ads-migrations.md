@@ -4,7 +4,7 @@
 
 With LinkedIn Ads v5.0.0, we modified primary keys for stream(s): `ad_campaign_analytics`, `Custom Ad Analytics Reports`, `account_users`.
 
-This enhances data integrity and improves the efficiency of your syncs. Users with deduping enabled on those streams might have missing data as records would have been collapsed on the wrong primary key. We highly recommend initiating a connection refresh to ensure your data continues to sync accurately.
+This enhances data integrity and improves the efficiency of your syncs. Users with deduping enabled on those streams might have missing data as records would have been collapsed on the wrong primary key. We highly recommend initiating a connection refresh to ensure all the data is available in the destination.
 
 - `ad_campaign_analytics`
 - `Custom Ad Analytics Reports`
