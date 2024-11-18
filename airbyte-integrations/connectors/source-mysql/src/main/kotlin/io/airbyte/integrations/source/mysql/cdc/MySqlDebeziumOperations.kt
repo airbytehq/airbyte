@@ -117,11 +117,14 @@ class MySqlDebeziumOperations(
      * Validate is not supposed to perform on synthetic state.
      */
     private fun validate(debeziumState: DebeziumState): CdcStateValidateResult {
+        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
         val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
-        if (gtidSet.isNullOrEmpty()) {
+        if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
+            log.info {
+                "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
+            }
             return abortCdcSync()
         }
-        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
 
         val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
         val availableGtidSet = MySqlGtidSet(gtidSet)
@@ -160,11 +163,13 @@ class MySqlDebeziumOperations(
             configuration.incrementalConfiguration as CdcIncrementalConfiguration
         return when (cdcIncrementalConfiguration.invalidCdcCursorPositionBehavior) {
             InvalidCdcCursorPositionBehavior.FAIL_SYNC -> {
-                log.info { "Current position is invalid, aborting sync." }
+                log.warn { "Saved offset no longer present on the server. aborting sync." }
                 CdcStateValidateResult.INVALID_ABORT
             }
             InvalidCdcCursorPositionBehavior.RESET_SYNC -> {
-                log.info { "Current position is invalid, resetting sync." }
+                log.warn {
+                    "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
+                }
                 CdcStateValidateResult.INVALID_RESET
             }
         }
@@ -298,7 +303,9 @@ class MySqlDebeziumOperations(
         val cdcValidationResult = validate(debeziumState)
         if (cdcValidationResult != CdcStateValidateResult.VALID) {
             if (cdcValidationResult == CdcStateValidateResult.INVALID_ABORT) {
-                throw ConfigErrorException("Current position is invalid.")
+                throw ConfigErrorException(
+                    "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency."
+                )
             }
             return synthesize()
         }

@@ -21,7 +21,6 @@ def test_application_roles_stream_401_error(config, caplog):
     config["domain"] = "test_application_domain"
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", status=401)
 
-    authenticator = SourceJira().get_authenticator(config=config)
     stream = find_stream("application_roles", config)
 
     with pytest.raises(
@@ -140,7 +139,7 @@ def test_issues_fields_stream(config, mock_fields_response):
 
 @responses.activate
 def test_python_issues_fields_ids_by_name(config, mock_fields_response):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     stream = IssueFields(**args)
 
@@ -401,7 +400,7 @@ def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
 
 @responses.activate
 def test_sprints_stream(config, mock_board_response, mock_sprints_response):
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build())
 
     assert len(output.records) == 3
     assert len(responses.calls) == 4
@@ -444,7 +443,7 @@ def test_sprint_issues_stream(config, mock_board_response, mock_fields_response,
         json=sprints_issues_response,
     )
 
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build())
 
     assert len(output.records) == 3
     assert len(responses.calls) == 8
@@ -612,7 +611,7 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
 
 @responses.activate
 def test_python_issues_stream(config, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter, caplog):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"] + ["Project3"]}
     stream = Issues(**args)
     records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
@@ -674,7 +673,7 @@ def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_c
         status=status_code,
     )
 
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": "incorrect_project"}
     stream = Issues(**args)
 
@@ -685,7 +684,7 @@ def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_c
 
 
 def test_python_issues_stream_updated_state(config):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     stream = Issues(**args)
 
@@ -707,7 +706,7 @@ def test_python_issues_stream_updated_state(config):
     )
 )
 def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pull_request):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     issues_stream = Issues(**args)
     issue_fields_stream = IssueFields(**args)
@@ -723,7 +722,7 @@ def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pul
 
 @responses.activate
 def test_python_pull_requests_stream_has_pull_request(config, mock_fields_response, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     issues_stream = Issues(**args)
     issue_fields_stream = IssueFields(**args)
@@ -755,7 +754,7 @@ def test_python_pull_requests_stream_has_pull_request(config, mock_fields_respon
     ],
 )
 def test_issues_stream_jql_compare_date(config, start_date, lookback_window, stream_state, expected_query, caplog):
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {
         "authenticator": authenticator,
         "domain": config["domain"],
@@ -823,7 +822,7 @@ def test_project_permissions_stream(config, mock_non_deleted_projects_responses,
 
 @responses.activate
 def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_project_emails):
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("project_email", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("project_email", SyncMode.full_refresh).build())
 
     assert len(output.records) == 2
     assert len(responses.calls) == 2
@@ -837,7 +836,7 @@ def test_project_components_stream(config, mock_non_deleted_projects_responses, 
         json=project_components_response,
     )
 
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("project_components", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("project_components", SyncMode.full_refresh).build())
 
     assert len(output.records) == 2
     assert len(responses.calls) == 2
@@ -851,7 +850,7 @@ def test_permissions_stream(config, permissions_response):
         json=permissions_response,
     )
 
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("permissions", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("permissions", SyncMode.full_refresh).build())
 
     assert len(output.records) == 1
     assert len(responses.calls) == 1
@@ -870,7 +869,7 @@ def test_labels_stream(config, labels_response):
         json={},
     )
 
-    output = read(SourceJira(), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build())
 
     assert len(output.records) == 2
     assert len(responses.calls) == 2
@@ -944,7 +943,7 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
         json=projects_versions_response,
     )
 
-    authenticator = SourceJira().get_authenticator(config=config)
+    authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("project_versions", config)
     records = list(read_full_refresh(stream))
@@ -1010,7 +1009,7 @@ def test_skip_slice(
     log_message,
 ):
     config["projects"] = config.get("projects", []) + ["Project3", "Project4"]
-    output = read(SourceJira(), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build())
+    output = read(SourceJira(config=config, catalog=None, state=None), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build())
     assert len(output.records) == expected_records_number
 
     assert len(responses.calls) == expected_calls_number
