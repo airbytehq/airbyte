@@ -54,6 +54,12 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          path: airbyte
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
         with:
@@ -61,13 +67,7 @@ jobs:
           ref: main
           # Clone into same parent directory as Airbyte
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-          path: /airbyte
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          path: /airbyte
+          path: airbyte-python-cdk
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
