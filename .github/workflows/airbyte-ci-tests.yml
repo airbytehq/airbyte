@@ -55,19 +55,21 @@ jobs:
       statuses: write
     steps:
       - run: pwd
-      - name: Checkout Airbyte Workflows
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          path: .
-          sparse-checkout: .github
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-          path: airbyte
+          # path: airbyte
+      # - name: Checkout Airbyte Workflows
+      #   uses: actions/checkout@v4
+      #   with:
+      #     fetch-depth: 0
+      #     ref: ${{ github.event.pull_request.head.ref }}
+      #     path: .
+      #     sparse-checkout: |
+      #       .github
+      #       airbyte-ci
       - run: pwd
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
@@ -77,6 +79,8 @@ jobs:
           # Clone into same parent directory as Airbyte
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
           path: airbyte-python-cdk
+      - name: Make symlink to airbyte-python-cdk
+        run: ln -s ../airbyte-python-cdk ./airbyte-python-cdk
       - run: |
           set -x
           pwd && ls -la
