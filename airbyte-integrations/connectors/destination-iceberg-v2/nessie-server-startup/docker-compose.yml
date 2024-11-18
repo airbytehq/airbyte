@@ -27,11 +27,10 @@
 #   "nessie.authentication.oauth2.client-secret"=s3cr3t AND
 #   "nessie.authentication.oauth2.issuer-url"="http://127.0.0.1:8080/realms/iceberg/"
 
-
-version: '3'
- # This is the file!!!
+version:
+  "3"
+  # This is the file!!!
 services:
-
   ## IMPORTANT
   ##
   ## 1. Start the pods:
@@ -138,9 +137,10 @@ services:
         condition: service_healthy
     entrypoint: /bin/bash
     restart: "no"
-    command: [
-      "-c",
-      "mc alias set myminio http://minio:9000/ minioadmin minioadmin ; mc admin info myminio ; mc mb myminio/demobucket --ignore-existing"
+    command:
+      [
+        "-c",
+        "mc alias set myminio http://minio:9000/ minioadmin minioadmin ; mc admin info myminio ; mc mb myminio/demobucket --ignore-existing",
       ]
 
   # Keycloak with the "iceberg" realm
@@ -164,12 +164,13 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     volumes:
       - ./authn-keycloak/config/iceberg-realm.json:/opt/keycloak/data/import/iceberg-realm.json
-    command: [
-      "start-dev",
-      "--features=token-exchange",
-      "--import-realm",
-      "--health-enabled=true"
-    ]
+    command:
+      [
+        "start-dev",
+        "--features=token-exchange",
+        "--import-realm",
+        "--health-enabled=true",
+      ]
     healthcheck:
       test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"
       interval: 5s

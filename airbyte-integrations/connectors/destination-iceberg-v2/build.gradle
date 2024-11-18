@@ -45,5 +45,7 @@ dependencies {
     implementation("org.apache.hadoop:hadoop-common:3.4.1")
     implementation("org.apache.parquet:parquet-hadoop:1.14.3")
     implementation("org.apache.parquet:parquet-column:1.14.3")
+    implementation("org.apache.iceberg:iceberg-data:1.6.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.projectnessie.nessie:nessie-client:0.99.0")
 }

@@ -198,3 +198,7 @@ integrationsPath.eachDir { dir ->
 include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
+include 'airbyte-integrations:connectors:destination-iceberg-v2'
+findProject(':airbyte-integrations:connectors:destination-iceberg-v2')?.name = 'destination-iceberg-v2'
+include 'airbyte-cdk:bulk:toolkits:load-iceberg-parquet'
+findProject(':airbyte-cdk:bulk:toolkits:load-iceberg-parquet')?.name = 'load-iceberg-parquet'
