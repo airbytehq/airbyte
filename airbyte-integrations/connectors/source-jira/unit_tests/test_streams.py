@@ -293,18 +293,18 @@ def test_jira_settings_stream(config, jira_settings_response):
 def test_board_issues_stream(config, mock_board_response, board_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+%272021%2F01%2F01+00%3A00%27",
+        f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=board_issues_response,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+%272021%2F01%2F01+00%3A00%27",
+        f"https://{config['domain']}/rest/agile/1.0/board/2/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={"errorMessages": ["This board has no columns with a mapped status."], "errors": {}},
         status=500,
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+%272021%2F01%2F01+00%3A00%27",
+        f"https://{config['domain']}/rest/agile/1.0/board/3/issue?maxResults=50&fields=key&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json={},
     )
 
@@ -439,7 +439,7 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
 def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+%272021%2F01%2F01+00%3A00%27",
+        f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated&jql=updated+%3E%3D+1609459200000",
         json=sprints_issues_response,
     )
 
@@ -664,7 +664,7 @@ def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_c
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (incorrect_project) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (incorrect_project) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -749,8 +749,8 @@ def test_python_pull_requests_stream_has_pull_request(config, mock_fields_respon
     "start_date, lookback_window, stream_state, expected_query",
     [
         (pendulum.parse("2023-09-09T00:00:00Z"), 0, None, None),
-        (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:37'"),
-        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= '2023/12/14 09:47'"),
+        (None, 10, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702546620000"),
+        (None, 0, {"updated": "2023-12-14T09:47:00"}, "updated >= 1702547220000"),
     ],
 )
 def test_issues_stream_jql_compare_date(config, start_date, lookback_window, stream_state, expected_query, caplog):

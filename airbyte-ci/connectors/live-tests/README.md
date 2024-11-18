@@ -179,6 +179,9 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.4
+Update `connection_retriever` to 0.7.4
+
 ### 0.19.3
 Update `get_container_from_id` with the correct new Dagger API.
 
