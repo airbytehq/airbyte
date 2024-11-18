@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file.s3
 
 import aws.sdk.kotlin.runtime.auth.credentials.AssumeRoleParameters
+import aws.sdk.kotlin.runtime.auth.credentials.DefaultChainCredentialsProvider
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.runtime.auth.credentials.StsAssumeRoleCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.CopyObjectRequest
@@ -226,7 +227,7 @@ class S3ClientFactory(
                 )
             } else {
                 // Todo: fill in with a stubbed out credentials provider.
-                throw IllegalStateException("No valid AWS credentials configuration found.")
+                DefaultChainCredentialsProvider()
             }
 
         val s3SdkClient =
