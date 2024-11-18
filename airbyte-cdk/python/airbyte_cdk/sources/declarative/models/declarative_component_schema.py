@@ -668,6 +668,15 @@ class JsonFileSchemaLoader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class StaticComponentsParser(BaseModel):
+    type: Literal['StaticComponentsParser']
+
+
+class TypesPair(BaseModel):
+    target_type: str
+    current_type: str
+
+
 class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
@@ -1247,6 +1256,33 @@ class SessionTokenRequestApiKeyAuthenticator(BaseModel):
     )
 
 
+class MapComponentsDefinition(BaseModel):
+    type: Literal['MapComponentsDefinition']
+    key: str = Field(..., title='Key')
+    value: str = Field(
+        ...,
+        examples=[
+            "{{ record['updates'] }}",
+            "{{ record['MetaData']['LastUpdatedTime'] }}",
+            "{{ stream_partition['segment_id'] }}",
+        ],
+        title='Value',
+    )
+    value_type: Optional[ValueType] = Field(
+        None,
+        description='Type of the value. If not specified, the type will be inferred from the value.',
+        title='Value Type',
+    )
+    condition: Optional[str] = Field(
+        '',
+        examples=[
+            "{{ record['created_at'] >= stream_interval['start_time'] }}",
+            "{{ record.status in ['active', 'expired'] }}",
+        ],
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class ListPartitionRouter(BaseModel):
     type: Literal['ListPartitionRouter']
     cursor_field: str = Field(
@@ -1318,6 +1354,7 @@ class DeclarativeSource(BaseModel):
     type: Literal['DeclarativeSource']
     check: CheckStream
     streams: List[DeclarativeStream]
+    dynamic_streams: Optional[List[DynamicDeclarativeStream]] = None
     version: str = Field(
         ...,
         description='The version of the Airbyte CDK used to build and test the source.',
@@ -1401,7 +1438,12 @@ class DeclarativeStream(BaseModel):
         '', description='The primary key of the stream.', title='Primary Key'
     )
     schema_loader: Optional[
-        Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
+        Union[
+            DynamicSchemaLoader,
+            InlineSchemaLoader,
+            JsonFileSchemaLoader,
+            CustomSchemaLoader,
+        ]
     ] = Field(
         None,
         description='Component used to retrieve the schema for the current stream.',
@@ -1562,6 +1604,51 @@ class HttpRequester(BaseModel):
         description='Enables stream requests caching. This field is automatically set by the CDK.',
         title='Use Cache',
     )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class DynamicComponentsParser(BaseModel):
+    type: Literal['DynamicComponentsParser']
+    components_values_stream: DeclarativeStream = Field(
+        ..., description='Reference to the stream.', title='Stream'
+    )
+    components_mapping: List[MapComponentsDefinition]
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class DynamicDeclarativeStream(BaseModel):
+    stream_template: Optional[DeclarativeStream] = Field(
+        None, description='Reference to the stream.', title='Stream'
+    )
+    components_parser: Optional[
+        Union[DynamicComponentsParser, StaticComponentsParser]
+    ] = None
+
+
+class DynamicSchemaLoader(BaseModel):
+    type: Literal['DynamicSchemaLoader']
+    stream: DeclarativeStream = Field(
+        ..., description='Reference to the stream.', title='Stream'
+    )
+    decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
+        None, description='Component used to decode the response.', title='Decoder'
+    )
+    schema_pointer: Optional[List[str]] = Field(
+        None,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Schema Path',
+    )
+    key_pointer: Optional[List[str]] = Field(
+        None,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Key Path',
+    )
+    type_pointer: Optional[List[str]] = Field(
+        None,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Type Path',
+    )
+    types_map: Optional[List[TypesPair]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 

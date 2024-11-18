@@ -2345,7 +2345,7 @@ class EmailSubscriptions(Stream):
     filter_old_records = False
 
 
-class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
+class WebAnalyticsStream(HttpSubStream, Stream):
     """
     A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics

@@ -87,6 +87,8 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DynamicComponentsParser as DynamicComponentsParserModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DynamicSchemaLoader as DynamicSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     ExponentialBackoffStrategy as ExponentialBackoffStrategyModel,
 )
@@ -108,6 +110,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
     LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import MapComponentsDefinition as MapComponentsDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
@@ -125,6 +128,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import TypesPair as TypesPairModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
@@ -163,7 +167,13 @@ from airbyte_cdk.sources.declarative.requesters.request_options import (
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
-from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema import (
+    DefaultSchemaLoader,
+    DynamicSchemaLoader,
+    InlineSchemaLoader,
+    JsonFileSchemaLoader,
+    TypesPair,
+)
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
@@ -180,6 +190,8 @@ from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
+
+from .components_parser import DynamicComponentsParser, MapComponentsDefinition
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -242,6 +254,10 @@ class ModelToComponentFactory:
             HttpRequesterModel: self.create_http_requester,
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
+            DynamicSchemaLoaderModel: self.create_dynamic_schema_loader,
+            TypesPairModel: self.create_types_pair,
+            DynamicComponentsParserModel: self.create_dynamic_components_parser,
+            MapComponentsDefinitionModel: self.create_map_components_definition,
             JsonDecoderModel: self.create_json_decoder,
             JsonlDecoderModel: self.create_jsonl_decoder,
             KeysToLowerModel: self.create_keys_to_lower_transformation,
@@ -900,7 +916,7 @@ class ModelToComponentFactory:
             state_transformations = []
 
         if model.schema_loader:
-            schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
+            schema_loader = self._create_component_from_model(model=model.schema_loader, config=config, name=model.name)
         else:
             options = model.parameters or {}
             if "name" not in options:
@@ -1105,6 +1121,27 @@ class ModelToComponentFactory:
     @staticmethod
     def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
         return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
+
+    @staticmethod
+    def create_types_pair(model: TypesPairModel, **kwargs: Any):
+        return TypesPair(target_type=model.target_type, current_type=model.current_type)
+
+    def create_dynamic_schema_loader(
+        self, model: DynamicSchemaLoaderModel, config: Config, name: str, **kwargs: Any
+    ) -> DynamicSchemaLoader:
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        declarative_stream = self._create_component_from_model(model.stream, config=config)
+        types_map = [self._create_component_from_model(types_pair, config=config) for types_pair in model.types_map]
+        return DynamicSchemaLoader(
+            stream=declarative_stream,
+            config=config,
+            decoder=decoder,
+            schema_pointer=model.schema_pointer,
+            key_pointer=model.key_pointer,
+            type_pointer=model.type_pointer,
+            types_map=types_map,
+            parameters=model.parameters or {},
+        )
 
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
@@ -1573,6 +1610,35 @@ class ModelToComponentFactory:
             )
 
         return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters or {}, config=config)
+
+    @staticmethod
+    def create_map_components_definition(model: MapComponentsDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
+        interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
+        return MapComponentsDefinition(
+            key=model.key,
+            value=interpolated_value,
+            value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
+            condition=model.condition or "",
+            parameters=model.parameters or {},
+        )
+
+    def create_dynamic_components_parser(self, model: DynamicComponentsParserModel, config: Config) -> Any:
+        declarative_stream = self._create_component_from_model(model.components_values_stream, config=config)
+        components_mapping = [
+            self._create_component_from_model(
+                model=map_components_definition_model,
+                value_type=ModelToComponentFactory._json_schema_type_name_to_type(map_components_definition_model.value_type),
+                config=config,
+            )
+            for map_components_definition_model in model.components_mapping
+        ]
+
+        return DynamicComponentsParser(
+            components_values_stream=declarative_stream,
+            config=config,
+            components_mapping=components_mapping,
+            parameters=model.parameters or {},
+        )
 
     def _create_message_repository_substream_wrapper(self, model: ParentStreamConfigModel, config: Config) -> Any:
         substream_factory = ModelToComponentFactory(
