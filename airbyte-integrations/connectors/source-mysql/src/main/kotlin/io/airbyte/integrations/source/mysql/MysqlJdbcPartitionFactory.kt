@@ -277,7 +277,7 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint == streamState.cursorUpperBound) {
+            if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
             }
@@ -297,7 +297,7 @@ class MysqlJdbcPartitionFactory(
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                     LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toBigInteger())
+                        Jsons.valueToTree(stateValue?.toInt())
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())
