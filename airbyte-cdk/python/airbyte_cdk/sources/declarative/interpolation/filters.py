@@ -102,8 +102,7 @@ def string(value: Any) -> str:
     """
     if isinstance(value, str):
         return value
-    ret = f'"""{json.dumps(value)}"""'
-    return ret
+    return f'"""{json.dumps(value)}"""'
 
 
 def regex_search(value: str, regex: str) -> str:
