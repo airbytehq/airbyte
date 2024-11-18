@@ -87,7 +87,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
-        datetime: "{{ config.get('start_date') }}"
+        datetime: "{{ config.get('start_date') or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
 
   cursor_incremental_sync:
     type: DatetimeBasedCursor
@@ -98,7 +98,7 @@ definitions:
     datetime_format: "%s"
     cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
     start_datetime:
-      datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
     start_time_option:
       inject_into: request_parameter
       field_name: "{{ parameters['cursor_filter'] }}"
