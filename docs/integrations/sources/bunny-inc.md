@@ -5,7 +5,7 @@ Synchronizes Bunny data
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key_2` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key.  |  |
 | `subdomain` | `string` | Subdomain. The subdomain specific to your Bunny account or service. |  |
 | `start_date` | `string` | Start date.  |  |
 
