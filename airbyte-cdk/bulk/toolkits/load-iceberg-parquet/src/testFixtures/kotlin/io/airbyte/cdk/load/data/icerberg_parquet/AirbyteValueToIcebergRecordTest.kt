@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.file.icerberg_parquet
+package io.airbyte.cdk.load.data.icerberg_parquet
 
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.iceberg_parquet.AirbyteValueToIcebergRecord
