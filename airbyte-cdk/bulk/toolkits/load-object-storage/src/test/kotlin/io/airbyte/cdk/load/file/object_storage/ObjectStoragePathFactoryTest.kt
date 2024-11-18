@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
@@ -12,6 +14,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.MockTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
@@ -138,6 +141,61 @@ class ObjectStoragePathFactoryTest {
             val match = pathFactory.getPathMatcher(stream1).match(expectedToMatch)
             Assertions.assertTrue(match != null)
             Assertions.assertTrue(match?.partNumber == 173L)
+        }
+
+        @Test
+        fun testPathMatchingPatternWithEmptyStream(
+            pathFactory: ObjectStoragePathFactory,
+            timeProvider: TimeProvider
+        ) {
+            val epochMilli = timeProvider.currentTimeMillis()
+            val stream1 = MockDestinationCatalogFactory.stream1
+            val (_, name) = stream1.descriptor
+            val emptyNamespaceStream =
+                stream1.copy(descriptor = stream1.descriptor.copy(namespace = null))
+            val expectedToMatch =
+                "prefix/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-1577934245678-173-42.jsonl.gz"
+            val match = pathFactory.getPathMatcher(emptyNamespaceStream).match(expectedToMatch)
+            println(pathFactory.getPathMatcher(emptyNamespaceStream).regex)
+            Assertions.assertTrue(match != null)
+            Assertions.assertTrue(match?.partNumber == 173L)
+        }
+
+        @Test
+        fun testSpecialCharacterInStream(
+            pathFactory: ObjectStoragePathFactory,
+            timeProvider: TimeProvider
+        ) {
+            val epochMilli = timeProvider.currentTimeMillis()
+            val streamWithSpecial =
+                DestinationStream(
+                    DestinationStream.Descriptor(
+                        "namespace",
+                        "stream_with:spécial:characters",
+                    ),
+                    generationId = 0,
+                    minimumGenerationId = 0,
+                    syncId = 0,
+                    schema = StringType,
+                    importType = Append
+                )
+            val expectedPath =
+                "prefix/namespace/stream_with:special:characters/2020/01/02/03/04/05/0678/$epochMilli"
+            Assertions.assertEquals(
+                expectedPath,
+                pathFactory.getFinalDirectory(streamWithSpecial).toString(),
+            )
+        }
+
+        @Test
+        fun testLongestConstantPrefix(pathFactory: ObjectStoragePathFactory) {
+            val stream1 = MockDestinationCatalogFactory.stream1
+            val (namespace, name) = stream1.descriptor
+            val prefixOnly = "prefix/$namespace/$name"
+            Assertions.assertEquals(
+                prefixOnly,
+                pathFactory.getFinalDirectory(stream1, streamConstantPrefix = true).toString(),
+            )
         }
     }
 
