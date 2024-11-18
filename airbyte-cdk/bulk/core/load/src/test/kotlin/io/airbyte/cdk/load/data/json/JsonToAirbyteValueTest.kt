@@ -28,7 +28,7 @@ import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.api.Assertions
@@ -186,7 +186,7 @@ class JsonToAirbyteValueTest {
         val value =
             JsonToAirbyteValue()
                 .convert(
-                    Jsons.readTree("""{"foo": 1}"""),
+                    """{"foo": 1}""".deserializeToNode(),
                     ObjectType(
                         properties =
                             linkedMapOf(

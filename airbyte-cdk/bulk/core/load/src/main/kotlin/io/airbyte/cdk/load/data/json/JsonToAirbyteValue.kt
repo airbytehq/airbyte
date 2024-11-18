@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -72,7 +72,7 @@ class JsonToAirbyteValue {
         return if (json.isTextual) {
             StringValue(json.asText())
         } else {
-            StringValue(Jsons.writeValueAsString(json))
+            StringValue(json.serializeToString())
         }
     }
 

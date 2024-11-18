@@ -197,7 +197,7 @@ class ObjectStoragePathFactory(
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
-                FileVariable("timestamp", """\d+""") { System.currentTimeMillis().toString() },
+                FileVariable("timestamp", """\d+""") { it.time.toEpochMilli().toString() },
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(

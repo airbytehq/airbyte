@@ -13,13 +13,12 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.util.readIntoClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -121,9 +120,7 @@ class ObjectStorageStagingPersister(
         try {
             log.info { "Loading destination state from $key" }
             return client.get(key) { inputStream ->
-                Jsons.readTree(inputStream).let {
-                    Jsons.treeToValue(it, ObjectStorageDestinationState::class.java)
-                }
+                inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
             log.info { "No destination state found at $key: $e" }

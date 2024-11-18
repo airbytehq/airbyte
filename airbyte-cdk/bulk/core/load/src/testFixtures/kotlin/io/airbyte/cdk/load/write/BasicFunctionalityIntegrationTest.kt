@@ -47,7 +47,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -355,13 +355,13 @@ abstract class BasicFunctionalityIntegrationTest(
                             when (streamName) {
                                 "test_stream1" -> {
                                     assertEquals(
-                                        Jsons.readTree("""{"foo": "bar1"}"""),
+                                        """{"foo": "bar1"}""".deserializeToNode(),
                                         stateMessage.stream.streamState,
                                     )
                                 }
                                 "test_stream2" -> {
                                     assertEquals(
-                                        Jsons.readTree("""{"foo": "bar2"}"""),
+                                        """{"foo": "bar2"}""".deserializeToNode(),
                                         stateMessage.stream.streamState
                                     )
                                 }

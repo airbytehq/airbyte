@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -62,7 +62,7 @@ data class DestinationRecord(
         changes: MutableList<Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(Jsons.readTree(data), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
@@ -287,7 +287,7 @@ data class StreamCheckpoint(
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
-            state = Jsons.readTree(blob)
+            state = blob.deserializeToNode()
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
@@ -318,7 +318,7 @@ data class GlobalCheckpoint(
         blob: String,
         sourceRecordCount: Long,
     ) : this(
-        state = Jsons.readTree(blob),
+        state = blob.deserializeToNode(),
         Stats(sourceRecordCount),
         additionalProperties = emptyMap(),
     )
