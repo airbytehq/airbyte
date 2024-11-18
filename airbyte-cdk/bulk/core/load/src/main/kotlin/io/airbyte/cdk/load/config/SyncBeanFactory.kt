@@ -10,6 +10,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.Clock
 
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
@@ -30,5 +31,10 @@ class SyncBeanFactory {
         @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
     ): ReservationManager {
         return ReservationManager(availableBytes)
+    }
+
+    @Singleton
+    fun clock(): Clock {
+        return Clock.systemUTC()
     }
 }

@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.StreamRecordWrapped
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
 import io.airbyte.cdk.load.task.StreamLevel
@@ -24,6 +25,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.nio.file.Path
@@ -47,11 +49,9 @@ class DefaultSpillToDiskTask(
     override val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
     private val diskManager: ReservationManager,
-    private val clock: Clock,
+    private val timeWindow: TimeWindowTrigger,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
-    // initialize on the first record message
-    private var openedAtMs: Long? = null
 
     data class ReadResult(
         val range: Range<Long>? = null,
@@ -71,7 +71,7 @@ class DefaultSpillToDiskTask(
                             when (val wrapped = it.value) {
                                 is StreamRecordWrapped -> {
                                     // once we have received a record for the stream, consider the aggregate opened.
-                                    openedAtMs = openedAtMs ?: clock.millis()
+                                    timeWindow.open()
 
                                     // reserve enough room for the record
                                     diskManager.reserve(wrapped.sizeBytes)
@@ -100,7 +100,7 @@ class DefaultSpillToDiskTask(
                                     ReadResult(nextRange, sizeBytes, hasReadEndOfStream = true)
                                 }
                                 is StreamFlushTickMessage -> {
-                                    val forceFlush = openedAtMs?.let { ts -> (clock.millis() - ts) > 123L } ?: false
+                                    val forceFlush = timeWindow.isComplete()
                                     ReadResult(range, sizeBytes, forceFlush)
                                 }
                             }
@@ -141,11 +141,14 @@ class DefaultSpillToDiskTaskFactory(
     private val flushStrategy: FlushStrategy,
     @Named("diskManager") private val diskManager: ReservationManager,
     private val clock: Clock,
+    @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
+        val timeWindow = TimeWindowTrigger(clock, windowWidthMs)
+
         return DefaultSpillToDiskTask(
             spillFileProvider,
             queueSupplier.get(stream),
@@ -153,7 +156,7 @@ class DefaultSpillToDiskTaskFactory(
             stream,
             taskLauncher,
             diskManager,
-            clock,
+            timeWindow,
         )
     }
 }
