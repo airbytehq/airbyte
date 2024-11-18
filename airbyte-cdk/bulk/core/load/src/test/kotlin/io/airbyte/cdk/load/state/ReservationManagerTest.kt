@@ -13,75 +13,75 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class MemoryManagerTest {
+class ReservationManagerTest {
     @Test
     fun testReserve() = runTest {
-        val memoryManager = MemoryManager(1000)
+        val manager = ReservationManager(1000)
         val reserved = AtomicBoolean(false)
 
         try {
-            withTimeout(5000) { memoryManager.reserve(900, this) }
+            withTimeout(5000) { manager.reserve(900, this) }
         } catch (e: Exception) {
             Assertions.fail<Unit>("Failed to reserve memory")
         }
 
-        Assertions.assertEquals(100, memoryManager.remainingMemoryBytes)
+        Assertions.assertEquals(100, manager.remainingCapacityBytes)
 
         val job = launch {
-            memoryManager.reserve(200, this)
+            manager.reserve(200, this)
             reserved.set(true)
         }
 
-        memoryManager.reserve(0, this)
+        manager.reserve(0, this)
         Assertions.assertFalse(reserved.get())
 
-        memoryManager.release(50)
-        memoryManager.reserve(0, this)
-        Assertions.assertEquals(150, memoryManager.remainingMemoryBytes)
+        manager.release(50)
+        manager.reserve(0, this)
+        Assertions.assertEquals(150, manager.remainingCapacityBytes)
         Assertions.assertFalse(reserved.get())
 
-        memoryManager.release(25)
-        memoryManager.reserve(0, this)
-        Assertions.assertEquals(175, memoryManager.remainingMemoryBytes)
+        manager.release(25)
+        manager.reserve(0, this)
+        Assertions.assertEquals(175, manager.remainingCapacityBytes)
         Assertions.assertFalse(reserved.get())
 
-        memoryManager.release(25)
+        manager.release(25)
         try {
             withTimeout(5000) { job.join() }
         } catch (e: Exception) {
             Assertions.fail<Unit>("Failed to unblock reserving memory")
         }
-        Assertions.assertEquals(0, memoryManager.remainingMemoryBytes)
+        Assertions.assertEquals(0, manager.remainingCapacityBytes)
         Assertions.assertTrue(reserved.get())
     }
 
     @Test
     fun testReserveMultithreaded() = runTest {
-        val memoryManager = MemoryManager(1000)
+        val manager = ReservationManager(1000)
         withContext(Dispatchers.IO) {
-            memoryManager.reserve(1000, this)
-            Assertions.assertEquals(0, memoryManager.remainingMemoryBytes)
+            manager.reserve(1000, this)
+            Assertions.assertEquals(0, manager.remainingCapacityBytes)
             val nIterations = 100000
 
-            val jobs = (0 until nIterations).map { launch { memoryManager.reserve(10, this) } }
+            val jobs = (0 until nIterations).map { launch { manager.reserve(10, this) } }
 
             repeat(nIterations) {
-                memoryManager.release(10)
+                manager.release(10)
                 Assertions.assertTrue(
-                    memoryManager.remainingMemoryBytes >= 0,
-                    "Remaining memory is negative: ${memoryManager.remainingMemoryBytes}"
+                    manager.remainingCapacityBytes >= 0,
+                    "Remaining memory is negative: ${manager.remainingCapacityBytes}"
                 )
             }
             jobs.forEach { it.join() }
-            Assertions.assertEquals(0, memoryManager.remainingMemoryBytes)
+            Assertions.assertEquals(0, manager.remainingCapacityBytes)
         }
     }
 
     @Test
     fun testRequestingMoreThanAvailableThrows() = runTest {
-        val memoryManager = MemoryManager(1000)
+        val manager = ReservationManager(1000)
         try {
-            memoryManager.reserve(1001, this)
+            manager.reserve(1001, this)
         } catch (e: IllegalArgumentException) {
             return@runTest
         }
@@ -90,10 +90,10 @@ class MemoryManagerTest {
 
     @Test
     fun testReservations() = runTest {
-        val memoryManager = MemoryManager(1000)
-        val reservation = memoryManager.reserve(100, this)
-        Assertions.assertEquals(900, memoryManager.remainingMemoryBytes)
+        val manager = ReservationManager(1000)
+        val reservation = manager.reserve(100, this)
+        Assertions.assertEquals(900, manager.remainingCapacityBytes)
         reservation.release()
-        Assertions.assertEquals(1000, memoryManager.remainingMemoryBytes)
+        Assertions.assertEquals(1000, manager.remainingCapacityBytes)
     }
 }
