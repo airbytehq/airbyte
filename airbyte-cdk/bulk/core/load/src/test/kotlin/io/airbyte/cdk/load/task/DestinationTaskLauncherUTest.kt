@@ -6,6 +6,12 @@ package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
@@ -16,7 +22,8 @@ import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
-import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
+import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
@@ -37,7 +44,7 @@ class DestinationTaskLauncherUTest {
     private val syncManager: SyncManager = mockk(relaxed = true)
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask = mockk(relaxed = true)
+    private val inputConsumerTaskFactory: InputConsumerTaskFactory = mockk(relaxed = true)
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory = mockk(relaxed = true)
 
     // Implementor Tasks
@@ -58,6 +65,13 @@ class DestinationTaskLauncherUTest {
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>> =
         mockk(relaxed = true)
 
+    // Input Comsumer requirements
+    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>> = mockk(relaxed = true)
+    private val recordQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> =
+        mockk(relaxed = true)
+    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
+        mockk(relaxed = true)
     private fun getDefaultDestinationTaskLauncher(
         useFileTranfer: Boolean
     ): DefaultDestinationTaskLauncher {
@@ -65,7 +79,7 @@ class DestinationTaskLauncherUTest {
             taskScopeProvider,
             catalog,
             syncManager,
-            inputConsumerTask,
+            inputConsumerTaskFactory,
             spillToDiskTaskFactory,
             setupTaskFactory,
             openStreamTaskFactory,
@@ -78,7 +92,10 @@ class DestinationTaskLauncherUTest {
             timedFlushTask,
             updateCheckpointsTask,
             exceptionHandler,
-            useFileTranfer
+            useFileTranfer,
+            inputFlow,
+            recordQueueSupplier,
+            checkpointQueue,
         )
     }
 
