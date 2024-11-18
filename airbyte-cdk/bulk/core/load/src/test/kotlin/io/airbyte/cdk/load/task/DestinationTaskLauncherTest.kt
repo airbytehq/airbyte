@@ -11,6 +11,13 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.MessageQueue
+import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -34,6 +41,8 @@ import io.airbyte.cdk.load.task.internal.DefaultSpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTask
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
+import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
@@ -43,12 +52,14 @@ import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.mockk
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlin.io.path.Path
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -71,7 +82,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var syncManager: SyncManager
     @Inject lateinit var mockExceptionHandler: MockExceptionHandler<T>
 
-    @Inject lateinit var mockInputConsumerTask: MockInputConsumerTask
+    @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
     @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
@@ -82,15 +93,57 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
     @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
+    @Inject lateinit var inputFlow: MockInputFlow
+    @Inject lateinit var queueWriter: MockQueueWriter
+    @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
 
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockInputConsumerTask : InputConsumerTask {
+    class MockInputFlow: SizedInputFlow<Reserved<DestinationMessage>> {
+        override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>) {
+        }
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockQueueWriter: QueueWriter<Reserved<CheckpointMessageWrapped>> {
+        override suspend fun publish(message: Reserved<CheckpointMessageWrapped>) {
+        }
+
+        override suspend fun close() {
+        }
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockMessageQueueSupplier: MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
+        override fun get(key: DestinationStream.Descriptor): MessageQueue<Reserved<DestinationRecordWrapped>> {
+            return mockk()
+        }
+
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockInputConsumerTaskFactory : InputConsumerTaskFactory {
         val hasRun: Channel<Boolean> = Channel(Channel.UNLIMITED)
 
-        override suspend fun execute() {
-            hasRun.send(true)
+        override fun make(
+            catalog: DestinationCatalog,
+            inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+            recordQueueSupplier: MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+            checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+            destinationTaskLauncher: DestinationTaskLauncher
+        ): InputConsumerTask {
+            return object : InputConsumerTask {
+                override suspend fun execute() {
+                    hasRun.send(true)
+                }
+            }
         }
     }
 
