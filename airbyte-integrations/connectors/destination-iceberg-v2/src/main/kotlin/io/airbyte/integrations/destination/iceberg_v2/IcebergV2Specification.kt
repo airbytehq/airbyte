@@ -12,8 +12,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("Iceberg V2 Destination Spec")
-class IcebergV2Specification: ConfigurationSpecification() {
-}
+class IcebergV2Specification : ConfigurationSpecification() {}
 
 @Singleton
 class IcebergV2SpecificationExtension : DestinationSpecificationExtension {
