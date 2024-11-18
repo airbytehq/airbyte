@@ -110,14 +110,18 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
         if path is None:
             path = []
 
-        for key in second:
+        log_warnings = _LOGGER.isEnabledFor(logging.WARNING)
+
+        for key, value in second.items():
             if key in first:
-                if isinstance(first[key], dict) and isinstance(second[key], dict):
-                    self._append_second_to_first(first[key], second[key], path + [str(key)])  # type: ignore # type is verified above
+                first_value, second_value = first[key], value
+                if isinstance(first_value, dict) and isinstance(second_value, dict):
+                    self._append_second_to_first(first_value, second_value, path + [str(key)])  # type: ignore # type is verified above
                 else:
-                    if first[key] != second[key]:
+                    if log_warnings and first_value != second_value:
                         _LOGGER.warning("Conflict at %s" % ".".join(path + [str(key)]))
-                    first[key] = second[key]
+                    first[key] = second_value
             else:
-                first[key] = second[key]
+                first[key] = value
+
         return first
