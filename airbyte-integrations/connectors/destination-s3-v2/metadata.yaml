@@ -81,4 +81,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
+          fileName: s3_dest_assume_role_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
+          fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
