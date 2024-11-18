@@ -1537,16 +1537,17 @@ abstract class BaseTypingDedupingTest {
                 .withDestinationConnectionConfiguration(transformedConfig)
         val destination: AirbyteDestination =
             DefaultAirbyteDestination(
-                integrationLauncher = AirbyteIntegrationLauncher(
-                    "0",
-                    0,
-                    imageName,
-                    processFactory,
-                    null,
-                    null,
-                    false,
-                    EnvVariableFeatureFlags()
-                )
+                integrationLauncher =
+                    AirbyteIntegrationLauncher(
+                        "0",
+                        0,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        EnvVariableFeatureFlags()
+                    )
             )
 
         destination.start(destinationConfig, jobRoot, emptyMap())

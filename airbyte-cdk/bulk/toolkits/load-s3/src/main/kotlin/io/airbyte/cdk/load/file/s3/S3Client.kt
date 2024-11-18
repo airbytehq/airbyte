@@ -201,7 +201,7 @@ class S3ClientFactory(
     @Secondary
     fun make(): S3Client {
 
-        val credsProvider : CredentialsProvider =
+        val credsProvider: CredentialsProvider =
             if (keyConfig.awsAccessKeyConfiguration.accessKeyId != null) {
                 StaticCredentialsProvider {
                     accessKeyId = keyConfig.awsAccessKeyConfiguration.accessKeyId
@@ -209,8 +209,7 @@ class S3ClientFactory(
                 }
             } else if (arnRole.awsArnRoleConfiguration.roleArn != null) {
                 // The Platform is expected to inject via credentials if ROLE_ARN is present.
-                val externalId =
-                    System.getenv(EXTERNAL_ID) // Consider injecting this dependency
+                val externalId = System.getenv(EXTERNAL_ID) // Consider injecting this dependency
                 val assumeRoleParams =
                     AssumeRoleParameters(
                         roleArn = arnRole.awsArnRoleConfiguration.roleArn!!,
@@ -242,5 +241,4 @@ class S3ClientFactory(
             uploadConfig?.objectStorageUploadConfiguration
         )
     }
-
 }
