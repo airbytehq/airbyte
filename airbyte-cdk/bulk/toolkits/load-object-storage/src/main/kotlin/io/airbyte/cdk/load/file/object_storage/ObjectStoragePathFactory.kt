@@ -199,10 +199,14 @@ class ObjectStoragePathFactory(
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
+<<<<<<< HEAD
                 FileVariable("timestamp", """\d+""") {
                     // NOTE: We use a constant time for the path but wall time for the files
                     Instant.now().toEpochMilli().toString()
                 },
+=======
+                FileVariable("timestamp", """\d+""") { System.currentTimeMillis().toString() },
+>>>>>>> 48eacf4a6f (enabled remaining resume tests save 1; fixed: part no during truncate, bad timestamps)
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
