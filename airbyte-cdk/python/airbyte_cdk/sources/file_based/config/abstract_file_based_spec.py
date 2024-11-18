@@ -25,7 +25,7 @@ class DeliverRecords(BaseModel):
 class DeliverRawFiles(BaseModel):
     class Config(OneOfOptionConfig):
         title = "Copy Raw Files"
-        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files."
+        description = "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.\n\nRequires a supported file destination (see docs for detailed limitations)."
         discriminator = "delivery_type"
 
     delivery_type: Literal["use_file_transfer"] = Field("use_file_transfer", const=True)
