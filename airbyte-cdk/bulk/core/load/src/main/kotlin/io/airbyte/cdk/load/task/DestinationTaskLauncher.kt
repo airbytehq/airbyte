@@ -9,7 +9,13 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
@@ -19,7 +25,8 @@ import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
-import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
+import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
@@ -89,7 +96,7 @@ class DefaultDestinationTaskLauncher(
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask,
+    private val inputConsumerTaskFactory: InputConsumerTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
 
     // Implementor Tasks
@@ -109,6 +116,12 @@ class DefaultDestinationTaskLauncher(
     // Exception handling
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
     @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+
+    // Input Comsumer requirements
+    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val recordQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -126,6 +139,14 @@ class DefaultDestinationTaskLauncher(
 
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
+        val inputConsumerTask =
+            inputConsumerTaskFactory.make(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                this,
+            )
         enqueue(inputConsumerTask)
 
         // Launch the client interface setup task

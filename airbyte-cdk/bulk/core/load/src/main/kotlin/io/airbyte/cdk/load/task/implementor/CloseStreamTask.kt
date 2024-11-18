@@ -29,7 +29,7 @@ class DefaultCloseStreamTask(
         val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         streamLoader.close()
         syncManager.getStreamManager(streamDescriptor).markSucceeded()
-        taskLauncher.handleStreamClosed(streamDescriptor)
+        taskLauncher.handleStreamClosed(streamLoader.stream.descriptor)
     }
 }
 

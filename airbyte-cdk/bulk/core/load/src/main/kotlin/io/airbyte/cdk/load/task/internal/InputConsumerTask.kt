@@ -58,7 +58,7 @@ class DefaultInputConsumerTask(
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
-    private val destinationTaskLauncher: DestinationTaskLauncher
+    private val destinationTaskLauncher: DestinationTaskLauncher,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
@@ -171,5 +171,39 @@ class DefaultInputConsumerTask(
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
         }
+    }
+}
+
+interface InputConsumerTaskFactory {
+    fun make(
+        catalog: DestinationCatalog,
+        inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+        recordQueueSupplier:
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+        destinationTaskLauncher: DestinationTaskLauncher,
+    ): InputConsumerTask
+}
+
+@Singleton
+@Secondary
+class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
+    InputConsumerTaskFactory {
+    override fun make(
+        catalog: DestinationCatalog,
+        inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+        recordQueueSupplier:
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
+        destinationTaskLauncher: DestinationTaskLauncher,
+    ): InputConsumerTask {
+        return DefaultInputConsumerTask(
+            catalog,
+            inputFlow,
+            recordQueueSupplier,
+            checkpointQueue,
+            syncManager,
+            destinationTaskLauncher
+        )
     }
 }
