@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.integrations.destination.iceberg.v2.IcebergV2TestUtil.PATH
 import org.junit.jupiter.api.Disabled
 
 abstract class IcebergV2WriteTest(path: String) :
@@ -30,4 +31,4 @@ abstract class IcebergV2WriteTest(path: String) :
 
 // TODO replace this with a real test class for an actual config
 @Disabled("nowhere even close to functional")
-class FakeIcebergWriteTest : IcebergV2WriteTest(IcebergV2TestUtil.SOME_RANDOM_S3_CONFIG)
+class FakeIcebergWriteTest : IcebergV2WriteTest(PATH.toString())

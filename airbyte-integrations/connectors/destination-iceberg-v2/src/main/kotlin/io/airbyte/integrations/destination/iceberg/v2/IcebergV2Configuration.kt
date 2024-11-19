@@ -6,10 +6,24 @@ package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import javax.inject.Singleton
+import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
+import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfigurationProvider
+import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
+import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.micronaut.context.annotation.Factory
+import jakarta.inject.Singleton
 
-// TODO put real fields here
-data class IcebergV2Configuration(val something: String) : DestinationConfiguration()
+data class IcebergV2Configuration(
+    override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
+    override val nessieServerConfiguration: NessieServerConfiguration,
+    override val s3BucketConfiguration: S3BucketConfiguration
+) :
+    DestinationConfiguration(),
+    AWSAccessKeyConfigurationProvider,
+    NessieServerConfigurationProvider,
+    S3BucketConfigurationProvider
 
 @Singleton
 class IcebergV2ConfigurationFactory :
@@ -17,8 +31,19 @@ class IcebergV2ConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: IcebergV2Specification
     ): IcebergV2Configuration {
-        // TODO convert from the jackson-friendly IcebergV2Specification
-        //   to the programmer-friendly IcebergV2Configuration
-        return IcebergV2Configuration("hello world")
+        return IcebergV2Configuration(
+            awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
+            s3BucketConfiguration = pojo.toS3BucketConfiguration(),
+            nessieServerConfiguration = pojo.toNessieServerConfiguration(),
+        )
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+@Factory
+class IcebergV2ConfigurationProvider(private val config: DestinationConfiguration) {
+    @Singleton
+    fun get(): IcebergV2Configuration {
+        return config as IcebergV2Configuration
     }
 }
