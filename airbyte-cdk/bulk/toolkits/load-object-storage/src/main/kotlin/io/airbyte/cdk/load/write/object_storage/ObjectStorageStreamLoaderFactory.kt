@@ -118,6 +118,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
+        log.info { "processing $file" }
         val key =
             Path.of(pathFactory.getStagingDirectory(stream).toString(), file.fileMessage.fileUrl!!)
                 .toString()
