@@ -1198,7 +1198,6 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_campaign"
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
 
-# TODO: change concurrency after migration of async based reports
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 10
