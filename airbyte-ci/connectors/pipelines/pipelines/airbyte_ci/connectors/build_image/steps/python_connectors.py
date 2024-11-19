@@ -5,11 +5,13 @@
 
 from typing import Any
 
+from connector_ops.utils import METADATA_FILE_NAME
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
+from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import StepResult
 
 
@@ -61,6 +63,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
+        ca_bundle_path = (
+            await customized_base.with_exec(["python", "-c", "import certifi; print(certifi.where())"], skip_entrypoint=True).stdout()
+        ).strip()
+
         main_file_name = build_customization.get_main_file_name(self.context.connector)
 
         builder = await self._create_builder_container(customized_base)
@@ -74,6 +80,15 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
             .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name))
+            # Copying metadata and setting env vars allow to make the container aware of which connector it has
+            .with_file(METADATA_FILE_NAME, (await self.context.get_connector_dir(include=[METADATA_FILE_NAME])).file(METADATA_FILE_NAME))
+            .with_env_variable("PATH_TO_METADATA", f"{self.PATH_TO_INTEGRATION_CODE}/{METADATA_FILE_NAME}")
+            # TODO: add uv to the base image?
+            .with_exec(["pip", "install", "uv"], skip_entrypoint=True)
+            .with_directory(
+                "/connectors_canary_testing", await self.context.get_repo_dir("airbyte-ci/connectors/connectors_canary_testing")
+            )
+            .with_exec(["uv", "pip", "install", "--system", "/connectors_canary_testing", "pip_system_certs"])
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
