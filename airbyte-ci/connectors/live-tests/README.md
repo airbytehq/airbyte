@@ -179,9 +179,13 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
-### 0.19.4
+### 0.19.5
 
 Fix `ZeroDivisionError` in Regression test tool
+
+### 0.19.4
+
+Update `connection_retriever` to 0.7.4
 
 ### 0.19.3
 
