@@ -159,7 +159,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                 val fileObject = batch as FileObject<T>
                 val finalKey =
                     pathFactory
-                        .getPathToFile(stream = stream, partNumber = null, isStaging = false)
+                        .getPathToFile(stream = stream, partNumber = 0, isStaging = false)
                         .toString()
                 val newObject = client.move(fileObject.remoteObject, finalKey)
 
