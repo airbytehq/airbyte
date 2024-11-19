@@ -10,7 +10,7 @@ airbyteBulkConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.iceberg_v2.IcebergDestination'
+    mainClass = 'io.airbyte.integrations.destination.iceberg.v2.IcebergDestination'
 
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 

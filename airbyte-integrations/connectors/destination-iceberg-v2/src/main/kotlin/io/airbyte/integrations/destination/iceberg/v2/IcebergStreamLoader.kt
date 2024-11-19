@@ -2,12 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg_v2
+package io.airbyte.integrations.destination.iceberg.v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.iceberg_parquet.IcebergParquetWriter
-import io.airbyte.cdk.load.file.iceberg_parquet.IcebergWriter
+import io.airbyte.cdk.load.file.iceberg.parquet.IcebergParquetWriter
+import io.airbyte.cdk.load.file.iceberg.parquet.IcebergWriter
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
