@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
+import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
@@ -46,6 +47,7 @@ class DestinationTaskLauncherUTest {
     // Internal Tasks
     private val inputConsumerTaskFactory: InputConsumerTaskFactory = mockk(relaxed = true)
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory = mockk(relaxed = true)
+    private val flushTickTask: FlushTickTask = mockk(relaxed = true)
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory = mockk(relaxed = true)
@@ -81,6 +83,7 @@ class DestinationTaskLauncherUTest {
             syncManager,
             inputConsumerTaskFactory,
             spillToDiskTaskFactory,
+            flushTickTask,
             setupTaskFactory,
             openStreamTaskFactory,
             processRecordsTaskFactory,

@@ -101,7 +101,7 @@ class DefaultSpillToDiskTask(
                                 }
                                 is StreamFlushTickMessage -> {
                                     val forceFlush = timeWindow.isComplete()
-                                    ReadResult(range, sizeBytes, forceFlush)
+                                    ReadResult(range, sizeBytes, forceFlush = forceFlush)
                                 }
                             }
                         }
