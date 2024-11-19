@@ -107,14 +107,11 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-    - name: Make symlink to airbyte-python-cdk
-      shell: bash
-      run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk || echo "Failed to create symlink"
-    - name: Show local paths checked out
+    - name: Debug-print local paths checked out
       shell: bash
       run: |
         set -x
-        pwd
+        echo "Working directory: $(pwd)"
         ls -la
         ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
         ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
