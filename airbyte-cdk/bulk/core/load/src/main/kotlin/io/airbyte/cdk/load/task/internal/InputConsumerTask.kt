@@ -98,7 +98,7 @@ class DefaultInputConsumerTask(
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
                 destinationTaskLauncher.handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
-
+                log.info { "marking EOS" }
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
