@@ -76,16 +76,16 @@ class ObjectStoragePathFactory(
 
     private val stagingPrefix: String
         get() {
-            // if (!pathConfig.usesStagingDirectory) {
-            //     throw UnsupportedOperationException(
-            //         "Staging is not supported by this configuration"
-            //     )
-            // }
+            if (!pathConfig.usesStagingDirectory) {
+                throw UnsupportedOperationException(
+                    "Staging is not supported by this configuration"
+                )
+            }
             return stagingPrefixResolved
         }
 
     override val supportsStaging: Boolean
-        get() = true//pathConfig.usesStagingDirectory
+        get() = pathConfig.usesStagingDirectory
     override val prefix: String
         get() = pathConfig.prefix
 

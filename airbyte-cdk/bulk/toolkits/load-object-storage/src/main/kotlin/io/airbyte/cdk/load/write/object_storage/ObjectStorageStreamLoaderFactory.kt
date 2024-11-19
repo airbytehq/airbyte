@@ -122,8 +122,11 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         log.info { "$pathFactory  }" }
         log.info { "$stream" }
         log.info { "${pathFactory.getStagingDirectory(stream)}" }
+        if (pathFactory.supportsStaging) {
+            throw IllegalStateException("Staging is not supported for files")
+        }
         val key =
-            Path.of(pathFactory.getStagingDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
                 .toString()
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
