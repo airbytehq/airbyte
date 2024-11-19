@@ -5,14 +5,12 @@
 /airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
-/airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD
 /.github/ @airbytehq/dev-tooling
 /airbyte-ci/ @airbytehq/dev-tooling
 
 # Python CDK and Connector Acceptance Tests
-/airbyte-cdk/python @airbytehq/python-team
 /airbyte-integrations/connector-templates/ @airbytehq/dev-marketplace-contributions
 /airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-tooling
 
