@@ -59,14 +59,14 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Checkout Airbyte Python CDK
-        uses: actions/checkout@v4
-        with:
-          repository: airbytehq/airbyte-python-cdk
-          ref: main
-          # Clone into same parent directory as Airbyte
-          # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-          path: airbyte-python-cdk
+      # - name: Checkout Airbyte Python CDK
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: airbytehq/airbyte-python-cdk
+      #     ref: main
+      #     # Clone into same parent directory as Airbyte
+      #     # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
+      #     path: airbyte-python-cdk
       - name: Make symlink to airbyte-python-cdk
         shell: bash
         run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk
