@@ -172,6 +172,11 @@ data class DestinationFile(
         @set:JsonProperty("source_file_url")
         @JsonProperty("source_file_url")
         var sourceFileUrl: String? = null
+        override fun toString(): String {
+            return "AirbyteRecordMessageFile(fileUrl=$fileUrl, bytes=$bytes, fileRelativePath=$fileRelativePath, modified=$modified, sourceFileUrl=$sourceFileUrl)"
+        }
+
+
     }
 
     override fun asProtocolMessage(): AirbyteMessage =
