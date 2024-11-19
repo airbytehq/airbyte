@@ -1201,4 +1201,5 @@ streams:
 # TODO: change concurrency after migration of async based reports
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 1
+  default_concurrency: 10
+  max_concurrency: 10
