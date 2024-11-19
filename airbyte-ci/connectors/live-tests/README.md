@@ -179,14 +179,22 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.5
+
+Fix `ZeroDivisionError` in Regression test tool
+
 ### 0.19.4
+
 Update `connection_retriever` to 0.7.4
 
 ### 0.19.3
+
 Update `get_container_from_id` with the correct new Dagger API.
 
 ### 0.19.2
+
 Update Dagger to 0.13.3
+
 ### 0.19.1
 
 Fixed the `UserDict` type annotation not found bug.
