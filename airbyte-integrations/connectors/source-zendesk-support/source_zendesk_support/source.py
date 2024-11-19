@@ -16,16 +16,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
-    ArticleComments,
-    ArticleCommentVotes,
-    Articles,
-    ArticleVotes,
-    PostComments,
-    PostCommentVotes,
-    Posts,
-    PostVotes,
     TicketMetrics,
-    Tickets,
     UserSettingsStream,
 )
 
@@ -132,18 +123,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         """
         args = self.convert_config2stream_args(config)
 
-        tickets = Tickets(**args)
-
         streams = [
-            Articles(**args),
-            ArticleComments(**args),
-            ArticleCommentVotes(**args),
-            ArticleVotes(**args),
-            Posts(**args),
-            PostComments(**args),
-            PostCommentVotes(**args),
-            PostVotes(**args),
-            tickets,
             TicketMetrics(**args),
         ]
         return streams

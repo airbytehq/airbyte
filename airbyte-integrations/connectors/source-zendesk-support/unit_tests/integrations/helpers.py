@@ -37,7 +37,6 @@ def given_posts(http_mocker: HttpMocker, start_date: DateTime, api_token_authent
     )
     http_mocker.get(
         PostsRequestBuilder.posts_endpoint(api_token_authenticator)
-        .with_start_time(datetime_to_string(start_date))
         .with_page_size(100)
         .build(),
         PostsResponseBuilder.posts_response().with_record(posts_record_builder).build(),

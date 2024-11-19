@@ -34,8 +34,7 @@ TICKET_EVENTS_STREAM_RESPONSE: dict = {
             "event_type": "Audit",
         }
     ],
-    "next_page": "https://subdomain.zendesk.com/api/v2/stream.json?&start_time=1122334455&page=2",
     "count": 215,
-    "end_of_stream": False,
+    "end_of_stream": True,
     "end_time": 1647532987,
 }
