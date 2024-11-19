@@ -20,10 +20,10 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Singleton
+import java.io.BufferedOutputStream
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.zip.GZIPOutputStream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -84,9 +84,9 @@ class ObjectStoragePathFactoryTest {
     @Primary
     @Requires(env = ["ObjectStoragePathFactoryTest"])
     class MockCompressionConfigProvider :
-        ObjectStorageCompressionConfigurationProvider<GZIPOutputStream> {
+        ObjectStorageCompressionConfigurationProvider<BufferedOutputStream> {
         override val objectStorageCompressionConfiguration:
-            ObjectStorageCompressionConfiguration<GZIPOutputStream> =
+            ObjectStorageCompressionConfiguration<BufferedOutputStream> =
             ObjectStorageCompressionConfiguration(compressor = GZIPProcessor)
     }
 
