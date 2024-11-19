@@ -108,8 +108,10 @@ runs:
       shell: bash
       run: echo "start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
     - name: Make symlink to airbyte-python-cdk
+      shell: bash
       run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk || echo "Failed to create symlink"
     - name: Show local paths checked out
+      shell: bash
       run: |
         set -x
         pwd
