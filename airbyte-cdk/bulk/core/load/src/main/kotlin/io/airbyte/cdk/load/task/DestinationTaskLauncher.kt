@@ -151,6 +151,7 @@ class DefaultDestinationTaskLauncher(
                 recordQueueSupplier = recordQueueSupplier,
                 checkpointQueue = checkpointQueue,
                 this,
+                closeStreamTaskFactory
             )
         enqueue(inputConsumerTask)
 
