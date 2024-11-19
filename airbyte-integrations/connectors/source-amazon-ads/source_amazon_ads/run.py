@@ -8,7 +8,8 @@ import time
 import traceback
 from typing import List
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
+from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch, logger
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from orjson import orjson
 from source_amazon_ads import SourceAmazonAds
@@ -47,6 +48,7 @@ def _get_source(args: List[str]):
 
 
 def run():
+    init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
