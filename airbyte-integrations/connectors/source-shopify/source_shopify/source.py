@@ -44,6 +44,9 @@ class ShopifyStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
+        page_size = self.config.get("page_size", None)
+        if page_size:
+            self.limit = page_size
 
     @property
     def url_base(self) -> str:
