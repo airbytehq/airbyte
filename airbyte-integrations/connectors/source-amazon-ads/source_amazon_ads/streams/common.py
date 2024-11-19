@@ -58,7 +58,6 @@ class ErrorResponse(BaseModel):
 
 class AmazonAdsErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-
         if response_or_exception.status_code == HTTPStatus.OK:
             return ErrorResolution(ResponseAction.SUCCESS)
 

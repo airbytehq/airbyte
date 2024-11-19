@@ -292,7 +292,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         stream_state = stream_state or {}
         no_data = True
 

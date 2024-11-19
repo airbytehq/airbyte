@@ -418,7 +418,7 @@ def test_display_report_stream_slices_full_refresh(config):
 def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-25"}}
+    stream_state = {str(profiles[0]["profileId"]): {"reportDate": "2021-07-25"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [
         {"profile": profiles[0], "reportDate": "2021-07-25"},
@@ -428,7 +428,7 @@ def test_display_report_stream_slices_incremental(config):
         {"profile": profiles[0], "reportDate": "2021-07-29"},
     ]
 
-    stream_state = {str(profiles[0]['profileId']): {"reportDate": "2021-07-30"}}
+    stream_state = {str(profiles[0]["profileId"]): {"reportDate": "2021-07-30"}}
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state))
     assert slices == [None]
 
@@ -450,7 +450,7 @@ def test_get_start_date(config):
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
 
-    profile_id = str(profiles[0]['profileId'])
+    profile_id = str(profiles[0]["profileId"])
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "2021-08-10"}}) == Date(2021, 8, 10)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -735,7 +735,7 @@ def test_get_record_id_by_report_type(config, metric_object, record_type):
 
 def test_sponsored_products_report_stream_send_http_request_on_download_not_use_headers(config):
     profiles = make_profiles(profile_type="vendor")
-    stream = SponsoredProductsReportStream(config,profiles, authenticator=mock.MagicMock())
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     download_url = "https://download/url"
 
     with requests_mock.Mocker() as m:
@@ -744,4 +744,3 @@ def test_sponsored_products_report_stream_send_http_request_on_download_not_use_
 
     assert request_mock.called is True
     assert "Authorization" not in request_mock.request_history[0].matcher.last_request._request.headers.keys()
-
