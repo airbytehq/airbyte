@@ -135,6 +135,11 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun run() {
+        if (fileTransferEnabled) {
+            log.info { "File transfer is enabled" }
+        } else {
+            log.info { "File transfer is disabled" }
+        }
         exceptionHandler.setCallback { succeeded.send(false) }
 
         // Start the input consumer ASAP
