@@ -123,7 +123,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         log.info { "$stream" }
         log.info { "${pathFactory.getStagingDirectory(stream)}" }
         val key =
-            Path.of(pathFactory.getStagingDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+            Path.of(file.fileMessage.fileUrl!!)
                 .toString()
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
