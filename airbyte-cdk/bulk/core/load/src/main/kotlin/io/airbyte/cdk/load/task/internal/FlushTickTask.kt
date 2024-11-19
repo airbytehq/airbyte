@@ -14,11 +14,13 @@ import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.SyncLevel
+import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.time.Clock
 
 @Singleton
+@Secondary
 class FlushTickTask(
     @Value("\${airbyte.flush.rate-ms}") private val tickIntervalMs: Long,
     private val clock: Clock,

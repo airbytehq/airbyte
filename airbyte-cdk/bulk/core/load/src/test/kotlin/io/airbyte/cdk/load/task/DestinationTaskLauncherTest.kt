@@ -40,6 +40,7 @@ import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.DefaultSpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTask
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
+import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
@@ -96,6 +97,12 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var inputFlow: MockInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
     @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
+    @Inject lateinit var flushTickTask: FlushTickTask
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    fun flushTickTask(): FlushTickTask = mockk(relaxed = true)
 
     @Singleton
     @Primary
