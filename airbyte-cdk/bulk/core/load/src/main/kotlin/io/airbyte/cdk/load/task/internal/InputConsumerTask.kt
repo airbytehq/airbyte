@@ -92,6 +92,7 @@ class DefaultInputConsumerTask(
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
+                log.info { "marking EOS" }
                 manager.markEndOfStream()
             }
             is DestinationFileStreamIncomplete ->

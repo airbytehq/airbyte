@@ -451,6 +451,7 @@ class DestinationMessageFactory(
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
                             if (true) {//fileTransferEnabled) {
+                                log.info { "received complete status for $stream" }
                                 DestinationFileStreamComplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
