@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
@@ -354,7 +355,11 @@ class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
     @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
 ) {
+    private val log = KotlinLogging.logger {}
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
+        if (fileTransferEnabled) {
+            log.info { "File transfer is enabled" }
+        }
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
                 when (it) {
@@ -377,7 +382,7 @@ class DestinationMessageFactory(
                         namespace = message.record.namespace,
                         name = message.record.stream,
                     )
-                if (fileTransferEnabled) {
+                if (true) {//fileTransferEnabled) {
                     DestinationFile(
                         stream = stream.descriptor,
                         emittedAtMs = message.record.emittedAt,
@@ -438,7 +443,7 @@ class DestinationMessageFactory(
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            if (fileTransferEnabled) {
+                            if (true) {//fileTransferEnabled) {
                                 DestinationFileStreamComplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
@@ -450,7 +455,7 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
-                            if (fileTransferEnabled) {
+                            if (true) {//fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
