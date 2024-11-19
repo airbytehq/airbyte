@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.iceberg.v2.io
 
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.PartitionedAppendWriter

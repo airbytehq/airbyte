@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.integrations.destination.iceberg.v2.BaseDeltaTaskWriter
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionKey
 import org.apache.iceberg.PartitionSpec
