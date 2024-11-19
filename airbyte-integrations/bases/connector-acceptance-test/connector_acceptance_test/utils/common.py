@@ -145,7 +145,6 @@ def build_configured_catalog_from_discovered_catalog_and_empty_streams(
         for _, stream in discovered_catalog.items()
         if stream.name not in empty_stream_names
     ]
-    assert "customer" not in empty_stream_names
     if empty_stream_names:
         logging.warning(
             f"The configured catalog was built with the discovered catalog from which the following empty streams were removed: {', '.join(empty_stream_names)}."
