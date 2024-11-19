@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.SyncLevel
+import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -62,6 +63,7 @@ class DefaultInputConsumerTask(
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher,
+    private val closeStreamTaskFactory: CloseStreamTaskFactory,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
@@ -99,7 +101,9 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream()
                 val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
                 manager.updateBatchState(envelope)
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                val task = closeStreamTaskFactory.make(destinationTaskLauncher, stream)
+                task.execute()
+                // destinationTaskLauncher.handleNewBatch(stream, envelope)
                 log.info { "marking EOS" }
             }
             is DestinationFileStreamIncomplete ->
@@ -191,6 +195,7 @@ interface InputConsumerTaskFactory {
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
+        closeStreamTaskFactory: CloseStreamTaskFactory,
     ): InputConsumerTask
 }
 
@@ -205,6 +210,7 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
+        closeStreamTaskFactory: CloseStreamTaskFactory,
     ): InputConsumerTask {
         return DefaultInputConsumerTask(
             catalog,
@@ -212,7 +218,8 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
             recordQueueSupplier,
             checkpointQueue,
             syncManager,
-            destinationTaskLauncher
+            destinationTaskLauncher,
+            closeStreamTaskFactory,
         )
     }
 }
