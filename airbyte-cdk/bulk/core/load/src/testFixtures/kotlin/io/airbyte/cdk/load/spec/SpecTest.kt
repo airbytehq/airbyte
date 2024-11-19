@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.spec
 
 import com.deblock.jsondiff.DiffGenerator
-import com.deblock.jsondiff.diff.JsonDiff
 import com.deblock.jsondiff.matcher.CompositeJsonMatcher
 import com.deblock.jsondiff.matcher.JsonMatcher
 import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
@@ -17,8 +16,8 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToPrettyPrintedString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -77,8 +76,7 @@ abstract class SpecTest :
         )
 
         val spec = specMessages.first().spec
-        val actualSpecPrettyPrint: String =
-            Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(spec)
+        val actualSpecPrettyPrint: String = spec.deserializeToPrettyPrintedString()
         Files.write(expectedSpecPath, actualSpecPrettyPrint.toByteArray())
 
         val jsonMatcher: JsonMatcher =
@@ -87,13 +85,25 @@ abstract class SpecTest :
                 StrictJsonObjectPartialMatcher(),
                 StrictPrimitivePartialMatcher(),
             )
-        val diff = OnlyErrorDiffViewer.from(
-            DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
-        ).toString()
+        val diff =
+            OnlyErrorDiffViewer.from(
+                    DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
+                )
+                .toString()
         assertAll(
             "Spec snapshot test failed. Run this test locally and then `git diff <...>/$expectedSpecFilename` to see what changed, and commit the diff if that change was intentional.",
-            { Assertions.assertTrue(diff.isEmpty(), "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t")) },
-            { Assertions.assertTrue(expectedSpec == actualSpecPrettyPrint, "File contents did not equal generated spec, see git diff for details") }
+            {
+                Assertions.assertTrue(
+                    diff.isEmpty(),
+                    "Detected semantic diff in JSON:\n" + diff.prependIndent("\t\t")
+                )
+            },
+            {
+                Assertions.assertTrue(
+                    expectedSpec == actualSpecPrettyPrint,
+                    "File contents did not equal generated spec, see git diff for details"
+                )
+            }
         )
     }
 }
