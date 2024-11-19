@@ -53,16 +53,7 @@ acceptance_tests:
         timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
-          future_state_path: "integration_tests/future_state.json"
-          missing_streams:
-            - name: contact
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: quote_line_group
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: attached_item
-              bypass_reason: "This stream is Full-Refresh only"
-            - name: subscription_with_scheduled_changes
-              bypass_reason: "This stream is Full-Refresh only"
+          bypass_reason: "This test does not make sense using Concurrent CDK"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
