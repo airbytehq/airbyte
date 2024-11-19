@@ -121,12 +121,20 @@ class SpillToDiskTaskTest {
                             "test 3",
                         ),
                     )
+                val endOfStreamMsg = StreamCompleteEvent(
+                    1L,
+                )
+
                 // must publish 1 record message so range isn't empty
                 inputQueue.publish(Reserved(value = recordMsg))
                 inputQueue.publish(Reserved(value = flushMsg))
+                inputQueue.publish(Reserved(value = endOfStreamMsg))
+                inputQueue.close()
 
                 task.execute()
-                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
+                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), withArg {
+                    assert(it.endOfStream == false)
+                }) }
             }
     }
 
