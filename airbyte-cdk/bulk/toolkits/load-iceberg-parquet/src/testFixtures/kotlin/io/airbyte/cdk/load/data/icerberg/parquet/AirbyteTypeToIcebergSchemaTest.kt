@@ -2,11 +2,11 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.icerberg_parquet
+package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.data.iceberg_parquet.AirbyteTypeToIcebergSchema
-import io.airbyte.cdk.load.data.iceberg_parquet.toIcebergSchema
+import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteTypeToIcebergSchema
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.protocol.models.Jsons
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.*

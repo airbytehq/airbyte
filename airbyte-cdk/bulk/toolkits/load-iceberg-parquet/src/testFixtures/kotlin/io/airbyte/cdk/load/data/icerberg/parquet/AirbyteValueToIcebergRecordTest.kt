@@ -2,11 +2,11 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.icerberg_parquet
+package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.data.iceberg_parquet.AirbyteValueToIcebergRecord
-import io.airbyte.cdk.load.data.iceberg_parquet.toIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.protocol.models.Jsons
 import java.math.BigDecimal
 import org.apache.iceberg.Schema
