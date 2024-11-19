@@ -165,7 +165,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
                 val state = destinationStateManager.getState(stream)
                 state.removeObject(stream.generationId, fileObject.remoteObject.key)
-                state.addObject(stream.generationId, newObject.key, partNumber = null)
+                state.addObject(stream.generationId, newObject.key, partNumber = 0)
 
                 val finalizedObject = FinalizedObject(remoteObject = newObject)
                 return finalizedObject

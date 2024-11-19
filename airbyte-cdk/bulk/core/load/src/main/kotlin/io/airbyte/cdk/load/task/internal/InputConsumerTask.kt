@@ -92,7 +92,7 @@ class DefaultInputConsumerTask(
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
-                destinationTaskLauncher.handleStreamClosed(stream)
+                manager.markEndOfStream()
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
