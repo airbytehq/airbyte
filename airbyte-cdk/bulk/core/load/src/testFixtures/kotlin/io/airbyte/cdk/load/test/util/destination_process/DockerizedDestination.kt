@@ -5,8 +5,10 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.util.deserializeToClass
+import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -125,7 +127,7 @@ class DockerizedDestination(
             cmd.add("destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
-        catalog?.let { addInput("catalog", Jsons.writeValueAsBytes(catalog)) }
+        catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
@@ -143,7 +145,7 @@ class DockerizedDestination(
                         val line = destinationStdout.nextLine()
                         val message =
                             try {
-                                Jsons.readValue(line, AirbyteMessage::class.java)
+                                line.deserializeToClass(AirbyteMessage::class.java)
                             } catch (e: Exception) {
                                 // If a destination logs non-json output, just echo it
                                 getMdcScope().use { logger.info { line } }
@@ -205,7 +207,7 @@ class DockerizedDestination(
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdin.write(Jsons.writeValueAsString(message))
+        destinationStdin.write(message.serializeToString())
         destinationStdin.newLine()
     }
 

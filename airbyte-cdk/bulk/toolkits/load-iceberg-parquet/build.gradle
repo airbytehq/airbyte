@@ -1,0 +1,11 @@
+dependencies {
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api 'org.apache.iceberg:iceberg-core:1.6.1'
+    api 'org.apache.iceberg:iceberg-api:1.6.1'
+    api 'org.apache.iceberg:iceberg-parquet:1.6.1'
+
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
+}

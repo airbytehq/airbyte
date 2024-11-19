@@ -25,7 +25,6 @@ import org.junit.jupiter.api.assertAll
 data class CheckTestConfig(val configPath: Path, val featureFlags: Set<FeatureFlag> = emptySet())
 
 open class CheckIntegrationTest<T : ConfigurationSpecification>(
-    val configurationClass: Class<T>,
     val successConfigFilenames: List<CheckTestConfig>,
     val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
 ) :

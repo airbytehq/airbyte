@@ -81,7 +81,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val state = destinationStateManager.getState(stream)
         val maxPartNumber =
             state.generations
-                .filter { it.generationId >= stream.minimumGenerationId }
                 .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
                 .maxOrNull()
         log.info { "Got max part number from destination state: $maxPartNumber" }
