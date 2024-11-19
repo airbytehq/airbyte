@@ -68,8 +68,10 @@ jobs:
           # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
           path: airbyte-python-cdk
       - name: Make symlink to airbyte-python-cdk
+        shell: bash
         run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk
       - name: Show local paths checked out
+        shell: bash
         run: |
           set -x
           pwd
