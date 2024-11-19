@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg_v2
+package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Disabled
 
 abstract class IcebergV2WriteTest(path: String) :
     BasicFunctionalityIntegrationTest(
-        IcebergV2TestUtil.getConfig(path),
+      IcebergV2TestUtil.getConfig(path),
         IcebergV2Specification::class.java,
         FakeDataDumper,
         NoopDestinationCleaner,
