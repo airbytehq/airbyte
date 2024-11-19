@@ -59,25 +59,25 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      # - name: Checkout Airbyte Python CDK
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: airbytehq/airbyte-python-cdk
-      #     ref: main
-      #     # Clone into same parent directory as Airbyte
-      #     # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
-      #     path: airbyte-python-cdk
-      - name: Make symlink to airbyte-python-cdk
+      - name: Checkout Airbyte Python CDK
+        uses: actions/checkout@v4
+        with:
+          repository: airbytehq/airbyte-python-cdk
+          ref: main
+          # We can't clone into a parent directory of the repo, so we clone into
+          # a subdirectory and then move it over as a sibling directory.
+          # This will be used for the `--use-local-cdk` flag in `airbyte-ci` command
+          path: airbyte-python-cdk
+      - name: Move airbyte-python-cdk to sibling directory path
         shell: bash
-        run: ln -s ./airbyte-python-cdk ../airbyte-python-cdk
+        run: mv ./airbyte-python-cdk ../airbyte-python-cdk
       - name: Show local paths checked out
         shell: bash
         run: |
           set -x
-          pwd
+          echo "Current directory: $(pwd)"
           ls -la
-          ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
-          ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
+          ls -la ../airbyte-python-cdk || echo "No airbyte-python-cdk directory"
 
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
