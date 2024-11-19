@@ -388,6 +388,7 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (true) {//fileTransferEnabled) {
+                    val fileMessage = message.record.additionalProperties["file"] as Map<String, Any>
                     DestinationFile(
                         stream = stream.descriptor,
                         emittedAtMs = message.record.emittedAt,
@@ -395,22 +396,22 @@ class DestinationMessageFactory(
                         fileMessage =
                             DestinationFile.AirbyteRecordMessageFile(
                                 fileUrl =
-                                    message.record.additionalProperties["file_url"] as String?,
+                                fileMessage["file_url"] as String?,
                                 bytes =
                                     toLong(
-                                        message.record.additionalProperties["bytes"],
+                                        fileMessage["bytes"],
                                         "message.record.bytes"
                                     ),
                                 fileRelativePath =
-                                    message.record.additionalProperties["file_relative_path"]
+                                fileMessage["file_relative_path"]
                                         as String?,
                                 modified =
                                     toLong(
-                                        message.record.additionalProperties["modified"],
+                                        fileMessage["modified"],
                                         "message.record.modified"
                                     ),
                                 sourceFileUrl =
-                                    message.record.additionalProperties["source_file_url"]
+                                fileMessage["source_file_url"]
                                         as String?
                             )
                     )
