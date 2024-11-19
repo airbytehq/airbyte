@@ -24,6 +24,9 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
+
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {

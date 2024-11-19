@@ -47,11 +47,12 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -83,6 +84,8 @@ data class StronglyTyped(
     val topLevelFloatLosesPrecision: Boolean = true,
     /** Whether floats nested inside objects/arrays are represented as float64. */
     val nestedFloatLosesPrecision: Boolean = true,
+    /** Whether the destination supports integers larger than int64 */
+    val integerCanBeLarge: Boolean = true,
 ) : AllTypesBehavior
 
 data object Untyped : AllTypesBehavior
@@ -124,7 +127,8 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper) {
+    nullEqualsUnset: Boolean = false,
+) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
     @Test
@@ -351,13 +355,13 @@ abstract class BasicFunctionalityIntegrationTest(
                             when (streamName) {
                                 "test_stream1" -> {
                                     assertEquals(
-                                        Jsons.readTree("""{"foo": "bar1"}"""),
+                                        """{"foo": "bar1"}""".deserializeToNode(),
                                         stateMessage.stream.streamState,
                                     )
                                 }
                                 "test_stream2" -> {
                                     assertEquals(
-                                        Jsons.readTree("""{"foo": "bar2"}"""),
+                                        """{"foo": "bar2"}""".deserializeToNode(),
                                         stateMessage.stream.streamState
                                     )
                                 }
@@ -678,8 +682,8 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream1,
             listOf(
-                makeInputRecord(1, "2024-01-23T01:00Z", 100),
-                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+                makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00:00Z", 100),
             ),
         )
         dumpAndDiffRecords(
@@ -687,14 +691,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -717,7 +721,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -726,14 +730,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOfNotNull(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -741,7 +745,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (commitDataIncrementally) {
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -761,21 +765,21 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream2,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 42,
                     syncId = 42,
@@ -842,7 +846,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -852,7 +856,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 listOf(
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -872,21 +876,21 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 42,
                     syncId = 42,
@@ -958,8 +962,8 @@ abstract class BasicFunctionalityIntegrationTest(
             configContents,
             stream1,
             listOf(
-                makeInputRecord(1, "2024-01-23T01:00Z", 100),
-                makeInputRecord(2, "2024-01-23T01:00Z", 100),
+                makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
+                makeInputRecord(2, "2024-01-23T01:00:00Z", 100),
             ),
         )
         dumpAndDiffRecords(
@@ -967,14 +971,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOf(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -997,7 +1001,7 @@ abstract class BasicFunctionalityIntegrationTest(
             runSync(
                 configContents,
                 stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00Z", 200)),
+                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
                 streamStatus = null,
             )
         }
@@ -1006,14 +1010,14 @@ abstract class BasicFunctionalityIntegrationTest(
             listOfNotNull(
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -1021,7 +1025,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 if (commitDataIncrementally) {
                     makeOutputRecord(
                         id = 1,
-                        updatedAt = "2024-01-23T02:00Z",
+                        updatedAt = "2024-01-23T02:00:00Z",
                         extractedAt = 200,
                         generationId = 42,
                         syncId = 42,
@@ -1047,7 +1051,7 @@ abstract class BasicFunctionalityIntegrationTest(
         runSync(
             configContents,
             stream3,
-            listOf(makeInputRecord(2, "2024-01-23T03:00Z", 300)),
+            listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1055,14 +1059,14 @@ abstract class BasicFunctionalityIntegrationTest(
                 // records from sync 1
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
                 ),
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T01:00Z",
+                    updatedAt = "2024-01-23T01:00:00Z",
                     extractedAt = 100,
                     generationId = 41,
                     syncId = 41,
@@ -1070,7 +1074,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 // sync 2
                 makeOutputRecord(
                     id = 1,
-                    updatedAt = "2024-01-23T02:00Z",
+                    updatedAt = "2024-01-23T02:00:00Z",
                     extractedAt = 200,
                     generationId = 42,
                     syncId = 42,
@@ -1078,7 +1082,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 // and sync 3
                 makeOutputRecord(
                     id = 2,
-                    updatedAt = "2024-01-23T03:00Z",
+                    updatedAt = "2024-01-23T03:00:00Z",
                     extractedAt = 300,
                     generationId = 43,
                     syncId = 43,
@@ -1471,13 +1475,16 @@ abstract class BasicFunctionalityIntegrationTest(
         assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
     }
 
-    /** A basic test that we handle all supported data types in a reasonable way. */
+    /**
+     * A basic test that we handle all supported basic data types in a reasonable way. See also
+     * [testContainerTypes] for objects/arrays.
+     */
     // Depending on how future connector development goes - we might need to do something similar to
     // BaseSqlGeneratorIntegrationTest, where we split out tests for connectors that do/don't
     // support safe_cast. (or, we move fully to in-connector typing, and we stop worrying about
     // per-destination safe_cast support).
     @Test
-    open fun testAllTypes() {
+    open fun testBasicTypes() {
         assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
@@ -1486,16 +1493,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 ObjectType(
                     linkedMapOf(
                         "id" to intType,
+                        // Some destinations handle numbers differently in root and nested fields
                         "struct" to
                             FieldType(
                                 ObjectType(linkedMapOf("foo" to numberType)),
                                 nullable = true
                             ),
-                        "struct_schemaless" to
-                            FieldType(ObjectTypeWithEmptySchema, nullable = true),
-                        "struct_empty" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
-                        "array" to FieldType(ArrayType(numberType), nullable = true),
-                        "array_schemaless" to FieldType(ArrayTypeWithoutSchema, nullable = true),
                         "string" to FieldType(StringType, nullable = true),
                         "number" to FieldType(NumberType, nullable = true),
                         "integer" to FieldType(IntegerType, nullable = true),
@@ -1508,11 +1511,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         "time_without_timezone" to
                             FieldType(TimeTypeWithoutTimezone, nullable = true),
                         "date" to FieldType(DateType, nullable = true),
-                        "unknown" to
-                            FieldType(
-                                UnknownType(JsonNodeFactory.instance.textNode("test")),
-                                nullable = true
-                            ),
                     )
                 ),
                 generationId = 42,
@@ -1535,11 +1533,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "struct": {"foo": 1.0},
-                          "struct_schemaless": {"foo": 1.0},
-                          "struct_empty": {"foo": 1.0},
-                          "array": [1.0],
-                          "array_schemaless": [1.0],
                           "string": "foo",
                           "number": 42.1,
                           "integer": 42,
@@ -1548,8 +1541,7 @@ abstract class BasicFunctionalityIntegrationTest(
                           "timestamp_without_timezone": "2023-01-23T12:34:56",
                           "time_with_timezone": "12:34:56Z",
                           "time_without_timezone": "12:34:56",
-                          "date": "2023-01-23",
-                          "unknown": {}
+                          "date": "2023-01-23"
                         }
                     """.trimIndent()
                 ),
@@ -1558,11 +1550,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 2,
-                          "struct": null,
-                          "struct_schemaless": null,
-                          "struct_empty": null,
-                          "array": null,
-                          "array_schemaless": null,
                           "string": null,
                           "number": null,
                           "integer": null,
@@ -1571,26 +1558,23 @@ abstract class BasicFunctionalityIntegrationTest(
                           "timestamp_without_timezone": null,
                           "time_with_timezone": null,
                           "time_without_timezone": null,
-                          "date": null,
-                          "unknown": null
+                          "date": null
                         }
                     """.trimIndent()
                 ),
                 // A record with all fields unset
                 makeRecord("""{"id": 3}"""),
-                // A record that verifies floating-point behavior.
-                // 67.174118 cannot be represented as a standard float64
-                // (it turns into 67.17411800000001).
+                // A record that verifies numeric behavior.
+                // 99999999999999999999999999999999 is out of range for int64.
+                // 50000.0000000000000001 can't be represented as a standard float64,
+                // and gets rounded off.
                 makeRecord(
                     """
                         {
                           "id": 4,
-                          "struct": {"foo": 67.174118},
-                          "struct_schemaless": {"foo": 67.174118},
-                          "struct_empty": {"foo": 67.174118},
-                          "array": [67.174118],
-                          "array_schemaless": [67.174118],
-                          "number": 67.174118
+                          "struct": {"foo": 50000.0000000000000001},
+                          "number": 50000.0000000000000001,
+                          "integer": 99999999999999999999999999999999
                         }
                     """.trimIndent(),
                 ),
@@ -1599,11 +1583,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 5,
-                          "struct": "foo",
-                          "struct_schemaless": "foo",
-                          "struct_empty": "foo",
-                          "array": "foo",
-                          "array_schemaless": "foo",
                           "string": {},
                           "number": "foo",
                           "integer": "foo",
@@ -1621,30 +1600,46 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val nestedFloat: BigDecimal
         val topLevelFloat: BigDecimal
+        val bigInt: BigInteger?
+        val bigIntChanges: List<Change>
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
             is StronglyTyped -> {
                 nestedFloat =
                     if (allTypesBehavior.nestedFloatLosesPrecision) {
-                        BigDecimal("67.17411800000001")
+                        BigDecimal("50000.0")
                     } else {
-                        BigDecimal("67.174118")
+                        BigDecimal("50000.0000000000000001")
                     }
                 topLevelFloat =
                     if (allTypesBehavior.topLevelFloatLosesPrecision) {
-                        BigDecimal("67.17411800000001")
+                        BigDecimal("50000.0")
                     } else {
-                        BigDecimal("67.174118")
+                        BigDecimal("50000.0000000000000001")
+                    }
+                bigInt =
+                    if (allTypesBehavior.integerCanBeLarge) {
+                        BigInteger("99999999999999999999999999999999")
+                    } else {
+                        null
+                    }
+                bigIntChanges =
+                    if (allTypesBehavior.integerCanBeLarge) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            Change(
+                                "integer",
+                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION,
+                            )
+                        )
                     }
                 badValuesData =
                     mapOf(
                         "id" to 5,
-                        "struct" to null,
-                        "struct_schemaless" to null,
-                        "struct_empty" to null,
-                        "array" to null,
-                        "array_schemaless" to null,
                         "string" to
                             if (allTypesBehavior.convertAllValuesToString) {
                                 "{}"
@@ -1664,6 +1659,9 @@ abstract class BasicFunctionalityIntegrationTest(
                     (stream.schema as ObjectType)
                         .properties
                         .keys
+                        // id and struct don't have a bad value case here
+                        // (id would make the test unusable; struct is tested in testContainerTypes)
+                        .filter { it != "id" && it != "struct" }
                         .map { key ->
                             Change(
                                 key,
@@ -1678,16 +1676,13 @@ abstract class BasicFunctionalityIntegrationTest(
                         .toMutableList()
             }
             Untyped -> {
-                nestedFloat = BigDecimal("67.174118")
-                topLevelFloat = BigDecimal("67.174118")
+                nestedFloat = BigDecimal("50000.0000000000000001")
+                topLevelFloat = BigDecimal("50000.0000000000000001")
+                bigInt = BigInteger("99999999999999999999999999999999")
+                bigIntChanges = emptyList<Change>()
                 badValuesData =
                     mapOf(
                         "id" to 5,
-                        "struct" to "foo",
-                        "struct_schemaless" to "foo",
-                        "struct_empty" to "foo",
-                        "array" to "foo",
-                        "array_schemaless" to "foo",
                         "string" to StringValue("{}"),
                         "number" to "foo",
                         "integer" to "foo",
@@ -1714,11 +1709,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "struct" to mapOf("foo" to 1.0),
-                            "struct_schemaless" to mapOf("foo" to 1.0),
-                            "struct_empty" to mapOf("foo" to 1.0),
-                            "array" to listOf(1.0),
-                            "array_schemaless" to listOf(1.0),
                             "string" to "foo",
                             "number" to 42.1,
                             "integer" to 42,
@@ -1730,7 +1720,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
-                            "unknown" to mapOf<String, Any?>(),
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1740,11 +1729,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 2,
-                            "struct" to null,
-                            "struct_schemaless" to null,
-                            "struct_empty" to null,
-                            "array" to null,
-                            "array_schemaless" to null,
                             "string" to null,
                             "number" to null,
                             "integer" to null,
@@ -1754,7 +1738,6 @@ abstract class BasicFunctionalityIntegrationTest(
                             "time_with_timezone" to null,
                             "time_without_timezone" to null,
                             "date" to null,
-                            "unknown" to null,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -1771,13 +1754,10 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 4,
                             "struct" to mapOf("foo" to nestedFloat),
-                            "struct_schemaless" to mapOf("foo" to nestedFloat),
-                            "struct_empty" to mapOf("foo" to nestedFloat),
-                            "array" to listOf(nestedFloat),
-                            "array_schemaless" to listOf(nestedFloat),
                             "number" to topLevelFloat,
+                            "integer" to bigInt,
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
                 ),
                 OutputRecord(
                     extractedAt = 100,
@@ -1823,7 +1803,13 @@ abstract class BasicFunctionalityIntegrationTest(
                             ),
                         "empty_object" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
                         "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
+                        "schematized_array" to FieldType(ArrayType(intType), nullable = true),
                         "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
+                        "unknown" to
+                            FieldType(
+                                UnknownType(JsonNodeFactory.instance.textNode("test")),
+                                nullable = true
+                            ),
                     ),
                 ),
                 generationId = 42,
@@ -1843,7 +1829,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schematized_object": { "id": 1, "name": "Joe" },
                           "empty_object": {},
                           "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
-                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ]
+                          "schematized_array": [10, null],
+                          "schemaless_array": [ 10, "foo", null, { "bar": "qua" } ],
+                          "unknown": {"foo": "bar"}
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 ),
@@ -1856,7 +1844,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schematized_object": { "id": 2, "name": "Jane" },
                           "empty_object": {"extra": "stuff"},
                           "schemaless_object": { "address": { "street": "113 Hickey Rd", "zip": "37932" }, "flags": [ true, false, false ] },
-                          "schemaless_array": []
+                          "schematized_array": [],
+                          "schemaless_array": [],
+                          "unknown": {}
                         }""".trimIndent(),
                     emittedAtMs = 1602637589200,
                 ),
@@ -1869,7 +1859,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "schematized_object": null,
                           "empty_object": null,
                           "schemaless_object": null,
-                          "schemaless_array": null
+                          "schematized_array": null,
+                          "schemaless_array": null,
+                          "unknown": null
                         }""".trimIndent(),
                     emittedAtMs = 1602637589300,
                 ),
@@ -1896,11 +1888,18 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "probability" to 1.5
                                     )
                                 },
+                            "schematized_array" to listOf(10, null),
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     """[10,"foo",null,{"bar":"qua"}]"""
                                 } else {
                                     listOf(10, "foo", null, mapOf("bar" to "qua"))
+                                },
+                            "unknown" to
+                                if (stringifySchemalessObjects) {
+                                    """{"foo":"bar"}"""
+                                } else {
+                                    mapOf("foo" to "bar")
                                 },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -1931,11 +1930,18 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "flags" to listOf(true, false, false)
                                     )
                                 },
+                            "schematized_array" to emptyList<Long>(),
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     "[]"
                                 } else {
                                     emptyList<Any>()
+                                },
+                            "unknown" to
+                                if (stringifySchemalessObjects) {
+                                    """{}"""
+                                } else {
+                                    emptyMap<String, Any?>()
                                 },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -1949,7 +1955,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             "schematized_object" to null,
                             "empty_object" to null,
                             "schemaless_object" to null,
+                            "schematized_array" to null,
                             "schemaless_array" to null,
+                            "unknown" to null,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),

@@ -8,7 +8,7 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.io.PipedInputStream
@@ -74,7 +74,7 @@ class NonDockerizedDestination(
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdinPipe.println(Jsons.serialize(message))
+        destinationStdinPipe.println(message.serializeToString())
     }
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()

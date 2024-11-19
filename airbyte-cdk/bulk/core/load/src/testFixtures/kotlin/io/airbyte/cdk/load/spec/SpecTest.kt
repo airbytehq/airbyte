@@ -17,7 +17,8 @@ import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToPrettyPrintedString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -73,8 +74,7 @@ abstract class SpecTest :
         )
 
         val spec = specMessages.first().spec
-        val actualSpecPrettyPrint: String =
-            Jsons.writerWithDefaultPrettyPrinter().writeValueAsString(spec)
+        val actualSpecPrettyPrint: String = spec.deserializeToPrettyPrintedString()
         Files.write(expectedSpecPath, actualSpecPrettyPrint.toByteArray())
 
         val jsonMatcher: JsonMatcher =
