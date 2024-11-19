@@ -48,14 +48,14 @@ class ObjectStorageDestinationState(
     suspend fun addObject(
         generationId: Long,
         key: String,
-        partNumber: Long,
+        partNumber: Long?,
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
         accessLock.withLock {
             generationMap
                 .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber
+                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
         }
     }
 

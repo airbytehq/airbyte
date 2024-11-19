@@ -37,13 +37,25 @@ class DefaultFlushStrategyTest {
     fun testFlushByByteSize(flushStrategy: DefaultFlushStrategy, config: DestinationConfiguration) =
         runTest {
             Assertions.assertFalse(
-                flushStrategy.shouldFlush(stream1, Range.all(), config.recordBatchSizeBytes - 1L)
+                flushStrategy.shouldFlush(
+                    stream1.descriptor,
+                    Range.all(),
+                    config.recordBatchSizeBytes - 1L
+                )
             )
             Assertions.assertTrue(
-                flushStrategy.shouldFlush(stream1, Range.all(), config.recordBatchSizeBytes)
+                flushStrategy.shouldFlush(
+                    stream1.descriptor,
+                    Range.all(),
+                    config.recordBatchSizeBytes
+                )
             )
             Assertions.assertTrue(
-                flushStrategy.shouldFlush(stream1, Range.all(), config.recordBatchSizeBytes * 1000L)
+                flushStrategy.shouldFlush(
+                    stream1.descriptor,
+                    Range.all(),
+                    config.recordBatchSizeBytes * 1000L
+                )
             )
         }
 
@@ -57,46 +69,46 @@ class DefaultFlushStrategyTest {
         val insufficientSize = config.recordBatchSizeBytes - 1L
 
         Assertions.assertFalse(
-            flushStrategy.shouldFlush(stream1, Range.all(), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.all(), insufficientSize),
             "Should not flush even with whole range if no event"
         )
 
         forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream1.descriptor to 42L)))
         Assertions.assertFalse(
-            flushStrategy.shouldFlush(stream1, Range.closed(0, 41), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(0, 41), insufficientSize),
             "Should not flush if index is not in range"
         )
         Assertions.assertTrue(
-            flushStrategy.shouldFlush(stream1, Range.closed(0, 42), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(0, 42), insufficientSize),
             "Should flush if index is in range"
         )
 
         Assertions.assertFalse(
-            flushStrategy.shouldFlush(stream2, Range.closed(0, 42), insufficientSize),
+            flushStrategy.shouldFlush(stream2.descriptor, Range.closed(0, 42), insufficientSize),
             "Should not flush other streams"
         )
         forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream2.descriptor to 200L)))
         Assertions.assertTrue(
-            flushStrategy.shouldFlush(stream2, Range.closed(0, 200), insufficientSize),
+            flushStrategy.shouldFlush(stream2.descriptor, Range.closed(0, 200), insufficientSize),
             "(Unless they also have flush points)"
         )
 
         Assertions.assertTrue(
-            flushStrategy.shouldFlush(stream1, Range.closed(42, 100), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(42, 100), insufficientSize),
             "Should flush even if barely in range"
         )
         Assertions.assertFalse(
-            flushStrategy.shouldFlush(stream1, Range.closed(43, 100), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(43, 100), insufficientSize),
             "Should not flush if index has been passed"
         )
 
         forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream1.descriptor to 100L)))
         Assertions.assertFalse(
-            flushStrategy.shouldFlush(stream1, Range.closed(0, 42), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(0, 42), insufficientSize),
             "New events indexes should invalidate old ones"
         )
         Assertions.assertTrue(
-            flushStrategy.shouldFlush(stream1, Range.closed(43, 100), insufficientSize),
+            flushStrategy.shouldFlush(stream1.descriptor, Range.closed(43, 100), insufficientSize),
             "New event indexes should be honored"
         )
     }
