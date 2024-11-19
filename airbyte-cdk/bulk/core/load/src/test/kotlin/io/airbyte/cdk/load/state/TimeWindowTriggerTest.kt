@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.state.TimeWindowTriggerTest.Fixtures.TIME_WINDOW_WIDTH_MS
@@ -16,14 +20,13 @@ import org.junit.jupiter.params.provider.MethodSource
 
 @ExtendWith(MockKExtension::class)
 class TimeWindowTriggerTest {
-    @MockK
-    lateinit var clock: Clock
+    @MockK lateinit var clock: Clock
 
     private lateinit var timeWindow: TimeWindowTrigger
 
     @BeforeEach
     fun setup() {
-      timeWindow = TimeWindowTrigger(clock, TIME_WINDOW_WIDTH_MS)
+        timeWindow = TimeWindowTrigger(clock, TIME_WINDOW_WIDTH_MS)
     }
 
     @Test
@@ -86,13 +89,12 @@ class TimeWindowTriggerTest {
     companion object {
         @JvmStatic
         private fun windowWidthMatrix(): Stream<Arguments> {
-          return Stream.of(
-            Arguments.of(100L),
-            Arguments.of(10000L),
-            Arguments.of(900000L),
-            Arguments.of(900001L),
-          )
+            return Stream.of(
+                Arguments.of(100L),
+                Arguments.of(10000L),
+                Arguments.of(900000L),
+                Arguments.of(900001L),
+            )
         }
     }
-
 }

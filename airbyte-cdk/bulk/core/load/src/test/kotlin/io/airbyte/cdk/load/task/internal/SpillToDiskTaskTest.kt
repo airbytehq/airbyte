@@ -42,26 +42,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 class SpillToDiskTaskTest {
-    /**
-     * Validates task delegates to dependencies as expected. Does not test dependency behavior.
-     */
+    /** Validates task delegates to dependencies as expected. Does not test dependency behavior. */
     @Nested
     @ExtendWith(MockKExtension::class)
     inner class UnitTests {
-        @MockK(relaxed = true)
-        lateinit var spillFileProvider: SpillFileProvider
+        @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
 
-        @MockK(relaxed = true)
-        lateinit var flushStrategy: FlushStrategy
+        @MockK(relaxed = true) lateinit var flushStrategy: FlushStrategy
 
-        @MockK(relaxed = true)
-        lateinit var taskLauncher: DestinationTaskLauncher
+        @MockK(relaxed = true) lateinit var taskLauncher: DestinationTaskLauncher
 
-        @MockK(relaxed = true)
-        lateinit var timeWindow: TimeWindowTrigger
+        @MockK(relaxed = true) lateinit var timeWindow: TimeWindowTrigger
 
-        @MockK(relaxed = true)
-        lateinit var diskManager: ReservationManager
+        @MockK(relaxed = true) lateinit var diskManager: ReservationManager
 
         private lateinit var inputQueue: DestinationRecordQueue
 
@@ -70,28 +63,30 @@ class SpillToDiskTaskTest {
         @BeforeEach
         fun setup() {
             inputQueue = DestinationRecordQueue()
-            task = DefaultSpillToDiskTask(
-                spillFileProvider,
-                inputQueue,
-                flushStrategy,
-                MockDestinationCatalogFactory.stream1.descriptor,
-                taskLauncher,
-                diskManager,
-                timeWindow,
-            )
-    }
+            task =
+                DefaultSpillToDiskTask(
+                    spillFileProvider,
+                    inputQueue,
+                    flushStrategy,
+                    MockDestinationCatalogFactory.stream1.descriptor,
+                    taskLauncher,
+                    diskManager,
+                    timeWindow,
+                )
+        }
 
         @Test
         fun `publishes 'spilled file' aggregates according to flush strategy on stream record`() =
             runTest {
-                val recordMsg = StreamRecordWrapped(
-                    3L,
-                    2L,
-                    StubDestinationMessageFactory.makeRecord(
-                        MockDestinationCatalogFactory.stream1,
-                        "test 3",
-                    ),
-                )
+                val recordMsg =
+                    StreamRecordWrapped(
+                        3L,
+                        2L,
+                        StubDestinationMessageFactory.makeRecord(
+                            MockDestinationCatalogFactory.stream1,
+                            "test 3",
+                        ),
+                    )
                 // flush strategy returns true, so we flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
                 inputQueue.publish(Reserved(value = recordMsg))
@@ -117,14 +112,15 @@ class SpillToDiskTaskTest {
                 coEvery { timeWindow.isComplete() } returns true
 
                 val flushMsg = StreamFlushTickMessage(101L)
-                val recordMsg = StreamRecordWrapped(
-                    3L,
-                    2L,
-                    StubDestinationMessageFactory.makeRecord(
-                        MockDestinationCatalogFactory.stream1,
-                        "test 3",
-                    ),
-                )
+                val recordMsg =
+                    StreamRecordWrapped(
+                        3L,
+                        2L,
+                        StubDestinationMessageFactory.makeRecord(
+                            MockDestinationCatalogFactory.stream1,
+                            "test 3",
+                        ),
+                    )
                 // must publish 1 record message so range isn't empty
                 inputQueue.publish(Reserved(value = recordMsg))
                 inputQueue.publish(Reserved(value = flushMsg))
@@ -153,9 +149,10 @@ class SpillToDiskTaskTest {
         @BeforeEach
         fun setup() {
             spillFileProvider = DefaultSpillFileProvider(MockDestinationConfiguration())
-            queueSupplier = DestinationRecordQueueSupplier(
-                MockDestinationCatalogFactory().make(),
-            )
+            queueSupplier =
+                DestinationRecordQueueSupplier(
+                    MockDestinationCatalogFactory().make(),
+                )
             taskLauncher = MockTaskLauncher()
             memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
@@ -234,7 +231,6 @@ class SpillToDiskTaskTest {
             file2.toFile().delete()
         }
 
-
         inner class MockFlushStrategy : FlushStrategy {
             override suspend fun shouldFlush(
                 stream: DestinationStream.Descriptor,
@@ -258,13 +254,13 @@ class SpillToDiskTaskTest {
                             index = index,
                             sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
                             record =
-                            DestinationRecord(
-                                stream = MockDestinationCatalogFactory.stream1.descriptor,
-                                data = NullValue,
-                                emittedAtMs = 0,
-                                meta = null,
-                                serialized = "test${index}",
-                            ),
+                                DestinationRecord(
+                                    stream = MockDestinationCatalogFactory.stream1.descriptor,
+                                    data = NullValue,
+                                    emittedAtMs = 0,
+                                    meta = null,
+                                    serialized = "test${index}",
+                                ),
                         ),
                     ),
                 )

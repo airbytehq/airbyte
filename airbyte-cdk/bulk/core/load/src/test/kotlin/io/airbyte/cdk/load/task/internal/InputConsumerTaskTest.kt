@@ -95,12 +95,19 @@ class InputConsumerTaskTest {
 
         (0 until 10).forEach {
             mockInputFlow.addMessage(
-                StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test${it}"),
+                StubDestinationMessageFactory.makeRecord(
+                    MockDestinationCatalogFactory.stream1,
+                    "test${it}"
+                ),
                 it * 2L
             )
         }
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1))
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2))
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
 
         val task =
             taskFactory.make(
@@ -126,7 +133,10 @@ class InputConsumerTaskTest {
                 StreamRecordWrapped(
                     it.toLong(),
                     it * 2L,
-                    StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test${it}")
+                    StubDestinationMessageFactory.makeRecord(
+                        MockDestinationCatalogFactory.stream1,
+                        "test${it}"
+                    )
                 )
             }
         val streamComplete1: Reserved<DestinationRecordWrapped> =
@@ -158,14 +168,26 @@ class InputConsumerTaskTest {
 
         (0 until 10).forEach { _ ->
             mockInputFlow.addMessage(
-                StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "whatever"),
+                StubDestinationMessageFactory.makeRecord(
+                    MockDestinationCatalogFactory.stream1,
+                    "whatever"
+                ),
                 0L
             )
         }
 
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream2, "test"), 1L)
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1), 0L)
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2), 0L)
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream2, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1),
+            0L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2),
+            0L
+        )
         val task =
             taskFactory.make(
                 mockCatalogFactory.make(),
@@ -183,7 +205,10 @@ class InputConsumerTaskTest {
                 StreamRecordWrapped(
                     0,
                     1L,
-                    StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream2, "test")
+                    StubDestinationMessageFactory.makeRecord(
+                        MockDestinationCatalogFactory.stream2,
+                        "test"
+                    )
                 ),
                 StreamRecordCompleteWrapped(1)
             ),
@@ -231,15 +256,27 @@ class InputConsumerTaskTest {
             )
         launch { task.execute() }
         batches.forEach { (stream, count, expectedCount) ->
-            repeat(count) { mockInputFlow.addMessage(StubDestinationMessageFactory.makeRecord(stream, "test"), 1L) }
-            mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamState(stream, count.toLong()), 0L)
+            repeat(count) {
+                mockInputFlow.addMessage(
+                    StubDestinationMessageFactory.makeRecord(stream, "test"),
+                    1L
+                )
+            }
+            mockInputFlow.addMessage(
+                StubDestinationMessageFactory.makeStreamState(stream, count.toLong()),
+                0L
+            )
             val state =
                 checkpointQueue.consume().take(1).toList().first().value as StreamCheckpointWrapped
             Assertions.assertEquals(expectedCount, state.index)
             Assertions.assertEquals(count.toLong(), state.checkpoint.destinationStats?.recordCount)
         }
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1))
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2))
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
         mockInputFlow.stop()
     }
 
@@ -278,11 +315,17 @@ class InputConsumerTaskTest {
             when (event) {
                 is AddRecords -> {
                     repeat(event.count) {
-                        mockInputFlow.addMessage(StubDestinationMessageFactory.makeRecord(event.stream, "test"), 1L)
+                        mockInputFlow.addMessage(
+                            StubDestinationMessageFactory.makeRecord(event.stream, "test"),
+                            1L
+                        )
                     }
                 }
                 is SendState -> {
-                    mockInputFlow.addMessage(StubDestinationMessageFactory.makeGlobalState(event.expectedStream1Count), 0L)
+                    mockInputFlow.addMessage(
+                        StubDestinationMessageFactory.makeGlobalState(event.expectedStream1Count),
+                        0L
+                    )
                     val state =
                         checkpointQueue.consume().take(1).toList().first().value
                             as GlobalCheckpointWrapped
@@ -303,15 +346,27 @@ class InputConsumerTaskTest {
                 }
             }
         }
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1))
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2))
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
         mockInputFlow.stop()
     }
 
     @Test
     fun testStreamIncompleteThrows() = runTest {
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test"), 1L)
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeStreamIncomplete(MockDestinationCatalogFactory.stream1), 0L)
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamIncomplete(
+                MockDestinationCatalogFactory.stream1
+            ),
+            0L
+        )
         val task =
             taskFactory.make(
                 mockCatalogFactory.make(),
@@ -326,9 +381,14 @@ class InputConsumerTaskTest {
 
     @Test
     fun testFileStreamIncompleteThrows() = runTest {
-        mockInputFlow.addMessage(StubDestinationMessageFactory.makeFile(MockDestinationCatalogFactory.stream1, "test"), 1L)
         mockInputFlow.addMessage(
-            StubDestinationMessageFactory.makeFileStreamIncomplete(MockDestinationCatalogFactory.stream1),
+            StubDestinationMessageFactory.makeFile(MockDestinationCatalogFactory.stream1, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeFileStreamIncomplete(
+                MockDestinationCatalogFactory.stream1
+            ),
             0L
         )
         val task =

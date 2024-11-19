@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.task.internal
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.TimeProvider
@@ -19,16 +24,22 @@ class FlushTickTask(
     private val clock: Clock,
     private val coroutineTimeUtils: TimeProvider,
     private val catalog: DestinationCatalog,
-    private val recordQueueSupplier: MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
-): SyncLevel, KillableScope {
+    private val recordQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+) : SyncLevel, KillableScope {
     override suspend fun execute() {
         while (true) {
-            coroutineTimeUtils.delay(tickIntervalMs)
+            waitAndPublishFlushTick()
+        }
+    }
 
-            catalog.streams.forEach {
-                val queue = recordQueueSupplier.get(it.descriptor)
-                queue.publish(Reserved(value = StreamFlushTickMessage(clock.millis())))
-            }
+    @VisibleForTesting
+    suspend fun waitAndPublishFlushTick() {
+        coroutineTimeUtils.delay(tickIntervalMs)
+
+        catalog.streams.forEach {
+            val queue = recordQueueSupplier.get(it.descriptor)
+            queue.publish(Reserved(value = StreamFlushTickMessage(clock.millis())))
         }
     }
 }

@@ -70,7 +70,8 @@ class DefaultSpillToDiskTask(
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordWrapped -> {
-                                    // once we have received a record for the stream, consider the aggregate opened.
+                                    // once we have received a record for the stream, consider the
+                                    // aggregate opened.
                                     timeWindow.open()
 
                                     // reserve enough room for the record

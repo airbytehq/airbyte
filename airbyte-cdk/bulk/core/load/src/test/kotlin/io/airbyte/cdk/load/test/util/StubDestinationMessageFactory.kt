@@ -18,8 +18,8 @@ import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
 
 /*
-* Shared factory methods for making stub destination messages for testing.
-*/
+ * Shared factory methods for making stub destination messages for testing.
+ */
 object StubDestinationMessageFactory {
     fun makeRecord(stream: DestinationStream, record: String): DestinationRecord {
         return DestinationRecord(
@@ -52,9 +52,7 @@ object StubDestinationMessageFactory {
         return DestinationRecordStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
-    fun makeFileStreamIncomplete(
-        stream: DestinationStream
-    ): DestinationFileStreamIncomplete {
+    fun makeFileStreamIncomplete(stream: DestinationStream): DestinationFileStreamIncomplete {
         return DestinationFileStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
