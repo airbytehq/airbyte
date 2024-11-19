@@ -24,26 +24,29 @@ class IcebergV2Writer(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
-): DestinationWriter {
+) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val properties = IcebergUtil.toCatalogProperties(icebergConfiguration=icebergConfiguration)
+        val properties =
+            IcebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
         val catalog = IcebergUtil.createCatalog("", properties)
         val namespace = Namespace.of(stream.descriptor.namespace)
         val tableIdentifier = TableIdentifier.of(namespace, stream.descriptor.name)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
         val schema = pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema()
-        val table = IcebergUtil.createTable(
-            tableIdentifier = tableIdentifier,
-            catalog=catalog,
-            schema=schema,
-            properties=properties)
+        val table =
+            IcebergUtil.createTable(
+                tableIdentifier = tableIdentifier,
+                catalog = catalog,
+                schema = schema,
+                properties = properties
+            )
 
         existingAndIncomingSchemaShouldBeSame(catalogSchema = schema, tableSchema = table.schema())
 
         return IcebergStreamLoader(
-            stream=stream,
-            table=table,
+            stream = stream,
+            table = table,
             icebergTableWriterFactory = icebergTableWriterFactory,
             destinationStateManager = destinationStateManager,
             pipeline = pipeline,

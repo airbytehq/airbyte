@@ -9,17 +9,13 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
-import io.airbyte.protocol.models.Jsons
-import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -32,7 +28,6 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.aws.s3.S3FileIO
-import org.apache.iceberg.aws.s3.S3FileIOProperties.ACCESS_KEY_ID
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
@@ -46,12 +41,13 @@ internal class IcebergUtilTest {
     @Test
     fun testCreateCatalog() {
         val catalogName = "test-catalog"
-        val properties = mapOf(
-            ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
-            URI to "http://localhost:19120/api/v1",
-            WAREHOUSE_LOCATION to  "s3://test/"
-        )
-        val catalog = IcebergUtil.createCatalog(catalogName=catalogName, properties=properties)
+        val properties =
+            mapOf(
+                ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
+                URI to "http://localhost:19120/api/v1",
+                WAREHOUSE_LOCATION to "s3://test/"
+            )
+        val catalog = IcebergUtil.createCatalog(catalogName = catalogName, properties = properties)
         assertNotNull(catalog)
         assertEquals(catalogName, catalog.name())
         assertEquals(NessieCatalog::class.java, catalog.javaClass)
@@ -59,14 +55,13 @@ internal class IcebergUtilTest {
 
     @Test
     fun testCreateTableWithMissingNamespace() {
-        val properties = mapOf<String,String>()
+        val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk {
-            every { identifierFieldNames() } returns emptySet()
-        }
+        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(properties) } returns this
-            every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns this
+            every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns
+                this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
@@ -76,12 +71,13 @@ internal class IcebergUtilTest {
             every { namespaceExists(any()) } returns false
             every { tableExists(tableIdentifier) } returns false
         }
-        val table = IcebergUtil.createTable(
-            tableIdentifier=tableIdentifier,
-            catalog = catalog,
-            schema = schema,
-            properties = properties
-        )
+        val table =
+            IcebergUtil.createTable(
+                tableIdentifier = tableIdentifier,
+                catalog = catalog,
+                schema = schema,
+                properties = properties
+            )
         assertNotNull(table)
         verify(exactly = 1) { catalog.createNamespace(tableIdentifier.namespace()) }
         verify(exactly = 1) { tableBuilder.create() }
@@ -89,14 +85,13 @@ internal class IcebergUtilTest {
 
     @Test
     fun testCreateTableWithExistingNamespace() {
-        val properties = mapOf<String,String>()
+        val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk {
-            every { identifierFieldNames() } returns emptySet()
-        }
+        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(properties) } returns this
-            every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns this
+            every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns
+                this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
@@ -105,12 +100,13 @@ internal class IcebergUtilTest {
             every { namespaceExists(any()) } returns true
             every { tableExists(tableIdentifier) } returns false
         }
-        val table = IcebergUtil.createTable(
-            tableIdentifier=tableIdentifier,
-            catalog = catalog,
-            schema = schema,
-            properties = properties
-        )
+        val table =
+            IcebergUtil.createTable(
+                tableIdentifier = tableIdentifier,
+                catalog = catalog,
+                schema = schema,
+                properties = properties
+            )
         assertNotNull(table)
         verify(exactly = 0) { catalog.createNamespace(tableIdentifier.namespace()) }
         verify(exactly = 1) { tableBuilder.create() }
@@ -118,22 +114,21 @@ internal class IcebergUtilTest {
 
     @Test
     fun testLoadTable() {
-        val properties = mapOf<String,String>()
+        val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk {
-            every { identifierFieldNames() } returns emptySet()
-        }
+        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
         val catalog: NessieCatalog = mockk {
             every { loadTable(tableIdentifier) } returns mockk()
             every { namespaceExists(any()) } returns true
             every { tableExists(tableIdentifier) } returns true
         }
-        val table = IcebergUtil.createTable(
-            tableIdentifier=tableIdentifier,
-            catalog = catalog,
-            schema = schema,
-            properties = properties
-        )
+        val table =
+            IcebergUtil.createTable(
+                tableIdentifier = tableIdentifier,
+                catalog = catalog,
+                schema = schema,
+                properties = properties
+            )
         assertNotNull(table)
         verify(exactly = 0) { catalog.createNamespace(tableIdentifier.namespace()) }
         verify(exactly = 1) { catalog.loadTable(tableIdentifier) }
@@ -146,16 +141,26 @@ internal class IcebergUtilTest {
             every { schema } returns ObjectTypeWithoutSchema
             every { syncId } returns 1
         }
-        val airbyteRecord = DestinationRecord(
-            stream = DestinationStream.Descriptor(namespace = "namespace", name = "name"),
-            data = ObjectValue(linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))),
-            emittedAtMs = System.currentTimeMillis(),
-            meta = DestinationRecord.Meta(),
-            serialized = "{\"id\":42, \"name\":\"John Doe\"}"
-        )
+        val airbyteRecord =
+            DestinationRecord(
+                stream = DestinationStream.Descriptor(namespace = "namespace", name = "name"),
+                data =
+                    ObjectValue(
+                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+                    ),
+                emittedAtMs = System.currentTimeMillis(),
+                meta = DestinationRecord.Meta(),
+                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+            )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val schema: Schema = mockk()
-        val icebergRecord = IcebergUtil.toRecord(record=airbyteRecord, pipeline=pipeline, tableSchema = schema, stream = airbyteStream)
+        val icebergRecord =
+            IcebergUtil.toRecord(
+                record = airbyteRecord,
+                pipeline = pipeline,
+                tableSchema = schema,
+                stream = airbyteStream
+            )
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
         assertEquals(Operation.INSERT, (icebergRecord as RecordWrapper).operation)
@@ -170,27 +175,32 @@ internal class IcebergUtilTest {
         val warehouseLocation = "s3://test/"
         val s3BucketName = "test"
         val s3Endpoint = "http://localhost:9000"
-        val awsAccessKeyConfiguration = AWSAccessKeyConfiguration(
-            accessKeyId = awsAccessKey,
-            secretAccessKey = awsSecretAccessKey,
-        )
-        val nessieServerConfiguration = NessieServerConfiguration(
-            serverUri = nessieServerUri,
-            accessToken = nessieAccessToken,
-            warehouseLocation = warehouseLocation,
-            mainBranchName = "main",
-        )
-        val s3BucketConfiguration = S3BucketConfiguration(
-            s3BucketName = s3BucketName,
-            s3BucketRegion = S3BucketRegion.`us-east-1`,
-            s3Endpoint = s3Endpoint,
-        )
-        val configuration = IcebergV2Configuration(
-            awsAccessKeyConfiguration = awsAccessKeyConfiguration,
-            nessieServerConfiguration = nessieServerConfiguration,
-            s3BucketConfiguration = s3BucketConfiguration,
-        )
-        val catalogProperties = IcebergUtil.toCatalogProperties(icebergConfiguration=configuration)
+        val awsAccessKeyConfiguration =
+            AWSAccessKeyConfiguration(
+                accessKeyId = awsAccessKey,
+                secretAccessKey = awsSecretAccessKey,
+            )
+        val nessieServerConfiguration =
+            NessieServerConfiguration(
+                serverUri = nessieServerUri,
+                accessToken = nessieAccessToken,
+                warehouseLocation = warehouseLocation,
+                mainBranchName = "main",
+            )
+        val s3BucketConfiguration =
+            S3BucketConfiguration(
+                s3BucketName = s3BucketName,
+                s3BucketRegion = S3BucketRegion.`us-east-1`,
+                s3Endpoint = s3Endpoint,
+            )
+        val configuration =
+            IcebergV2Configuration(
+                awsAccessKeyConfiguration = awsAccessKeyConfiguration,
+                nessieServerConfiguration = nessieServerConfiguration,
+                s3BucketConfiguration = s3BucketConfiguration,
+            )
+        val catalogProperties =
+            IcebergUtil.toCatalogProperties(icebergConfiguration = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
         assertEquals(nessieServerUri, catalogProperties[URI])
         assertEquals(warehouseLocation, catalogProperties[WAREHOUSE_LOCATION])

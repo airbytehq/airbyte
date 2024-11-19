@@ -56,22 +56,23 @@ class IcebergStreamLoader(
             log.info { "Writing records to branch $stagingBranchName" }
             state.addObject(stream.generationId, stagingBranchName, partNumber)
             records.forEach { record ->
-                val icebergRecord = IcebergUtil.toRecord(
-                    record=record,
-                    stream=stream,
-                    tableSchema = table.schema(),
-                    pipeline = pipeline,
-                )
+                val icebergRecord =
+                    IcebergUtil.toRecord(
+                        record = record,
+                        stream = stream,
+                        tableSchema = table.schema(),
+                        pipeline = pipeline,
+                    )
                 writer.write(icebergRecord)
             }
             val writeResult = writer.complete()
-            if(writeResult.deleteFiles().isNotEmpty()) {
+            if (writeResult.deleteFiles().isNotEmpty()) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
-                writeResult.dataFiles().forEach {  delta.addRows(it) }
+                writeResult.dataFiles().forEach { delta.addRows(it) }
                 writeResult.deleteFiles().forEach { delta.addDeletes(it) }
             } else {
                 val append = table.newAppend().toBranch(stagingBranchName)
-                writeResult.dataFiles().forEach {  append.appendFile(it) }
+                writeResult.dataFiles().forEach { append.appendFile(it) }
             }
             log.info { "Finished writing records to $stagingBranchName" }
         }

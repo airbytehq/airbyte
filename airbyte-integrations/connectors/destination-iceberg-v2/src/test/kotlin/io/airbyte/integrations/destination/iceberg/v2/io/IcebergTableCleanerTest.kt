@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
 import io.mockk.called
 import io.mockk.every
 import io.mockk.mockk
