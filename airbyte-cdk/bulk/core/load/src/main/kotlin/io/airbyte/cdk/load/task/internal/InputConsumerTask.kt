@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -22,6 +24,7 @@ import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
@@ -94,6 +97,8 @@ class DefaultInputConsumerTask(
                 reserved.release() // safe because multiple calls conflate
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
+                destinationTaskLauncher.handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
+
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
