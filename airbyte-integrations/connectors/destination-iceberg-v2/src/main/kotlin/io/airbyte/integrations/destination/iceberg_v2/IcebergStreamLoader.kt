@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.iceberg_parquet.IcebergParquetWriter
 import io.airbyte.cdk.load.file.iceberg_parquet.IcebergWriter
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
@@ -81,6 +82,10 @@ class IcebergStreamLoader(
             remoteObject = stagingBranchName,
             partNumber = partNumber
         )
+    }
+
+    override suspend fun processFile(file: DestinationFile): Batch {
+        throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
     override suspend fun processBatch(batch: Batch): Batch {
