@@ -78,7 +78,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
         record_filter:
-          condition: "{{ record[parameters['cursor_field']] >= stream_interval.get(parameters['cursor_field'], config.get('start_date')) }}"
+          condition: "{{ record[parameters['cursor_field']] >= stream_interval.get('start_time', config.get('start_date')) }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
