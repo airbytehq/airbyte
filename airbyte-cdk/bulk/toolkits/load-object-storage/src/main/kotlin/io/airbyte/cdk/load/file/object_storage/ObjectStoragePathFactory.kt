@@ -54,6 +54,7 @@ class ObjectStoragePathFactory(
     formatConfigProvider: ObjectStorageFormatConfigurationProvider? = null,
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
     timeProvider: TimeProvider,
+    // TODO: Inject value
 ) : PathFactory {
     private val loadedAt = timeProvider.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
@@ -75,16 +76,16 @@ class ObjectStoragePathFactory(
 
     private val stagingPrefix: String
         get() {
-            if (!pathConfig.usesStagingDirectory) {
-                throw UnsupportedOperationException(
-                    "Staging is not supported by this configuration"
-                )
-            }
+            // if (!pathConfig.usesStagingDirectory) {
+            //     throw UnsupportedOperationException(
+            //         "Staging is not supported by this configuration"
+            //     )
+            // }
             return stagingPrefixResolved
         }
 
     override val supportsStaging: Boolean
-        get() = pathConfig.usesStagingDirectory
+        get() = true//pathConfig.usesStagingDirectory
     override val prefix: String
         get() = pathConfig.prefix
 
