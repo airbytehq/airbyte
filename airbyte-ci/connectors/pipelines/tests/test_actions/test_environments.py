@@ -28,13 +28,6 @@ def connector_context(dagger_client):
     return context
 
 
-@pytest.mark.skip(
-    reason=(
-        "This is broken since CDK has moved to a separate package. "
-        "Dagger appears to not have access to the sibling directory. "
-        + "See https://github.com/airbytehq/airbyte-internal-issues/issues/10779"
-    )
-)
 @pytest.mark.parametrize("use_local_cdk", [True, False])
 async def test_apply_python_development_overrides(connector_context, use_local_cdk):
     connector_context.use_local_cdk = use_local_cdk
