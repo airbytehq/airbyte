@@ -1,27 +1,40 @@
 data:
   connectorSubtype: file
   connectorType: destination
-  definitionId: d6116991-e809-4c7c-ae09-c64712df5b66
-  dockerImageTag: 0.2.2
-  dockerRepository: airbyte/destination-s3-v2
-  githubIssueLabel: destination-s3-v2
+  definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
+  dockerImageTag: 1.5.0
+  dockerRepository: airbyte/destination-s3
+  githubIssueLabel: destination-s3
   icon: s3.svg
   license: ELv2
-  name: S3 V2 Destination
+  name: S3
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
-  releaseStage: alpha
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >
+          **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
+        upgradeDeadline: "2024-10-08"
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   tags:
     - language:java
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 300
+    ql: 300
+  supportLevel: certified
   supportsRefreshes: true
+  supportsFileTransfer: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
