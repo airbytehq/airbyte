@@ -97,7 +97,9 @@ class DefaultInputConsumerTask(
                 reserved.release() // safe because multiple calls conflate
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
-                destinationTaskLauncher.handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
+                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
+                manager.updateBatchState(envelope)
+                destinationTaskLauncher.handleNewBatch(stream, envelope)
                 log.info { "marking EOS" }
             }
             is DestinationFileStreamIncomplete ->
