@@ -1,4 +1,4 @@
-# GreytHR
+# GreytHr
 This directory contains the manifest-only connector for `source-greythr`.
 
 The GreytHR Connector for Airbyte allows seamless integration with the GreytHR platform, enabling users to automate the extraction and synchronization of employee management and payroll data into their preferred destinations for reporting, analytics, or further processing.

@@ -1,4 +1,4 @@
-# GreytHR
+# GreytHr
 The GreytHR Connector for Airbyte allows seamless integration with the GreytHR platform, enabling users to automate the extraction and synchronization of employee management and payroll data into their preferred destinations for reporting, analytics, or further processing.
 
 ## Configuration
@@ -14,6 +14,15 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 |-------------|-------------|------------|---------------------|----------------------|
 | Employees | employeeId | DefaultPaginator | ✅ |  ❌  |
 | Employees Categories | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employees Profile | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employees Personal Details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employees Work Details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employee Separation Details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employee Statutory Details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employee Bank Details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employee PF &amp; ESI details | employeeId | DefaultPaginator | ✅ |  ❌  |
+| Employee Qualifications Details |  | DefaultPaginator | ✅ |  ❌  |
+| Users List |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -22,6 +31,6 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-16 | | Initial release by [@bhushan-dhwaniris](https://github.com/bhushan-dhwaniris) via Connector Builder |
+| 0.0.1 | 2024-11-19 | | Initial release by [@bhushan-dhwaniris](https://github.com/bhushan-dhwaniris) via Connector Builder |
 
 </details>

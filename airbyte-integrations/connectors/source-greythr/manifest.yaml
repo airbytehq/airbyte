@@ -1,4 +1,4 @@
-version: 6.5.2
+version: 6.1.0
 
 type: DeclarativeSource
 
@@ -92,6 +92,337 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Employees Categories"
+    Employees Profile:
+      type: DeclarativeStream
+      name: Employees Profile
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/profile
+          http_method: GET
+          request_parameters:
+            descRequired: "true"
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees Profile"
+    Employees Personal Details:
+      type: DeclarativeStream
+      name: Employees Personal Details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/personal
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees Personal Details"
+    Employees Work Details:
+      type: DeclarativeStream
+      name: Employees Work Details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/work
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employees Work Details"
+    Employee Separation Details:
+      type: DeclarativeStream
+      name: Employee Separation Details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/separation
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Separation Details"
+    Employee Statutory Details:
+      type: DeclarativeStream
+      name: Employee Statutory Details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/statutory/india
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Statutory Details"
+    Employee Bank Details:
+      type: DeclarativeStream
+      name: Employee Bank Details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/bank
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Bank Details"
+    Employee PF & ESI details:
+      type: DeclarativeStream
+      name: Employee PF & ESI details
+      primary_key:
+        - employeeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/pf
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee PF & ESI details"
+    Employee Qualifications Details:
+      type: DeclarativeStream
+      name: Employee Qualifications Details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employee/v2/employees/qualifications
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Qualifications Details"
+    Users List:
+      type: DeclarativeStream
+      name: Users List
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/v2/users
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"gthost\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Users List"
   base_requester:
     type: HttpRequester
     url_base: https://api.greythr.com
@@ -121,6 +452,15 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/Employees"
   - $ref: "#/definitions/streams/Employees Categories"
+  - $ref: "#/definitions/streams/Employees Profile"
+  - $ref: "#/definitions/streams/Employees Personal Details"
+  - $ref: "#/definitions/streams/Employees Work Details"
+  - $ref: "#/definitions/streams/Employee Separation Details"
+  - $ref: "#/definitions/streams/Employee Statutory Details"
+  - $ref: "#/definitions/streams/Employee Bank Details"
+  - $ref: "#/definitions/streams/Employee PF & ESI details"
+  - $ref: "#/definitions/streams/Employee Qualifications Details"
+  - $ref: "#/definitions/streams/Users List"
 
 spec:
   type: Spec
@@ -152,6 +492,15 @@ metadata:
   autoImportSchema:
     Employees: true
     Employees Categories: true
+    Employees Profile: true
+    Employees Personal Details: true
+    Employees Work Details: true
+    Employee Separation Details: true
+    Employee Statutory Details: true
+    Employee Bank Details: true
+    Employee PF & ESI details: true
+    Employee Qualifications Details: true
+    Users List: true
   testedStreams:
     Employees:
       streamHash: 3e95dc20590b8dc1abf16732e980b73fdd1e097b
@@ -161,12 +510,75 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Employees Categories:
+      hasRecords: true
       streamHash: a7195cd9ca3b4212eced68a62431c0ea527601d9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Employees Profile:
+      hasRecords: true
+      streamHash: 46f46362d5aa758283794801c3d893392e8fb7f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Employees Personal Details:
+      streamHash: 27337382fb3623b62314e9f79dc0202405db147f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    Employees Work Details:
+      streamHash: b79ee7c5c4ea2975be8977da34f803d1adb158a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employee Separation Details:
+      streamHash: 2ef21f1857c21a2dbe0dc93dd169f439803b786e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employee Statutory Details:
+      streamHash: 93bfb3748804e7e6ef943f2924d683b6e4d56e70
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employee Bank Details:
+      streamHash: 18dadcac109612b208ec6dc583ffeb74b30ddc38
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employee PF & ESI details:
+      streamHash: 53a58e00227d9cfc215a4d4233808b6d6feae5cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Employee Qualifications Details:
+      streamHash: 4c64caaf7532cce1cef7446cfc035cf8884ae23f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Users List:
+      hasRecords: true
+      streamHash: 55fcca9ebd711e5e0347d1512ed58efc1404f02b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://www.getknit.dev/blog/greythr-api-guide
 
@@ -318,3 +730,312 @@ schemas:
         type: number
     required:
       - employeeId
+  Employees Profile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      biography:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type: number
+      facebook:
+        type:
+          - string
+          - "null"
+      linkedIn:
+        type:
+          - string
+          - "null"
+      nickname:
+        type:
+          - string
+          - "null"
+      twitter:
+        type:
+          - string
+          - "null"
+      wishDOB:
+        type:
+          - string
+          - "null"
+    required:
+      - employeeId
+  Employees Personal Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bloodGroup:
+        type:
+          - number
+          - "null"
+      employeeId:
+        type: number
+      maritalStatus:
+        type:
+          - number
+          - "null"
+      spouseName:
+        type:
+          - string
+          - "null"
+    required:
+      - employeeId
+  Employees Work Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      confirmDate:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type: number
+      extendedProbationDays:
+        type:
+          - number
+          - "null"
+      noticePeriod:
+        type:
+          - number
+          - "null"
+      onboardingStatus:
+        type:
+          - string
+          - "null"
+    required:
+      - employeeId
+  Employee Separation Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      employeeId:
+        type: number
+      exitInterviewDate:
+        type:
+          - string
+          - "null"
+      finalSettlementDate:
+        type:
+          - string
+          - "null"
+      fitToBeRehired:
+        type:
+          - boolean
+          - "null"
+      leavingDate:
+        type:
+          - string
+          - "null"
+      leavingReason:
+        type:
+          - number
+          - "null"
+      leftOrg:
+        type:
+          - boolean
+          - "null"
+      submissionDate:
+        type:
+          - string
+          - "null"
+      submittedResignation:
+        type:
+          - boolean
+          - "null"
+      tentativeLeavingDate:
+        type:
+          - string
+          - "null"
+    required:
+      - employeeId
+  Employee Statutory Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      birthplace:
+        type:
+          - string
+          - "null"
+      countryOfOrigin:
+        type:
+          - number
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      employeeId:
+        type: number
+      expatriate:
+        type:
+          - boolean
+          - "null"
+      fatherName:
+        type:
+          - string
+          - "null"
+      isDirector:
+        type:
+          - boolean
+          - "null"
+      nationality:
+        type:
+          - number
+          - "null"
+      residentialStatus:
+        type:
+          - number
+          - "null"
+    required:
+      - employeeId
+  Employee Bank Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bankAccountNumber:
+        type:
+          - string
+          - "null"
+      bankBranch:
+        type:
+          - number
+          - "null"
+      bankName:
+        type:
+          - number
+          - "null"
+      branchCode:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type: number
+      salaryPaymentMode:
+        type:
+          - number
+          - "null"
+    required:
+      - employeeId
+  Employee PF & ESI details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      employeeId:
+        type: number
+      esiEligible:
+        type:
+          - boolean
+          - "null"
+      excessEPFContribution:
+        type:
+          - boolean
+          - "null"
+      excessEPSContribution:
+        type:
+          - boolean
+          - "null"
+      pfEligible:
+        type:
+          - boolean
+          - "null"
+      pfExistingMember:
+        type:
+          - boolean
+          - "null"
+      pfKycLinkedOn:
+        type:
+          - string
+          - "null"
+      pfNumber:
+        type:
+          - string
+          - "null"
+      uan:
+        type:
+          - string
+          - "null"
+    required:
+      - employeeId
+  Employee Qualifications Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      duration:
+        type:
+          - string
+          - "null"
+      employee:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      institute:
+        type:
+          - string
+          - "null"
+      qualArea:
+        type:
+          - number
+          - "null"
+      qualCompletionYear:
+        type:
+          - number
+          - "null"
+      qualDescription:
+        type:
+          - number
+          - "null"
+      qualLevel:
+        type:
+          - number
+          - "null"
+      qualYear:
+        type:
+          - number
+          - "null"
+  Users List:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      systemPassword:
+        type:
+          - boolean
+          - "null"
+      userName:
+        type:
+          - string
+          - "null"
