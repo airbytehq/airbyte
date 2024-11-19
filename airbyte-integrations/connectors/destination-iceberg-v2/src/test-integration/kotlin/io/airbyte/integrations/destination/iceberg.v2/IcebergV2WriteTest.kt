@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Disabled
 
 abstract class IcebergV2WriteTest(path: String) :
     BasicFunctionalityIntegrationTest(
-      IcebergV2TestUtil.getConfig(path),
+        IcebergV2TestUtil.getConfig(path),
         IcebergV2Specification::class.java,
         FakeDataDumper,
         NoopDestinationCleaner,
