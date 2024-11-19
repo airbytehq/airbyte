@@ -388,6 +388,7 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (true) {//fileTransferEnabled) {
+                    @Suppress("UNCHECKED_CAST")
                     val fileMessage = message.record.additionalProperties["file"] as Map<String, Any>
                     DestinationFile(
                         stream = stream.descriptor,
