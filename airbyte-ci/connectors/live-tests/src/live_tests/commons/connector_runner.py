@@ -48,10 +48,7 @@ class ConnectorRunner:
         self.completion_event = anyio.Event()
         self.http_proxy = http_proxy
         self.logger = logging.getLogger(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
-        self.dagger_client = dagger_client.pipeline(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
-
-        # When invoked via airbyte-ci, record_obfuscator.py is copied over to /tmp
-        # but when running locally, it's in Airbyte repo root.
+        self.dagger_client = dagger_client
         if is_airbyte_ci:
             self.host_obfuscator_path = "/tmp/record_obfuscator.py"
         else:
@@ -157,8 +154,7 @@ class ConnectorRunner:
                     "-c",
                     " ".join(airbyte_command)
                     + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
-                ],
-                skip_entrypoint=True,
+                ]
             )
             executed_container = await container.sync()
             # We exporting to disk as we can't read .stdout() or await file.contents() as it might blow up the memory

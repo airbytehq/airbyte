@@ -99,4 +99,4 @@ class AirbyteConnectorBaseImage(ABC):
         Returns:
             dagger.Container: The container using the base python image.
         """
-        return self.dagger_client.pipeline(self.name_with_tag).container(platform=platform).from_(self.root_image.address)
+        return self.dagger_client.container(platform=platform).from_(self.root_image.address)

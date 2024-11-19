@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
@@ -36,18 +37,15 @@ class StateManager(
                     .mapKeys { it.key.id }
         } else {
             val globalStreams: Map<Stream, OpaqueStateValue?> =
-                global.streams.associateWith { initialStreamStates[it] }
+                global.streams.associateWith { initialStreamStates[it] } +
+                    initialStreamStates.filterKeys { global.streams.contains(it).not() }
             this.global =
                 GlobalStateManager(
                     global = global,
                     initialGlobalState = initialGlobalState,
                     initialStreamStates = globalStreams,
                 )
-            nonGlobal =
-                initialStreamStates
-                    .filterKeys { !globalStreams.containsKey(it) }
-                    .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.id }
+            nonGlobal = emptyMap()
         }
     }
 
@@ -199,7 +197,9 @@ class StateManager(
                 streamStates.add(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withStreamState(streamStateForCheckpoint.opaqueStateValue),
+                        .withStreamState(
+                            streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                        ),
                 )
             }
             if (!shouldCheckpoint) {
@@ -233,7 +233,9 @@ class StateManager(
             val airbyteStreamState =
                 AirbyteStreamState()
                     .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(streamStateForCheckpoint.opaqueStateValue)
+                    .withStreamState(
+                        streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                    )
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)

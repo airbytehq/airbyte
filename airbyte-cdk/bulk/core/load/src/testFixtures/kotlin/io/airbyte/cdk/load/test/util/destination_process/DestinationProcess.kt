@@ -5,12 +5,13 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-
-const val DOCKERIZED_TEST_ENV = "DOCKERIZED_INTEGRATION_TEST"
+import io.micronaut.context.env.yaml.YamlPropertySourceLoader
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Represents a destination process, whether running in-JVM via micronaut, or as a separate Docker
@@ -29,20 +30,20 @@ interface DestinationProcess {
     suspend fun run()
 
     fun sendMessage(message: AirbyteMessage)
+    fun sendMessages(vararg messages: AirbyteMessage) {
+        messages.forEach { sendMessage(it) }
+    }
 
     /** Return all messages the destination emitted since the last call to [readMessages]. */
     fun readMessages(): List<AirbyteMessage>
 
     /**
-     * Wait for the destination to terminate, then return all messages it emitted since the last
-     * call to [readMessages].
+     * Signal the destination to exit (i.e. close its stdin stream), then wait for it to terminate.
      */
     suspend fun shutdown()
-}
 
-enum class TestDeploymentMode {
-    CLOUD,
-    OSS
+    /** Terminate the destination as immediately as possible. */
+    fun kill()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -56,8 +57,32 @@ abstract class DestinationProcessFactory {
 
     abstract fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification? = null,
+        configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
-        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
+        vararg featureFlags: FeatureFlag,
     ): DestinationProcess
+
+    companion object {
+        fun get(): DestinationProcessFactory =
+            when (val runner = System.getenv("AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER")) {
+                null,
+                "non-docker" -> NonDockerizedDestinationFactory()
+                "docker" -> {
+                    val rawProperties: Map<String, Any?> =
+                        YamlPropertySourceLoader()
+                            .read(
+                                "irrelevant",
+                                Files.readAllBytes(Path.of("metadata.yaml")),
+                            )
+                    DockerizedDestinationFactory(
+                        rawProperties["data.dockerRepository"] as String,
+                        "dev"
+                    )
+                }
+                else ->
+                    throw IllegalArgumentException(
+                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner"
+                    )
+            }
+    }
 }
