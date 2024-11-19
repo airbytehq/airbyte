@@ -12,13 +12,13 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.file.DefaultSpillFileProvider
 import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordQueue
-import io.airbyte.cdk.load.message.DestinationRecordQueueSupplier
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.DestinationStreamEventQueue
+import io.airbyte.cdk.load.message.DestinationStreamQueueSupplier
 import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.StreamFlushTickMessage
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamFlushEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -56,13 +56,13 @@ class SpillToDiskTaskTest {
 
         @MockK(relaxed = true) lateinit var diskManager: ReservationManager
 
-        private lateinit var inputQueue: DestinationRecordQueue
+        private lateinit var inputQueue: DestinationStreamEventQueue
 
         private lateinit var task: DefaultSpillToDiskTask
 
         @BeforeEach
         fun setup() {
-            inputQueue = DestinationRecordQueue()
+            inputQueue = DestinationStreamEventQueue()
             task =
                 DefaultSpillToDiskTask(
                     spillFileProvider,
@@ -79,7 +79,7 @@ class SpillToDiskTaskTest {
         fun `publishes 'spilled file' aggregates according to flush strategy on stream record`() =
             runTest {
                 val recordMsg =
-                    StreamRecordWrapped(
+                    StreamRecordEvent(
                         3L,
                         2L,
                         StubDestinationMessageFactory.makeRecord(
@@ -97,7 +97,7 @@ class SpillToDiskTaskTest {
 
         @Test
         fun `publishes 'spilled file' aggregates on stream complete event`() = runTest {
-            val completeMsg = StreamRecordCompleteWrapped(0L)
+            val completeMsg = StreamCompleteEvent(0L)
             inputQueue.publish(Reserved(value = completeMsg))
 
             task.execute()
@@ -111,9 +111,9 @@ class SpillToDiskTaskTest {
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
                 coEvery { timeWindow.isComplete() } returns true
 
-                val flushMsg = StreamFlushTickMessage(101L)
+                val flushMsg = StreamFlushEvent(101L)
                 val recordMsg =
-                    StreamRecordWrapped(
+                    StreamRecordEvent(
                         3L,
                         2L,
                         StubDestinationMessageFactory.makeRecord(
@@ -143,14 +143,14 @@ class SpillToDiskTaskTest {
         private val flushWindowMs = 60000L
 
         private lateinit var queueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
         private lateinit var spillFileProvider: SpillFileProvider
 
         @BeforeEach
         fun setup() {
             spillFileProvider = DefaultSpillFileProvider(MockDestinationConfiguration())
             queueSupplier =
-                DestinationRecordQueueSupplier(
+                DestinationStreamQueueSupplier(
                     MockDestinationCatalogFactory().make(),
                 )
             taskLauncher = MockTaskLauncher()
@@ -250,7 +250,7 @@ class SpillToDiskTaskTest {
                 queue.publish(
                     memoryManager.reserve(
                         Fixtures.MEMORY_RESERVATION_SIZE_BYTES,
-                        StreamRecordWrapped(
+                        StreamRecordEvent(
                             index = index,
                             sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
                             record =
@@ -268,7 +268,7 @@ class SpillToDiskTaskTest {
             queue.publish(
                 memoryManager.reserve(
                     0L,
-                    StreamRecordCompleteWrapped(index = maxRecords),
+                    StreamCompleteEvent(index = maxRecords),
                 ),
             )
             return recordsWritten

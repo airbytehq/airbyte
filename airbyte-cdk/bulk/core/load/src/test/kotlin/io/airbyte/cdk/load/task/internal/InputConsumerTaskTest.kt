@@ -9,13 +9,13 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
@@ -52,7 +52,7 @@ class InputConsumerTaskTest {
     @Inject lateinit var taskFactory: InputConsumerTaskFactory
     @Inject
     lateinit var recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
     @Inject lateinit var checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
     @Inject lateinit var syncManager: SyncManager
     @Inject lateinit var mockInputFlow: MockInputFlow
@@ -122,15 +122,13 @@ class InputConsumerTaskTest {
         val messages1 =
             queue1
                 .consume()
-                .takeUntilInclusive {
-                    (it.value as StreamRecordWrapped).record.serialized == "test9"
-                }
+                .takeUntilInclusive { (it.value as StreamRecordEvent).record.serialized == "test9" }
                 .toList()
 
         Assertions.assertEquals(10, messages1.size)
         val expectedRecords =
             (0 until 10).map {
-                StreamRecordWrapped(
+                StreamRecordEvent(
                     it.toLong(),
                     it * 2L,
                     StubDestinationMessageFactory.makeRecord(
@@ -139,19 +137,19 @@ class InputConsumerTaskTest {
                     )
                 )
             }
-        val streamComplete1: Reserved<DestinationRecordWrapped> =
+        val streamComplete1: Reserved<DestinationStreamEvent> =
             queue1.consume().take(1).toList().first()
-        val streamComplete2: Reserved<DestinationRecordWrapped> =
+        val streamComplete2: Reserved<DestinationStreamEvent> =
             queue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
-        Assertions.assertEquals(StreamRecordCompleteWrapped(10), streamComplete1.value)
+        Assertions.assertEquals(StreamCompleteEvent(10), streamComplete1.value)
         Assertions.assertEquals(1, streamComplete1.bytesReserved)
         Assertions.assertEquals(10L, manager1.recordCount())
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
-        Assertions.assertEquals(StreamRecordCompleteWrapped(0), streamComplete2.value)
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
+        Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue1.consume().toList())
+        Assertions.assertEquals(StreamCompleteEvent(0), streamComplete2.value)
+        Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue2.consume().toList())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
     }
@@ -202,7 +200,7 @@ class InputConsumerTaskTest {
         queue2.close()
         Assertions.assertEquals(
             listOf(
-                StreamRecordWrapped(
+                StreamRecordEvent(
                     0,
                     1L,
                     StubDestinationMessageFactory.makeRecord(
@@ -210,7 +208,7 @@ class InputConsumerTaskTest {
                         "test"
                     )
                 ),
-                StreamRecordCompleteWrapped(1)
+                StreamCompleteEvent(1)
             ),
             queue2.consume().toList().map { it.value }
         )
@@ -222,7 +220,7 @@ class InputConsumerTaskTest {
         queue1.close()
         val messages1 = queue1.consume().toList()
         Assertions.assertEquals(11, messages1.size)
-        Assertions.assertEquals(messages1[10].value, StreamRecordCompleteWrapped(10))
+        Assertions.assertEquals(messages1[10].value, StreamCompleteEvent(10))
         Assertions.assertEquals(
             mockInputFlow.initialMemory - 11,
             mockInputFlow.memoryManager.remainingCapacityBytes,

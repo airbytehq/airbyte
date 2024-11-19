@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
@@ -119,10 +119,10 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockMessageQueueSupplier :
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>> {
         override fun get(
             key: DestinationStream.Descriptor
-        ): MessageQueue<Reserved<DestinationRecordWrapped>> {
+        ): MessageQueue<Reserved<DestinationStreamEvent>> {
             return mockk()
         }
     }
@@ -138,7 +138,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
             recordQueueSupplier:
                 MessageQueueSupplier<
-                    DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+                    DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher
         ): InputConsumerTask {

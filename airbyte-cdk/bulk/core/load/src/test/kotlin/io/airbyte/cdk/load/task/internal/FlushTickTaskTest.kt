@@ -12,10 +12,10 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.file.TimeProvider
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.StreamFlushTickMessage
+import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
 import io.mockk.coVerify
 import io.mockk.every
@@ -40,7 +40,7 @@ class FlushTickTaskTest {
     @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
     @MockK(relaxed = true)
     lateinit var recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
 
     private val tickIntervalMs = 60000L // 1 min
 
@@ -73,7 +73,7 @@ class FlushTickTaskTest {
         every { catalog.streams } returns streams
         val queues =
             streams.associateWith {
-                mockk<MessageQueue<Reserved<DestinationRecordWrapped>>>(relaxed = true)
+                mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true)
             }
 
         streams.forEach {
@@ -83,9 +83,9 @@ class FlushTickTaskTest {
         task.waitAndPublishFlushTick()
 
         streams.forEach {
-            val msgSlot = slot<Reserved<DestinationRecordWrapped>>()
+            val msgSlot = slot<Reserved<DestinationStreamEvent>>()
             coVerify { queues[it]!!.publish(capture(msgSlot)) }
-            assert(msgSlot.captured.value is StreamFlushTickMessage)
+            assert(msgSlot.captured.value is StreamFlushEvent)
         }
     }
 

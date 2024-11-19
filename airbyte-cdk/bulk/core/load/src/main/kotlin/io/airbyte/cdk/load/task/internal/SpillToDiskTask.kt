@@ -7,12 +7,12 @@ package io.airbyte.cdk.load.task.internal
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.message.StreamFlushTickMessage
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamFlushEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -44,7 +44,7 @@ interface SpillToDiskTask : StreamLevel, InternalScope
  */
 class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
-    private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
+    private val queue: QueueReader<Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     override val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
@@ -69,7 +69,7 @@ class DefaultSpillToDiskTask(
                     .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
                         reserved.use {
                             when (val wrapped = it.value) {
-                                is StreamRecordWrapped -> {
+                                is StreamRecordEvent -> {
                                     // once we have received a record for the stream, consider the
                                     // aggregate opened.
                                     timeWindow.open()
@@ -96,11 +96,11 @@ class DefaultSpillToDiskTask(
                                         forceFlush = forceFlush
                                     )
                                 }
-                                is StreamRecordCompleteWrapped -> {
+                                is StreamCompleteEvent -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
                                     ReadResult(nextRange, sizeBytes, hasReadEndOfStream = true)
                                 }
-                                is StreamFlushTickMessage -> {
+                                is StreamFlushEvent -> {
                                     val forceFlush = timeWindow.isComplete()
                                     ReadResult(range, sizeBytes, forceFlush = forceFlush)
                                 }
@@ -138,7 +138,7 @@ interface SpillToDiskTaskFactory {
 class DefaultSpillToDiskTaskFactory(
     private val spillFileProvider: SpillFileProvider,
     private val queueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     @Named("diskManager") private val diskManager: ReservationManager,
     private val clock: Clock,
