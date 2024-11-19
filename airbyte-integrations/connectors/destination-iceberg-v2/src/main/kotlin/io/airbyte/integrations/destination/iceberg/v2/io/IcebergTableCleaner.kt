@@ -11,21 +11,22 @@ import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.SupportsPrefixOperations
 
 /**
- * Removes all data from an Iceberg [org.apache.iceberg.Table].  This method is necessary
- * as some catalog implementations do not clear the underlying files written to table storage.
+ * Removes all data from an Iceberg [org.apache.iceberg.Table]. This method is necessary as some
+ * catalog implementations do not clear the underlying files written to table storage.
  */
 @Singleton
 class IcebergTableCleaner {
 
     /**
-     * Clears the table identified by the provided [TableIdentifier].  This removes all data
-     * and files associated with the [org.apache.iceberg.Table].
+     * Clears the table identified by the provided [TableIdentifier]. This removes all data and
+     * files associated with the [org.apache.iceberg.Table].
      *
      * @param catalog The [Catalog] that is used to drop the [org.apache.iceberg.Table].
      * @param identifier The [TableIdentifier] that identifies the [org.apache.iceberg.Table] to be
-     *  cleared.
+     * cleared.
      * @param io The [FileIO] that may be used to delete the underlying data and metadata files.
-     * @param tableLocation The storage location of files associated with the [org.apache.iceberg.Table].
+     * @param tableLocation The storage location of files associated with the
+     * [org.apache.iceberg.Table].
      */
     fun clearTable(
         catalog: Catalog,
