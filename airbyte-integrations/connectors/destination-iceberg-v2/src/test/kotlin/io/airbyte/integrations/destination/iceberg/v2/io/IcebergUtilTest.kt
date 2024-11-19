@@ -9,9 +9,13 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -138,7 +142,12 @@ internal class IcebergUtilTest {
     fun testConvertAirbyteRecordToIcebergRecord() {
         val airbyteStream: DestinationStream = mockk {
             every { generationId } returns 1
-            every { schema } returns ObjectTypeWithoutSchema
+            every { schema } returns ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "name" to FieldType(StringType, nullable = true),
+                )
+            )
             every { syncId } returns 1
         }
         val airbyteRecord =
