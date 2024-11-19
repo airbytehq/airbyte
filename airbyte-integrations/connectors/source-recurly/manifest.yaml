@@ -1296,7 +1296,7 @@ metadata:
     subscriptions: false
     transactions: false
     unique_coupons: false
-    unique_coupons_parent: false
+    unique_coupons_parent: true
   yamlComponents:
     streams:
       export_dates:
@@ -1342,14 +1342,14 @@ metadata:
     transactions:
       streamHash: a4690ee75cbd87be5f86185f97b4e7e4132a9c1f
     unique_coupons:
-      streamHash: 7e1ae47e43a8117e94512092581f9c917954f0ed
+      streamHash: 0c5af71a0eebdb74c86b2945aed8ff369c82b671
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     unique_coupons_parent:
-      streamHash: 7272e6dc4acedba64ebbcdf20ab04e3d1c4ea234
+      streamHash: ea27ebf3a3b2052a576a3fb3d7a63b52308ca5bc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -6567,284 +6567,103 @@ schemas:
         title: Updated at
   unique_coupons_parent:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       applies_to_all_items:
         type:
-          - "null"
           - boolean
+          - "null"
       applies_to_all_plans:
         type:
-          - "null"
           - boolean
+          - "null"
       applies_to_non_plan_charges:
         type:
-          - "null"
           - boolean
+          - "null"
       code:
         type:
-          - "null"
           - string
-        maxLength: 256
+          - "null"
       coupon_type:
         type:
-          - "null"
           - string
-        maxLength: 256
+          - "null"
       created_at:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       discount:
         type:
-          - "null"
           - object
-        description: >
-          Details of the discount a coupon applies. Will contain a `type`
-
-          property and one of the following properties: `percent`, `fixed`,
-          `trial`.
+          - "null"
         properties:
           type:
-            type: string
-            maxLength: 256
+            type:
+              - string
+              - "null"
           currencies:
-            type: array
-            description: This is only present when `type=fixed`.
+            type:
+              - array
+              - "null"
             items:
               type:
-                - "null"
                 - object
+                - "null"
               properties:
                 amount:
-                  type: number
-                  description: Value of the fixed discount that this coupon applies.
-                  format: float
-                  title: Discount Amount
+                  type:
+                    - number
+                    - "null"
                 currency:
-                  type: string
-                  description: 3-letter ISO 4217 currency code.
-                  maxLength: 3
-                  title: Currency
-          percent:
-            type: integer
-            description: This is only present when `type=percent`.
-          trial:
-            type: object
-            description: This is only present when `type=free_trial`.
-            properties:
-              length:
-                type: integer
-                description: >-
-                  Trial length measured in the units specified by the sibling
-                  `unit` property
-                title: Trial length
-              unit:
-                type: string
-                description: Temporal unit of the free trial
-                maxLength: 256
-                title: Trial unit
+                  type:
+                    - string
+                    - "null"
       duration:
         type:
-          - "null"
           - string
-        maxLength: 256
-      expired_at:
-        type:
           - "null"
-          - string
-        format: date-time
-      free_trial_amount:
-        type:
-          - "null"
-          - number
-      free_trial_unit:
-        type:
-          - "null"
-          - string
-        maxLength: 256
       hosted_page_description:
         type:
-          - "null"
           - string
-        maxLength: 1024
+          - "null"
       id:
-        type:
-          - "null"
-          - string
-        maxLength: 13
+        type: string
       invoice_description:
         type:
-          - "null"
           - string
-        maxLength: 1024
-      items:
-        type:
           - "null"
-          - array
-        description: |
-          A list of items for which this coupon applies. This will be
-          `null` if `applies_to_all_items=true`.
-        items:
-          type:
-            - "null"
-            - object
-          description: Just the important parts.
-          properties:
-            id:
-              type: string
-              maxLength: 13
-              readOnly: true
-              title: Item ID
-          title: Item mini details
-        title: Items
-      max_redemptions:
-        type:
-          - "null"
-          - number
       max_redemptions_per_account:
         type:
-          - "null"
           - number
+          - "null"
       name:
         type:
-          - "null"
           - string
-        maxLength: 256
+          - "null"
       object:
         type:
-          - "null"
           - string
-      plans:
-        type:
           - "null"
-          - array
-        description: >-
-          A list of plans for which this coupon applies. This will be `null` if
-          `applies_to_all_plans=true`.
-        items:
-          type: object
-          description: Just the important parts.
-          properties:
-            code:
-              type: string
-              description: >-
-                Unique code to identify the plan. This is used in Hosted Payment
-                Page URLs and in the invoice exports.
-              maxLength: 13
-              title: Plan code
-            id:
-              type: string
-              maxLength: 13
-              readOnly: true
-              title: Plan ID
-          title: Plan mini details
-        title: Plans
-      redeem_by:
-        type:
-          - "null"
-          - string
-        maxLength: 256
       redemption_resource:
         type:
-          - "null"
           - string
-        maxLength: 256
+          - "null"
       state:
         type:
-          - "null"
           - string
-        maxLength: 256
-      temporal_amount:
-        type:
           - "null"
-          - number
-      temporal_unit:
-        type:
-          - "null"
-          - string
-        maxLength: 256
       unique_code_template:
         type:
-          - "null"
           - string
-        maxLength: 256
-      unique_coupon_code:
-        type:
           - "null"
-          - object
-        description: A unique coupon code for a bulk coupon.
-        $schema: http://json-schema.org/draft-07/schema#
-        properties:
-          bulk_coupon_code:
-            type:
-              - "null"
-              - string
-            description: The Coupon code of the parent Bulk Coupon
-            maxLength: 256
-            title: Bulk Coupon code
-          bulk_coupon_id:
-            type:
-              - "null"
-              - string
-            description: The Coupon ID of the parent Bulk Coupon
-            maxLength: 13
-            readOnly: true
-            title: Bulk Coupon ID
-          code:
-            type: string
-            description: The code the customer enters to redeem the coupon.
-            maxLength: 256
-            title: Coupon code
-          created_at:
-            type: string
-            format: date-time
-            readOnly: true
-            title: Created at
-          expired_at:
-            type:
-              - "null"
-              - string
-            description: >-
-              The date and time the coupon was expired early or reached its
-              `max_redemptions`.
-            format: date-time
-            title: Expired at
-          id:
-            type: string
-            maxLength: 13
-            readOnly: true
-            title: Unique Coupon Code ID
-          object:
-            type: string
-          redeemed_at:
-            type:
-              - "null"
-              - string
-            description: The date and time the unique coupon code was redeemed.
-            format: date-time
-            readOnly: true
-            title: Redeemed at
-          state:
-            type:
-              - "null"
-              - string
-            description: Indicates if the unique coupon code is redeemable or why not.
-            maxLength: 256
-            title: State
-          updated_at:
-            type: string
-            format: date-time
-            readOnly: true
-            title: Updated at
       unique_coupon_codes_count:
         type:
-          - "null"
           - number
-      updated_at:
-        type:
           - "null"
-          - string
-        format: date-time
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
