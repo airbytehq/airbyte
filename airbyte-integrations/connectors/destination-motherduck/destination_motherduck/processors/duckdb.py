@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import logging
-from urllib.parse import parse_qsl, urlparse
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
+from urllib.parse import parse_qsl, urlparse
 
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
@@ -18,7 +18,7 @@ from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQ
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import create_engine, Executable, TextClause, text
+from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class DuckDBConfig(SqlConfig):
         else:
             path = parsed_db_path.path
         return SecretString(f"duckdb:///{path!s}")
-    
+
     def get_duckdb_config(self) -> Dict[str, Any]:
         """Get config dictionary to pass to duckdb"""
         return dict(parse_qsl(urlparse(self.db_path).query))
@@ -111,7 +111,7 @@ class DuckDBConfig(SqlConfig):
             future=True,
             connect_args={
                 "config": self.get_duckdb_config(),
-            }
+            },
         )
 
 
