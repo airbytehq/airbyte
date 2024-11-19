@@ -24,6 +24,15 @@ application {
 //}
 
 dependencies {
+    implementation("org.apache.iceberg:iceberg-core:1.6.1")
+    implementation("org.apache.iceberg:iceberg-data:1.6.1")
+    implementation("org.apache.iceberg:iceberg-aws:1.6.1")
+    implementation("software.amazon.awssdk:s3:2.29.9")
+    implementation("software.amazon.awssdk:sts:2.29.9")
+
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.11.3')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.11.3')
     // temporary dependencies so that we can continue running the legacy test suite.
     // eventually we should remove those tests + rely solely on the bulk CDK tests.
     // integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
