@@ -1305,12 +1305,12 @@ metadata:
       - authenticator
   testedStreams:
     accounts:
-      hasRecords: false
+      hasRecords: true
       streamHash: 11d3bfcfbacd601ab5efcc68218a6cdef23b6f47
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: false
+      responsesAreSuccessful: true
     account_coupon_redemptions:
       streamHash: d724e45e08324b43a94e0e500e664403fe80332c
     account_notes:
@@ -1342,9 +1342,19 @@ metadata:
     transactions:
       streamHash: a4690ee75cbd87be5f86185f97b4e7e4132a9c1f
     unique_coupons:
-      streamHash: 77350b0ed677a69005a8a776d424b298df028776
+      streamHash: 7e1ae47e43a8117e94512092581f9c917954f0ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     unique_coupons_parent:
-      streamHash: null
+      streamHash: 7272e6dc4acedba64ebbcdf20ab04e3d1c4ea234
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
