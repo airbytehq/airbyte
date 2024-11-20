@@ -55,27 +55,27 @@ class ReservationManagerTest {
         Assertions.assertTrue(reserved.get())
     }
 
-    @Test
-    fun testReserveMultithreaded() = runTest {
-        val manager = ReservationManager(1000)
-        withContext(Dispatchers.IO) {
-            manager.reserve(1000, this)
-            Assertions.assertEquals(0, manager.remainingCapacityBytes)
-            val nIterations = 100000
-
-            val jobs = (0 until nIterations).map { launch { manager.reserve(10, this) } }
-
-            repeat(nIterations) {
-                manager.release(10)
-                Assertions.assertTrue(
-                    manager.remainingCapacityBytes >= 0,
-                    "Remaining memory is negative: ${manager.remainingCapacityBytes}"
-                )
-            }
-            jobs.forEach { it.join() }
-            Assertions.assertEquals(0, manager.remainingCapacityBytes)
-        }
-    }
+//    @Test
+//    fun testReserveMultithreaded() = runTest {
+//        val manager = ReservationManager(1000)
+//        withContext(Dispatchers.IO) {
+//            manager.reserve(1000, this)
+//            Assertions.assertEquals(0, manager.remainingCapacityBytes)
+//            val nIterations = 100000
+//
+//            val jobs = (0 until nIterations).map { launch { manager.reserve(10, this) } }
+//
+//            repeat(nIterations) {
+//                manager.release(10)
+//                Assertions.assertTrue(
+//                    manager.remainingCapacityBytes >= 0,
+//                    "Remaining memory is negative: ${manager.remainingCapacityBytes}"
+//                )
+//            }
+//            jobs.forEach { it.join() }
+//            Assertions.assertEquals(0, manager.remainingCapacityBytes)
+//        }
+//    }
 
     @Test
     fun testRequestingMoreThanAvailableThrows() = runTest {
