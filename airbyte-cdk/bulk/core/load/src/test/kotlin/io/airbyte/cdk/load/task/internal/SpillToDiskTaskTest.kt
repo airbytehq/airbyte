@@ -75,46 +75,6 @@ class SpillToDiskTaskTest {
                 )
         }
 
-
-        @Test
-        fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
-            runTest {
-
-//                val timeWindow = TimeWindowTrigger(Clock.systemUTC(), 0)
-//            task =
-//                DefaultSpillToDiskTask(
-//                    spillFileProvider,
-//                    inputQueue,
-//                    flushStrategy,
-//                    MockDestinationCatalogFactory.stream1.descriptor,
-//                    taskLauncher,
-//                    diskManager,
-//                    timeWindow,
-//                )
-
-                // flush strategy returns false, so it won't flush
-                coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
-                coEvery { timeWindow.isComplete() } returns true
-
-                val flushMsg = StreamFlushEvent(101L)
-                val recordMsg =
-                    StreamRecordEvent(
-                        3L,
-                        2L,
-                        StubDestinationMessageFactory.makeRecord(
-                            MockDestinationCatalogFactory.stream1,
-                            "test 3",
-                        ),
-                    )
-
-                // must publish 1 record message so range isn't empty
-                inputQueue.publish(Reserved(value = recordMsg))
-                inputQueue.publish(Reserved(value = flushMsg))
-
-                task.execute()
-                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
-            }
-
         @Test
         fun `publishes 'spilled file' aggregates according to flush strategy on stream record`() =
             runTest {
@@ -143,6 +103,44 @@ class SpillToDiskTaskTest {
             task.execute()
             coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
         }
+
+        @Test
+        fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
+            runTest {
+
+                val timeWindow = TimeWindowTrigger(Clock.systemUTC(), 0)
+                task =
+                    DefaultSpillToDiskTask(
+                        spillFileProvider,
+                        inputQueue,
+                        flushStrategy,
+                        MockDestinationCatalogFactory.stream1.descriptor,
+                        taskLauncher,
+                        diskManager,
+                        timeWindow,
+                    )
+
+                // flush strategy returns false, so it won't flush
+                coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
+
+                val flushMsg = StreamFlushEvent(101L)
+                val recordMsg =
+                    StreamRecordEvent(
+                        3L,
+                        2L,
+                        StubDestinationMessageFactory.makeRecord(
+                            MockDestinationCatalogFactory.stream1,
+                            "test 3",
+                        ),
+                    )
+
+                // must publish 1 record message so range isn't empty
+                inputQueue.publish(Reserved(value = recordMsg))
+                inputQueue.publish(Reserved(value = flushMsg))
+
+                task.execute()
+                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
+            }
 
     }
 
