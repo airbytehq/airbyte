@@ -1,6 +1,9 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
 title: DeclarativeSource
+# Manually mirrored copy of the DeclarativeSource schema file from the Airbyte CDK:
+# https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L9
+# TODO: Find a way to make this DRY to prevent drift.
 type: object
 description: An API source that extracts data according to its declarative components.
 version: 1.0.0
