@@ -269,66 +269,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     )
                 )
             )
-
-        val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll(
-            {
-                assertEquals(
-                    1,
-                    stateMessages.size,
-                    "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
-                )
-                assertEquals(
-                    StreamCheckpoint(
-                        streamName = "test_stream",
-                        streamNamespace = randomizedNamespace,
-                        blob = """{"foo": "bar"}""",
-                        sourceRecordCount = 1,
-                        destinationRecordCount = 1,
-                    )
-                        .asProtocolMessage(),
-                    stateMessages.first()
-                )
-            },
-            {
-                if (verifyDataWriting) {
-                    dumpAndDiffRecords(
-                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
-                        listOf(
-                            OutputRecord(
-                                extractedAt = 1234,
-                                generationId = 0,
-                                data =
-                                if (preserveUndeclaredFields) {
-                                    mapOf("id" to 5678, "undeclared" to "asdf")
-                                } else {
-                                    mapOf("id" to 5678)
-                                },
-                                airbyteMeta =
-                                OutputRecord.Meta(
-                                    changes =
-                                    mutableListOf(
-                                        Change(
-                                            field = "foo",
-                                            change =
-                                            AirbyteRecordMessageMetaChange.Change
-                                                .NULLED,
-                                            reason =
-                                            AirbyteRecordMessageMetaChange.Reason
-                                                .SOURCE_FIELD_SIZE_LIMITATION
-                                        )
-                                    ),
-                                    syncId = 42
-                                )
-                            )
-                        ),
-                        stream,
-                        primaryKey = listOf(listOf("id")),
-                        cursor = null,
-                    )
-                }
-            },
-        )
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")

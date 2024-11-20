@@ -106,14 +106,13 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream()
                 val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
                 manager.updateBatchState(envelope)
-                manager.endOfStreamRead()
                 // handleCheckpoint(reserved.replace(StreamCheckpoint(
                 //     CheckpointMessage.Checkpoint(stream, Jsons.emptyObject()),
                 //     null
                 // )), sizeBytes)
                 // val task = closeStreamTaskFactory.make(destinationTaskLauncher, stream)
                 // task.execute()
-                // destinationTaskLauncher.handleNewBatch(stream, envelope)
+                destinationTaskLauncher.handleNewBatch(stream, envelope)
                 log.info { "marking EOS" }
             }
             is DestinationFileStreamIncomplete ->
