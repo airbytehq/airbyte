@@ -108,8 +108,6 @@ class SpillToDiskTaskTest {
         @Test
         fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
             runTest {
-                // flush strategy returns false, so it won't flush
-                coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
                 every { timeWindow.isComplete() } returns true
 
                 val flushMsg = StreamFlushEvent(101L)
