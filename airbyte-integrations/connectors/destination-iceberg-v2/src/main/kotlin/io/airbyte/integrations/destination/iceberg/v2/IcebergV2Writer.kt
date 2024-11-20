@@ -29,7 +29,7 @@ class IcebergV2Writer(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val properties =
             IcebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
-        val catalog = IcebergUtil.createCatalog("", properties)
+        val catalog = IcebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val namespace = Namespace.of(stream.descriptor.namespace)
         val tableIdentifier = TableIdentifier.of(namespace, stream.descriptor.name)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
@@ -50,7 +50,7 @@ class IcebergV2Writer(
             icebergTableWriterFactory = icebergTableWriterFactory,
             destinationStateManager = destinationStateManager,
             pipeline = pipeline,
-            stagingBranchName = "", // TODO staging branch name?
+            stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.nessieServerConfiguration.mainBranchName,
         )
     }
