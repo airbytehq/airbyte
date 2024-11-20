@@ -107,9 +107,8 @@ class SpillToDiskTaskTest {
         @Test
         fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
             runTest {
-
                 val timeWindow = TimeWindowTrigger(Clock.systemUTC(), 0)
-                task =
+                val task =
                     DefaultSpillToDiskTask(
                         spillFileProvider,
                         inputQueue,
@@ -141,7 +140,6 @@ class SpillToDiskTaskTest {
                 task.execute()
                 coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
             }
-
     }
 
     /**
