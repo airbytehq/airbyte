@@ -8,11 +8,9 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
-import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 
@@ -44,26 +42,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
-        if (b) {
-            val pr = object: PartitionReader {
-                override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
-                    PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
-
-                override suspend fun run() {
-                    throw TransientErrorException("Re-Sync")
-                }
-
-                override fun checkpoint(): PartitionReadCheckpoint {
-                    TODO("Not yet implemented")
-                }
-
-                override fun releaseResources() {
-                    // no-op
-                }
-
-            }
-            log.info { "*** resync 2: $pr"}
-            return listOf(pr)
+        if (CDCNeedsRestart) {
+            globalLockResource.markCdcAsComplete()
+            throw TransientErrorException("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch.")
         }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
@@ -89,7 +70,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                     } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
                         log.info { "*** resync 1"}
                         feedBootstrap.stateQuerier.reset()
-                        b = true
+                        CDCNeedsRestart = true
                         syntheticInput
                     }
                 }
@@ -135,6 +116,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     companion object {
-        var b: Boolean = false
+        var CDCNeedsRestart: Boolean = false
     }
 }

@@ -60,18 +60,9 @@ class StateManager(
             nonGlobal.values.map { it.feed }
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
-    override fun reset() {
-        log.info { "*** reset" }
-        feeds.forEach {
-            f -> scoped(f).set(Jsons.objectNode(), 0)
-            log.info { "*** Feed $f ${f.streams}"}
-            log.info { "*** current ${scoped(f).current()}"}
-        }
 
-        /*log.info { "*** feed0: ${scoped(feeds[0]).current()}"}
-        log.info { "*** feed1: ${scoped(feeds[1]).current()}"}*/
-//        nonGlobal = mapOf()
-//        global = null
+    override fun reset() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
     }
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
