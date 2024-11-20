@@ -70,6 +70,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         globalLockResource.markCdcAsComplete()
                         throw ex
                     } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
+                        // If deserialization concludes we need a re-sync we rollback stream states
+                        // and put the creator in a Need Restart mode.
+                        // The next round will throw a transient error to kickoff the resync
                         feedBootstrap.stateQuerier.resetFeedStates()
                         CDCNeedsRestart = true
                         syntheticInput
