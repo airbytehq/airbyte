@@ -62,7 +62,9 @@ class SpillToDiskTaskTest {
             spillFileProvider = mockk(relaxed = true)
             flushStrategy = mockk(relaxed = true)
             taskLauncher = mockk(relaxed = true)
-            timeWindow = mockk(relaxed = true)
+            timeWindow = mockk {
+                every { open() } returns 123L
+            }
             diskManager = mockk(relaxed = true)
 
             inputQueue = DestinationStreamEventQueue()
@@ -111,6 +113,7 @@ class SpillToDiskTaskTest {
         fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
             runTest {
                 every { timeWindow.isComplete() } returns true
+                every {timeWindow.open() } returns 123L
                 val flushMsg = StreamFlushEvent(101L)
                 val recordMsg =
                     StreamRecordEvent(
