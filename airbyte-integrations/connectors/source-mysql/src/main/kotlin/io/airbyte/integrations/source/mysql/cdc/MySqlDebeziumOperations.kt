@@ -301,7 +301,7 @@ class MySqlDebeziumOperations(
             } catch (e: Exception) {
                 throw ConfigErrorException("Error deserializing $opaqueStateValue", e)
             }
-         val cdcValidationResult = validate(debeziumState)
+        val cdcValidationResult = validate(debeziumState)
         if (cdcValidationResult != CdcStateValidateResult.VALID) {
             if (cdcValidationResult == CdcStateValidateResult.INVALID_ABORT) {
                 throw ConfigErrorException(

@@ -27,7 +27,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
 
-    class OffsetInvalidNeedsResyncIllegalStateException(): IllegalStateException()
+    class OffsetInvalidNeedsResyncIllegalStateException() : IllegalStateException()
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
@@ -44,7 +44,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     override suspend fun run(): List<PartitionReader> {
         if (CDCNeedsRestart) {
             globalLockResource.markCdcAsComplete()
-            throw TransientErrorException("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch.")
+            throw TransientErrorException(
+                "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
+            )
         }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
@@ -68,7 +70,6 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         globalLockResource.markCdcAsComplete()
                         throw ex
                     } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
-                        log.info { "*** resync 1"}
                         feedBootstrap.stateQuerier.resetFeedStates()
                         CDCNeedsRestart = true
                         syntheticInput
