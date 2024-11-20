@@ -11,6 +11,7 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
+
 data class MysqlCdcInitialSnapshotStateValue(
     @JsonProperty("pk_val") val pkVal: String? = null,
     @JsonProperty("pk_name") val pkName: String? = null,
