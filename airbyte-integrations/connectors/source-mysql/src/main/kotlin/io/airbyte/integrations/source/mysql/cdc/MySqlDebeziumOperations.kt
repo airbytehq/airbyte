@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
@@ -300,13 +301,18 @@ class MySqlDebeziumOperations(
             } catch (e: Exception) {
                 throw ConfigErrorException("Error deserializing $opaqueStateValue", e)
             }
-        val cdcValidationResult = validate(debeziumState)
+         val cdcValidationResult = validate(debeziumState)
         if (cdcValidationResult != CdcStateValidateResult.VALID) {
             if (cdcValidationResult == CdcStateValidateResult.INVALID_ABORT) {
                 throw ConfigErrorException(
                     "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency."
                 )
             }
+            /*if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
+                throw TransientErrorException(
+                    "do reset"
+                )
+            }*/
             return synthesize()
         }
 

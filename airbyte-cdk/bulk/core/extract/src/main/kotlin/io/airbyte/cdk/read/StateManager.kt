@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -9,7 +10,9 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val log = KotlinLogging.logger {}
 /** A [StateQuerier] is like a read-only [StateManager]. */
 interface StateQuerier {
     /** [feeds] is all the [Feed]s in the configured catalog passed via the CLI. */
@@ -17,6 +20,8 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    fun reset()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -25,8 +30,8 @@ class StateManager(
     initialGlobalState: OpaqueStateValue? = null,
     initialStreamStates: Map<Stream, OpaqueStateValue?> = mapOf(),
 ) : StateQuerier {
-    private val global: GlobalStateManager?
-    private val nonGlobal: Map<StreamIdentifier, NonGlobalStreamStateManager>
+    private var global: GlobalStateManager?
+    private var nonGlobal: Map<StreamIdentifier, NonGlobalStreamStateManager>
 
     init {
         if (global == null) {
@@ -55,6 +60,14 @@ class StateManager(
             nonGlobal.values.map { it.feed }
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
+    override fun reset() {
+        log.info { "*** reset" }
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+        /*log.info { "*** feed0: ${scoped(feeds[0]).current()}"}
+        log.info { "*** feed1: ${scoped(feeds[1]).current()}"}*/
+//        nonGlobal = mapOf()
+//        global = null
+    }
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =

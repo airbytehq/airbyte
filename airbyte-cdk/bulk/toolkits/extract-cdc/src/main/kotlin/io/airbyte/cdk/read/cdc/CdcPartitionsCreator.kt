@@ -5,11 +5,14 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
+import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 
@@ -39,6 +42,27 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
+        if (b) {
+            val pr = object: PartitionReader {
+                override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
+                    PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
+
+                override suspend fun run() {
+                    throw TransientErrorException("Re-Sync")
+                }
+
+                override fun checkpoint(): PartitionReadCheckpoint {
+                    TODO("Not yet implemented")
+                }
+
+                override fun releaseResources() {
+                    // no-op
+                }
+
+            }
+            log.info { "*** resync 2: $pr"}
+            return listOf(pr)
+        }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
@@ -78,8 +102,45 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         if (input.isSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
+            /*log.info { "*** stateQuerier before: ${feedBootstrap.stateQuerier.feeds}" }
+            log.info { "*** stateQuerier: ${feedBootstrap.stateQuerier.feeds}" }
+            log.info { "*** current: ${feedBootstrap.stateQuerier.current(feedBootstrap.stateQuerier.feeds[1])}" }
+            val pr = object : PartitionReader {
+                override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
+                    PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
+
+                override suspend fun run() {
+                    // no-op
+                }
+
+                override fun checkpoint(): PartitionReadCheckpoint {
+                    Jsons.valueToTree("aaa") as ObjectNode
+                    val key: ArrayNode = Jsons.arrayNode().apply {
+                        add("aaa")
+                    }
+                    val value: ObjectNode = Jsons.objectNode().apply {
+                        put("bbb", "ccc")
+                    }
+                    val offset: DebeziumOffset = DebeziumOffset(mapOf(key to value))
+                    val schemaHistory: DebeziumSchemaHistory? = null
+                    val output = DebeziumState(offset, schemaHistory)
+                    return PartitionReadCheckpoint(readerOps.serialize(output), 0)
+                    // Implement checkpoint logic here
+                    return PartitionReadCheckpoint(
+                        opaqueStateValue = Jsons.objectNode() ,
+                        numRecords = 0L
+                    )
+                }
+
+                override fun releaseResources() {
+                    // Implement resource release logic here
+                }
+            }*/
+            log.info { "*** resync 1"}
+            feedBootstrap.stateQuerier.reset()
+            b = true
             log.info { "Current offset is synthetic." }
-            return listOf(partitionReader)
+            return listOf(partitionReader/*pr*/)
         }
         if (upperBound <= lowerBound) {
             // Handle completion due to reaching the WAL position upper bound.
@@ -101,5 +162,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         // Handle common case.
         log.info { "Current position '$lowerBound' does not exceed target position '$upperBound'." }
         return listOf(partitionReader)
+    }
+
+    companion object {
+        var b: Boolean = false
     }
 }
