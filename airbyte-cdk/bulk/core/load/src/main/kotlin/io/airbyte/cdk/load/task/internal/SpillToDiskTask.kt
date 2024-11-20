@@ -87,6 +87,11 @@ class DefaultSpillToDiskTask(
                                             bytesProcessed
                                         )
 
+                                    println("In Record Event")
+                                    println("rangeProcessed $rangeProcessed")
+                                    println("bytesProcessed $bytesProcessed")
+                                    println("forceFlush $forceFlush")
+
                                     // write and return output
                                     outputStream.write(wrapped.record.serialized)
                                     outputStream.write("\n")
@@ -102,6 +107,8 @@ class DefaultSpillToDiskTask(
                                 }
                                 is StreamFlushEvent -> {
                                     val forceFlush = timeWindow.isComplete()
+                                    println("In Flush Event")
+                                    println("forceFlush $forceFlush")
                                     ReadResult(range, sizeBytes, forceFlush = forceFlush)
                                 }
                             }
