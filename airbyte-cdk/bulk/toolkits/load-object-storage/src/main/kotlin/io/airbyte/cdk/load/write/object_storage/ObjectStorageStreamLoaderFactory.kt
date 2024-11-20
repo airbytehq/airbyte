@@ -67,7 +67,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val partNumber: Long
     ) : ObjectStorageBatch
     data class FileObject<T>(
-        override val state: Batch.State = Batch.State.PERSISTED,
+        override val state: Batch.State = Batch.State.COMPLETE,
         val remoteObject: T,
     ) : ObjectStorageBatch
     data class FinalizedObject<T>(
