@@ -95,6 +95,15 @@ abstract class S3V2WriteTest(
     }
 }
 
+class S3V2WriteTestAssumeRole :
+    S3V2WriteTest(
+        S3V2TestUtils.ASSUME_ROLE_CONFIG_SECRET_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
 class S3V2WriteTestJsonUncompressed :
     S3V2WriteTest(
         S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH,

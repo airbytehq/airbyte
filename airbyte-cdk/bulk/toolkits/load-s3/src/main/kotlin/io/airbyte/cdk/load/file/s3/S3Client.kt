@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.command.CONNECTOR_CATALOG_PREFIX
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
@@ -32,6 +33,7 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -183,6 +185,7 @@ class S3ClientFactory(
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
+//    @Value("\${aws.assume.role.external.id}") val foo: String? = null, // why doesn't this work?
 ) {
     companion object {
         fun <T> make(config: T) where
