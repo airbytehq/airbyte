@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "Unstable data. Test data is not persistent. Tested with mocker server tests."
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
+          - name: "contact"
+            bypass_reason: "Relies on customer which can't be populated."
           - name: "customer"
             bypass_reason: "Tested with mocker server tests."
           - name: "subscription"
