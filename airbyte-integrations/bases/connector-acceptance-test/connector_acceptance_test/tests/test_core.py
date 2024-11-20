@@ -1112,9 +1112,6 @@ class TestBasicRead(BaseTest):
 
         records = [message.record for message in filter_output(output, Type.RECORD)]
         state_messages = [message for message in filter_output(output, Type.STATE)]
-        for message in output:
-            if "stream='customer'" in str(message) or "name='customer'" in str(message):
-                print(message)
 
         if certified_file_based_connector:
             self._file_types.update(self._get_actual_file_types(records))
