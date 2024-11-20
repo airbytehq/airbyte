@@ -33,7 +33,7 @@ acceptance_tests:
           - name: "site_migration_detail"
             bypass_reason: "Cannnot populate with test data."
           - name: "contact"
-            bypass_reason: "Relies on customer which can't be populated."
+            bypass_reason: "Relies on customer as a parent stream and there is a bug where the parent stream is emitting stream statuses on rate limit which leads to CATs failing. See https://github.com/airbytehq/airbyte-internal-issues/issues/10808 for more information."
           - name: "customer"
             bypass_reason: "Tested with mocker server tests."
           - name: "subscription"
