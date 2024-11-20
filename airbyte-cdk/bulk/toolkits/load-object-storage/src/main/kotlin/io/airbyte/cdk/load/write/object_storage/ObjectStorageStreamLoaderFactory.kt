@@ -128,7 +128,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val key =
             Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
                 .toString()
-
+        val state = destinationStateManager.getState(stream)
+        state.addObject(stream.generationId, key, 0)
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
@@ -154,21 +155,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                 val state = destinationStateManager.getState(stream)
                 state.removeObject(stream.generationId, stagedObject.remoteObject.key)
                 state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
-
-                val finalizedObject = FinalizedObject(remoteObject = newObject)
-                return finalizedObject
-            }
-            is FileObject<*> -> {
-                val fileObject = batch as FileObject<T>
-                val finalKey =
-                    pathFactory
-                        .getPathToFile(stream = stream, partNumber = 0, isStaging = false)
-                        .toString()
-                val newObject = client.move(fileObject.remoteObject, finalKey)
-
-                val state = destinationStateManager.getState(stream)
-                state.removeObject(stream.generationId, fileObject.remoteObject.key)
-                state.addObject(stream.generationId, newObject.key, partNumber = 0)
 
                 val finalizedObject = FinalizedObject(remoteObject = newObject)
                 return finalizedObject
