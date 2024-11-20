@@ -53,7 +53,7 @@ class AirbyteValueToIcebergRecord {
             is BooleanValue -> return airbyteValue.value
             is DateValue ->
                 throw IllegalArgumentException("String-based date types are not supported")
-            is IntegerValue -> return airbyteValue.value
+            is IntegerValue -> return airbyteValue.value.toLong()
             is IntValue -> return airbyteValue.value
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
