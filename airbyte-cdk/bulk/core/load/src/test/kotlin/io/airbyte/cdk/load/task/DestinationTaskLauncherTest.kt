@@ -62,7 +62,6 @@ import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -347,7 +346,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         }
 
         override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
-            runBlocking { wrappedTasks.send(task) }
+            wrappedTasks.send(task)
             val innerTask =
                 object : InternalScope {
                     override suspend fun execute() {

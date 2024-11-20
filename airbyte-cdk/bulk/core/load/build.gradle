@@ -39,10 +39,6 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
     maxHeapSize = project.test.maxHeapSize
 }
 
-test {
-    maxParallelForks = 1
-}
-
 // These tests are lightweight enough to run on every PR.
 tasks.named('check').configure {
     dependsOn integrationTest
