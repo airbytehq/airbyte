@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.state.TimeWindowTriggerTest.Fixtures.TIME_WINDOW_WIDTH_MS
+import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -18,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-@ExtendWith(MockKExtension::class)
+@MockKExtension.RequireParallelTesting
 class TimeWindowTriggerTest {
     @MockK lateinit var clock: Clock
 
@@ -26,6 +27,8 @@ class TimeWindowTriggerTest {
 
     @BeforeEach
     fun setup() {
+        MockKAnnotations.init(this)
+
         timeWindow = TimeWindowTrigger(clock, TIME_WINDOW_WIDTH_MS)
     }
 

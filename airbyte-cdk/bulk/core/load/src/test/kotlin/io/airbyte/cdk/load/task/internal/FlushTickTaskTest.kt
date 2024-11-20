@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
+import io.mockk.MockKAnnotations
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -33,7 +34,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-@ExtendWith(MockKExtension::class)
 class FlushTickTaskTest {
     @MockK(relaxed = true) lateinit var clock: Clock
     @MockK(relaxed = true) lateinit var coroutineTimeUtils: TimeProvider
@@ -48,6 +48,8 @@ class FlushTickTaskTest {
 
     @BeforeEach
     fun setup() {
+        MockKAnnotations.init(this)
+
         task =
             FlushTickTask(
                 tickIntervalMs,

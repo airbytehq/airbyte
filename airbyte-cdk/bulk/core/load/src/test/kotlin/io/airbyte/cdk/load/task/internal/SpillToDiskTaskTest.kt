@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.airbyte.cdk.load.util.lineSequence
+import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -45,7 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class SpillToDiskTaskTest {
     /** Validates task delegates to dependencies as expected. Does not test dependency behavior. */
     @Nested
-    @ExtendWith(MockKExtension::class)
+//    @MockKExtension.RequireParallelTesting
     inner class UnitTests {
         @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
 
@@ -63,7 +64,7 @@ class SpillToDiskTaskTest {
 
         @BeforeEach
         fun setup() {
-            every { timeWindow.isComplete() } returns true
+            MockKAnnotations.init(this)
 
             inputQueue = DestinationStreamEventQueue()
             task =
