@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -62,7 +62,7 @@ data class DestinationRecord(
         changes: MutableList<Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
@@ -124,18 +124,6 @@ data class DestinationFile(
     val fileMessage: AirbyteRecordMessageFile
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
-    constructor(
-        namespace: String?,
-        name: String,
-        emittedAtMs: Long,
-        fileMessage: AirbyteRecordMessageFile
-    ) : this(
-        stream = DestinationStream.Descriptor(namespace, name),
-        emittedAtMs = emittedAtMs,
-        serialized = "",
-        fileMessage = fileMessage
-    )
-
     class AirbyteRecordMessageFile {
         constructor(
             fileUrl: String? = null,
@@ -299,7 +287,7 @@ data class StreamCheckpoint(
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
-            state = Jsons.deserialize(blob)
+            state = blob.deserializeToNode()
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
@@ -330,7 +318,7 @@ data class GlobalCheckpoint(
         blob: String,
         sourceRecordCount: Long,
     ) : this(
-        state = Jsons.deserialize(blob),
+        state = blob.deserializeToNode(),
         Stats(sourceRecordCount),
         additionalProperties = emptyMap(),
     )

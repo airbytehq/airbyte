@@ -19,8 +19,9 @@ abstract class S3V2WriteTest(
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
     /** This is false for staging mode, and true for non-staging mode. */
-    commitDataIncrementally: Boolean = false,
+    commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
+    nullEqualsUnset: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -35,6 +36,7 @@ abstract class S3V2WriteTest(
         preserveUndeclaredFields = preserveUndeclaredFields,
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
+        nullEqualsUnset = nullEqualsUnset,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -46,7 +48,7 @@ abstract class S3V2WriteTest(
         super.testFunkyCharacters()
     }
 
-    @Disabled
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413?")
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
@@ -57,7 +59,7 @@ abstract class S3V2WriteTest(
         super.testAppend()
     }
 
-    @Disabled("append mode doesn't yet work")
+    @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
@@ -78,19 +80,15 @@ abstract class S3V2WriteTest(
         super.testUnions()
     }
 
-    @Disabled("connector doesn't yet do refreshes correctly - data from failed sync is lost")
     @Test
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
-
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
     @Test
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
-    @Disabled("connector doesn't yet do refreshes correctly - failed sync deletes old data")
     @Test
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()
@@ -149,13 +147,9 @@ class S3V2WriteTestCsvRootLevelFlattening :
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
-    ) {
-    @Disabled("Does not work yet")
-    @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
-    }
-}
+        nullEqualsUnset =
+            true, // Technically true of unflattened as well, but no top-level fields are nullable
+    )
 
 class S3V2WriteTestCsvGzip :
     S3V2WriteTest(
@@ -172,14 +166,9 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
-    ) {
-    @Disabled("Test does not support `stringifyShemalessObjects == true`")
-    @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -187,14 +176,9 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
-    ) {
-    @Disabled("Test does not support `stringifyShemalessObjects == true`")
-    @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -202,14 +186,9 @@ class S3V2WriteTestParquetUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
-    ) {
-    @Disabled("Test does not support `stringifyShemalessObjects == true`")
-    @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -217,11 +196,6 @@ class S3V2WriteTestParquetSnappy :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-        allTypesBehavior = StronglyTyped(),
-    ) {
-    @Disabled("Test does not support `stringifyShemalessObjects == true`")
-    @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
