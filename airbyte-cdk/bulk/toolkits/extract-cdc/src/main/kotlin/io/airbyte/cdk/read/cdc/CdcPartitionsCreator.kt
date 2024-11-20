@@ -69,7 +69,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         throw ex
                     } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
                         log.info { "*** resync 1"}
-                        feedBootstrap.stateQuerier.reset()
+                        feedBootstrap.stateQuerier.resetFeedStates()
                         CDCNeedsRestart = true
                         syntheticInput
                     }
