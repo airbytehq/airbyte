@@ -358,7 +358,7 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 ) {
     private val log = KotlinLogging.logger {}
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {

@@ -115,7 +115,7 @@ class DefaultDestinationTaskLauncher(
 
     // Exception handling
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
     // Input Comsumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
