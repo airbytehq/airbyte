@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.integrations.destination.iceberg.v2.BaseDeltaTaskWriter
 import java.io.IOException
 import java.io.UncheckedIOException
 import org.apache.iceberg.FileFormat

@@ -2,13 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.iceberg.v2
+package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
-import io.airbyte.integrations.destination.iceberg.v2.io.PartitionedAppendWriter
-import io.airbyte.integrations.destination.iceberg.v2.io.PartitionedDeltaWriter
-import io.airbyte.integrations.destination.iceberg.v2.io.UnpartitionedAppendWriter
-import io.airbyte.integrations.destination.iceberg.v2.io.UnpartitionedDeltaWriter
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer
