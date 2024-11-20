@@ -10,11 +10,13 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2TestUtil.PATH
+import java.nio.file.Files
+import java.nio.file.Path
 import org.junit.jupiter.api.Disabled
 
-abstract class IcebergV2WriteTest(path: String) :
+abstract class IcebergV2WriteTest(path: Path) :
     BasicFunctionalityIntegrationTest(
-        IcebergV2TestUtil.getConfig(path),
+        Files.readString(path),
         IcebergV2Specification::class.java,
         FakeDataDumper,
         NoopDestinationCleaner,
@@ -31,4 +33,4 @@ abstract class IcebergV2WriteTest(path: String) :
 
 // TODO replace this with a real test class for an actual config
 @Disabled("nowhere even close to functional")
-class FakeIcebergWriteTest : IcebergV2WriteTest(PATH.toString())
+class IcebergNessieMinioWriteTest : IcebergV2WriteTest(PATH)
