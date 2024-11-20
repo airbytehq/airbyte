@@ -18,10 +18,7 @@ import org.apache.iceberg.encryption.EncryptionManager
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.LocationProvider
 import org.apache.iceberg.io.OutputFile
-import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
-import org.apache.iceberg.types.Types.IntegerType
-import org.apache.iceberg.types.Types.StructType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -37,11 +34,6 @@ internal class IcebergTableWriterFactoryTest {
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
         val primaryKeyIds = setOf(1)
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
         val outputFile: OutputFile = mockk { every { location() } returns "location" }
         val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
             every { buffer() } returns ByteBuffer.allocate(8)
@@ -55,16 +47,11 @@ internal class IcebergTableWriterFactoryTest {
         }
         val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
         val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
             every { newDataLocation(any(), any(), any()) } returns "location"
         }
         val tableProperties = mapOf<String, String>()
-        val tableSchema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns primaryKeyIds
-            every { schemaId() } returns 1
-        }
+        val tableSchema = Schema(columns, primaryKeyIds)
         val tableSpec: PartitionSpec = mockk {
             every { fields() } returns emptyList()
             every { isUnpartitioned } returns false
@@ -93,11 +80,6 @@ internal class IcebergTableWriterFactoryTest {
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
         val primaryKeyIds = setOf(1)
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
         val outputFile: OutputFile = mockk { every { location() } returns "location" }
         val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
             every { buffer() } returns ByteBuffer.allocate(8)
@@ -111,16 +93,11 @@ internal class IcebergTableWriterFactoryTest {
         }
         val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
         val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
             every { newDataLocation(any(), any(), any()) } returns "location"
         }
         val tableProperties = mapOf<String, String>()
-        val tableSchema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns primaryKeyIds
-            every { schemaId() } returns 1
-        }
+        val tableSchema = Schema(columns, primaryKeyIds)
         val tableSpec: PartitionSpec = mockk {
             every { fields() } returns emptyList()
             every { isUnpartitioned } returns true
@@ -149,11 +126,6 @@ internal class IcebergTableWriterFactoryTest {
                 Types.NestedField.required(2, "name", Types.StringType.get()),
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
         val outputFile: OutputFile = mockk { every { location() } returns "location" }
         val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
             every { buffer() } returns ByteBuffer.allocate(8)
@@ -167,16 +139,11 @@ internal class IcebergTableWriterFactoryTest {
         }
         val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
         val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
             every { newDataLocation(any(), any(), any()) } returns "location"
         }
         val tableProperties = mapOf<String, String>()
-        val tableSchema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns emptySet()
-            every { schemaId() } returns 1
-        }
+        val tableSchema = Schema(columns)
         val tableSpec: PartitionSpec = mockk {
             every { fields() } returns emptyList()
             every { isUnpartitioned } returns false
@@ -205,11 +172,6 @@ internal class IcebergTableWriterFactoryTest {
                 Types.NestedField.required(2, "name", Types.StringType.get()),
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
         val outputFile: OutputFile = mockk { every { location() } returns "location" }
         val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
             every { buffer() } returns ByteBuffer.allocate(8)
@@ -227,13 +189,7 @@ internal class IcebergTableWriterFactoryTest {
             every { newDataLocation(any(), any(), any()) } returns "location"
         }
         val tableProperties = mapOf<String, String>()
-        val tableSchema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns emptySet()
-            every { schemaId() } returns 1
-        }
+        val tableSchema = Schema(columns)
         val tableSpec: PartitionSpec = mockk {
             every { fields() } returns emptyList()
             every { isUnpartitioned } returns true

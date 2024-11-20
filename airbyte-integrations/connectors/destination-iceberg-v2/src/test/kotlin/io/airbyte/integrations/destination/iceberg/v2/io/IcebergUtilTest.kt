@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
@@ -35,9 +36,7 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.nessie.NessieCatalog
-import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
-import org.apache.iceberg.types.Types.StructType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -65,16 +64,16 @@ internal class IcebergUtilTest {
     fun testCreateTableWithMissingNamespace() {
         val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
+        val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
-            every { withProperties(properties) } returns this
+            every { withProperties(any()) } returns this
             every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns
                 this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(tableIdentifier, schema) } returns tableBuilder
+            every { buildTable(tableIdentifier, any()) } returns tableBuilder
             every { createNamespace(any()) } returns Unit
             every { namespaceExists(any()) } returns false
             every { tableExists(tableIdentifier) } returns false
@@ -95,16 +94,16 @@ internal class IcebergUtilTest {
     fun testCreateTableWithExistingNamespace() {
         val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
+        val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
-            every { withProperties(properties) } returns this
+            every { withProperties(any()) } returns this
             every { withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase()) } returns
                 this
             every { withSortOrder(any()) } returns this
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(tableIdentifier, schema) } returns tableBuilder
+            every { buildTable(tableIdentifier, any()) } returns tableBuilder
             every { namespaceExists(any()) } returns true
             every { tableExists(tableIdentifier) } returns false
         }
@@ -124,7 +123,7 @@ internal class IcebergUtilTest {
     fun testLoadTable() {
         val properties = mapOf<String, String>()
         val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
-        val schema: Schema = mockk { every { identifierFieldNames() } returns emptySet() }
+        val schema = Schema()
         val catalog: NessieCatalog = mockk {
             every { loadTable(tableIdentifier) } returns mockk()
             every { namespaceExists(any()) } returns true
@@ -144,20 +143,25 @@ internal class IcebergUtilTest {
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecord() {
-        val airbyteStream: DestinationStream = mockk {
-            every { generationId } returns 1
-            every { schema } returns
-                ObjectType(
-                    linkedMapOf(
-                        "id" to FieldType(IntegerType, nullable = true),
-                        "name" to FieldType(StringType, nullable = true),
-                    )
-                )
-            every { syncId } returns 1
-        }
+        val descriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val airbyteStream =
+            DestinationStream(
+                descriptor = descriptor,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = true),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
         val airbyteRecord =
             DestinationRecord(
-                stream = DestinationStream.Descriptor(namespace = "namespace", name = "name"),
+                stream = airbyteStream.descriptor,
                 data =
                     ObjectValue(
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
@@ -172,15 +176,7 @@ internal class IcebergUtilTest {
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.required(2, "name", Types.StringType.get()),
             )
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns Types.IntegerType()
-            every { fields() } returns columns
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
-        val schema: Schema = mockk {
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-        }
+        val schema = Schema(columns)
         val icebergRecord =
             IcebergUtil.toRecord(
                 record = airbyteRecord,

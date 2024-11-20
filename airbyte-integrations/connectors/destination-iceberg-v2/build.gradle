@@ -41,3 +41,7 @@ dependencies {
     // integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
     // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
+
+test {
+    systemProperties(["mockk.junit.extension.keepmocks":"true"])
+}

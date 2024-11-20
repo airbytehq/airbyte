@@ -69,4 +69,4 @@ class UnpartitionedAppendWriter(
         outputFileFactory,
         io,
         targetFileSize
-    ) {}
+    )
