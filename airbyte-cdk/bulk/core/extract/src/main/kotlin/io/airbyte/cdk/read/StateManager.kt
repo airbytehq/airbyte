@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -10,9 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
-import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val log = KotlinLogging.logger {}
 /** A [StateQuerier] is like a read-only [StateManager]. */
 interface StateQuerier {
     /** [feeds] is all the [Feed]s in the configured catalog passed via the CLI. */
