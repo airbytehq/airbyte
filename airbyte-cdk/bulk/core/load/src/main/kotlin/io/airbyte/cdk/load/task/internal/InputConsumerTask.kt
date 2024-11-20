@@ -95,17 +95,16 @@ class DefaultInputConsumerTask(
             is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
             is DestinationFile -> {
-                manager.countRecordIn()
                 val index = manager.countRecordIn()
                 destinationTaskLauncher.handleFile(stream, message, index)
             }
             is DestinationFileStreamComplete -> {
-                manager.countRecordIn()
-                val index = manager.countRecordIn()
+                // manager.countRecordIn()
+                // val index = manager.countRecordIn()
                 reserved.release() // safe because multiple calls conflate
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
-                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), range = Range.closed(0L, index))
+                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
                 manager.updateBatchState(envelope)
                 manager.endOfStreamRead()
                 // handleCheckpoint(reserved.replace(StreamCheckpoint(
