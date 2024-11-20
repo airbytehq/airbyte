@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.DestinationStream
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
@@ -27,13 +28,35 @@ import org.apache.iceberg.util.PropertyUtil
 @Singleton
 class IcebergTableWriterFactory {
 
+    companion object {
+        private class InvalidFormatException(message: String) : Exception(message)
+        private val generationIdRegex = Regex("^ab-generation-id-\\d+\$")
+        fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
+            if (!generationIdRegex.matches(generationId)) {
+                throw InvalidFormatException(
+                    "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>'"
+                )
+            }
+        }
+
+        fun constructGenerationIdSuffix(stream: DestinationStream): String {
+            if (stream.generationId < 0) {
+                throw IllegalArgumentException(
+                    "GenerationId must be non-negative. Provided: ${stream.generationId}"
+                )
+            }
+            return "ab-generation-id-${stream.generationId}"
+        }
+    }
+
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
      * @param table An Iceberg [Table]
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
-    fun create(table: Table): BaseTaskWriter<Record> {
+    fun create(table: Table, generationId: String): BaseTaskWriter<Record> {
+        assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table
@@ -44,7 +67,8 @@ class IcebergTableWriterFactory {
         val identifierFieldIds = table.schema().identifierFieldIds()
         val appenderFactory =
             createAppenderFactory(table = table, identifierFieldIds = identifierFieldIds)
-        val outputFileFactory = createOutputFileFactory(table = table, format = format)
+        val outputFileFactory =
+            createOutputFileFactory(table = table, format = format, generationId = generationId)
         val targetFileSize =
             PropertyUtil.propertyAsLong(
                 table.properties(),
@@ -87,11 +111,16 @@ class IcebergTableWriterFactory {
             .setAll(table.properties())
     }
 
-    private fun createOutputFileFactory(table: Table, format: FileFormat): OutputFileFactory {
+    private fun createOutputFileFactory(
+        table: Table,
+        format: FileFormat,
+        generationId: String
+    ): OutputFileFactory {
         return OutputFileFactory.builderFor(table, 0, 1L)
             .defaultSpec(table.spec())
             .operationId(UUID.randomUUID().toString())
             .format(format)
+            .suffix(generationId)
             .build()
     }
 
