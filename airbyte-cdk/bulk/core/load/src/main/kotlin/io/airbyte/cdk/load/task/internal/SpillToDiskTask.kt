@@ -62,21 +62,26 @@ class DefaultSpillToDiskTask(
     )
 
     override suspend fun execute() {
+        println("timeWindow.isComplete 1 " + timeWindow.isComplete())
+
         val tmpFile = spillFileProvider.createTempFile()
         val result =
             tmpFile.outputStream().use { outputStream ->
                 queue
                     .consume()
                     .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
+                        println("timeWindow.isComplete 2 " + timeWindow.isComplete())
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordEvent -> {
+                                    println("3 " + timeWindow.isComplete())
                                     // once we have received a record for the stream, consider the
                                     // aggregate opened.
                                     timeWindow.open()
 
                                     // reserve enough room for the record
                                     diskManager.reserve(wrapped.sizeBytes)
+                                    println("timeWindow.isComplete 4 " + timeWindow.isComplete())
 
                                     // calculate whether we should flush
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
@@ -87,6 +92,8 @@ class DefaultSpillToDiskTask(
                                             rangeProcessed,
                                             bytesProcessed
                                         )
+
+                                    println("timeWindow.isComplete 5 " + timeWindow.isComplete())
 
                                     // write and return output
                                     outputStream.write(wrapped.record.serialized)
@@ -104,7 +111,8 @@ class DefaultSpillToDiskTask(
                                 is StreamFlushEvent -> {
                                     val go = timeWindow.isComplete()
                                     println("In Flush Event")
-                                    println("forceFlush $go")
+                                    println("go $go")
+                                    println("timeWindow.isComplete 6 " + timeWindow.isComplete())
                                     ReadResult(range, sizeBytes, forceFlush = go)
                                 }
                             }
