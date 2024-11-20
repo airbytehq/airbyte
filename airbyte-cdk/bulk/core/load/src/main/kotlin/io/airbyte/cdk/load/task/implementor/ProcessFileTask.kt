@@ -57,6 +57,6 @@ class DefaultFileRecordsTaskFactory(
         file: DestinationFile,
         index: Long,
     ): ProcessFileTask {
-        return DefaultProcessFileTask(stream, taskLauncher, syncManager, file)
+        return DefaultProcessFileTask(stream, taskLauncher, syncManager, file, index)
     }
 }

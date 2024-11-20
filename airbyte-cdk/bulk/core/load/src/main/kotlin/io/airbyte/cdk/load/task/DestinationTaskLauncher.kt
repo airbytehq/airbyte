@@ -267,6 +267,6 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long) {
-        enqueue(processFileTaskFactory.make(this, stream, file))
+        enqueue(processFileTaskFactory.make(this, stream, file, index))
     }
 }
