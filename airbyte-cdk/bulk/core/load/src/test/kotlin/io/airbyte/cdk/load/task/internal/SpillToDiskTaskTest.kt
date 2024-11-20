@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.airbyte.cdk.load.util.lineSequence
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -107,20 +108,9 @@ class SpillToDiskTaskTest {
         @Test
         fun `publishes 'spilled file' aggregates according to time window on stream flush event`() =
             runTest {
-                val timeWindow = TimeWindowTrigger(Clock.systemUTC(), 0)
-                val task =
-                    DefaultSpillToDiskTask(
-                        spillFileProvider,
-                        inputQueue,
-                        flushStrategy,
-                        MockDestinationCatalogFactory.stream1.descriptor,
-                        taskLauncher,
-                        diskManager,
-                        timeWindow,
-                    )
-
                 // flush strategy returns false, so it won't flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
+                every { timeWindow.isComplete() } returns true
 
                 val flushMsg = StreamFlushEvent(101L)
                 val recordMsg =

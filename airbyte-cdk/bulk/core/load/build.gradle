@@ -44,6 +44,10 @@ tasks.named('check').configure {
     dependsOn integrationTest
 }
 
+test {
+    systemProperties(["mockk.junit.extension.keepmocks":"true"])
+}
+
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
