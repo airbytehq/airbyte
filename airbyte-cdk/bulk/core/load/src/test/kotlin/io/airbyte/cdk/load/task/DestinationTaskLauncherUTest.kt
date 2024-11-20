@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.state.Reserved
@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
+import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
@@ -46,6 +47,7 @@ class DestinationTaskLauncherUTest {
     // Internal Tasks
     private val inputConsumerTaskFactory: InputConsumerTaskFactory = mockk(relaxed = true)
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory = mockk(relaxed = true)
+    private val flushTickTask: FlushTickTask = mockk(relaxed = true)
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory = mockk(relaxed = true)
@@ -68,7 +70,7 @@ class DestinationTaskLauncherUTest {
     // Input Comsumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>> = mockk(relaxed = true)
     private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> =
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>> =
         mockk(relaxed = true)
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>> =
         mockk(relaxed = true)
@@ -81,6 +83,7 @@ class DestinationTaskLauncherUTest {
             syncManager,
             inputConsumerTaskFactory,
             spillToDiskTaskFactory,
+            flushTickTask,
             setupTaskFactory,
             openStreamTaskFactory,
             processRecordsTaskFactory,
