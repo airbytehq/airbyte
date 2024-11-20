@@ -8,18 +8,15 @@ import io.airbyte.cdk.load.state.TimeWindowTriggerTest.Fixtures.TIME_WINDOW_WIDT
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import java.time.Clock
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-@MockKExtension.RequireParallelTesting
 class TimeWindowTriggerTest {
     @MockK lateinit var clock: Clock
 

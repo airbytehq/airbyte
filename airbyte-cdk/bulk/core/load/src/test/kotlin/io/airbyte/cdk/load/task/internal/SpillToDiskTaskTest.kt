@@ -32,7 +32,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import java.time.Clock
 import kotlin.io.path.inputStream
@@ -41,12 +40,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 class SpillToDiskTaskTest {
     /** Validates task delegates to dependencies as expected. Does not test dependency behavior. */
     @Nested
-//    @MockKExtension.RequireParallelTesting
     inner class UnitTests {
         @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
 
