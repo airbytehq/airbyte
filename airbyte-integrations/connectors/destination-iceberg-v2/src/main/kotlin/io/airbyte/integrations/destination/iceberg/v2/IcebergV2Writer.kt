@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.state.DestinationStateManager
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
@@ -21,7 +19,6 @@ import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
 class IcebergV2Writer(
-    private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
 ) : DestinationWriter {
@@ -48,7 +45,6 @@ class IcebergV2Writer(
             stream = stream,
             table = table,
             icebergTableWriterFactory = icebergTableWriterFactory,
-            destinationStateManager = destinationStateManager,
             pipeline = pipeline,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.nessieServerConfiguration.mainBranchName,
