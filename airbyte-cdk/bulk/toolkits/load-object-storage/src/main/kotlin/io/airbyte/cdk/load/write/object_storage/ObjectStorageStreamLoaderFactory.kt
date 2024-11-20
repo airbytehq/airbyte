@@ -134,7 +134,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
             }
-        return FileObject(remoteObject = obj)
+        return FinalizedObject(remoteObject = obj)
     }
 
     @Suppress("UNCHECKED_CAST")

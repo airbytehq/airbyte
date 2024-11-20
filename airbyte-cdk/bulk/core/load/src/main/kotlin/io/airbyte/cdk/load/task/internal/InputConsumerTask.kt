@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import com.google.common.collect.Range
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -37,6 +38,7 @@ import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.util.use
+import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -98,13 +100,20 @@ class DefaultInputConsumerTask(
                 destinationTaskLauncher.handleFile(stream, message, index)
             }
             is DestinationFileStreamComplete -> {
+                manager.countRecordIn()
+                val index = manager.countRecordIn()
                 reserved.release() // safe because multiple calls conflate
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
-                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
+                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), range = Range.closed(0L, index))
                 manager.updateBatchState(envelope)
-                val task = closeStreamTaskFactory.make(destinationTaskLauncher, stream)
-                task.execute()
+                manager.endOfStreamRead()
+                // handleCheckpoint(reserved.replace(StreamCheckpoint(
+                //     CheckpointMessage.Checkpoint(stream, Jsons.emptyObject()),
+                //     null
+                // )), sizeBytes)
+                // val task = closeStreamTaskFactory.make(destinationTaskLauncher, stream)
+                // task.execute()
                 // destinationTaskLauncher.handleNewBatch(stream, envelope)
                 log.info { "marking EOS" }
             }
