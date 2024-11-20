@@ -12,10 +12,10 @@ import java.time.Clock
  * Works off time relative to the injected @param clock. Generally this is the processing time domain.
  */
 data class TimeWindowTrigger(
-    private val clock: Clock,
-    private val windowWidthMs: Long,
+    val clock: Clock,
+    val windowWidthMs: Long,
 ) {
-    private var openedAtMs: Long? = null
+    var openedAtMs: Long? = null
 
     /*
      * Sets window open timestamp for computing completeness. Idempotent. Mutative.

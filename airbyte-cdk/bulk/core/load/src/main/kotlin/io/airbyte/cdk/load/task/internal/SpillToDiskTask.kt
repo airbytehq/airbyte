@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
+import io.mockk.MockKGateway
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.nio.file.Path
@@ -109,6 +110,10 @@ class DefaultSpillToDiskTask(
                                     val forceFlush = timeWindow.isComplete()
                                     println("In Flush Event")
                                     println("forceFlush $forceFlush")
+                                    println("timeWindow.openedAtMs ${timeWindow.openedAtMs}")
+                                    println("timeWindow.clock ${timeWindow.clock}")
+                                    println("timeWindow.windowWidth ${timeWindow.windowWidthMs}")
+                                    println("timeWindow.isMock ${timeWindow.isMock}")
                                     ReadResult(range, sizeBytes, forceFlush = forceFlush)
                                 }
                             }
@@ -175,3 +180,12 @@ data class SpilledRawMessagesLocalFile(
     val indexRange: Range<Long>,
     val endOfStream: Boolean = false
 )
+
+val <T: Any> T.isMock: Boolean
+    get() {
+        return try {
+            MockKGateway.implementation().mockFactory.isMock(this)
+        } catch (e: UninitializedPropertyAccessException) {
+            false
+        }
+    }
