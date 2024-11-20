@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.state.Reserved
@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
+import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
@@ -98,6 +99,7 @@ class DefaultDestinationTaskLauncher(
     // Internal Tasks
     private val inputConsumerTaskFactory: InputConsumerTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
+    private val flushTickTask: FlushTickTask,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
@@ -110,7 +112,7 @@ class DefaultDestinationTaskLauncher(
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
-    private val timedFlushTask: TimedForcedCheckpointFlushTask,
+    private val timedCheckpointFlushTask: TimedForcedCheckpointFlushTask,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
@@ -120,7 +122,7 @@ class DefaultDestinationTaskLauncher(
     // Input Comsumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
@@ -163,9 +165,13 @@ class DefaultDestinationTaskLauncher(
             }
         }
 
+        // Start flush task
+        log.info { "Starting timed file aggregate flush task " }
+        enqueue(flushTickTask)
+
         // Start the checkpoint management tasks
-        log.info { "Starting timed flush task" }
-        enqueue(timedFlushTask)
+        log.info { "Starting timed checkpoint flush task" }
+        enqueue(timedCheckpointFlushTask)
 
         log.info { "Starting checkpoint update task" }
         enqueue(updateCheckpointsTask)

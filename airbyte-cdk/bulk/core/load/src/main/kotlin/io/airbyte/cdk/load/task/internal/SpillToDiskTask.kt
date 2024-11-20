@@ -7,14 +7,16 @@ package io.airbyte.cdk.load.task.internal
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamFlushEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
+import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
 import io.airbyte.cdk.load.task.StreamLevel
@@ -23,9 +25,12 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
+import io.mockk.MockKGateway
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.nio.file.Path
+import java.time.Clock
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
@@ -40,11 +45,12 @@ interface SpillToDiskTask : StreamLevel, InternalScope
  */
 class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
-    private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
+    private val queue: QueueReader<Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     override val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
     private val diskManager: ReservationManager,
+    private val timeWindow: TimeWindowTrigger,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
@@ -56,17 +62,26 @@ class DefaultSpillToDiskTask(
     )
 
     override suspend fun execute() {
+        println("timeWindow.isComplete 1 " + timeWindow.isComplete())
+
         val tmpFile = spillFileProvider.createTempFile()
         val result =
             tmpFile.outputStream().use { outputStream ->
                 queue
                     .consume()
                     .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
+                        println("timeWindow.isComplete 2 " + timeWindow.isComplete())
                         reserved.use {
                             when (val wrapped = it.value) {
-                                is StreamRecordWrapped -> {
+                                is StreamRecordEvent -> {
+                                    println("3 " + timeWindow.isComplete())
+                                    // once we have received a record for the stream, consider the
+                                    // aggregate opened.
+                                    timeWindow.open()
+
                                     // reserve enough room for the record
                                     diskManager.reserve(wrapped.sizeBytes)
+                                    println("timeWindow.isComplete 4 " + timeWindow.isComplete())
 
                                     // calculate whether we should flush
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
@@ -78,6 +93,8 @@ class DefaultSpillToDiskTask(
                                             bytesProcessed
                                         )
 
+                                    println("timeWindow.isComplete 5 " + timeWindow.isComplete())
+
                                     // write and return output
                                     outputStream.write(wrapped.record.serialized)
                                     outputStream.write("\n")
@@ -87,9 +104,16 @@ class DefaultSpillToDiskTask(
                                         forceFlush = forceFlush
                                     )
                                 }
-                                is StreamRecordCompleteWrapped -> {
+                                is StreamCompleteEvent -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
                                     ReadResult(nextRange, sizeBytes, hasReadEndOfStream = true)
+                                }
+                                is StreamFlushEvent -> {
+                                    val go = timeWindow.isComplete()
+                                    println("In Flush Event")
+                                    println("go $go")
+                                    println("timeWindow.isComplete 6 " + timeWindow.isComplete())
+                                    ReadResult(range, sizeBytes, forceFlush = go)
                                 }
                             }
                         }
@@ -125,14 +149,18 @@ interface SpillToDiskTaskFactory {
 class DefaultSpillToDiskTaskFactory(
     private val spillFileProvider: SpillFileProvider,
     private val queueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     @Named("diskManager") private val diskManager: ReservationManager,
+    private val clock: Clock,
+    @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
+        val timeWindow = TimeWindowTrigger(clock, windowWidthMs)
+
         return DefaultSpillToDiskTask(
             spillFileProvider,
             queueSupplier.get(stream),
@@ -140,6 +168,7 @@ class DefaultSpillToDiskTaskFactory(
             stream,
             taskLauncher,
             diskManager,
+            timeWindow,
         )
     }
 }
@@ -150,3 +179,12 @@ data class SpilledRawMessagesLocalFile(
     val indexRange: Range<Long>,
     val endOfStream: Boolean = false
 )
+
+val <T: Any> T.isMock: Boolean
+    get() {
+        return try {
+            MockKGateway.implementation().mockFactory.isMock(this)
+        } catch (e: UninitializedPropertyAccessException) {
+            false
+        }
+    }

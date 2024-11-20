@@ -21,7 +21,7 @@ dependencies {
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-    testImplementation("io.mockk:mockk:1.13.12")
+    implementation("io.mockk:mockk:1.13.13")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
 
@@ -38,9 +38,14 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
 
     jvmArgs = project.test.jvmArgs
     systemProperties = project.test.systemProperties
-    maxParallelForks = project.test.maxParallelForks
+    maxParallelForks = 1
     maxHeapSize = project.test.maxHeapSize
 }
+
+test {
+    systemProperties(["mockk.junit.extension.keepmocks":"true"])
+}
+
 // These tests are lightweight enough to run on every PR.
 tasks.named('check').configure {
     dependsOn integrationTest
