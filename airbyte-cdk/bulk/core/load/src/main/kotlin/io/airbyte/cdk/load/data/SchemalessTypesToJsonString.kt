@@ -12,22 +12,28 @@ class SchemalessTypesToJsonString : AirbyteSchemaIdentityMapper {
     override fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType =
         StringType
     override fun mapArrayWithoutSchema(schema: ArrayTypeWithoutSchema): AirbyteType = StringType
+    override fun mapUnknown(schema: UnknownType): AirbyteType = StringType
 }
 
 class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: ObjectValue,
         schema: ObjectTypeWithoutSchema,
-        path: List<String>
-    ): AirbyteValue = value.toJson().serializeToString().let(::StringValue)
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        value.toJson().serializeToString().let(::StringValue) to context
     override fun mapObjectWithEmptySchema(
         value: ObjectValue,
         schema: ObjectTypeWithEmptySchema,
-        path: List<String>
-    ): AirbyteValue = value.toJson().serializeToString().let(::StringValue)
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        value.toJson().serializeToString().let(::StringValue) to context
     override fun mapArrayWithoutSchema(
         value: ArrayValue,
         schema: ArrayTypeWithoutSchema,
-        path: List<String>
-    ): AirbyteValue = value.toJson().serializeToString().let(::StringValue)
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        value.toJson().serializeToString().let(::StringValue) to context
+    override fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+        value.toJson().serializeToString().let(::StringValue) to context
 }

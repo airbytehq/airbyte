@@ -1,0 +1,29 @@
+<svg version="1.1" id="Layer_1" xmlns:x="ns_extend;" xmlns:i="ns_ai;" xmlns:graph="ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55.8 54.4" style="enable-background:new 0 0 55.8 54.4;" xml:space="preserve">
+ <style type="text/css">
+  .st0{fill-rule:evenodd;clip-rule:evenodd;fill:#7F96FF;}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#002DFF;}
+ </style>
+ <metadata>
+  <sfw xmlns="ns_sfw;">
+   <slices>
+   </slices>
+   <sliceSourceBounds bottomLeftOrigin="true" height="54.4" width="55.8" x="0" y="0.6">
+   </sliceSourceBounds>
+  </sfw>
+ </metadata>
+ <g id="cin7-blue">
+  <path id="Fill-7" class="st0" d="M18.4,49.9l5,2.4l1.5,0.7l-7.7-33.6h-5.7L18.4,49.9z">
+  </path>
+  <path id="Fill-8" class="st0" d="M5.5,43.7l6.5,3.1L5.7,19.4H0L5.5,43.7z">
+  </path>
+  <path id="Fill-12" class="st0" d="M32.3,35.2l-3.6-15.8H23l6.5,28.3L32.3,35.2z">
+  </path>
+  <path id="Fill-9" class="st1" d="M39.1,49.1l-5.6,2.7L44.2,4.9l3.9,4.9L39.1,49.1L39.1,49.1z">
+  </path>
+  <path id="Fill-10" class="st1" d="M50.3,43.7l-5.6,2.7L52,14.6l3.9,4.9L50.3,43.7L50.3,43.7z">
+  </path>
+  <path id="Fill-11" class="st1" d="M15.5,0l-3.9,4.9h22.6l-1.1,4.9H7.7l-3.9,4.9H32l-1.1,4.9H0l1.1,4.9h28.7l-6.4,28l4.5,2.2L40.3,0
+		H15.5z">
+  </path>
+ </g>
+</svg>

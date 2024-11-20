@@ -20,7 +20,7 @@ data class MysqlJdbcStreamStateValue(
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
     @JsonProperty("cursor_record_count") val cursorRecordCount: Int = 0,
     @JsonProperty("pk_name") val pkName: String? = null,
-    @JsonProperty("pk_value") val pkValue: String? = null,
+    @JsonProperty("pk_val") val pkValue: String? = null,
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
 ) {
     companion object {

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 
 class S3V2CheckTest :
     CheckIntegrationTest<S3V2Specification>(
-        S3V2Specification::class.java,
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
