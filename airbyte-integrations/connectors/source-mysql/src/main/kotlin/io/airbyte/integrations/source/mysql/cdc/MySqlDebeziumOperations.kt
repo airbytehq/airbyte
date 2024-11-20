@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
@@ -20,6 +19,7 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.cdc.CdcPartitionsCreator.OffsetInvalidNeedsResyncIllegalStateException
 import io.airbyte.cdk.read.cdc.DebeziumInput
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumOperations
@@ -308,11 +308,9 @@ class MySqlDebeziumOperations(
                     "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency."
                 )
             }
-            /*if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
-                throw TransientErrorException(
-                    "do reset"
-                )
-            }*/
+            if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
+                throw OffsetInvalidNeedsResyncIllegalStateException()
+            }
             return synthesize()
         }
 

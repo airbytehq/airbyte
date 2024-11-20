@@ -307,7 +307,6 @@ class FeedReader(
         }
         log.info { "checkpoint of ${stateMessages.size} state message(s)" }
         for (stateMessage in stateMessages) {
-            log.info { "*** checkpoint stateMessage: $stateMessage" }
             root.outputConsumer.accept(stateMessage)
         }
     }

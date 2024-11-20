@@ -29,6 +29,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
 
+    class OffsetInvalidNeedsResyncIllegalStateException(): IllegalStateException()
+
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire()
@@ -84,6 +86,11 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         log.error(ex) { "Existing state is invalid." }
                         globalLockResource.markCdcAsComplete()
                         throw ex
+                    } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
+                        log.info { "*** resync 1"}
+                        feedBootstrap.stateQuerier.reset()
+                        b = true
+                        syntheticInput
                     }
                 }
             }
@@ -102,45 +109,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         if (input.isSynthetic) {
             // Handle synthetic offset edge-case, which always needs to run.
             // Debezium needs to run to generate the full state, which might include schema history.
-            /*log.info { "*** stateQuerier before: ${feedBootstrap.stateQuerier.feeds}" }
-            log.info { "*** stateQuerier: ${feedBootstrap.stateQuerier.feeds}" }
-            log.info { "*** current: ${feedBootstrap.stateQuerier.current(feedBootstrap.stateQuerier.feeds[1])}" }
-            val pr = object : PartitionReader {
-                override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
-                    PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
-
-                override suspend fun run() {
-                    // no-op
-                }
-
-                override fun checkpoint(): PartitionReadCheckpoint {
-                    Jsons.valueToTree("aaa") as ObjectNode
-                    val key: ArrayNode = Jsons.arrayNode().apply {
-                        add("aaa")
-                    }
-                    val value: ObjectNode = Jsons.objectNode().apply {
-                        put("bbb", "ccc")
-                    }
-                    val offset: DebeziumOffset = DebeziumOffset(mapOf(key to value))
-                    val schemaHistory: DebeziumSchemaHistory? = null
-                    val output = DebeziumState(offset, schemaHistory)
-                    return PartitionReadCheckpoint(readerOps.serialize(output), 0)
-                    // Implement checkpoint logic here
-                    return PartitionReadCheckpoint(
-                        opaqueStateValue = Jsons.objectNode() ,
-                        numRecords = 0L
-                    )
-                }
-
-                override fun releaseResources() {
-                    // Implement resource release logic here
-                }
-            }*/
-            log.info { "*** resync 1"}
-            feedBootstrap.stateQuerier.reset()
-            b = true
             log.info { "Current offset is synthetic." }
-            return listOf(partitionReader/*pr*/)
+            return listOf(partitionReader)
         }
         if (upperBound <= lowerBound) {
             // Handle completion due to reaching the WAL position upper bound.
