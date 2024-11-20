@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.airbyte.cdk.load.util.lineSequence
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -109,7 +110,7 @@ class SpillToDiskTaskTest {
             runTest {
                 // flush strategy returns false, so it won't flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns false
-                coEvery { timeWindow.isComplete() } returns true
+                every { timeWindow.isComplete() } returns true
 
                 val flushMsg = StreamFlushEvent(101L)
                 val recordMsg =
