@@ -160,14 +160,14 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
-        // if (!fileTransferEnabled) {
-        //     // Start a spill-to-disk task for each record stream
-        //     catalog.streams.forEach { stream ->
-        //         log.info { "Starting spill-to-disk task for $stream" }
-        //         val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
-        //         enqueue(spillTask)
-        //     }
-        // }
+        if (!fileTransferEnabled) {
+            // Start a spill-to-disk task for each record stream
+            catalog.streams.forEach { stream ->
+                log.info { "Starting spill-to-disk task for $stream" }
+                val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
+                enqueue(spillTask)
+            }
+        }
 
         // Start the checkpoint management tasks
         log.info { "Starting timed flush task" }

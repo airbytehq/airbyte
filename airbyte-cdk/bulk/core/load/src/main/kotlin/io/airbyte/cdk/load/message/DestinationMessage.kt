@@ -387,7 +387,7 @@ class DestinationMessageFactory(
                         namespace = message.record.namespace,
                         name = message.record.stream,
                     )
-                if (true) {//fileTransferEnabled) {
+                if (fileTransferEnabled) {
                     @Suppress("UNCHECKED_CAST")
                     val fileMessage = message.record.additionalProperties["file"] as Map<String, Any>
                     DestinationFile(
@@ -450,7 +450,7 @@ class DestinationMessageFactory(
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            if (true) {//fileTransferEnabled) {
+                            if (fileTransferEnabled) {
                                 log.info { "received complete status for $stream" }
                                 DestinationFileStreamComplete(
                                     stream.descriptor,
@@ -463,7 +463,7 @@ class DestinationMessageFactory(
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
-                            if (true) {//fileTransferEnabled) {
+                            if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
                                     stream.descriptor,
                                     message.trace.emittedAt.toLong()
