@@ -250,7 +250,7 @@ abstract class BasicFunctionalityIntegrationTest(
             modified = 4321L,
             sourceFileUrl = "file://path/to/source",
         )
-        val messages =
+
             runSync(
                 configContents,
                 stream,
