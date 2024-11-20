@@ -27,11 +27,9 @@ import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.airbyte.cdk.load.util.lineSequence
-import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.time.Clock
 import kotlin.io.path.inputStream
@@ -45,15 +43,15 @@ class SpillToDiskTaskTest {
     /** Validates task delegates to dependencies as expected. Does not test dependency behavior. */
     @Nested
     inner class UnitTests {
-        @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
+        private lateinit var spillFileProvider: SpillFileProvider
 
-        @MockK(relaxed = true) lateinit var flushStrategy: FlushStrategy
+        private lateinit var flushStrategy: FlushStrategy
 
-        @MockK(relaxed = true) lateinit var taskLauncher: DestinationTaskLauncher
+        private lateinit var taskLauncher: DestinationTaskLauncher
 
-        @MockK(relaxed = true) lateinit var timeWindow: TimeWindowTrigger
+        private lateinit var timeWindow: TimeWindowTrigger
 
-        @MockK(relaxed = true) lateinit var diskManager: ReservationManager
+        private lateinit var diskManager: ReservationManager
 
         private lateinit var inputQueue: DestinationStreamEventQueue
 
@@ -61,7 +59,11 @@ class SpillToDiskTaskTest {
 
         @BeforeEach
         fun setup() {
-            MockKAnnotations.init(this)
+            spillFileProvider = mockk(relaxed = true)
+            flushStrategy = mockk(relaxed = true)
+            taskLauncher = mockk(relaxed = true)
+            timeWindow = mockk(relaxed = true)
+            diskManager = mockk(relaxed = true)
 
             inputQueue = DestinationStreamEventQueue()
             task =

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.state.TimeWindowTriggerTest.Fixtures.TIME_WINDOW_WIDT
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import java.time.Clock
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -18,13 +19,13 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class TimeWindowTriggerTest {
-    @MockK lateinit var clock: Clock
+    private lateinit var clock: Clock
 
     private lateinit var timeWindow: TimeWindowTrigger
 
     @BeforeEach
     fun setup() {
-        MockKAnnotations.init(this)
+        clock = mockk()
 
         timeWindow = TimeWindowTrigger(clock, TIME_WINDOW_WIDTH_MS)
     }

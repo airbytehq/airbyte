@@ -33,11 +33,10 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class FlushTickTaskTest {
-    @MockK(relaxed = true) lateinit var clock: Clock
-    @MockK(relaxed = true) lateinit var coroutineTimeUtils: TimeProvider
-    @MockK(relaxed = true) lateinit var catalog: DestinationCatalog
-    @MockK(relaxed = true)
-    lateinit var recordQueueSupplier:
+    private lateinit var clock: Clock
+    private lateinit var coroutineTimeUtils: TimeProvider
+    private lateinit var catalog: DestinationCatalog
+    private lateinit var recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
 
     private val tickIntervalMs = 60000L // 1 min
@@ -46,7 +45,10 @@ class FlushTickTaskTest {
 
     @BeforeEach
     fun setup() {
-        MockKAnnotations.init(this)
+        clock = mockk(relaxed = true)
+        coroutineTimeUtils = mockk(relaxed = true)
+        catalog = mockk(relaxed = true)
+        recordQueueSupplier = mockk(relaxed = true)
 
         task =
             FlushTickTask(
