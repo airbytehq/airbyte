@@ -186,6 +186,7 @@ abstract class IntegrationTest(
         @BeforeAll
         fun setEnvVars() {
             nonDockerMockEnvVars.set("WORKER_JOB_ID", "0")
+            nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
         }
     }
 }

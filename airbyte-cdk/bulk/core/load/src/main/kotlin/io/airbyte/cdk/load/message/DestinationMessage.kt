@@ -179,20 +179,25 @@ data class DestinationFile(
 
     }
 
-    override fun asProtocolMessage(): AirbyteMessage =
-        AirbyteMessage()
+    override fun asProtocolMessage(): AirbyteMessage {
+        val file = mapOf(
+            "file_url" to fileMessage.fileUrl,
+        "file_relative_path" to fileMessage.fileRelativePath,
+        "source_file_url" to fileMessage.sourceFileUrl,
+        "modified" to fileMessage.modified,
+        "bytes" to fileMessage.bytes,
+        )
+
+        return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
                     .withStream(stream.name)
                     .withNamespace(stream.namespace)
                     .withEmittedAt(emittedAtMs)
-                    .withAdditionalProperty("file_url", fileMessage.fileUrl)
-                    .withAdditionalProperty("file_relative_path", fileMessage.fileRelativePath)
-                    .withAdditionalProperty("source_file_url", fileMessage.sourceFileUrl)
-                    .withAdditionalProperty("modified", fileMessage.modified)
-                    .withAdditionalProperty("bytes", fileMessage.bytes)
+                    .withAdditionalProperty("file", file)
             )
+    }
 }
 
 private fun statusToProtocolMessage(

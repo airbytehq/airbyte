@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecord.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -51,6 +52,7 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -218,6 +220,106 @@ abstract class BasicFunctionalityIntegrationTest(
                                             ),
                                         syncId = 42
                                     )
+                            )
+                        ),
+                        stream,
+                        primaryKey = listOf(listOf("id")),
+                        cursor = null,
+                    )
+                }
+            },
+        )
+    }
+
+    @Test
+    open fun testBasicWriteFile() {
+        File("/tmp/test_file").writeText("")
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        val fileMessage = DestinationFile.AirbyteRecordMessageFile(
+            fileUrl = "/tmp/test_file",
+            bytes = 1234L,
+            fileRelativePath = "path/to/file",
+            modified = 4321L,
+            sourceFileUrl = "file://path/to/source",
+        )
+        val messages =
+            runSync(
+                configContents,
+                stream,
+                listOf(
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = 1234,
+                        serialized = "",
+                        fileMessage = fileMessage,
+                    ),
+                    StreamCheckpoint(
+                        streamName = "test_stream",
+                        streamNamespace = randomizedNamespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                    )
+                )
+            )
+
+        val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
+        assertAll(
+            {
+                assertEquals(
+                    1,
+                    stateMessages.size,
+                    "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
+                )
+                assertEquals(
+                    StreamCheckpoint(
+                        streamName = "test_stream",
+                        streamNamespace = randomizedNamespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                        destinationRecordCount = 1,
+                    )
+                        .asProtocolMessage(),
+                    stateMessages.first()
+                )
+            },
+            {
+                if (verifyDataWriting) {
+                    dumpAndDiffRecords(
+                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
+                        listOf(
+                            OutputRecord(
+                                extractedAt = 1234,
+                                generationId = 0,
+                                data =
+                                if (preserveUndeclaredFields) {
+                                    mapOf("id" to 5678, "undeclared" to "asdf")
+                                } else {
+                                    mapOf("id" to 5678)
+                                },
+                                airbyteMeta =
+                                OutputRecord.Meta(
+                                    changes =
+                                    mutableListOf(
+                                        Change(
+                                            field = "foo",
+                                            change =
+                                            AirbyteRecordMessageMetaChange.Change
+                                                .NULLED,
+                                            reason =
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .SOURCE_FIELD_SIZE_LIMITATION
+                                        )
+                                    ),
+                                    syncId = 42
+                                )
                             )
                         ),
                         stream,
