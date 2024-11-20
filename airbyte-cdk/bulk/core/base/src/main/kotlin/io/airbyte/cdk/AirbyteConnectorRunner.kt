@@ -80,7 +80,6 @@ sealed class AirbyteConnectorRunner(
                 picocliCommandLineFactory.commands.options().map { it.longestName() },
             )
         val commandLinePropertySource = CommandLinePropertySource(micronautCommandLine)
-        println("==== final envs: ${envs.toList()}")
         val ctx: ApplicationContext =
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
