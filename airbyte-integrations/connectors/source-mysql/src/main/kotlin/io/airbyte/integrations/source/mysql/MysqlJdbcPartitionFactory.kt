@@ -317,7 +317,7 @@ class MysqlJdbcPartitionFactory(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: DateTimeParseException) {
                             // Resolve to use the new format.
                             Jsons.valueToTree(stateValue)
                         }
@@ -333,7 +333,7 @@ class MysqlJdbcPartitionFactory(
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: DateTimeParseException) {
                             // Resolve to use the new format.
                             Jsons.valueToTree(stateValue)
                         }
