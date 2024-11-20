@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
@@ -30,7 +31,12 @@ class IcebergV2Writer(
         val namespace = Namespace.of(stream.descriptor.namespace)
         val tableIdentifier = TableIdentifier.of(namespace, stream.descriptor.name)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema()
+        val primaryKeys =
+            when (stream.importType) {
+                is Dedupe -> (stream.importType as Dedupe).primaryKey
+                else -> emptyList()
+            }
+        val schema = pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
         val table =
             IcebergUtil.createTable(
                 tableIdentifier = tableIdentifier,
