@@ -45,7 +45,7 @@ tasks.named('check').configure {
 }
 
 test {
-    systemProperties(["mockk.junit.extension.keepmocks":"true"])
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
 }
 
 configurations {
