@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-from typing import List, Dict, Any
 import logging
+from typing import Any, Dict, List
 
 import pytest
 import requests

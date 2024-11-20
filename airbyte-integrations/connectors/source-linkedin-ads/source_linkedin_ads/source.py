@@ -40,7 +40,6 @@ class SourceLinkedinAds(YamlDeclarativeSource):
         :param logger: Logger object to log the information.
         :param config: Configuration mapping containing necessary parameters.
         :return: A tuple containing a boolean indicating success or failure and an optional message or object.
-        dummy change
         """
         self._validate_ad_analytics_reports(config)
         return super().check_connection(logger, config)
