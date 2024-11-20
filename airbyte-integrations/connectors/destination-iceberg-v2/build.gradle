@@ -43,5 +43,5 @@ dependencies {
 }
 
 test {
-    systemProperties(["mockk.junit.extension.keepmock":"true","mockk.junit.extension.keepmocks":"true"])
+    systemProperties(["mockk.junit.extension.keepmocks":"true"])
 }
