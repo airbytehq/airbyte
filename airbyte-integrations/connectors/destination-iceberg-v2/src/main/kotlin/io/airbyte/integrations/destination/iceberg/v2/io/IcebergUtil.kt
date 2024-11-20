@@ -45,12 +45,16 @@ object IcebergUtil {
     }
 
     fun constructGenerationIdSuffix(stream: DestinationStream): String {
-        if (stream.generationId < 0) {
+        return constructGenerationIdSuffix(stream.generationId)
+    }
+
+    fun constructGenerationIdSuffix(generationId: Long): String {
+        if (generationId < 0) {
             throw IllegalArgumentException(
-                "GenerationId must be non-negative. Provided: ${stream.generationId}",
+                "GenerationId must be non-negative. Provided: ${generationId}",
             )
         }
-        return "ab-generation-id-${stream.generationId}"
+        return "ab-generation-id-${generationId}"
     }
     /**
      * Builds an Iceberg [Catalog].

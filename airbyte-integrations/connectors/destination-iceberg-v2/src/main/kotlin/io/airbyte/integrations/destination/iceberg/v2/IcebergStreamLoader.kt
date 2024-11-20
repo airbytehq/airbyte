@@ -11,7 +11,9 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.constructGenerationIdSuffix
@@ -68,10 +70,18 @@ class IcebergStreamLoader(
         throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
-    override suspend fun processBatch(batch: Batch): Batch {
-        log.info { "Moving staged object from $stagingBranchName to $mainBranchName" }
-        table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
-
-        return SimpleBatch(Batch.State.COMPLETE)
+    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+        if (streamFailure == null) {
+            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            if (stream.minimumGenerationId > 0) {
+                val icebergTableCleaner = IcebergTableCleaner()
+                for (i in 0 until stream.minimumGenerationId) {
+                    icebergTableCleaner.deleteGenerationId(
+                        table,
+                        constructGenerationIdSuffix(i),
+                    )
+                }
+            }
+        }
     }
 }
