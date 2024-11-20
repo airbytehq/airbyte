@@ -22,6 +22,7 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
+    envVars: Map<String, String> = emptyMap(),
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -37,6 +38,7 @@ abstract class S3V2WriteTest(
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
+        envVars = envVars,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -102,6 +104,7 @@ class S3V2WriteTestAssumeRole :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        envVars = S3V2TestUtils.getEnvVars(S3V2TestUtils.ASSUME_ROLE_CREDS_SECRET_PATH),
     )
 
 class S3V2WriteTestJsonUncompressed :

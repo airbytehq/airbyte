@@ -19,7 +19,6 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.CONNECTOR_CATALOG_PREFIX
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
@@ -185,7 +184,6 @@ class S3ClientFactory(
     private val keyConfig: AWSAccessKeyConfigurationProvider,
     private val bucketConfig: S3BucketConfigurationProvider,
     private val uploadConfig: ObjectStorageUploadConfigurationProvider? = null,
-//    @Value("\${aws.assume.role.external.id}") val foo: String? = null, // why doesn't this work?
 ) {
     companion object {
         fun <T> make(config: T) where
@@ -220,6 +218,11 @@ class S3ClientFactory(
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
                         externalId = externalId
                     )
+//                println("Assuming role: ${arnRole.awsArnRoleConfiguration.roleArn}")
+//                println("Key id  ${System.getenv(AWS_ACCESS_KEY_ID)}")
+//                println("Access key ${System.getenv(AWS_SECRET_ACCESS_KEY)}")
+//                println("External id ${System.getenv(EXTERNAL_ID)}")
+
                 val creds = StaticCredentialsProvider {
                     accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
                     secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)
