@@ -11,7 +11,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
-import io.airbyte.cdk.data.LocalDateTimeCodec.formatter
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -26,16 +25,13 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.util.Base64
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
-
-private val log = KotlinLogging.logger {}
 
 @Primary
 @Singleton

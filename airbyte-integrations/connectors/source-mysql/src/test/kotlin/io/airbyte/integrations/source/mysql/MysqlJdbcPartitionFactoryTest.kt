@@ -143,6 +143,7 @@ class MysqlJdbcPartitionFactoryTest {
                         override val feeds: List<Feed> = listOf(stream)
                         override fun current(feed: Feed): OpaqueStateValue? =
                             if (feed == stream) incumbentStateValue else null
+                        override fun resetFeedStates() { /* no-op */ }
                     },
                 stream,
             )
