@@ -84,15 +84,15 @@ definitions:
   semi_incremental_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      type: DatetimeBasedCursor
       cursor_field: "updated_at"
+      datetime_format: "%s"
+      start_datetime: "{{ config['start_date'] }}"
+      is_client_side_incremental: true
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
         $ref: "#/definitions/nested_selector"
-        record_filter:
-          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
   addon_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -388,15 +388,15 @@ definitions:
   site_migration_detail_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      type: DatetimeBasedCursor
       cursor_field: "migrated_at"
+      datetime_format: "%s"
+      start_datetime: "{{ config['start_date'] }}"
+      is_client_side_incremental: true
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
         $ref: "#/definitions/nested_selector"
-        record_filter:
-          condition: "{{ record['migrated_at'] >= ( stream_state.get('prior_state', {}).get('migrated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('migrated_at', 0) ) }}"
     $parameters:
       name: "site_migration_detail"
       primary_key: "entity_id"
