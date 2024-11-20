@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
@@ -36,6 +35,9 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.nessie.NessieCatalog
+import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types
+import org.apache.iceberg.types.Types.StructType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -142,12 +144,13 @@ internal class IcebergUtilTest {
     fun testConvertAirbyteRecordToIcebergRecord() {
         val airbyteStream: DestinationStream = mockk {
             every { generationId } returns 1
-            every { schema } returns ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    "name" to FieldType(StringType, nullable = true),
+            every { schema } returns
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "name" to FieldType(StringType, nullable = true),
+                    )
                 )
-            )
             every { syncId } returns 1
         }
         val airbyteRecord =
@@ -162,7 +165,20 @@ internal class IcebergUtilTest {
                 serialized = "{\"id\":42, \"name\":\"John Doe\"}"
             )
         val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
-        val schema: Schema = mockk()
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        val struct: StructType = mockk {
+            every { asPrimitiveType() } returns Types.IntegerType()
+            every { fields() } returns columns
+            every { typeId() } returns Type.TypeID.INTEGER
+        }
+        val schema: Schema = mockk {
+            every { asStruct() } returns struct
+            every { columns() } returns columns
+        }
         val icebergRecord =
             IcebergUtil.toRecord(
                 record = airbyteRecord,
