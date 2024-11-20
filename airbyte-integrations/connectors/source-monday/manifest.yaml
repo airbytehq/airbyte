@@ -84,6 +84,7 @@ definitions:
             type: CustomPaginationStrategy
             class_name: >-
               source_declarative_manifest.components.ItemCursorPaginationStrategy
+            page_size: 20
       name: items
       primary_key:
         - id
@@ -98,6 +99,7 @@ definitions:
             stream:
               $ref: "#/definitions/streams/activity_logs"
             partition_field: ids
+            parent_key: "pulse_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -179,6 +181,7 @@ definitions:
             stream:
               $ref: "#/definitions/streams/activity_logs"
             partition_field: ids
+            parent_key: "board_id"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -562,6 +565,7 @@ definitions:
           pagination_strategy:
             type: CustomPaginationStrategy
             class_name: source_declarative_manifest.components.ItemPaginationStrategy
+            page_size: 50
       name: activity_logs
       primary_key:
         - id

@@ -132,7 +132,6 @@ class MondayGraphqlRequester(HttpRequester):
 
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
-        self.name = parameters.get("name", "").lower()
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -287,7 +286,7 @@ class MondayGraphqlRequester(HttpRequester):
         """
         Combines queries to a single GraphQL query.
         """
-        limit = self.limit.eval(self.config)
+        limit = self.limit
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "boards" and stream_slice:
