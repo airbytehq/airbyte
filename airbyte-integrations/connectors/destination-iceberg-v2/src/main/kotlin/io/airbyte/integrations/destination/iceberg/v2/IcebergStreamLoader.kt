@@ -63,7 +63,7 @@ class IcebergStreamLoader(
                 log.info { "Finished writing records to $stagingBranchName" }
             }
 
-        return SimpleBatch(Batch.State.PERSISTED)
+        return SimpleBatch(Batch.State.COMPLETED)
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
