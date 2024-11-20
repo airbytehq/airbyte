@@ -56,3 +56,10 @@ Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd 
 :::note
 Occasionally, `abctl` itself will need to be updated. Do that by running `brew update abctl`. This is seperate from upgrading Airbyte and only upgrades the command line tool.
 :::
+
+In practice install works 100% of the time folowing these steps to an existing acbtl running instance:
+1. curl -LsfS https://get.airbyte.com | bash -
+2. abctl local uninstall
+3. abctl local install --insecure-cookies  --values=/{path to your values file}/values.yaml
+4. abctl local credentials --password {set to desired password value}   # the user name seems to carry over from the prior install 
+5. review any database db tweaks to the connection and actor_definition tables
