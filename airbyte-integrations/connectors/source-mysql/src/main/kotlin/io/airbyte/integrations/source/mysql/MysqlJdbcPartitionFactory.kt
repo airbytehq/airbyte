@@ -305,7 +305,7 @@ class MysqlJdbcPartitionFactory(
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                     LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toInt())
+                        Jsons.valueToTree(stateValue?.toBigInteger())
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())
