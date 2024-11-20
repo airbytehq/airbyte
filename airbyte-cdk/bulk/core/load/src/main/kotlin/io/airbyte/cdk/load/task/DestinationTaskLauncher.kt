@@ -51,7 +51,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
-    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile)
+    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long)
 }
 
 /**
@@ -266,7 +266,7 @@ class DefaultDestinationTaskLauncher(
         succeeded.send(true)
     }
 
-    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile) {
+    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long) {
         enqueue(processFileTaskFactory.make(this, stream, file))
     }
 }

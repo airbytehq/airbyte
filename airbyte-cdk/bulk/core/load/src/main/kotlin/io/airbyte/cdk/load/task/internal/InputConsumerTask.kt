@@ -93,7 +93,9 @@ class DefaultInputConsumerTask(
             is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
             is DestinationFile -> {
-                destinationTaskLauncher.handleFile(stream, message)
+                manager.countRecordIn()
+                val index = manager.countRecordIn()
+                destinationTaskLauncher.handleFile(stream, message, index)
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate

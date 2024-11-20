@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
@@ -21,7 +22,8 @@ class DefaultProcessFileTask(
     override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
-    private val file: DestinationFile
+    private val file: DestinationFile,
+    private val index: Long,
 ) : ProcessFileTask {
     val log = KotlinLogging.logger {}
 
@@ -30,7 +32,7 @@ class DefaultProcessFileTask(
 
         val batch = streamLoader.processFile(file)
 
-        val wrapped = BatchEnvelope(batch)
+        val wrapped = BatchEnvelope(batch, Range.singleton(index))
         taskLauncher.handleNewBatch(streamDescriptor, wrapped)
     }
 }
@@ -40,6 +42,7 @@ interface ProcessFileTaskFactory {
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor,
         file: DestinationFile,
+        index: Long,
     ): ProcessFileTask
 }
 
@@ -52,6 +55,7 @@ class DefaultFileRecordsTaskFactory(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor,
         file: DestinationFile,
+        index: Long,
     ): ProcessFileTask {
         return DefaultProcessFileTask(stream, taskLauncher, syncManager, file)
     }
