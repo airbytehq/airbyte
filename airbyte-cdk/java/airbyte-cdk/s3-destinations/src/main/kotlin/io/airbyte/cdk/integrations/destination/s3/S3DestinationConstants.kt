@@ -22,5 +22,8 @@ class S3DestinationConstants {
 
         // Flattening for CSV and JSONL
         const val FLATTENING_ARG_NAME: String = "flattening"
+
+        // Stringify for JSONL
+        public static final String STRINGIFY_ARG_NAME = "stringify"
     }
 }

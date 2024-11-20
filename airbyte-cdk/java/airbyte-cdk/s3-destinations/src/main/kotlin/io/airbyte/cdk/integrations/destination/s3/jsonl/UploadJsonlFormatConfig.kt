@@ -11,11 +11,14 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionTypeHelper
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening.Companion.fromValue
+import io.airbyte.cdk.integrations.destination.s3.util.Stringify
+import io.airbyte.cdk.integrations.destination.s3.util.Stringify.Companion.fromValue
 import java.util.*
 import org.apache.commons.lang3.builder.ToStringBuilder
 
 class UploadJsonlFormatConfig(
     val flatteningType: Flattening,
+    val stringifyType: Stringify,
     val compressionType: CompressionType
 ) : UploadFormatConfig {
     constructor(
@@ -28,7 +31,10 @@ class UploadJsonlFormatConfig(
             CompressionTypeHelper.parseCompressionType(
                 formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
             )
-        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
+        if (formatConfig.has(S3DestinationConstants.STRINGIFY_ARG_NAME))
+            fromValue(formatConfig[S3DestinationConstants.STRINGIFY_ARG_NAME].asText())
+            else Stringify.NO
     )
 
     override val format: FileUploadFormat = FileUploadFormat.JSONL
@@ -44,10 +50,11 @@ class UploadJsonlFormatConfig(
         }
         val that = other as UploadJsonlFormatConfig
         return flatteningType == that.flatteningType && compressionType == that.compressionType
+            && stringifyType == that.stringifyType
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(flatteningType, compressionType)
+        return Objects.hash(flatteningType, stringifyType, compressionType)
     }
 
     override fun toString(): String {
