@@ -161,9 +161,6 @@ class MysqlJdbcPartitionFactory(
                 false -> streamFeedBootstrap.currentState!!
                 else -> return coldStart(streamState)
             }
-        if (opaqueStateValue.isEmpty) {
-            return coldStart(streamState)
-        }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
