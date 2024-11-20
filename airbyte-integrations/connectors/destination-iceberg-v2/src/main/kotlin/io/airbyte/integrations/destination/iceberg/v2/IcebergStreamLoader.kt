@@ -70,9 +70,11 @@ class IcebergStreamLoader(
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
                 writeResult.dataFiles().forEach { delta.addRows(it) }
                 writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
             } else {
                 val append = table.newAppend().toBranch(stagingBranchName)
                 writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
             }
             log.info { "Finished writing records to $stagingBranchName" }
         }
