@@ -90,7 +90,6 @@ class TestAllStreams:
 
     @pytest.mark.parametrize("error_code", [429, 500, 503])
     def test_should_retry_on_error(self, error_code, requests_mock, mocker):
-        # Define a helper function
         mocker.patch.object(ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams)
         mocker.patch("time.sleep", lambda x: None)
         stream = find_stream("accounts", TEST_CONFIG)
@@ -98,7 +97,6 @@ class TestAllStreams:
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
         stream.exit_on_rate_limit = True
-
         with pytest.raises(DefaultBackoffException):
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -156,6 +154,8 @@ class TestAllStreams:
         ),
     )
     def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
+        mocker.patch.object(ManifestDeclarativeSource, "_initialize_cache_for_parent_streams",
+                            side_effect=self._mock_initialize_cache_for_parent_streams)
         mocker.patch("time.sleep", lambda x: None)
         json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
         requests_mock.register_uri(
