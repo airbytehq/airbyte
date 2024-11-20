@@ -4,15 +4,25 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.mockk.Runs
 import io.mockk.called
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import org.apache.iceberg.DataFile
+import org.apache.iceberg.DeleteFiles
+import org.apache.iceberg.FileScanTask
+import org.apache.iceberg.Table
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.io.CloseableIterable
+import org.apache.iceberg.io.CloseableIterator
+import org.apache.iceberg.io.CloseableIterator.empty
 import org.apache.iceberg.io.FileIO
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class IcebergTableCleanerTest {
 
@@ -54,5 +64,80 @@ internal class IcebergTableCleanerTest {
 
         verify(exactly = 1) { catalog.dropTable(tableIdentifier, true) }
         verify { fileIo wasNot called }
+    }
+
+    @Test
+    fun `deleteGenerationId handles empty scan results gracefully`() {
+        val cleaner = IcebergTableCleaner()
+        val generationIdSuffix = "ab-generation-id-0"
+
+        val tasks = CloseableIterable.empty<FileScanTask>()
+        val table = mockk<Table>()
+        every { table.newScan().planFiles() } returns tasks
+
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, generationIdSuffix) }
+        verify(exactly = 0) { table.newDelete() }
+    }
+
+    @Test
+    fun `deleteGenerationId deletes matching file via deleteFile`() {
+        val cleaner = IcebergTableCleaner()
+        val generationIdSuffix = "ab-generation-id-0"
+        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0.parquet"
+        val fileScanTask = mockk<FileScanTask>()
+        val table = mockk<Table>()
+
+        val tasks = mockk<CloseableIterable<FileScanTask>>()
+        every { tasks.iterator() } returns
+            CloseableIterator.withClose(listOf(fileScanTask).iterator())
+        every { tasks.close() } just Runs
+        every { table.newScan().planFiles() } returns tasks
+
+        every { fileScanTask.file().path().toString() } returns filePathToDelete
+
+        val delete = mockk<DeleteFiles>()
+        every { table.newDelete() } returns delete
+        every { delete.deleteFile(fileScanTask.file().path()) } returns delete
+        every { delete.commit() } just Runs
+
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, generationIdSuffix) }
+
+        verify {
+            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            table.newDelete()
+            delete.deleteFile(fileScanTask.file().path())
+            delete.commit()
+        }
+    }
+
+    @Test
+    fun `deleteGenerationId should not delete non matching file via deleteFile`() {
+        val cleaner = IcebergTableCleaner()
+        val generationIdSuffix = "ab-generation-id-1"
+        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-1.parquet"
+        val fileScanTask = mockk<FileScanTask>()
+        val table = mockk<Table>()
+
+        val tasks = mockk<CloseableIterable<FileScanTask>>()
+        every { tasks.iterator() } returns
+            CloseableIterator.withClose(listOf(fileScanTask).iterator())
+        every { tasks.close() } just Runs
+        every { table.newScan().planFiles() } returns tasks
+
+        every { fileScanTask.file().path().toString() } returns filePathToDelete
+
+        val delete = mockk<DeleteFiles>()
+        every { table.newDelete() } returns delete
+        every { delete.deleteFile(fileScanTask.file().path()) } returns delete
+        every { delete.commit() } just Runs
+
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, "ab-generation-id-0") }
+
+        verify(exactly = 0) {
+            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            table.newDelete()
+            delete.deleteFile(any<DataFile>())
+            delete.commit()
+        }
     }
 }

@@ -41,6 +41,8 @@ import org.apache.iceberg.types.Types.StructType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 internal class IcebergUtilTest {
 
@@ -238,5 +240,62 @@ internal class IcebergUtilTest {
         assertEquals("true", catalogProperties["s3.path-style-access"])
         assertEquals("BEARER", catalogProperties["nessie.authentication.type"])
         assertEquals(nessieAccessToken, catalogProperties["nessie.authentication.token"])
+    }
+
+    @Test
+    fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
+        val validGenerationId = "ab-generation-id-123"
+        assertDoesNotThrow {
+            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
+        }
+    }
+
+    @Test
+    fun `assertGenerationIdSuffixIsOfValidFormat throws exception for invalid prefix`() {
+        val invalidGenerationId = "invalid-generation-id-123"
+        val exception =
+            assertThrows<IcebergUtil.InvalidFormatException> {
+                IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+            }
+        assertEquals(
+            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>'",
+            exception.message
+        )
+    }
+
+    @Test
+    fun `assertGenerationIdSuffixIsOfValidFormat throws exception for missing number`() {
+        val invalidGenerationId = "ab-generation-id-"
+        val exception =
+            assertThrows<IcebergUtil.InvalidFormatException> {
+                IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+            }
+        assertEquals(
+            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>'",
+            exception.message
+        )
+    }
+
+    @Test
+    fun `constructGenerationIdSuffix constructs valid suffix`() {
+        val stream = mockk<DestinationStream>()
+        every { stream.generationId } returns 42
+        val expectedSuffix = "ab-generation-id-42"
+        val result = IcebergUtil.constructGenerationIdSuffix(stream)
+        assertEquals(expectedSuffix, result)
+    }
+
+    @Test
+    fun `constructGenerationIdSuffix throws exception for negative generationId`() {
+        val stream = mockk<DestinationStream>()
+        every { stream.generationId } returns -1
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                IcebergUtil.constructGenerationIdSuffix(stream)
+            }
+        assertEquals(
+            "GenerationId must be non-negative. Provided: ${stream.generationId}",
+            exception.message
+        )
     }
 }
