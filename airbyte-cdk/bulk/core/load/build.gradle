@@ -35,7 +35,7 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
 
     jvmArgs = project.test.jvmArgs
     systemProperties = project.test.systemProperties
-    maxParallelForks = project.test.maxParallelForks
+    maxParallelForks = 1
     maxHeapSize = project.test.maxHeapSize
 }
 
