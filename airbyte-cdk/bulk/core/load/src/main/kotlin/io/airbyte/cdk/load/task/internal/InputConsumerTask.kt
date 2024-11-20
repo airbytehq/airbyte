@@ -105,7 +105,6 @@ class DefaultInputConsumerTask(
                 log.info { "marking EOS" }
                 manager.markEndOfStream()
                 val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
-                manager.updateBatchState(envelope)
                 // handleCheckpoint(reserved.replace(StreamCheckpoint(
                 //     CheckpointMessage.Checkpoint(stream, Jsons.emptyObject()),
                 //     null
