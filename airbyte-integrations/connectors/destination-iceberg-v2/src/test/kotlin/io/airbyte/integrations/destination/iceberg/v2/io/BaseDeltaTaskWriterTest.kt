@@ -16,10 +16,7 @@ import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileAppenderFactory
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.OutputFileFactory
-import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
-import org.apache.iceberg.types.Types.IntegerType
-import org.apache.iceberg.types.Types.StructType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -31,9 +28,11 @@ internal class BaseDeltaTaskWriterTest {
     fun testDeltaWrite(operation: Operation) {
         val spec: PartitionSpec = mockk()
         val format = FileFormat.PARQUET
-        val appenderFactory: FileAppenderFactory<Record> = mockk()
         val outputFileFactory: OutputFileFactory = mockk()
-        val io: FileIO = mockk()
+        val appenderFactory: FileAppenderFactory<Record> = mockk {
+            every { newDataWriter(any(), any(), any()) } returns mockk()
+        }
+        val io: FileIO = mockk { every { newOutputFile(any()) } returns mockk() }
         val targetFileSize = WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
         val columns =
             mutableListOf(
@@ -42,41 +41,24 @@ internal class BaseDeltaTaskWriterTest {
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
         val primaryKeyIds = setOf(1)
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
-        val schema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns primaryKeyIds
-            every { schemaId() } returns 1
-        }
+        val schema = Schema(columns, primaryKeyIds)
         val deltaWriter: RowDataDeltaWriter = mockk {
             every { deleteKey(any()) } returns Unit
             every { write(any()) } returns Unit
         }
         val record = RecordWrapper(delegate = mockk(), operation = operation)
         val writer: BaseDeltaTaskWriter =
-            object :
-                BaseDeltaTaskWriter(
-                    spec,
-                    format,
-                    appenderFactory,
-                    outputFileFactory,
-                    io,
-                    targetFileSize,
-                    schema,
-                    emptySet()
-                ) {
-                override fun close() {}
-
-                override fun route(row: Record): RowDataDeltaWriter {
-                    return deltaWriter
-                }
-            }
+            TestDeltaWriter(
+                spec = spec,
+                format = format,
+                appenderFactory = appenderFactory,
+                outputFileFactory = outputFileFactory,
+                io = io,
+                targetFileSize = targetFileSize,
+                schema = schema,
+                primaryKeyIds = primaryKeyIds,
+                deltaWriter = deltaWriter,
+            )
         writer.write(record)
         when (operation) {
             Operation.DELETE -> {
@@ -96,9 +78,11 @@ internal class BaseDeltaTaskWriterTest {
     fun testAppendWrite() {
         val spec: PartitionSpec = mockk()
         val format = FileFormat.PARQUET
-        val appenderFactory: FileAppenderFactory<Record> = mockk()
         val outputFileFactory: OutputFileFactory = mockk()
-        val io: FileIO = mockk()
+        val appenderFactory: FileAppenderFactory<Record> = mockk {
+            every { newDataWriter(any(), any(), any()) } returns mockk()
+        }
+        val io: FileIO = mockk { every { newOutputFile(any()) } returns mockk() }
         val targetFileSize = WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
         val columns =
             mutableListOf(
@@ -106,44 +90,54 @@ internal class BaseDeltaTaskWriterTest {
                 Types.NestedField.required(2, "name", Types.StringType.get()),
                 Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
             )
-        val primaryKeyIds = setOf(1)
-        val struct: StructType = mockk {
-            every { asPrimitiveType() } returns IntegerType()
-            every { fields() } returns columns.subList(0, 1)
-            every { typeId() } returns Type.TypeID.INTEGER
-        }
-        val schema: Schema = mockk {
-            every { aliases } returns emptyMap()
-            every { asStruct() } returns struct
-            every { columns() } returns columns
-            every { identifierFieldIds() } returns primaryKeyIds
-            every { schemaId() } returns 1
-        }
+        val schema = Schema(columns)
         val deltaWriter: RowDataDeltaWriter = mockk {
             every { deleteKey(any()) } returns Unit
             every { write(any()) } returns Unit
         }
         val record: Record = mockk()
         val writer: BaseDeltaTaskWriter =
-            object :
-                BaseDeltaTaskWriter(
-                    spec,
-                    format,
-                    appenderFactory,
-                    outputFileFactory,
-                    io,
-                    targetFileSize,
-                    schema,
-                    emptySet()
-                ) {
-                override fun close() {}
-
-                override fun route(row: Record): RowDataDeltaWriter {
-                    return deltaWriter
-                }
-            }
+            TestDeltaWriter(
+                spec = spec,
+                format = format,
+                appenderFactory = appenderFactory,
+                outputFileFactory = outputFileFactory,
+                io = io,
+                targetFileSize = targetFileSize,
+                schema = schema,
+                primaryKeyIds = emptySet(),
+                deltaWriter = deltaWriter,
+            )
         writer.write(record)
         verify(exactly = 1) { deltaWriter.write(record) }
         verify(exactly = 0) { deltaWriter.deleteKey(record) }
+    }
+
+    private class TestDeltaWriter(
+        spec: PartitionSpec,
+        format: FileFormat,
+        appenderFactory: FileAppenderFactory<Record>,
+        outputFileFactory: OutputFileFactory,
+        io: FileIO,
+        targetFileSize: Long,
+        schema: Schema,
+        primaryKeyIds: Set<Int>,
+        val deltaWriter: RowDataDeltaWriter,
+    ) :
+        BaseDeltaTaskWriter(
+            spec,
+            format,
+            appenderFactory,
+            outputFileFactory,
+            io,
+            targetFileSize,
+            schema,
+            primaryKeyIds
+        ) {
+        override fun close() {}
+
+        override fun route(row: Record): RowDataDeltaWriter {
+            return deltaWriter
+        }
     }
 }
