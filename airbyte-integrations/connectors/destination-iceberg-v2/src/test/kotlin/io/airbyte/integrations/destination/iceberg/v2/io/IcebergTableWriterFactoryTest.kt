@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.iceberg.v2.io
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer
+import kotlin.random.Random
 import kotlin.test.assertNotNull
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class IcebergTableWriterFactoryTest {
+    private val generationIdSuffix: String = "ab-generation-id-0"
 
     @Test
     fun testCreateWriterPartitionedDeltas() {
@@ -64,7 +66,7 @@ internal class IcebergTableWriterFactoryTest {
         }
 
         val factory = IcebergTableWriterFactory()
-        val writer = factory.create(table = table)
+        val writer = factory.create(table = table, generationId = generationIdSuffix)
         assertNotNull(writer)
         assertEquals(PartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -110,7 +112,8 @@ internal class IcebergTableWriterFactoryTest {
         }
 
         val factory = IcebergTableWriterFactory()
-        val writer = factory.create(table = table)
+        val writer =
+            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -155,7 +158,8 @@ internal class IcebergTableWriterFactoryTest {
         }
 
         val factory = IcebergTableWriterFactory()
-        val writer = factory.create(table = table)
+        val writer =
+            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
         assertNotNull(writer)
         assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
     }
@@ -200,7 +204,8 @@ internal class IcebergTableWriterFactoryTest {
         }
 
         val factory = IcebergTableWriterFactory()
-        val writer = factory.create(table = table)
+        val writer =
+            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }

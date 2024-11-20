@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.assertGenerationIdSuffixIsOfValidFormat
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
@@ -26,14 +27,14 @@ import org.apache.iceberg.util.PropertyUtil
  */
 @Singleton
 class IcebergTableWriterFactory {
-
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
      * @param table An Iceberg [Table]
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
-    fun create(table: Table): BaseTaskWriter<Record> {
+    fun create(table: Table, generationId: String): BaseTaskWriter<Record> {
+        assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table
@@ -44,7 +45,8 @@ class IcebergTableWriterFactory {
         val identifierFieldIds = table.schema().identifierFieldIds()
         val appenderFactory =
             createAppenderFactory(table = table, identifierFieldIds = identifierFieldIds)
-        val outputFileFactory = createOutputFileFactory(table = table, format = format)
+        val outputFileFactory =
+            createOutputFileFactory(table = table, format = format, generationId = generationId)
         val targetFileSize =
             PropertyUtil.propertyAsLong(
                 table.properties(),
@@ -87,11 +89,16 @@ class IcebergTableWriterFactory {
             .setAll(table.properties())
     }
 
-    private fun createOutputFileFactory(table: Table, format: FileFormat): OutputFileFactory {
+    private fun createOutputFileFactory(
+        table: Table,
+        format: FileFormat,
+        generationId: String
+    ): OutputFileFactory {
         return OutputFileFactory.builderFor(table, 0, 1L)
             .defaultSpec(table.spec())
             .operationId(UUID.randomUUID().toString())
             .format(format)
+            .suffix(generationId)
             .build()
     }
 

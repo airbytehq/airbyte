@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.assertGenerationIdSuffixIsOfValidFormat
 import jakarta.inject.Singleton
+import org.apache.iceberg.Table
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.io.FileIO
@@ -37,6 +39,17 @@ class IcebergTableCleaner {
         catalog.dropTable(identifier, true)
         if (io is SupportsPrefixOperations) {
             io.deletePrefix(tableLocation)
+        }
+    }
+    fun deleteGenerationId(table: Table, generationIdSuffix: String) {
+        assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+        table.newScan().planFiles().use { tasks ->
+            for (task in tasks) {
+                val filePath = task.file().path().toString()
+                if (filePath.contains(generationIdSuffix)) {
+                    table.newDelete().deleteFile(task.file().path()).commit()
+                }
+            }
         }
     }
 }
