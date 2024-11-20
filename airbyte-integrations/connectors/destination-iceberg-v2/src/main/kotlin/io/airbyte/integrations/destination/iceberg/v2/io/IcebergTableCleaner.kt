@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.assertGenerationIdSuffixIsOfValidFormat
 import jakarta.inject.Singleton
 import org.apache.iceberg.Table
 import org.apache.iceberg.catalog.Catalog
@@ -41,7 +42,7 @@ class IcebergTableCleaner {
         }
     }
     fun deleteGenerationId(table: Table, generationIdSuffix: String) {
-        IcebergTableWriterFactory.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+        assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
         table.newScan().planFiles().use { tasks ->
             for (task in tasks) {
                 val filePath = task.file().path().toString()

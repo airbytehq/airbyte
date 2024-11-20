@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.assertGenerationIdSuffixIsOfValidFormat
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
@@ -27,28 +27,6 @@ import org.apache.iceberg.util.PropertyUtil
  */
 @Singleton
 class IcebergTableWriterFactory {
-
-    companion object {
-        private class InvalidFormatException(message: String) : Exception(message)
-        private val generationIdRegex = Regex("^ab-generation-id-\\d+\$")
-        fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
-            if (!generationIdRegex.matches(generationId)) {
-                throw InvalidFormatException(
-                    "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>'"
-                )
-            }
-        }
-
-        fun constructGenerationIdSuffix(stream: DestinationStream): String {
-            if (stream.generationId < 0) {
-                throw IllegalArgumentException(
-                    "GenerationId must be non-negative. Provided: ${stream.generationId}"
-                )
-            }
-            return "ab-generation-id-${stream.generationId}"
-        }
-    }
-
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *

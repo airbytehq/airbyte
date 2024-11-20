@@ -33,7 +33,25 @@ private val logger = KotlinLogging.logger {}
 
 /** Collection of Iceberg related utilities. */
 object IcebergUtil {
+    private class InvalidFormatException(message: String) : Exception(message)
 
+    private val generationIdRegex = Regex("^ab-generation-id-\\d+\$")
+    fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
+        if (!generationIdRegex.matches(generationId)) {
+            throw InvalidFormatException(
+                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>'",
+            )
+        }
+    }
+
+    fun constructGenerationIdSuffix(stream: DestinationStream): String {
+        if (stream.generationId < 0) {
+            throw IllegalArgumentException(
+                "GenerationId must be non-negative. Provided: ${stream.generationId}",
+            )
+        }
+        return "ab-generation-id-${stream.generationId}"
+    }
     /**
      * Builds an Iceberg [Catalog].
      *

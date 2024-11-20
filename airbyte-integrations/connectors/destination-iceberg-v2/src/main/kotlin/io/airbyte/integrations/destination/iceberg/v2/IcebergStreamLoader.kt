@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.constructGenerationIdSuffix
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.iceberg.Table
@@ -52,32 +53,34 @@ class IcebergStreamLoader(
         val partNumber = partNumber.getAndIncrement()
         val state = destinationStateManager.getState(stream)
 
-        icebergTableWriterFactory.create(table = table).use { writer ->
-            log.info { "Writing records to branch $stagingBranchName" }
-            state.addObject(stream.generationId, stagingBranchName, partNumber)
-            records.forEach { record ->
-                val icebergRecord =
-                    IcebergUtil.toRecord(
-                        record = record,
-                        stream = stream,
-                        tableSchema = table.schema(),
-                        pipeline = pipeline,
-                    )
-                writer.write(icebergRecord)
+        icebergTableWriterFactory
+            .create(table = table, generationId = constructGenerationIdSuffix(stream))
+            .use { writer ->
+                log.info { "Writing records to branch $stagingBranchName" }
+                state.addObject(stream.generationId, stagingBranchName, partNumber)
+                records.forEach { record ->
+                    val icebergRecord =
+                        IcebergUtil.toRecord(
+                            record = record,
+                            stream = stream,
+                            tableSchema = table.schema(),
+                            pipeline = pipeline,
+                        )
+                    writer.write(icebergRecord)
+                }
+                val writeResult = writer.complete()
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
+                log.info { "Finished writing records to $stagingBranchName" }
             }
-            val writeResult = writer.complete()
-            if (writeResult.deleteFiles().isNotEmpty()) {
-                val delta = table.newRowDelta().toBranch(stagingBranchName)
-                writeResult.dataFiles().forEach { delta.addRows(it) }
-                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-                delta.commit()
-            } else {
-                val append = table.newAppend().toBranch(stagingBranchName)
-                writeResult.dataFiles().forEach { append.appendFile(it) }
-                append.commit()
-            }
-            log.info { "Finished writing records to $stagingBranchName" }
-        }
 
         return ObjectStorageStreamLoader.StagedObject(
             remoteObject = stagingBranchName,
