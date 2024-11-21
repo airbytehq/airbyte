@@ -236,16 +236,15 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
-            fun makeStream(name: String) =
+            val stream =
                 DestinationStream(
-                    DestinationStream.Descriptor(randomizedNamespace, name),
+                    DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                     Append,
                     ObjectType(linkedMapOf("id" to intType)),
                     generationId = 0,
                     minimumGenerationId = 0,
                     syncId = 42,
                 )
-            val stream = makeStream("test_stream")
             val destination =
                 destinationProcessFactory.createDestinationProcess(
                     "write",
