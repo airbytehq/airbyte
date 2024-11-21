@@ -250,12 +250,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 destinationProcessFactory.createDestinationProcess(
                     "write",
                     configContents,
-                    DestinationCatalog(
-                            listOf(
-                                stream
-                            )
-                        )
-                        .asProtocolObject(),
+                    DestinationCatalog(listOf(stream)).asProtocolObject(),
                 )
             launch {
                 try {
@@ -329,9 +324,7 @@ abstract class BasicFunctionalityIntegrationTest(
             // but is cheap and easy to do.
             assertAll(
                 { assertEquals(randomizedNamespace, streamNamespace) },
-                {
-                    assertEquals(streamName, "test_stream")
-                },
+                { assertEquals(streamName, "test_stream") },
                 {
                     assertEquals(
                         1.0,
@@ -339,7 +332,12 @@ abstract class BasicFunctionalityIntegrationTest(
                         "Expected destination stats to show 1 record"
                     )
                 },
-                {assertEquals("""{"foo": "bar1"}""".deserializeToNode(),stateMessage.stream.streamState)}
+                {
+                    assertEquals(
+                        """{"foo": "bar1"}""".deserializeToNode(),
+                        stateMessage.stream.streamState
+                    )
+                }
             )
             if (verifyDataWriting) {
                 val records = dataDumper.dumpRecords(parsedConfig, stream)
@@ -354,7 +352,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     )
 
                 assertTrue(
-                    records.any { expectedRecord.data == it.data},
+                    records.any { expectedRecord.data == it.data },
                     "Expected the first record to be present in the dumped records.",
                 )
             }
