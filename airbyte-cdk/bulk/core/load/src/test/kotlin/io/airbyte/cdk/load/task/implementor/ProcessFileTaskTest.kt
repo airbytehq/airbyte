@@ -27,7 +27,8 @@ class ProcessFileTaskTest {
     private val file: DestinationFile = mockk(relaxed = true)
     private val index = 1234L
 
-    val defaultProcessFileTask = DefaultProcessFileTask(stream, taskLauncher, syncManager, file, index)
+    val defaultProcessFileTask =
+        DefaultProcessFileTask(stream, taskLauncher, syncManager, file, index)
 
     @Test
     fun `the the file process task execution`() = runTest {
@@ -38,6 +39,8 @@ class ProcessFileTaskTest {
 
         defaultProcessFileTask.execute()
 
-        coVerify { taskLauncher.handleNewBatch(stream, BatchEnvelope(batch, Range.singleton(index))) }
+        coVerify {
+            taskLauncher.handleNewBatch(stream, BatchEnvelope(batch, Range.singleton(index)))
+        }
     }
 }
