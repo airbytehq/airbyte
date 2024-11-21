@@ -120,7 +120,14 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+        commitDataIncrementally = false
+    ) {
+
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+}
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
