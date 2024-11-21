@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.iceberg.v2.io
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
-import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
@@ -190,11 +189,15 @@ object IcebergUtil {
     }
 
     private fun getOperation(record: DestinationRecord, schema: Schema): Operation =
-        if (record.data.toJson().get(AIRBYTE_CDC_DELETE_COLUMN) != null) {
-            Operation.DELETE
-        } else if (
-            schema.identifierFieldNames() == null || schema.identifierFieldNames().isEmpty()
-        ) {
+        // TODO This disabled out of caution due to the potential cost of serializing every record
+        // to check
+        //        the deletion status.  This should be revisited when there is a cheaper way to do
+        // this, such
+        //        as after a protocol change that explicitly states the operation.
+        //        if (record.data.toJson().get(AIRBYTE_CDC_DELETE_COLUMN) != null) {
+        //            Operation.DELETE
+        //        } else
+        if (schema.identifierFieldNames() == null || schema.identifierFieldNames().isEmpty()) {
             Operation.INSERT
         } else {
             Operation.UPDATE
