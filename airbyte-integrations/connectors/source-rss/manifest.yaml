@@ -1,264 +1,123 @@
-version: "4.3.2"
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      class_name: source_declarative_manifest.components.CustomExtractor
-  requester:
-    type: HttpRequester
-    url_base: "{{ config['url'] }}"
-    http_method: "GET"
-    authenticator:
-      type: NoAuth
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        class_name: source_declarative_manifest.components.CustomExtractor
-      record_filter:
-        condition: "{{ record['published'] >= stream_interval['start_time'] }}"
-    paginator:
-      type: NoPagination
-    requester:
-      type: HttpRequester
-      url_base: "{{ config['url'] }}"
-      http_method: "GET"
-      authenticator:
-        type: NoAuth
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          class_name: source_declarative_manifest.components.CustomExtractor
-        record_filter:
-          condition: "{{ record['published'] >= stream_interval['start_time'] }}"
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "{{ config['url'] }}"
-        http_method: "GET"
-        authenticator:
-          type: NoAuth
-  items_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          class_name: source_declarative_manifest.components.CustomExtractor
-        record_filter:
-          condition: "{{ record['published'] >= stream_interval['start_time'] }}"
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "{{ config['url'] }}"
-        http_method: "GET"
-        authenticator:
-          type: NoAuth
-    name: "items"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        required:
-        - published
-        properties:
-          title:
-            type:
-            - "null"
-            - string
-          link:
-            type:
-            - "null"
-            - string
-          description:
-            type:
-            - "null"
-            - string
-          author:
-            type:
-            - "null"
-            - string
-          category:
-            type:
-            - "null"
-            - string
-          comments:
-            type:
-            - "null"
-            - string
-          enclosure:
-            type:
-            - "null"
-            - string
-          guid:
-            type:
-            - "null"
-            - string
-          published:
-            type:
-            - string
-            format: date-time
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: published
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z')
-          }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-  items_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    additionalProperties: true
-    required:
-    - published
-    properties:
-      title:
-        type:
-        - "null"
-        - string
-      link:
-        type:
-        - "null"
-        - string
-      description:
-        type:
-        - "null"
-        - string
-      author:
-        type:
-        - "null"
-        - string
-      category:
-        type:
-        - "null"
-        - string
-      comments:
-        type:
-        - "null"
-        - string
-      enclosure:
-        type:
-        - "null"
-        - string
-      guid:
-        type:
-        - "null"
-        - string
-      published:
-        type:
-        - string
-        format: date-time
-streams:
-- type: DeclarativeStream
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        class_name: source_declarative_manifest.components.CustomExtractor
-        type: CustomRecordExtractor
-      record_filter:
-        condition: "{{ record['published'] >= stream_interval['start_time'] }}"
-        type: RecordFilter
-    paginator:
-      type: NoPagination
-    requester:
-      type: HttpRequester
-      url_base: "{{ config['url'] }}"
-      http_method: "GET"
-      authenticator:
-        type: NoAuth
-      path: "/"
-  name: "items"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      required:
-      - published
-      properties:
-        title:
-          type:
-          - "null"
-          - string
-        link:
-          type:
-          - "null"
-          - string
-        description:
-          type:
-          - "null"
-          - string
-        author:
-          type:
-          - "null"
-          - string
-        category:
-          type:
-          - "null"
-          - string
-        comments:
-          type:
-          - "null"
-          - string
-        enclosure:
-          type:
-          - "null"
-          - string
-        guid:
-          type:
-          - "null"
-          - string
-        published:
-          type:
-          - string
-          format: date-time
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: published
-    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z')
-        }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+version: 5.16.0
+
+type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
-  - "items"
+    - items
+
+definitions:
+  streams:
+    items:
+      type: DeclarativeStream
+      name: items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['published'] >= stream_interval['start_time'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z')
+            }}
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['url'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/items"
+
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/rss
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: RSS Spec
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-    - url
+      - url
     properties:
       url:
         type: string
         description: RSS Feed URL
-type: DeclarativeSource
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    items: false
+  yamlComponents:
+    streams:
+      items:
+        - recordSelector
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - string
+      enclosure:
+        type:
+          - "null"
+          - string
+      guid:
+        type:
+          - "null"
+          - string
+      link:
+        type:
+          - "null"
+          - string
+      published:
+        type:
+          - string
+        format: date-time
+      title:
+        type:
+          - "null"
+          - string
+    required:
+      - published
