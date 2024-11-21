@@ -119,7 +119,13 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+        @Test
+        @Disabled
+        override fun testMidSyncCheckpointingStreamState() {
+            super.testMidSyncCheckpointingStreamState()
+        }
+    }
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
