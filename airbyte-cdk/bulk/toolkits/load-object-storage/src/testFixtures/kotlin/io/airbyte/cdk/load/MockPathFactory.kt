@@ -47,10 +47,10 @@ open class MockPathFactory : PathFactory {
         stream: DestinationStream,
         isStaging: Boolean
     ): String {
-        if (isStaging) {
-            return getStagingDirectory(stream).toString()
+        return if (isStaging) {
+            getStagingDirectory(stream).toString()
         } else {
-            return getFinalDirectory(stream).toString()
+            getFinalDirectory(stream).toString()
         }
     }
 
