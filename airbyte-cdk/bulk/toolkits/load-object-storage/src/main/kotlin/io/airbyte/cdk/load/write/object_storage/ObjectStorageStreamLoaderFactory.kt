@@ -163,7 +163,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             log.info { "Sync failed, persisting destination state for next run" }
             destinationStateManager.persistState(stream)
         } else {
-            log.info { "Sync succeeded, Moving any stragglers out of staging" }
+            log.info { "Sync succeeded, moving all current data out of staging" }
             val state = destinationStateManager.getState(stream)
             state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
                 (generationId, objectAndPart) ->
@@ -171,25 +171,21 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                     pathFactory
                         .getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
                         .toString()
-                log.info { "Moving staged object from ${objectAndPart.key} to $newKey" }
+                log.info { "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey" }
                 val newObject = client.move(objectAndPart.key, newKey)
                 state.removeObject(generationId, objectAndPart.key, isStaging = true)
                 state.addObject(generationId, newObject.key, objectAndPart.partNumber)
             }
 
             log.info { "Removing old files" }
-            val (toKeep, toDrop) =
-                state.generations.partition { it.generationId >= stream.minimumGenerationId }
-            val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
-            toDrop
-                .flatMap { it.objects.filter { obj -> obj.key !in keepKeys } }
-                .forEach {
-                    log.info { "Deleting object ${it.key}" }
-                    client.delete(it.key)
-                }
+            state.getObjectsToDelete(stream.minimumGenerationId).forEach {
+                (generationId, objectAndPart) ->
+                log.info { "Deleting old object for generation $generationId: ${objectAndPart.key}" }
+                client.delete(objectAndPart.key)
+                state.removeObject(generationId, objectAndPart.key)
+            }
 
-            log.info { "Updating and persisting state" }
-            state.dropGenerationsBefore(stream.minimumGenerationId)
+            log.info { "Persisting state" }
             destinationStateManager.persistState(stream)
         }
     }
