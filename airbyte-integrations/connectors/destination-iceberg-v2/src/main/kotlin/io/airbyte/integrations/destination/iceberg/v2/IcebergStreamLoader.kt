@@ -72,12 +72,23 @@ class IcebergStreamLoader(
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {
         if (streamFailure == null) {
+            // Doing it first to make sure that data coming in the current batch is written to the
+            // main branch
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 val generationIdsToDelete =
                     (0 until stream.minimumGenerationId).map { constructGenerationIdSuffix(it) }
                 val icebergTableCleaner = IcebergTableCleaner()
-                icebergTableCleaner.deleteGenerationId(table, generationIdsToDelete)
+                icebergTableCleaner.deleteGenerationId(
+                    table,
+                    DEFAULT_STAGING_BRANCH,
+                    generationIdsToDelete
+                )
+                //  Doing it again to push the deletes from the staging to main branch
+                table
+                    .manageSnapshots()
+                    .fastForwardBranch(mainBranchName, stagingBranchName)
+                    .commit()
             }
         }
     }

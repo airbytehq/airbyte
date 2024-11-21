@@ -42,7 +42,11 @@ class IcebergTableCleaner {
         }
     }
 
-    fun deleteGenerationId(table: Table, generationIdSuffix: List<String>) {
+    fun deleteGenerationId(
+        table: Table,
+        stagingBranchName: String,
+        generationIdSuffix: List<String>
+    ) {
         val genIdsToDelete =
             generationIdSuffix
                 .filter {
@@ -56,7 +60,13 @@ class IcebergTableCleaner {
                 .filter { task ->
                     genIdsToDelete.any { id -> task.file().path().toString().contains(id) }
                 }
-                .forEach { task -> table.newDelete().deleteFile(task.file().path()).commit() }
+                .forEach { task ->
+                    table
+                        .newDelete()
+                        .toBranch(stagingBranchName)
+                        .deleteFile(task.file().path())
+                        .commit()
+                }
         }
     }
 }

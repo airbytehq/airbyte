@@ -16,7 +16,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 const val DEFAULT_CATALOG_NAME = "airbyte"
-const val DEFAULT_STAGING_BRANCH = "staging"
+const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
 
 data class IcebergV2Configuration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,

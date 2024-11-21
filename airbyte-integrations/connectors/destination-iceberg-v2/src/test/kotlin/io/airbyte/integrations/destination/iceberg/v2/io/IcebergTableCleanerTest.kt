@@ -75,7 +75,9 @@ internal class IcebergTableCleanerTest {
         val table = mockk<Table>()
         every { table.newScan().planFiles() } returns tasks
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf(generationIdSuffix)) }
+        assertDoesNotThrow {
+            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix))
+        }
         verify(exactly = 0) { table.newDelete() }
     }
 
@@ -98,15 +100,17 @@ internal class IcebergTableCleanerTest {
         val delete = mockk<DeleteFiles>()
         every { table.newDelete() } returns delete
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
-        every { delete.commit() } just Runs
+        every { delete.toBranch("staging").commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf(generationIdSuffix)) }
+        assertDoesNotThrow {
+            cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix))
+        }
 
         verify {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete()
             delete.deleteFile(fileScanTask.file().path())
-            delete.commit()
+            delete.toBranch("staging").commit()
         }
     }
 
@@ -129,15 +133,17 @@ internal class IcebergTableCleanerTest {
         val delete = mockk<DeleteFiles>()
         every { table.newDelete() } returns delete
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
-        every { delete.commit() } just Runs
+        every { delete.toBranch("staging").commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf("ab-generation-id-1-e")) }
+        assertDoesNotThrow {
+            cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-1-e"))
+        }
 
         verify(exactly = 0) {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete()
             delete.deleteFile(any<DataFile>())
-            delete.commit()
+            delete.toBranch(any()).commit()
         }
     }
 }
