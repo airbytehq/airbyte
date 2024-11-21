@@ -245,14 +245,14 @@ abstract class BasicFunctionalityIntegrationTest(
                     minimumGenerationId = 0,
                     syncId = 42,
                 )
-            val stream1 = makeStream("test_stream1")
+            val stream = makeStream("test_stream")
             val destination =
                 destinationProcessFactory.createDestinationProcess(
                     "write",
                     configContents,
                     DestinationCatalog(
                             listOf(
-                                stream1
+                                stream
                             )
                         )
                         .asProtocolObject(),
@@ -270,14 +270,14 @@ abstract class BasicFunctionalityIntegrationTest(
             destination.sendMessages(
                 DestinationRecord(
                         namespace = randomizedNamespace,
-                        name = "test_stream1",
+                        name = "test_stream",
                         data = """{"id": 12}""",
                         emittedAtMs = 1234,
                     )
                     .asProtocolMessage(),
                 StreamCheckpoint(
                         streamNamespace = randomizedNamespace,
-                        streamName = "test_stream1",
+                        streamName = "test_stream",
                         blob = """{"foo": "bar1"}""",
                         sourceRecordCount = 1
                     )
@@ -294,7 +294,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     destination.sendMessage(
                         DestinationRecord(
                                 namespace = randomizedNamespace,
-                                name = "test_stream1",
+                                name = "test_stream",
                                 data = """{"id": 56}""",
                                 emittedAtMs = 1234,
                             )
@@ -318,8 +318,8 @@ abstract class BasicFunctionalityIntegrationTest(
 
             // Forcefully kill the destination
             destination.kill()
-            
-            runSync(configContents, DestinationCatalog(listOf(stream1)), listOf())
+
+            runSync(configContents, DestinationCatalog(listOf(stream)), listOf())
 
             // for each state message, verify that it's a valid state,
             // and that we actually wrote the data
@@ -330,7 +330,7 @@ abstract class BasicFunctionalityIntegrationTest(
             assertAll(
                 { assertEquals(randomizedNamespace, streamNamespace) },
                 {
-                    assertEquals(streamName, "test_stream1")
+                    assertEquals(streamName, "test_stream")
                 },
                 {
                     assertEquals(
@@ -342,7 +342,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 {assertEquals("""{"foo": "bar1"}""".deserializeToNode(),stateMessage.stream.streamState)}
             )
             if (verifyDataWriting) {
-                val records = dataDumper.dumpRecords(parsedConfig, stream1)
+                val records = dataDumper.dumpRecords(parsedConfig, stream)
                 val expectedRecord =
                     recordMangler.mapRecord(
                         OutputRecord(
