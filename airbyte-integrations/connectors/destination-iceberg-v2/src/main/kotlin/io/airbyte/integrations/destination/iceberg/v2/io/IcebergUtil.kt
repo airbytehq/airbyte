@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.iceberg.v2.io
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
@@ -31,6 +32,8 @@ import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 
 private val logger = KotlinLogging.logger {}
+
+const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 /**
  * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
@@ -142,7 +145,7 @@ object IcebergUtil {
         // TODO figure out how to detect the actual operation value
         return RecordWrapper(
             delegate = dataMapped.toIcebergRecord(tableSchema),
-            operation = Operation.INSERT
+            operation = getOperation(record = record, schema = tableSchema)
         )
     }
 
@@ -185,4 +188,15 @@ object IcebergUtil {
         schema.identifierFieldNames().forEach { builder.asc(it) }
         return builder.build()
     }
+
+    private fun getOperation(record: DestinationRecord, schema: Schema): Operation =
+        if (record.data.toJson().get(AIRBYTE_CDC_DELETE_COLUMN) != null) {
+            Operation.DELETE
+        } else if (
+            schema.identifierFieldNames() == null || schema.identifierFieldNames().isEmpty()
+        ) {
+            Operation.INSERT
+        } else {
+            Operation.UPDATE
+        }
 }

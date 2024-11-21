@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
@@ -148,7 +149,7 @@ internal class IcebergUtilTest {
     }
 
     @Test
-    fun testConvertAirbyteRecordToIcebergRecord() {
+    fun testConvertAirbyteRecordToIcebergRecordInsert() {
         val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
@@ -193,6 +194,106 @@ internal class IcebergUtilTest {
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
         assertEquals(Operation.INSERT, (icebergRecord as RecordWrapper).operation)
+    }
+
+    @Test
+    fun testConvertAirbyteRecordToIcebergRecordDelete() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val airbyteStream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = true),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val airbyteRecord =
+            DestinationRecord(
+                stream = airbyteStream.descriptor,
+                data =
+                    ObjectValue(
+                        linkedMapOf(
+                            "id" to IntegerValue(42L),
+                            "name" to StringValue("John Doe"),
+                            AIRBYTE_CDC_DELETE_COLUMN to TimestampValue("2024-01-01T00:00:00Z"),
+                        )
+                    ),
+                emittedAtMs = System.currentTimeMillis(),
+                meta = DestinationRecord.Meta(),
+                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        val schema = Schema(columns, setOf(1))
+        val icebergRecord =
+            IcebergUtil.toRecord(
+                record = airbyteRecord,
+                pipeline = pipeline,
+                tableSchema = schema,
+                stream = airbyteStream
+            )
+        assertNotNull(icebergRecord)
+        assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        assertEquals(Operation.DELETE, (icebergRecord as RecordWrapper).operation)
+    }
+
+    @Test
+    fun testConvertAirbyteRecordToIcebergRecordUpdate() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val airbyteStream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = true),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val airbyteRecord =
+            DestinationRecord(
+                stream = airbyteStream.descriptor,
+                data =
+                    ObjectValue(
+                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+                    ),
+                emittedAtMs = System.currentTimeMillis(),
+                meta = DestinationRecord.Meta(),
+                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        val schema = Schema(columns, setOf(1))
+        val icebergRecord =
+            IcebergUtil.toRecord(
+                record = airbyteRecord,
+                pipeline = pipeline,
+                tableSchema = schema,
+                stream = airbyteStream
+            )
+        assertNotNull(icebergRecord)
+        assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        assertEquals(Operation.UPDATE, (icebergRecord as RecordWrapper).operation)
     }
 
     @Test
