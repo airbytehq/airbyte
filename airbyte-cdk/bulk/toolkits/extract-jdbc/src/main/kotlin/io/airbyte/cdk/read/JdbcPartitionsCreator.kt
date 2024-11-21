@@ -143,7 +143,7 @@ class JdbcSequentialPartitionsCreator<
             ensureCursorUpperBound()
             if (streamState.cursorUpperBound?.isNull == true) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
-                return listOf()
+                return listOf(CheckpointOnlyPartitionReader())
             }
         }
         if (streamState.fetchSize == null) {
@@ -195,7 +195,7 @@ class JdbcConcurrentPartitionsCreator<
             ensureCursorUpperBound()
             if (streamState.cursorUpperBound?.isNull == true) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
-                return listOf()
+                return listOf(CheckpointOnlyPartitionReader())
             }
         }
         // Handle edge case where the table can't be sampled.
@@ -215,7 +215,7 @@ class JdbcConcurrentPartitionsCreator<
         }
         if (sample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
-            return listOf()
+            return listOf(CheckpointOnlyPartitionReader())
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
