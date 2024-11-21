@@ -147,10 +147,10 @@ class DestinationTaskLauncherUTest {
         val wrappedTask = MockedTaskWrapper(mockk(relaxed = true))
         coEvery { exceptionHandler.withExceptionHandling(any()) } returns wrappedTask
         val processFileTask = mockk<ProcessFileTask>(relaxed = true)
-        every { processFileTaskFactory.make(any(), any(), any()) } returns processFileTask
+        every { processFileTaskFactory.make(any(), any(), any(), any()) } returns processFileTask
 
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        destinationTaskLauncher.handleFile(mockk(), mockk())
+        destinationTaskLauncher.handleFile(mockk(), mockk(), 1L)
 
         coVerify { exceptionHandler.withExceptionHandling(processFileTask) }
         coVerify { taskScopeProvider.launch(wrappedTask) }

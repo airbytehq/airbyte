@@ -173,20 +173,26 @@ data class DestinationFile(
         var sourceFileUrl: String? = null
     }
 
-    override fun asProtocolMessage(): AirbyteMessage =
-        AirbyteMessage()
+    override fun asProtocolMessage(): AirbyteMessage {
+        val file =
+            mapOf(
+                "file_url" to fileMessage.fileUrl,
+                "file_relative_path" to fileMessage.fileRelativePath,
+                "source_file_url" to fileMessage.sourceFileUrl,
+                "modified" to fileMessage.modified,
+                "bytes" to fileMessage.bytes,
+            )
+
+        return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
                     .withStream(stream.name)
                     .withNamespace(stream.namespace)
                     .withEmittedAt(emittedAtMs)
-                    .withAdditionalProperty("file_url", fileMessage.fileUrl)
-                    .withAdditionalProperty("file_relative_path", fileMessage.fileRelativePath)
-                    .withAdditionalProperty("source_file_url", fileMessage.sourceFileUrl)
-                    .withAdditionalProperty("modified", fileMessage.modified)
-                    .withAdditionalProperty("bytes", fileMessage.bytes)
+                    .withAdditionalProperty("file", file)
             )
+    }
 }
 
 private fun statusToProtocolMessage(
@@ -352,7 +358,7 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
@@ -378,30 +384,22 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (fileTransferEnabled) {
+                    @Suppress("UNCHECKED_CAST")
+                    val fileMessage =
+                        message.record.additionalProperties["file"] as Map<String, Any>
+
                     DestinationFile(
                         stream = stream.descriptor,
                         emittedAtMs = message.record.emittedAt,
                         serialized = serialized,
                         fileMessage =
                             DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl =
-                                    message.record.additionalProperties["file_url"] as String?,
-                                bytes =
-                                    toLong(
-                                        message.record.additionalProperties["bytes"],
-                                        "message.record.bytes"
-                                    ),
-                                fileRelativePath =
-                                    message.record.additionalProperties["file_relative_path"]
-                                        as String?,
+                                fileUrl = fileMessage["file_url"] as String?,
+                                bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
+                                fileRelativePath = fileMessage["file_relative_path"] as String?,
                                 modified =
-                                    toLong(
-                                        message.record.additionalProperties["modified"],
-                                        "message.record.modified"
-                                    ),
-                                sourceFileUrl =
-                                    message.record.additionalProperties["source_file_url"]
-                                        as String?
+                                    toLong(fileMessage["modified"], "message.record.modified"),
+                                sourceFileUrl = fileMessage["source_file_url"] as String?
                             )
                     )
                 } else {

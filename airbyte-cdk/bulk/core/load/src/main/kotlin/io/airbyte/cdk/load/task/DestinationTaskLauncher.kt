@@ -52,7 +52,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
-    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile)
+    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long)
 }
 
 /**
@@ -117,7 +117,7 @@ class DefaultDestinationTaskLauncher(
 
     // Exception handling
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
     // Input Comsumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
@@ -266,7 +266,11 @@ class DefaultDestinationTaskLauncher(
         succeeded.send(true)
     }
 
-    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile) {
-        enqueue(processFileTaskFactory.make(this, stream, file))
+    override suspend fun handleFile(
+        stream: DestinationStream.Descriptor,
+        file: DestinationFile,
+        index: Long
+    ) {
+        enqueue(processFileTaskFactory.make(this, stream, file, index))
     }
 }
