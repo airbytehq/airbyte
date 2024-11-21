@@ -234,52 +234,52 @@ class DestinationMessageTest {
                 )
 
             return listOf(
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage()
-                            .withStream("name")
-                            .withNamespace("namespace")
-                            .withEmittedAt(1234)
-                            .withAdditionalProperty("file", file)
-                    ),
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withEmittedAt(1234.0)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    // Intentionally no "reasons" here - destinations never
-                                    // inspect that
-                                    // field, so it's not round-trippable
-                                    .withStreamDescriptor(descriptor.asProtocolObject())
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                            .COMPLETE
-                                    )
-                            )
-                    ),
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withEmittedAt(1234.0)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    // Intentionally no "reasons" here - destinations never
-                                    // inspect that
-                                    // field, so it's not round-trippable
-                                    .withStreamDescriptor(descriptor.asProtocolObject())
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                            .INCOMPLETE
-                                    )
-                            )
-                    ),
-            )
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            AirbyteRecordMessage()
+                                .withStream("name")
+                                .withNamespace("namespace")
+                                .withEmittedAt(1234)
+                                .withAdditionalProperty("file", file)
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .COMPLETE
+                                        )
+                                )
+                        ),
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withEmittedAt(1234.0)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        // Intentionally no "reasons" here - destinations never
+                                        // inspect that
+                                        // field, so it's not round-trippable
+                                        .withStreamDescriptor(descriptor.asProtocolObject())
+                                        .withStatus(
+                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                                .INCOMPLETE
+                                        )
+                                )
+                        ),
+                )
                 .map { Arguments.of(it) }
         }
     }
