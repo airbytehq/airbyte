@@ -7,6 +7,10 @@ package io.airbyte.cdk.load.data.icerberg.parquet
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteTypeToIcebergSchema
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.protocol.models.Jsons
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.*
@@ -28,9 +32,13 @@ class AirbyteTypeToIcebergSchemaTest {
             )
         val result = converter.convert(objectType) as Types.StructType
 
-        assertEquals(2, result.fields().size)
+        assertEquals(6, result.fields().size)
         val idField = result.field("id")
         val nameField = result.field("name")
+        val airbyteMetadataRawId = result.field(COLUMN_NAME_AB_RAW_ID)
+        val airbyteMetadataExtractedAt = result.field(COLUMN_NAME_AB_EXTRACTED_AT)
+        val airbyteMetadataMeta = result.field(COLUMN_NAME_AB_META)
+        val airbyteMetadataGenerationId = result.field(COLUMN_NAME_AB_GENERATION_ID)
 
         assertNotNull(idField)
         assertFalse(idField.isOptional)
@@ -39,6 +47,22 @@ class AirbyteTypeToIcebergSchemaTest {
         assertNotNull(nameField)
         assertTrue(nameField.isOptional)
         assertEquals(Types.StringType.get(), nameField.type())
+
+        assertNotNull(airbyteMetadataRawId)
+        assertFalse(airbyteMetadataRawId!!.isOptional)
+        assertEquals(Types.LongType.get(), airbyteMetadataRawId.type())
+
+        assertNotNull(airbyteMetadataExtractedAt)
+        assertFalse(airbyteMetadataExtractedAt!!.isOptional)
+        assertEquals(Types.LongType.get(), airbyteMetadataExtractedAt.type())
+
+        assertNotNull(airbyteMetadataMeta)
+        assertFalse(airbyteMetadataMeta!!.isOptional)
+        assertTrue(airbyteMetadataMeta.type().isStructType)
+
+        assertNotNull(airbyteMetadataGenerationId)
+        assertFalse(airbyteMetadataGenerationId!!.isOptional)
+        assertEquals(Types.LongType.get(), airbyteMetadataGenerationId.type())
     }
 
     @Test

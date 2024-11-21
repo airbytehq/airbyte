@@ -21,6 +21,10 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
@@ -32,25 +36,7 @@ class AirbyteTypeToIcebergSchema {
     fun convert(airbyteSchema: AirbyteType): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
-                Types.StructType.of(
-                    *airbyteSchema.properties.entries
-                        .map { (name, field) ->
-                            if (field.nullable) {
-                                NestedField.optional(
-                                    UUID.randomUUID().hashCode(),
-                                    name,
-                                    convert(field.type)
-                                )
-                            } else {
-                                NestedField.required(
-                                    UUID.randomUUID().hashCode(),
-                                    name,
-                                    convert(field.type)
-                                )
-                            }
-                        }
-                        .toTypedArray()
-                )
+                Types.StructType.of(*convertToIcebergStruct(airbyteSchema).toTypedArray())
             }
             is ArrayType -> {
                 val convert = convert(airbyteSchema.items.type)
@@ -90,16 +76,90 @@ class AirbyteTypeToIcebergSchema {
             is UnknownType -> Types.StringType.get()
         }
     }
+
+    private fun convertToIcebergStruct(objectType: ObjectType): List<NestedField> {
+        return createAirbyteMetadataFields() +
+            objectType.properties.entries.map { (name, field) ->
+                if (field.nullable) {
+                    NestedField.optional(UUID.randomUUID().hashCode(), name, convert(field.type))
+                } else {
+                    NestedField.required(UUID.randomUUID().hashCode(), name, convert(field.type))
+                }
+            }
+    }
+
+    private fun createAirbyteMetadataFields(): List<NestedField> {
+        return listOf(
+            NestedField.of(
+                generatedSchemaFieldId(),
+                false,
+                COLUMN_NAME_AB_RAW_ID,
+                Types.LongType.get()
+            ),
+            NestedField.of(
+                generatedSchemaFieldId(),
+                false,
+                COLUMN_NAME_AB_EXTRACTED_AT,
+                Types.LongType.get()
+            ),
+            NestedField.of(
+                UUID.randomUUID().hashCode(),
+                false,
+                COLUMN_NAME_AB_META,
+                Types.StructType.of(
+                    NestedField.of(
+                        generatedSchemaFieldId(),
+                        false,
+                        "sync_id",
+                        Types.LongType.get()
+                    ),
+                    NestedField.of(
+                        generatedSchemaFieldId(),
+                        false,
+                        "changes",
+                        Types.ListType.ofRequired(
+                            generatedSchemaFieldId(),
+                            Types.StructType.of(
+                                NestedField.of(
+                                    generatedSchemaFieldId(),
+                                    false,
+                                    "field",
+                                    Types.StringType.get()
+                                ),
+                                NestedField.of(
+                                    generatedSchemaFieldId(),
+                                    false,
+                                    "change",
+                                    Types.StringType.get()
+                                ),
+                                NestedField.of(
+                                    generatedSchemaFieldId(),
+                                    false,
+                                    "reason",
+                                    Types.StringType.get()
+                                ),
+                            )
+                        )
+                    )
+                )
+            ),
+            NestedField.of(
+                UUID.randomUUID().hashCode(),
+                false,
+                COLUMN_NAME_AB_GENERATION_ID,
+                Types.LongType.get()
+            ),
+        )
+    }
 }
 
 fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
     val mutableListOf = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
-
     val icebergTypeConverter = AirbyteTypeToIcebergSchema()
     this.properties.entries.forEach { (name, field) ->
-        val id = UUID.randomUUID().hashCode()
+        val id = generatedSchemaFieldId()
         mutableListOf.add(
             NestedField.of(
                 id,
@@ -114,3 +174,5 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
     }
     return Schema(mutableListOf, identifierFields)
 }
+
+private fun generatedSchemaFieldId() = UUID.randomUUID().hashCode()
