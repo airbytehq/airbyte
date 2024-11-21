@@ -99,6 +99,9 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+
+    val nextPartNumber: Long
+        get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
