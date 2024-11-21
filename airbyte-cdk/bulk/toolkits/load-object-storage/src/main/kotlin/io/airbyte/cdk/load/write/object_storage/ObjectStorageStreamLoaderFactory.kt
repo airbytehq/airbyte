@@ -76,12 +76,9 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
     override suspend fun start() {
         val state = destinationStateManager.getState(stream)
-        val maxPartNumber =
-            state.generations
-                .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
-                .maxOrNull()
-        log.info { "Got max part number from destination state: $maxPartNumber" }
-        maxPartNumber?.let { partNumber.set(it + 1L) }
+        val nextPartNumber = state.nextPartNumber
+        log.info { "Got next part number from destination state: $nextPartNumber" }
+        partNumber.set(nextPartNumber)
     }
 
     override suspend fun processRecords(
