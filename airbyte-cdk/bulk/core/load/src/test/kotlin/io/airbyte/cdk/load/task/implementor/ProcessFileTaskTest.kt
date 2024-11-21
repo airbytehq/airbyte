@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
@@ -24,8 +25,9 @@ class ProcessFileTaskTest {
     private val taskLauncher: DestinationTaskLauncher = mockk(relaxed = true)
     private val syncManager: SyncManager = mockk(relaxed = true)
     private val file: DestinationFile = mockk(relaxed = true)
+    private val index = 1234L
 
-    val defaultProcessFileTask = DefaultProcessFileTask(stream, taskLauncher, syncManager, file)
+    val defaultProcessFileTask = DefaultProcessFileTask(stream, taskLauncher, syncManager, file, index)
 
     @Test
     fun `the the file process task execution`() = runTest {
@@ -36,6 +38,6 @@ class ProcessFileTaskTest {
 
         defaultProcessFileTask.execute()
 
-        coVerify { taskLauncher.handleNewBatch(stream, BatchEnvelope(batch)) }
+        coVerify { taskLauncher.handleNewBatch(stream, BatchEnvelope(batch, Range.singleton(index))) }
     }
 }

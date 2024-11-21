@@ -49,7 +49,7 @@ class MockTaskLauncher : DestinationTaskLauncher {
         throw NotImplementedError()
     }
 
-    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile) {
+    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long) {
         throw NotImplementedError()
     }
 
