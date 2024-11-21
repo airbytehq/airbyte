@@ -69,21 +69,21 @@ internal class IcebergTableCleanerTest {
     @Test
     fun `deleteGenerationId handles empty scan results gracefully`() {
         val cleaner = IcebergTableCleaner()
-        val generationIdSuffix = "ab-generation-id-0"
+        val generationIdSuffix = "ab-generation-id-0-e"
 
         val tasks = CloseableIterable.empty<FileScanTask>()
         val table = mockk<Table>()
         every { table.newScan().planFiles() } returns tasks
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, generationIdSuffix) }
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf(generationIdSuffix)) }
         verify(exactly = 0) { table.newDelete() }
     }
 
     @Test
     fun `deleteGenerationId deletes matching file via deleteFile`() {
         val cleaner = IcebergTableCleaner()
-        val generationIdSuffix = "ab-generation-id-0"
-        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0.parquet"
+        val generationIdSuffix = "ab-generation-id-0-e"
+        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
         val table = mockk<Table>()
 
@@ -100,7 +100,7 @@ internal class IcebergTableCleanerTest {
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, generationIdSuffix) }
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf(generationIdSuffix)) }
 
         verify {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
@@ -113,8 +113,8 @@ internal class IcebergTableCleanerTest {
     @Test
     fun `deleteGenerationId should not delete non matching file via deleteFile`() {
         val cleaner = IcebergTableCleaner()
-        val generationIdSuffix = "ab-generation-id-1"
-        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-1.parquet"
+        val generationIdSuffix = "ab-generation-id-10-e"
+        val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-10-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
         val table = mockk<Table>()
 
@@ -131,7 +131,7 @@ internal class IcebergTableCleanerTest {
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
         every { delete.commit() } just Runs
 
-        assertDoesNotThrow { cleaner.deleteGenerationId(table, "ab-generation-id-0") }
+        assertDoesNotThrow { cleaner.deleteGenerationId(table, listOf("ab-generation-id-1-e")) }
 
         verify(exactly = 0) {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)

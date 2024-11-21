@@ -240,7 +240,7 @@ internal class IcebergUtilTest {
 
     @Test
     fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
-        val validGenerationId = "ab-generation-id-123"
+        val validGenerationId = "ab-generation-id-123-e"
         assertDoesNotThrow {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
         }
@@ -254,7 +254,7 @@ internal class IcebergUtilTest {
                 IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
-            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>'",
+            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
             exception.message
         )
     }
@@ -267,7 +267,7 @@ internal class IcebergUtilTest {
                 IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
-            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>'",
+            "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
             exception.message
         )
     }
@@ -276,7 +276,7 @@ internal class IcebergUtilTest {
     fun `constructGenerationIdSuffix constructs valid suffix`() {
         val stream = mockk<DestinationStream>()
         every { stream.generationId } returns 42
-        val expectedSuffix = "ab-generation-id-42"
+        val expectedSuffix = "ab-generation-id-42-e"
         val result = IcebergUtil.constructGenerationIdSuffix(stream)
         assertEquals(expectedSuffix, result)
     }

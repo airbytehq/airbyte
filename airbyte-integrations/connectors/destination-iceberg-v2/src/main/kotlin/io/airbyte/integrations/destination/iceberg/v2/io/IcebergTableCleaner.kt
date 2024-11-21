@@ -41,15 +41,22 @@ class IcebergTableCleaner {
             io.deletePrefix(tableLocation)
         }
     }
-    fun deleteGenerationId(table: Table, generationIdSuffix: String) {
-        assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
-        table.newScan().planFiles().use { tasks ->
-            for (task in tasks) {
-                val filePath = task.file().path().toString()
-                if (filePath.contains(generationIdSuffix)) {
-                    table.newDelete().deleteFile(task.file().path()).commit()
+
+    fun deleteGenerationId(table: Table, generationIdSuffix: List<String>) {
+        val genIdsToDelete =
+            generationIdSuffix
+                .filter {
+                    assertGenerationIdSuffixIsOfValidFormat(it)
+                    true
                 }
-            }
+                .toSet()
+
+        table.newScan().planFiles().use { tasks ->
+            tasks
+                .filter { task ->
+                    genIdsToDelete.any { id -> task.file().path().toString().contains(id) }
+                }
+                .forEach { task -> table.newDelete().deleteFile(task.file().path()).commit() }
         }
     }
 }

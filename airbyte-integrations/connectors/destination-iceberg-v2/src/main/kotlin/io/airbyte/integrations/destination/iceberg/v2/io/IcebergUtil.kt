@@ -35,11 +35,11 @@ private val logger = KotlinLogging.logger {}
 object IcebergUtil {
     internal class InvalidFormatException(message: String) : Exception(message)
 
-    private val generationIdRegex = Regex("^ab-generation-id-\\d+\$")
+    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
     fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
         if (!generationIdRegex.matches(generationId)) {
             throw InvalidFormatException(
-                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>'",
+                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
             )
         }
     }
@@ -54,7 +54,7 @@ object IcebergUtil {
                 "GenerationId must be non-negative. Provided: ${generationId}",
             )
         }
-        return "ab-generation-id-${generationId}"
+        return "ab-generation-id-${generationId}-e"
     }
     /**
      * Builds an Iceberg [Catalog].

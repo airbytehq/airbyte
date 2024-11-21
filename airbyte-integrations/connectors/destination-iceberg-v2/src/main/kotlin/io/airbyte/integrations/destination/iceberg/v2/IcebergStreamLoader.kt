@@ -63,7 +63,7 @@ class IcebergStreamLoader(
                 log.info { "Finished writing records to $stagingBranchName" }
             }
 
-        return SimpleBatch(Batch.State.COMPLETED)
+        return SimpleBatch(Batch.State.COMPLETE)
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
@@ -74,13 +74,10 @@ class IcebergStreamLoader(
         if (streamFailure == null) {
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
+                val generationIdsToDelete =
+                    (0 until stream.minimumGenerationId).map { constructGenerationIdSuffix(it) }
                 val icebergTableCleaner = IcebergTableCleaner()
-                for (i in 0 until stream.minimumGenerationId) {
-                    icebergTableCleaner.deleteGenerationId(
-                        table,
-                        constructGenerationIdSuffix(i),
-                    )
-                }
+                icebergTableCleaner.deleteGenerationId(table, generationIdsToDelete)
             }
         }
     }

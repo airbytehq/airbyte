@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class IcebergTableWriterFactoryTest {
-    private val generationIdSuffix: String = "ab-generation-id-0"
+    private val generationIdSuffix: String = "ab-generation-id-0-e"
 
     @Test
     fun testCreateWriterPartitionedDeltas() {
@@ -113,7 +113,10 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory()
         val writer =
-            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
+            factory.create(
+                table = table,
+                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
+            )
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -159,7 +162,10 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory()
         val writer =
-            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
+            factory.create(
+                table = table,
+                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
+            )
         assertNotNull(writer)
         assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
     }
@@ -205,7 +211,10 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory()
         val writer =
-            factory.create(table = table, generationId = (generationIdSuffix + Random.nextInt(100)))
+            factory.create(
+                table = table,
+                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
+            )
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }
