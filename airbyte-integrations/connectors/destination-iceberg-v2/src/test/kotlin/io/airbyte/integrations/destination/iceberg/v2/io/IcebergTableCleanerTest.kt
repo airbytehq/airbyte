@@ -98,9 +98,9 @@ internal class IcebergTableCleanerTest {
         every { fileScanTask.file().path().toString() } returns filePathToDelete
 
         val delete = mockk<DeleteFiles>()
-        every { table.newDelete() } returns delete
+        every { table.newDelete().toBranch("staging") } returns delete
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
-        every { delete.toBranch("staging").commit() } just Runs
+        every { delete.commit() } just Runs
 
         assertDoesNotThrow {
             cleaner.deleteGenerationId(table, "staging", listOf(generationIdSuffix))
@@ -108,9 +108,9 @@ internal class IcebergTableCleanerTest {
 
         verify {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
-            table.newDelete()
+            table.newDelete().toBranch(eq("staging"))
             delete.deleteFile(fileScanTask.file().path())
-            delete.toBranch("staging").commit()
+            delete.commit()
         }
     }
 
@@ -131,9 +131,9 @@ internal class IcebergTableCleanerTest {
         every { fileScanTask.file().path().toString() } returns filePathToDelete
 
         val delete = mockk<DeleteFiles>()
-        every { table.newDelete() } returns delete
+        every { table.newDelete().toBranch("staging") } returns delete
         every { delete.deleteFile(fileScanTask.file().path()) } returns delete
-        every { delete.toBranch("staging").commit() } just Runs
+        every { delete.commit() } just Runs
 
         assertDoesNotThrow {
             cleaner.deleteGenerationId(table, "staging", listOf("ab-generation-id-1-e"))
@@ -141,9 +141,9 @@ internal class IcebergTableCleanerTest {
 
         verify(exactly = 0) {
             IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
-            table.newDelete()
+            table.newDelete().toBranch(any())
             delete.deleteFile(any<DataFile>())
-            delete.toBranch(any()).commit()
+            delete.commit()
         }
     }
 }
