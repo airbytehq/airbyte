@@ -18,6 +18,7 @@ include = "source_klaviyo"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte_cdk = "^6"
+ddtrace = "2.16.4"
 
 [tool.poetry.scripts]
 source-klaviyo = "source_klaviyo.run:run"
