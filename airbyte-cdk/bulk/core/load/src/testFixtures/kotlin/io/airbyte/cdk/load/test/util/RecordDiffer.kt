@@ -5,9 +5,19 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -22,6 +32,15 @@ class RecordDiffer(
     val primaryKey: List<List<String>> = emptyList(),
     /** The path to the cursor from a record, or null if the stream has no cursor. */
     val cursor: List<String>? = null,
+    /**
+     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between a
+     * value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs `null ::
+     * jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
+     *
+     * Set this parameter to true for destinations which do not support this distinction (e.g. Avro
+     * files).
+     */
+    val nullEqualsUnset: Boolean = false,
 ) {
     private fun extract(data: Map<String, AirbyteValue>, path: List<String>): AirbyteValue {
         return when (path.size) {
@@ -62,12 +81,7 @@ class RecordDiffer(
             )
         }
 
-        // Compare each PK field in order, until we find a field that the two records differ in.
-        // If all the fields are equal, then these two records have the same PK.
-        pk1.zip(pk2)
-            .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
-            .firstOrNull { it != 0 }
-            ?: 0
+        comparePks(pk1, pk2)
     }
 
     /**
@@ -217,17 +231,22 @@ class RecordDiffer(
                 val expectedPresent: Boolean = expectedRecord.data.values.containsKey(key)
                 val actualPresent: Boolean = actualRecord.data.values.containsKey(key)
                 if (expectedPresent && !actualPresent) {
-                    // The expected record contained this key, but the actual record was missing
-                    // this key.
-                    diff.append(
-                        "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
-                    )
+                    if (!nullEqualsUnset || expectedRecord.data.values[key] !is NullValue) {
+                        // The expected record contained this key, but the actual record was missing
+                        // this key.
+                        diff.append(
+                            "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
+                        )
+                    }
                 } else if (!expectedPresent && actualPresent) {
-                    // The expected record didn't contain this key, but the actual record contained
-                    // this key.
-                    diff.append(
-                        "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
-                    )
+                    if (!nullEqualsUnset || actualRecord.data.values[key] !is NullValue) {
+                        // The expected record didn't contain this key, but the actual record
+                        // contained
+                        // this key.
+                        diff.append(
+                            "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
+                        )
+                    }
                 } else if (expectedPresent && actualPresent) {
                     // The expected and actual records both contain this key.
                     // Compare the values for equality.
@@ -235,7 +254,7 @@ class RecordDiffer(
                     // with it explicitly in the condition)
                     val expectedValue = expectedRecord.data.values[key]
                     val actualValue = actualRecord.data.values[key]
-                    if (expectedValue != actualValue) {
+                    if (valueComparator.compare(expectedValue, actualValue) != 0) {
                         diff.append("$key: Expected $expectedValue, but was $actualValue\n")
                     }
                 }
@@ -248,16 +267,81 @@ class RecordDiffer(
         val valueComparator: Comparator<AirbyteValue> =
             Comparator.nullsFirst { v1, v2 -> compare(v1!!, v2!!) }
 
+        /**
+         * Compare each PK field in order, until we find a field that the two records differ in. If
+         * all the fields are equal, then these two records have the same PK.
+         */
+        fun comparePks(pk1: List<AirbyteValue?>, pk2: List<AirbyteValue?>) =
+            (pk1.zip(pk2)
+                .map { (pk1Field, pk2Field) -> valueComparator.compare(pk1Field, pk2Field) }
+                .firstOrNull { it != 0 }
+                ?: 0)
+
         private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
+            if (v1 is UnknownValue) {
+                return compare(
+                    JsonToAirbyteValue().fromJson(v1.value),
+                    v2,
+                )
+            }
+            if (v2 is UnknownValue) {
+                return compare(
+                    v1,
+                    JsonToAirbyteValue().fromJson(v2.value),
+                )
+            }
+
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though
             return if (v1::class != v2::class) {
                 v1::class.jvmName.compareTo(v2::class.jvmName)
             } else {
-                // otherwise, just be a terrible person.
-                // we know these are the same type, so this is safe to do.
-                @Suppress("UNCHECKED_CAST") (v1 as Comparable<AirbyteValue>).compareTo(v2)
+                // Handle temporal types specifically, because they require explicit parsing
+                return when (v1) {
+                    is DateValue ->
+                        try {
+                            LocalDate.parse(v1.value)
+                                .compareTo(LocalDate.parse((v2 as DateValue).value))
+                        } catch (e: Exception) {
+                            v1.value.compareTo((v2 as DateValue).value)
+                        }
+                    is TimeValue -> {
+                        try {
+                            val time1 = LocalTime.parse(v1.value)
+                            val time2 = LocalTime.parse((v2 as TimeValue).value)
+                            time1.compareTo(time2)
+                        } catch (e: Exception) {
+                            try {
+                                val time1 = OffsetTime.parse(v1.value)
+                                val time2 = OffsetTime.parse((v2 as TimeValue).value)
+                                time1.compareTo(time2)
+                            } catch (e: Exception) {
+                                v1.value.compareTo((v2 as TimeValue).value)
+                            }
+                        }
+                    }
+                    is TimestampValue -> {
+                        try {
+                            val ts1 = LocalDateTime.parse(v1.value)
+                            val ts2 = LocalDateTime.parse((v2 as TimestampValue).value)
+                            ts1.compareTo(ts2)
+                        } catch (e: Exception) {
+                            try {
+                                val ts1 = OffsetDateTime.parse(v1.value)
+                                val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
+                                ts1.compareTo(ts2)
+                            } catch (e: Exception) {
+                                v1.value.compareTo((v2 as TimestampValue).value)
+                            }
+                        }
+                    }
+                    // otherwise, just be a terrible person.
+                    // we know these are the same type, so this is safe to do.
+                    is Comparable<*> ->
+                        @Suppress("UNCHECKED_CAST") (v1 as Comparable<AirbyteValue>).compareTo(v2)
+                    else -> if (v1 == v2) 0 else 1
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ data:
   connectorType: source
   definitionId: 64a2f99c-542f-4af8-9a6f-355f1217b436
   # This version should not be updated manually - it is updated by the CDK release workflow.
-  dockerImageTag: 5.16.0
+  dockerImageTag: 6.5.2
   dockerRepository: airbyte/source-declarative-manifest
   # This page is hidden from the docs for now, since the connector is not in any Airbyte registries.
   documentationUrl: https://docs.airbyte.com/integrations/sources/low-code

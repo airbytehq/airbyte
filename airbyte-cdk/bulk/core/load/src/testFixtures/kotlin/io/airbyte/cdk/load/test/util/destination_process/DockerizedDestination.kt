@@ -5,14 +5,14 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.util.deserializeToClass
+import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Value
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 import java.nio.file.Files
@@ -20,7 +20,6 @@ import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
-import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -128,7 +127,7 @@ class DockerizedDestination(
             cmd.add("destination_$paramName.json")
         }
         configContents?.let { addInput("config", it.toByteArray(Charsets.UTF_8)) }
-        catalog?.let { addInput("catalog", Jsons.writeValueAsBytes(catalog)) }
+        catalog?.let { addInput("catalog", catalog.serializeToJsonBytes()) }
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
@@ -146,7 +145,7 @@ class DockerizedDestination(
                         val line = destinationStdout.nextLine()
                         val message =
                             try {
-                                Jsons.readValue(line, AirbyteMessage::class.java)
+                                line.deserializeToClass(AirbyteMessage::class.java)
                             } catch (e: Exception) {
                                 // If a destination logs non-json output, just echo it
                                 getMdcScope().use { logger.info { line } }
@@ -208,7 +207,7 @@ class DockerizedDestination(
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdin.write(Jsons.writeValueAsString(message))
+        destinationStdin.write(message.serializeToString())
         destinationStdin.newLine()
     }
 
@@ -228,7 +227,11 @@ class DockerizedDestination(
             process.waitFor()
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                throw DestinationUncleanExitException.of(exitCode, destinationOutput.traces())
+                throw DestinationUncleanExitException.of(
+                    exitCode,
+                    destinationOutput.traces(),
+                    destinationOutput.states(),
+                )
             }
         }
     }
@@ -238,20 +241,9 @@ class DockerizedDestination(
     }
 }
 
-@Singleton
-@Requires(env = [DOCKERIZED_TEST_ENV])
 class DockerizedDestinationFactory(
-    // Note that this is not the same property as in MetadataYamlPropertySource.
-    // We get this because IntegrationTest manually sets "classpath:metadata.yaml"
-    // as a property source.
-    // MetadataYamlPropertySource has nothing to do with this property.
-    @Value("\${data.docker-repository}") val imageName: String,
-    // Most tests will just use micronaut to inject this.
-    // But some tests will want to manually instantiate an instance,
-    // e.g. to run an older version of the connector.
-    // So we just hardcode 'dev' here; manual callers can pass in
-    // whatever they want.
-    @Value("dev") val imageVersion: String,
+    private val imageName: String,
+    private val imageVersion: String,
 ) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
