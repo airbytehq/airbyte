@@ -223,58 +223,64 @@ class DestinationMessageTest {
                 .map { Arguments.of(it) }
 
         @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> =
-            listOf(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(
-                            AirbyteRecordMessage()
-                                .withStream("name")
-                                .withNamespace("namespace")
-                                .withEmittedAt(1234)
-                                .withAdditionalProperty("file_url", "file://foo/bar")
-                                .withAdditionalProperty("bytes", 9001L)
-                                .withAdditionalProperty("file_relative_path", "foo/bar")
-                                .withAdditionalProperty("modified", 123L)
-                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
-                        ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .COMPLETE
-                                        )
-                                )
-                        ),
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withEmittedAt(1234.0)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        // Intentionally no "reasons" here - destinations never
-                                        // inspect that
-                                        // field, so it's not round-trippable
-                                        .withStreamDescriptor(descriptor.asProtocolObject())
-                                        .withStatus(
-                                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-                                                .INCOMPLETE
-                                        )
-                                )
-                        ),
+        fun roundTrippableFileMessages(): List<Arguments> {
+            val file =
+                mapOf(
+                    "file_url" to "file://foo/bar",
+                    "file_relative_path" to "foo/bar",
+                    "source_file_url" to "file://source/foo/bar",
+                    "modified" to 123L,
+                    "bytes" to 9001L,
                 )
+
+            return listOf(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        AirbyteRecordMessage()
+                            .withStream("name")
+                            .withNamespace("namespace")
+                            .withEmittedAt(1234)
+                            .withAdditionalProperty("file", file)
+                    ),
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    // Intentionally no "reasons" here - destinations never
+                                    // inspect that
+                                    // field, so it's not round-trippable
+                                    .withStreamDescriptor(descriptor.asProtocolObject())
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                            .COMPLETE
+                                    )
+                            )
+                    ),
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    // Intentionally no "reasons" here - destinations never
+                                    // inspect that
+                                    // field, so it's not round-trippable
+                                    .withStreamDescriptor(descriptor.asProtocolObject())
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+                                            .INCOMPLETE
+                                    )
+                            )
+                    ),
+            )
                 .map { Arguments.of(it) }
+        }
     }
 }
