@@ -50,23 +50,26 @@ class ObjectStorageStreamLoaderTest {
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
             DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl)
-        every { pathFactory.getStagingDirectory(any()) } returns stagingDirectory
+        every { pathFactory.getFinalDirectory(any()) } returns stagingDirectory
         every { stream.generationId } returns generationId
+        val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
+        coEvery { destinationStateManager.getState(stream) } returns mockedStateStorage
 
         val expectedKey = Path.of(stagingDirectory.toString(), fileUrl).toString()
         val metadata =
             mapOf(
                 ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY to generationId.toString()
             )
-        val mockRemoteObject: RemoteObject<Int> = mockk()
+        val mockRemoteObject: RemoteObject<Int> = mockk(relaxed = true)
         coEvery { client.streamingUpload(any(), any(), compressor, any()) } returns mockRemoteObject
 
         val result = objectStorageStreamLoader.processFile(destinationFile)
 
+        coVerify { mockedStateStorage.addObject(generationId, expectedKey, 0, false) }
         coVerify { client.streamingUpload(expectedKey, metadata, compressor, any()) }
         assertEquals(
             mockRemoteObject,
-            (result as ObjectStorageStreamLoader.FileObject<*>).remoteObject
+            (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
         )
     }
 }

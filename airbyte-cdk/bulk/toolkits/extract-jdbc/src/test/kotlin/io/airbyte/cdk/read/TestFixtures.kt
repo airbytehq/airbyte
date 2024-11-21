@@ -190,6 +190,9 @@ object TestFixtures {
     object MockStateQuerier : StateQuerier {
         override val feeds: List<Feed> = listOf()
         override fun current(feed: Feed): OpaqueStateValue? = null
+        override fun resetFeedStates() {
+            // no-op
+        }
     }
 
     object MockMetaFieldDecorator : MetaFieldDecorator {
@@ -212,6 +215,9 @@ object TestFixtures {
                 object : StateQuerier {
                     override val feeds: List<Feed> = listOf(this@bootstrap)
                     override fun current(feed: Feed): OpaqueStateValue? = opaqueStateValue
+                    override fun resetFeedStates() {
+                        // no-op
+                    }
                 },
             stream = this
         )
