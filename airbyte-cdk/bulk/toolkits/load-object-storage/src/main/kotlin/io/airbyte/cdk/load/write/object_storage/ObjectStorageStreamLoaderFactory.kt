@@ -125,7 +125,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             generationId = stream.generationId,
             key = key,
             partNumber = 0,
-            isStaging = false)
+            isStaging = false
+        )
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
