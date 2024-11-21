@@ -316,7 +316,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 }
             }
 
+            // Forcefully kill the destination
             destination.kill()
+            
             runSync(configContents, DestinationCatalog(listOf(stream1)), listOf())
 
             // for each state message, verify that it's a valid state,
