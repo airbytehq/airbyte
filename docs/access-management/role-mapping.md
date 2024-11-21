@@ -75,22 +75,24 @@ Below is an example Python script using the above prerequisite files and the `ai
 import json
 import airbyte_api
 from airbyte_api import api, models
+from airbyte_api.models.schemeclientcredentials import SchemeClientCredentials
 
 usersGroupsFile = open('usersGroups.json')
 usersGroups = json.load(usersGroupsFile)
 groupPermissionsFile = open('groupPermissions.json')
 groupPermissions = json.load(groupPermissionsFile)
 
-# 0. - Enter your own credentials to use Airbyte API. 
+0. - Enter your own credentials to use Airbyte API.
 s = airbyte_api.AirbyteAPI(
+  server_url = 'http://<airbyte-base-url>.com/api/public/v1',
   security=models.Security(
-    bearer_auth='...'
+    bearer_auth='Bearer XXXX'
   ),
 )
 
 # 1. - List all users in your organization. Find your organization ID in the Airbyte settings page.
-res = s.users.list_users(request=api.ListUsersRequest(
-  api.ListUsersRequest(organization_id='00000000-00000000-00000000-00000000')
+res = s.users.list_users_within_an_organization(request=api.ListUsersWithinAnOrganizationRequest(
+  api.ListUsersWithinAnOrganizationRequest(organization_id='XXXX-XXXX')
 ))
 
 allAirbyteUsers = res.users_response.data
@@ -101,19 +103,34 @@ print("all users: ", allAirbyteUsers)
 for airbyteUserResponse in allAirbyteUsers:
   if airbyteUserResponse.email in usersGroups:
     userGroups = usersGroups[airbyteUserResponse.email]
+    permission_response = s.permissions.list_permissions(api.ListPermissionsRequest(organization_id=default_organization_id, user_id=airbyteUserResponse.id)).permissions_response.data
+    existing_permissions = {}
+    for permission in permission_response:
+        existing_permissions[permission.scope_id] = (permission.permission_type.value.lower(), permission.permission_id)
+    print("existing permissions: ", existing_permissions)
     # for each group where user belongs to
     for group in userGroups:
       if group in groupPermissions:
         permissionsToGrant = groupPermissions[group]
-	 # for each permission to create
+	  # for each permission to create
         for permission in permissionsToGrant:
+          current_permission = existing_permissions.get(permission["scopeId"], None)
+          if (current_permission is not None and permission["permissionType"].lower() == current_permission[0]):
+            print("Permission already granted: ", permission)
+            continue
+          if current_permission:
+            # delete existing permission
+            s.permissions.delete_permission(
+               request=api.DeletePermissionRequest(
+                   permission_id=current_permission[1]
+               ))
           print("permission to grant: ", permission)
           if permission["scope"] == "workspace":
             # create workspace level permission
             permissionCreated = s.permissions.create_permission(
               request=models.PermissionCreateRequest(
                 permission_type=permission["permissionType"],
-                user_id=airbyteUserResponse.user_id,
+                user_id=airbyteUserResponse.id,
                 workspace_id=permission["scopeId"]
               ))
           elif permission["scope"] == "organization":
@@ -121,7 +138,7 @@ for airbyteUserResponse in allAirbyteUsers:
             permissionCreated = s.permissions.create_permission(
               request=models.PermissionCreateRequest(
                 permission_type=permission["permissionType"],
-                user_id=airbyteUserResponse.user_id,
+                user_id=airbyteUserResponse.id,
                 organization_id=permission["scopeId"]
               ))
           else:
