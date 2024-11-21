@@ -11,7 +11,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 class MockDestinationConfiguration : DestinationConfiguration() {
-    // Microbatch for testing
+    // Micro-batch for testing.
     override val recordBatchSizeBytes = 1L
 }
 

@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 interface PathFactory {
+    fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
     fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
     fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
     fun getPathToFile(
@@ -193,11 +194,15 @@ class ObjectStoragePathFactory(
                 PathVariable("EPOCH", """\d+""") { it.time.toEpochMilli().toString() },
                 PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
             )
-        val PATH_VARIABLES_STREAM_CONSTANT = PATH_VARIABLES.filter { it.variable != "UUID" }
+        val PATH_VARIABLES_STREAM_CONSTANT =
+            PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
         val FILENAME_VARIABLES =
             listOf(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
-                FileVariable("timestamp", """\d+""") { it.time.toEpochMilli().toString() },
+                FileVariable("timestamp", """\d+""") {
+                    // NOTE: We use a constant time for the path but wall time for the files
+                    Instant.now().toEpochMilli().toString()
+                },
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
@@ -235,6 +240,19 @@ class ObjectStoragePathFactory(
                 if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
             )
         return Paths.get(prefix, path)
+    }
+
+    override fun getLongestStreamConstantPrefix(
+        stream: DestinationStream,
+        isStaging: Boolean
+    ): String {
+        return if (isStaging) {
+                getStagingDirectory(stream, streamConstant = true)
+            } else {
+                getFinalDirectory(stream, streamConstant = true)
+            }
+            .toString()
+            .takeWhile { it != '$' }
     }
 
     override fun getPathToFile(

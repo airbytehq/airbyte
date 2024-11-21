@@ -163,14 +163,8 @@ class ObjectStorageFallbackPersister(
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val matcher = pathFactory.getPathMatcher(stream)
-        val pathConstant = pathFactory.getFinalDirectory(stream, streamConstant = true).toString()
-        val firstVariableIndex = pathConstant.indexOfFirst { it == '$' }
         val longestUnambiguous =
-            if (firstVariableIndex > 0) {
-                pathConstant.substring(0, firstVariableIndex)
-            } else {
-                pathConstant
-            }
+            pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
         client
             .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
