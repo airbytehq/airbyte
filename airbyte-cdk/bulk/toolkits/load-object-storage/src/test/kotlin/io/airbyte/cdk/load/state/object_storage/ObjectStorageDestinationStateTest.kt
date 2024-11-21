@@ -138,6 +138,8 @@ class ObjectStorageDestinationStateTest {
                 state.generations.toList(),
                 "state should be loaded from storage"
             )
+
+            Assertions.assertEquals(2L, state.nextPartNumber)
         }
     }
 
@@ -193,6 +195,8 @@ class ObjectStorageDestinationStateTest {
                 state.generations.toList(),
                 "state should be recovered from metadata"
             )
+
+            Assertions.assertEquals(2L, state.nextPartNumber)
         }
     }
 }
