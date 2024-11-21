@@ -85,9 +85,14 @@ class StateManager(
      * Returns the Airbyte STATE messages which checkpoint the progress of the READ in the platform.
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
+     *
+     * Note to avoid multithreading causing record count to be off, we'd only report streams with
+     * records in it. Any streams without stream will be delayed to report until next checkpoint.
+     * This is based on assumption each stream will be mapped to one nonGlobal manager.
      */
     fun checkpoint(): List<AirbyteStateMessage> =
-        listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
+        listOfNotNull(global?.checkpoint()) +
+            nonGlobal.mapNotNull { it.value.checkpoint() }.filter { it.sourceStats.recordCount > 0 }
 
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
