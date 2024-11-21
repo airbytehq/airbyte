@@ -63,7 +63,6 @@ class ObjectStorageDestinationStateTest {
     inner class ObjectStorageDestinationStateTestStaging {
         @Test
         fun testBasicLifecycle(d: Dependencies) = runTest {
-            // TODO: Test fallback to generation id
             val state = d.stateManager.getState(stream1)
             Assertions.assertEquals(
                 emptyList<ObjectStorageDestinationState.Generation>(),
@@ -143,7 +142,7 @@ class ObjectStorageDestinationStateTest {
         }
 
         @Test
-        fun testStagingToFinalize(d: Dependencies) = runTest {
+        fun testGetObjectsToMoveAndDelete(d: Dependencies) = runTest {
             val state = d.stateManager.getState(stream1)
             state.addObject(generationId = 0L, "old-finalized", partNumber = 0L, isStaging = false)
             state.addObject(generationId = 1L, "new-finalized", partNumber = 1L, isStaging = false)
@@ -164,6 +163,20 @@ class ObjectStorageDestinationStateTest {
                 setOf(1L to ObjectStorageDestinationState.ObjectAndPart("new-staging", 3L)),
                 toFinalize,
                 "only new-staging should be finalized"
+            )
+
+            val toDelete =
+                state
+                    .getObjectsToDelete(minimumGenerationId = 1L)
+                    .map { it.first to it.second }
+                    .toSet()
+            Assertions.assertEquals(
+                setOf(
+                    0L to ObjectStorageDestinationState.ObjectAndPart("old-finalized", 0L),
+                    0L to ObjectStorageDestinationState.ObjectAndPart("leftover-old-staging", 2L)
+                ),
+                toDelete,
+                "all old objects should be deleted"
             )
         }
     }
