@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the lead",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "Date and time when the lead was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Date and time when the lead was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates whether the lead is archived or active",
+      "type": ["null", "boolean"]
+    },
+    "contacts": {
+      "description": "List of contacts associated with the lead",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Details of individual contacts",
+        "type": "string"
+      }
+    }
+  }
+}

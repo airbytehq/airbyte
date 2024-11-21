@@ -240,19 +240,47 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
 async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
     # Run the connector using the local cdk if flag is set
     if context.use_local_cdk:
-        context.logger.info("Using local CDK")
-        # mount the local cdk
-        path_to_cdk = "airbyte-cdk/python/"
-        directory_to_mount = context.get_repo_dir(path_to_cdk)
+        # Assume CDK is cloned in a sibling dir to `airbyte`:
+        path_to_cdk = str(Path("../airbyte-python-cdk").resolve())
+        if not Path(path_to_cdk).exists():
+            raise FileExistsError(f"Local CDK not found at '{path_to_cdk}'")
+        context.logger.info(f"Using local CDK found at: '{path_to_cdk}'")
 
-        context.logger.info(f"Mounting CDK from {directory_to_mount}")
+        directory_to_mount = context.dagger_client.host().directory(path_to_cdk)
+        cdk_mount_dir = "/airbyte-cdk/python"
+
+        context.logger.info(f"Mounting CDK from '{path_to_cdk}' to '{cdk_mount_dir}'")
 
         # Install the airbyte-cdk package from the local directory
-        # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
-        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"]
+        connector_container = (
+            connector_container.with_env_variable(
+                "POETRY_DYNAMIC_VERSIONING_BYPASS",
+                "0.0.0-dev.0",  # Replace dynamic versioning with dev version
+            )
+            .with_directory(
+                cdk_mount_dir,
+                directory_to_mount,
+            )
+            .with_exec(
+                ["pip", "install", "--force-reinstall", f"{cdk_mount_dir}"],
+                # TODO: Consider moving to Poetry-native installation:
+                # ["poetry", "add", cdk_mount_dir]
+            )
         )
+    elif context.use_cdk_ref:
+        cdk_ref = context.use_cdk_ref
+        if " " in cdk_ref:
+            raise ValueError("CDK ref should not contain spaces")
 
+        context.logger.info("Using CDK ref: '{cdk_ref}'")
+        # Install the airbyte-cdk package from provided ref
+        connector_container = connector_container.with_exec(
+            [
+                "pip",
+                "install",
+                f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",
+            ],
+        )
     return connector_container
 
 

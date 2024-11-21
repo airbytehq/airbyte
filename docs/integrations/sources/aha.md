@@ -42,13 +42,15 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
-| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
-| 0.4.0   | 2024-08-14 | [44042](https://github.com/airbytehq/airbyte/pull/44042) | Refactor connector to manifest-only format |
-| 0.3.14  | 2024-08-12 | [43748](https://github.com/airbytehq/airbyte/pull/43748) | Update dependencies |
-| 0.3.13  | 2024-08-10 | [43556](https://github.com/airbytehq/airbyte/pull/43556) | Update dependencies |
-| 0.3.12  | 2024-08-03 | [43186](https://github.com/airbytehq/airbyte/pull/43186) | Update dependencies |
-| 0.3.11  | 2024-07-27 | [42737](https://github.com/airbytehq/airbyte/pull/42737) | Update dependencies |
-| 0.3.10  | 2024-07-20 | [42306](https://github.com/airbytehq/airbyte/pull/42306) | Update dependencies |
+| 0.4.3 | 2024-10-29 | [47904](https://github.com/airbytehq/airbyte/pull/47904) | Update dependencies |
+| 0.4.2 | 2024-10-28 | [47641](https://github.com/airbytehq/airbyte/pull/47641) | Update dependencies |
+| 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.4.0 | 2024-08-14 | [44042](https://github.com/airbytehq/airbyte/pull/44042) | Refactor connector to manifest-only format |
+| 0.3.14 | 2024-08-12 | [43748](https://github.com/airbytehq/airbyte/pull/43748) | Update dependencies |
+| 0.3.13 | 2024-08-10 | [43556](https://github.com/airbytehq/airbyte/pull/43556) | Update dependencies |
+| 0.3.12 | 2024-08-03 | [43186](https://github.com/airbytehq/airbyte/pull/43186) | Update dependencies |
+| 0.3.11 | 2024-07-27 | [42737](https://github.com/airbytehq/airbyte/pull/42737) | Update dependencies |
+| 0.3.10 | 2024-07-20 | [42306](https://github.com/airbytehq/airbyte/pull/42306) | Update dependencies |
 | 0.3.9 | 2024-07-13 | [41914](https://github.com/airbytehq/airbyte/pull/41914) | Update dependencies |
 | 0.3.8 | 2024-07-10 | [41568](https://github.com/airbytehq/airbyte/pull/41568) | Update dependencies |
 | 0.3.7 | 2024-07-09 | [41170](https://github.com/airbytehq/airbyte/pull/41170) | Update dependencies |

@@ -20,7 +20,7 @@ demonstrate the following concepts in action:
 **This tutorial is meant for those interested in learning how the Airbyte Specification
 works in detail, not for creating production connectors**. If you're building a real source, you
 should start with using the [Connector Builder](../../connector-builder-ui/overview), or the
-[Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
+[Connector Development Kit](../../cdk-python/).
 
 :::
 
