@@ -54,7 +54,7 @@ class MockTaskLauncher : DestinationTaskLauncher {
         file: DestinationFile,
         index: Long
     ) {
-        throw NotImplementedError()
+        throw NotImplementedError("This destination does not support file transfer.")
     }
 
     override suspend fun run() {
