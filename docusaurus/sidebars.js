@@ -85,8 +85,10 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs,
-    ["readme"]
+    enterpriseConnectorDocs, [
+      "readme",
+      "workday"
+    ]
   );
 }
 
@@ -162,6 +164,15 @@ const sourceMssql = {
       id: "integrations/sources/mssql/mssql-troubleshooting",
     },
   ],
+};
+
+const sourceWorkday = {
+  type: "doc",
+  label: "Workday",
+  link: {
+    type: "doc",
+    id: "integrations/enterprise-connectors/workday",
+  }
 };
 
 const destinationS3 = {
