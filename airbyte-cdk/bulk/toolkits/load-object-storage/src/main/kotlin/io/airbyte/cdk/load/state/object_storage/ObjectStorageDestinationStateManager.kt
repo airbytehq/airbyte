@@ -102,6 +102,12 @@ class ObjectStorageDestinationState(
 
     val nextPartNumber: Long
         get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+
+    /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
+    fun getStagedObjectsToFinalize(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> =
+        generations
+            .filter { it.isStaging && it.generationId >= minimumGenerationId }
+            .flatMap { it.objects.map { obj -> it.generationId to obj } }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")

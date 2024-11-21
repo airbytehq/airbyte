@@ -171,21 +171,16 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         } else {
             log.info { "Sync succeeded, Moving any stragglers out of staging" }
             val state = destinationStateManager.getState(stream)
-            val stagingToKeep =
-                state.generations.filter {
-                    it.isStaging && it.generationId >= stream.minimumGenerationId
-                }
-            stagingToKeep.toList().forEach {
-                it.objects.forEach { obj ->
-                    val newKey =
-                        pathFactory
-                            .getPathToFile(stream, obj.partNumber, isStaging = false)
-                            .toString()
-                    log.info { "Moving staged object from ${obj.key} to $newKey" }
-                    val newObject = client.move(obj.key, newKey)
-                    state.removeObject(it.generationId, obj.key, isStaging = true)
-                    state.addObject(it.generationId, newObject.key, obj.partNumber)
-                }
+            state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
+                (generationId, objectAndPart) ->
+                val newKey =
+                    pathFactory
+                        .getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
+                        .toString()
+                log.info { "Moving staged object from ${objectAndPart.key} to $newKey" }
+                val newObject = client.move(objectAndPart.key, newKey)
+                state.removeObject(generationId, objectAndPart.key, isStaging = true)
+                state.addObject(generationId, newObject.key, objectAndPart.partNumber)
             }
 
             log.info { "Removing old files" }
