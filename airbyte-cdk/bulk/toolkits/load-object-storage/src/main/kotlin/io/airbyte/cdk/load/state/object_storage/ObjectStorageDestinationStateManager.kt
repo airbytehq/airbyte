@@ -108,6 +108,18 @@ class ObjectStorageDestinationState(
         generations
             .filter { it.isStaging && it.generationId >= minimumGenerationId }
             .flatMap { it.objects.map { obj -> it.generationId to obj } }
+
+    /**
+     * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
+     * cleaned up.
+     */
+    fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = generations.partition { it.generationId >= minimumGenerationId }
+        val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
+        return toDrop.asSequence().flatMap {
+            it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
