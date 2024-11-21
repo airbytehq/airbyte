@@ -51,7 +51,7 @@ object IcebergUtil {
     fun constructGenerationIdSuffix(generationId: Long): String {
         if (generationId < 0) {
             throw IllegalArgumentException(
-                "GenerationId must be non-negative. Provided: ${generationId}",
+                "GenerationId must be non-negative. Provided: $generationId",
             )
         }
         return "ab-generation-id-${generationId}-e"
