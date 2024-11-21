@@ -31,17 +31,16 @@ sealed class JdbcPartitionsCreator<
 
     // A reader that only checkpoints the complete state of a partition
     // used for empty tables
-    inner class CheckpointOnlyPartitionReader(): PartitionReader {
+    inner class CheckpointOnlyPartitionReader() : PartitionReader {
         override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
 
-        override suspend fun run() { }
+        override suspend fun run() {}
 
         override fun checkpoint(): PartitionReadCheckpoint =
             PartitionReadCheckpoint(partition.completeState, 0)
 
-        override fun releaseResources() { }
-
+        override fun releaseResources() {}
     }
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionsCreator]. */
