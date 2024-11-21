@@ -33,8 +33,6 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.catalog.Catalog
-import org.apache.iceberg.catalog.Namespace
-import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.nessie.NessieCatalog
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,7 +61,7 @@ internal class IcebergUtilTest {
     @Test
     fun testCreateTableWithMissingNamespace() {
         val properties = mapOf<String, String>()
-        val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
+        val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(any()) } returns this
@@ -73,27 +71,30 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(tableIdentifier, any()) } returns tableBuilder
+            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
+                tableBuilder
             every { createNamespace(any()) } returns Unit
             every { namespaceExists(any()) } returns false
-            every { tableExists(tableIdentifier) } returns false
+            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
         }
         val table =
             IcebergUtil.createTable(
-                tableIdentifier = tableIdentifier,
+                streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
                 properties = properties
             )
         assertNotNull(table)
-        verify(exactly = 1) { catalog.createNamespace(tableIdentifier.namespace()) }
+        verify(exactly = 1) {
+            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+        }
         verify(exactly = 1) { tableBuilder.create() }
     }
 
     @Test
     fun testCreateTableWithExistingNamespace() {
         val properties = mapOf<String, String>()
-        val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
+        val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
             every { withProperties(any()) } returns this
@@ -103,50 +104,55 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(tableIdentifier, any()) } returns tableBuilder
+            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
+                tableBuilder
             every { namespaceExists(any()) } returns true
-            every { tableExists(tableIdentifier) } returns false
+            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
         }
         val table =
             IcebergUtil.createTable(
-                tableIdentifier = tableIdentifier,
+                streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
                 properties = properties
             )
         assertNotNull(table)
-        verify(exactly = 0) { catalog.createNamespace(tableIdentifier.namespace()) }
+        verify(exactly = 0) {
+            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+        }
         verify(exactly = 1) { tableBuilder.create() }
     }
 
     @Test
     fun testLoadTable() {
         val properties = mapOf<String, String>()
-        val tableIdentifier = TableIdentifier.of(Namespace.of("namespace"), "name")
+        val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
-            every { loadTable(tableIdentifier) } returns mockk()
+            every { loadTable(streamDescriptor.toIcebergTableIdentifier()) } returns mockk()
             every { namespaceExists(any()) } returns true
-            every { tableExists(tableIdentifier) } returns true
+            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns true
         }
         val table =
             IcebergUtil.createTable(
-                tableIdentifier = tableIdentifier,
+                streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
                 properties = properties
             )
         assertNotNull(table)
-        verify(exactly = 0) { catalog.createNamespace(tableIdentifier.namespace()) }
-        verify(exactly = 1) { catalog.loadTable(tableIdentifier) }
+        verify(exactly = 0) {
+            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+        }
+        verify(exactly = 1) { catalog.loadTable(streamDescriptor.toIcebergTableIdentifier()) }
     }
 
     @Test
     fun testConvertAirbyteRecordToIcebergRecord() {
-        val descriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
-                descriptor = descriptor,
+                descriptor = streamDescriptor,
                 importType = Append,
                 schema =
                     ObjectType(

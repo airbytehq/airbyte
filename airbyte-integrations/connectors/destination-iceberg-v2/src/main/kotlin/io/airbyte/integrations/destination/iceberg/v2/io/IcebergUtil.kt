@@ -25,11 +25,22 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 
 private val logger = KotlinLogging.logger {}
+
+/**
+ * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
+ * Iceberg [TableIdentifier].
+ *
+ * @return An Iceberg [TableIdentifier] representation of the stream descriptor.
+ */
+fun DestinationStream.Descriptor.toIcebergTableIdentifier(): TableIdentifier {
+    return TableIdentifier.of(Namespace.of(this.namespace), this.name)
+}
 
 /** Collection of Iceberg related utilities. */
 object IcebergUtil {
@@ -71,7 +82,8 @@ object IcebergUtil {
      * Builds (if necessary) an Iceberg [Table]. This includes creating the table's namespace if it
      * does not already exist. If the [Table] already exists, it is loaded from the [Catalog].
      *
-     * @param tableIdentifier The [TableIdentifier] that contains the [Table]'s namespace and name.
+     * @param streamDescriptor The [DestinationStream.Descriptor] that contains the Airbyte stream's
+     * namespace and name.
      * @param catalog The Iceberg [Catalog] that contains the [Table] or should contain it once
      * created.
      * @param schema The Iceberg [Schema] associated with the [Table].
@@ -79,11 +91,12 @@ object IcebergUtil {
      * @return The Iceberg [Table], created if it does not yet exist.
      */
     fun createTable(
-        tableIdentifier: TableIdentifier,
+        streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
         schema: Schema,
         properties: Map<String, String>
     ): Table {
+        val tableIdentifier = streamDescriptor.toIcebergTableIdentifier()
         if (
             catalog is SupportsNamespaces && !catalog.namespaceExists(tableIdentifier.namespace())
         ) {

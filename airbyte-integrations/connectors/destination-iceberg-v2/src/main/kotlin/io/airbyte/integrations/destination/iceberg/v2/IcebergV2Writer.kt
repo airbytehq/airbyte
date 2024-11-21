@@ -15,8 +15,6 @@ import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFacto
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
-import org.apache.iceberg.catalog.Namespace
-import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
 class IcebergV2Writer(
@@ -28,8 +26,6 @@ class IcebergV2Writer(
         val properties =
             IcebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
         val catalog = IcebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        val namespace = Namespace.of(stream.descriptor.namespace)
-        val tableIdentifier = TableIdentifier.of(namespace, stream.descriptor.name)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
         val primaryKeys =
             when (stream.importType) {
@@ -39,7 +35,7 @@ class IcebergV2Writer(
         val schema = pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
         val table =
             IcebergUtil.createTable(
-                tableIdentifier = tableIdentifier,
+                streamDescriptor = stream.descriptor,
                 catalog = catalog,
                 schema = schema,
                 properties = properties
