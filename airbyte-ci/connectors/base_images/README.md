@@ -46,6 +46,7 @@ RUN mkdir -p 755 /usr/share/nltk_data
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  3.0.0 | ✅| docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844 | Create airbyte user |
 |  3.0.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:3.0.0-rc.1@sha256:ee046486af9ad90b1b248afe5e92846b51375a21463dff1cd377c4f06abb55b5 | Update Python 3.10.4 image + create airbyte user |
 |  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
 |  1.2.3 | ✅| docker.io/airbyte/python-connector-base:1.2.3@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 | Use latest root image version and update system packages |
