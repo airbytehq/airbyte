@@ -141,6 +141,31 @@ class ObjectStorageDestinationStateTest {
 
             Assertions.assertEquals(2L, state.nextPartNumber)
         }
+
+        @Test
+        fun testStagingToFinalize(d: Dependencies) = runTest {
+            val state = d.stateManager.getState(stream1)
+            state.addObject(generationId = 0L, "old-finalized", partNumber = 0L, isStaging = false)
+            state.addObject(generationId = 1L, "new-finalized", partNumber = 1L, isStaging = false)
+            state.addObject(
+                generationId = 0L,
+                "leftover-old-staging",
+                partNumber = 2L,
+                isStaging = true
+            )
+            state.addObject(generationId = 1L, "new-staging", partNumber = 3L, isStaging = true)
+            val toFinalize =
+                state
+                    .getStagedObjectsToFinalize(minimumGenerationId = 1L)
+                    .map { it.first to it.second }
+                    .toSet()
+
+            Assertions.assertEquals(
+                setOf(1L to ObjectStorageDestinationState.ObjectAndPart("new-staging", 3L)),
+                toFinalize,
+                "only new-staging should be finalized"
+            )
+        }
     }
 
     @Nested
