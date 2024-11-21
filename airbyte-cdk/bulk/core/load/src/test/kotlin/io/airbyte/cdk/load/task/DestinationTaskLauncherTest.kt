@@ -117,7 +117,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockQueueWriter : QueueWriter<Reserved<CheckpointMessageWrapped>> {
         override suspend fun publish(message: Reserved<CheckpointMessageWrapped>) {}
-
+        override fun isClosedForPublish(): Boolean = false
         override suspend fun close() {}
     }
 
