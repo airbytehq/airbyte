@@ -12,12 +12,15 @@ import org.junit.jupiter.api.Test
 
 class S3V2CheckTest :
     CheckIntegrationTest<S3V2Specification>(
-        S3V2Specification::class.java,
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
                     Path.of(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+                ),
+                CheckTestConfig(
+                    Path.of(S3V2TestUtils.JSON_STAGING_CONFIG_PATH),
+                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
                 CheckTestConfig(
                     Path.of(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
