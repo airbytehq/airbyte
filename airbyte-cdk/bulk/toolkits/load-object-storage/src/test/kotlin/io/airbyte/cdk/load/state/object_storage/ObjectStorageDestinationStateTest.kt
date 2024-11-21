@@ -260,5 +260,13 @@ class ObjectStorageDestinationStateTest {
             validateMetadata(state, generations)
             Assertions.assertEquals(2L, state.nextPartNumber)
         }
+
+        @Test
+        fun testRecoveringFromMetadata(d: Dependencies) = runTest {
+            val generations = loadMetadata(d, stream1)
+            val state = d.stateManager.getState(stream1)
+            validateMetadata(state, generations)
+            Assertions.assertEquals(2L, state.nextPartNumber)
+        }
     }
 }
