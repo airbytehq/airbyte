@@ -62,14 +62,10 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     sealed interface ObjectStorageBatch : Batch
-    data class StagedObject<T>(
-        override val state: Batch.State = Batch.State.PERSISTED,
-        val remoteObject: T,
-        val partNumber: Long
-    ) : ObjectStorageBatch
-    data class FinalizedObject<T>(
+    data class RemoteObject<T>(
         override val state: Batch.State = Batch.State.COMPLETE,
         val remoteObject: T,
+        val partNumber: Long
     ) : ObjectStorageBatch
 
     private val partNumber = AtomicLong(0L)
@@ -93,21 +89,25 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
 
         log.info { "Writing records to $key" }
         val state = destinationStateManager.getState(stream)
-        state.addObject(stream.generationId, key, partNumber)
+        state.addObject(
+            stream.generationId,
+            key,
+            partNumber,
+            isStaging = pathFactory.supportsStaging
+        )
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach { writer.accept(it) }
+                    records.forEach {
+                        println("writing record $it to key $key")
+                        writer.accept(it)
+                    }
                 }
             }
         log.info { "Finished writing records to $key" }
-        return if (pathFactory.supportsStaging) {
-            StagedObject(remoteObject = obj, partNumber = partNumber)
-        } else {
-            FinalizedObject(remoteObject = obj)
-        }
+        return RemoteObject(remoteObject = obj, partNumber = partNumber)
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
@@ -134,34 +134,13 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                 File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
             }
         localFile.delete()
-        return FinalizedObject(remoteObject = obj)
+        return RemoteObject(remoteObject = obj, partNumber = 0)
     }
 
     @VisibleForTesting fun createFile(url: String) = File(url)
-
-    @Suppress("UNCHECKED_CAST")
+    
     override suspend fun processBatch(batch: Batch): Batch {
-        when (batch) {
-            is StagedObject<*> -> {
-                val stagedObject = batch as StagedObject<T>
-                val finalKey =
-                    pathFactory
-                        .getPathToFile(stream, stagedObject.partNumber, isStaging = false)
-                        .toString()
-                log.info {
-                    "Moving staged object from ${stagedObject.remoteObject.key} to $finalKey"
-                }
-                val newObject = client.move(stagedObject.remoteObject, finalKey)
-
-                val state = destinationStateManager.getState(stream)
-                state.removeObject(stream.generationId, stagedObject.remoteObject.key)
-                state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
-
-                val finalizedObject = FinalizedObject(remoteObject = newObject)
-                return finalizedObject
-            }
-            else -> throw IllegalStateException("Unexpected batch type: $batch")
-        }
+        throw NotImplementedError("All post-processing occurs in the close method; this should not be called")
     }
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {
@@ -169,26 +148,30 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             log.info { "Sync failed, persisting destination state for next run" }
             destinationStateManager.persistState(stream)
         } else {
-            log.info { "Sync succeeded, moving all current data out of staging" }
             val state = destinationStateManager.getState(stream)
+            log.info { "Sync succeeded, Removing old files" }
+            state.getObjectsToDelete(stream.minimumGenerationId).forEach {
+                (generationId, objectAndPart) ->
+                log.info {
+                    "Deleting old object for generation $generationId: ${objectAndPart.key}"
+                }
+                client.delete(objectAndPart.key)
+                state.removeObject(generationId, objectAndPart.key)
+            }
+
+            log.info { "Moving all current data out of staging" }
             state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
                 (generationId, objectAndPart) ->
                 val newKey =
                     pathFactory
                         .getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
                         .toString()
-                log.info { "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey" }
+                log.info {
+                    "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey"
+                }
                 val newObject = client.move(objectAndPart.key, newKey)
                 state.removeObject(generationId, objectAndPart.key, isStaging = true)
                 state.addObject(generationId, newObject.key, objectAndPart.partNumber)
-            }
-
-            log.info { "Removing old files" }
-            state.getObjectsToDelete(stream.minimumGenerationId).forEach {
-                (generationId, objectAndPart) ->
-                log.info { "Deleting old object for generation $generationId: ${objectAndPart.key}" }
-                client.delete(objectAndPart.key)
-                state.removeObject(generationId, objectAndPart.key)
             }
 
             log.info { "Persisting state" }
