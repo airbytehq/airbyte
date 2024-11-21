@@ -43,13 +43,15 @@ object DatabricksFileBufferFactory {
 
                         override fun getDataRow(
                             id: UUID,
-                            recordMessage: AirbyteRecordMessage
+                            recordMessage: AirbyteRecordMessage,
+                            generationId: Long,
+                            syncId: Long,
                         ): List<Any> {
-                            TODO("Not yet implemented")
+                            throw NotImplementedError()
                         }
 
                         override fun getDataRow(formattedData: JsonNode): List<Any> {
-                            TODO("Not yet implemented")
+                            throw NotImplementedError()
                         }
 
                         override fun getDataRow(

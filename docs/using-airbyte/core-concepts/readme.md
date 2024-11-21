@@ -22,7 +22,7 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 ## Connection
 
-A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate.Setting up a connection enables configuration of the following parameters:
+A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate. Setting up a connection enables configuration of the following parameters:
 
 | Concept                                                                                                                  | Description                                                        |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |

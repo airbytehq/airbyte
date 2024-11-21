@@ -40,6 +40,10 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.2.2 | 2024-11-04 | [48287](https://github.com/airbytehq/airbyte/pull/48287) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-09 | [43451](https://github.com/airbytehq/airbyte/pull/43451) | Refactor connector to manifest-only format |
+| 0.1.10 | 2024-08-03 | [43207](https://github.com/airbytehq/airbyte/pull/43207) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42202](https://github.com/airbytehq/airbyte/pull/42202) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41473](https://github.com/airbytehq/airbyte/pull/41473) | Update dependencies |
 | 0.1.7 | 2024-07-09 | [41116](https://github.com/airbytehq/airbyte/pull/41116) | Update dependencies |

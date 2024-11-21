@@ -51,7 +51,7 @@ Guidelines to common code contributions:
 
 ## Documentation
 
-We welcome Pull Requests that fix typos or enhance the grammar and structure of our documentation! Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
+We welcome pull requests that fix typos or enhance the grammar and structure of our documentation! Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
 
 
 The following highlights from the [Google developer documentation style guide](https://developers.google.com/style) are helpful for new writers:

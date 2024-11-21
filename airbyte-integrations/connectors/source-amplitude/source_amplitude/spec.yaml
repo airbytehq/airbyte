@@ -50,3 +50,10 @@ connectionSpecification:
       default: 24
       minimum: 1
       maximum: 8760
+    active_users_group_by_country:
+      type: boolean
+      title: Active Users Group by Country
+      description:
+        According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Considerations</a> the grouping by `Country` is optional,
+        if you're facing issues fetching the stream, or checking the connection please set this to `False` instead.
+      default: true

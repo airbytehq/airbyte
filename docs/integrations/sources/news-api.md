@@ -61,6 +61,14 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 |:--------|:-----------| :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.4 | 2024-11-04 | [48143](https://github.com/airbytehq/airbyte/pull/48143) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47866](https://github.com/airbytehq/airbyte/pull/47866) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47562](https://github.com/airbytehq/airbyte/pull/47562) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-15 | [44114](https://github.com/airbytehq/airbyte/pull/44114) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-12 | [43908](https://github.com/airbytehq/airbyte/pull/43908) | Update dependencies |
+| 0.1.14 | 2024-08-10 | [43589](https://github.com/airbytehq/airbyte/pull/43589) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43096](https://github.com/airbytehq/airbyte/pull/43096) | Update dependencies |
 | 0.1.12 | 2024-07-27 | [42820](https://github.com/airbytehq/airbyte/pull/42820) | Update dependencies |
 | 0.1.11 | 2024-07-20 | [42285](https://github.com/airbytehq/airbyte/pull/42285) | Update dependencies |
 | 0.1.10 | 2024-07-13 | [41781](https://github.com/airbytehq/airbyte/pull/41781) | Update dependencies |

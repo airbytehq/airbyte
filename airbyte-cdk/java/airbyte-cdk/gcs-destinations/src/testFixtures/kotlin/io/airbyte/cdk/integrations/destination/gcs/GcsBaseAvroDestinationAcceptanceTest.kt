@@ -6,7 +6,7 @@ package io.airbyte.cdk.integrations.destination.gcs
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
@@ -54,7 +54,8 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
                     val jsonReader: ObjectReader = MAPPER.reader()
                     while (dataFileReader.hasNext()) {
                         val record = dataFileReader.next()
-                        val jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record)
+                        val jsonBytes =
+                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord!!)
                         jsonRecords.add(pruneAirbyteJson(jsonRecord))

@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-* [Developing with the Java CDK](#developing-with-the-java-cdk)
-  * [Intro to the Java CDK](#intro-to-the-java-cdk)
-    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    * [How is the CDK published?](#how-is-the-cdk-published)
-  * [Using the Java CDK](#using-the-java-cdk)
-    * [Building the CDK](#building-the-cdk)
-    * [Bumping the CDK version](#bumping-the-cdk-version)
-    * [Publishing the CDK](#publishing-the-cdk)
-  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  * [Changelog](#changelog)
-    * [Java CDK](#java-cdk)
+- [Developing with the Java CDK](#developing-with-the-java-cdk)
+  - [Intro to the Java CDK](#intro-to-the-java-cdk)
+    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    - [How is the CDK published?](#how-is-the-cdk-published)
+  - [Using the Java CDK](#using-the-java-cdk)
+    - [Building the CDK](#building-the-cdk)
+    - [Bumping the CDK version](#bumping-the-cdk-version)
+    - [Publishing the CDK](#publishing-the-cdk)
+  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  - [Changelog](#changelog)
+    - [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -174,6 +174,31 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.1     | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482)  | Adding support converting very large numbers via BigInteger  l                                                                                                 |
+| 0.48.0     | 2024-10-23 | [\#46302](https://github.com/airbytehq/airbyte/pull/46302)  | Add support for file transfer                                                                                                                                  |
+| 0.47.3     | 2024-10-23 | [\#46689](https://github.com/airbytehq/airbyte/pull/46689)  | Split DestinationAcceptanceTest                                                                                                                                |
+| 0.47.2     | 2024-10-21 | [\#47216](https://github.com/airbytehq/airbyte/pull/47216)  | improve java compatibiilty                                                                                                                                     |
+| 0.47.1     | 2024-09-27 | [\#45397](https://github.com/airbytehq/airbyte/pull/45397)  | Allow logical replication from Postgres 16 read-replicas                                                                                                       |
+| 0.47.0     | 2024-09-26 | [\#42030](https://github.com/airbytehq/airbyte/pull/42030)  | minor refactor                                                                                                                                                 |
+| 0.46.1     | 2024-09-20 | [\#45700](https://github.com/airbytehq/airbyte/pull/45700)  | Destinations: Fix bug in parsing jsonschema                                                                                                                    |
+| 0.46.0     | 2024-09-18 | [\#45432](https://github.com/airbytehq/airbyte/pull/45432)  | upgrade all libraries to latest version                                                                                                                        |
+| 0.45.1     | 2024-09-17 | [\#45638](https://github.com/airbytehq/airbyte/pull/45638)  | upgrade apache mina sshd to 2.13.2 to handle openssh tcpkeepalive requests                                                                                     |
+| 0.45.0     | 2024-09-16 | [\#45469](https://github.com/airbytehq/airbyte/pull/45469)  | Fix some race conditions, improve thread filtering, improve test logging                                                                                       |
+| 0.44.22    | 2024-09-10 | [\#45368](https://github.com/airbytehq/airbyte/pull/45368)  | Remove excessive debezium logging                                                                                                                              |
+| 0.44.21    | 2024-09-04 | [\#45143](https://github.com/airbytehq/airbyte/pull/45143)  | S3-destination: don't overwrite existing files, skip those file indexes instead                                                                                |
+| 0.44.20    | 2024-08-30 | [\#44933](https://github.com/airbytehq/airbyte/pull/44933)  | Avro/Parquet destinations: handle `{}` schemas inside objects/arrays                                                                                           |
+| 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)  | Increase Jackson message length limit to 100mb                                                                                                                 |
+| 0.44.18    | 2024-08-22 | [\#44759](https://github.com/airbytehq/airbyte/pull/44759)  | Improve handling of incoming debezium change events                                                                                                            |
+| 0.44.17    | 2024-08-27 | [\#44832](https://github.com/airbytehq/airbyte/pull/44832)  | Fix issues where some error messages with upper cases do not get matched by the error translation framework.                                                   |
+| 0.44.16    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)  | Destinations: add sqlgenerator testing for mixed-case stream name                                                                                              |
+| 0.44.15    | ?????????? | [\#?????](https://github.com/airbytehq/airbyte/pull/?????)  | ?????                                                                                                                                                          |
+| 0.44.14    | 2024-08-19 | [\#42503](https://github.com/airbytehq/airbyte/pull/42503)  | Destinations (refreshes) - correctly detect existing raw/final table of the correct generation during truncate sync                                            |
+| 0.44.13    | 2024-08-14 | [\#42579](https://github.com/airbytehq/airbyte/pull/42579)  | S3 destination - OVERWRITE: keep files until successful sync of same generationId                                                                              |
+| 0.44.5     | 2024-08-09 | [\#43374](https://github.com/airbytehq/airbyte/pull/43374)  | S3 destination V2 fields, conversion improvements, bugfixes                                                                                                    |
+| 0.44.4     | 2024-08-08 | [\#43410](https://github.com/airbytehq/airbyte/pull/43330)  | Better logs for counting info to state message.                                                                                                                |
+| 0.44.3     | 2024-08-07 | [\#43330](https://github.com/airbytehq/airbyte/pull/43330)  | make TypingDedupingTest aware of column name renaming.                                                                                                         |
+| 0.44.3     | 2024-08-07 | [\#43329](https://github.com/airbytehq/airbyte/pull/43329)  | move generationIdHandling to its own class.                                                                                                                    |
+| 0.44.2     | 2024-08-06 | [\#42869](https://github.com/airbytehq/airbyte/pull/42869)  | Add logs about counting info to state message.                                                                                                                 |
 | 0.44.1     | 2024-08-01 | [\#42550](https://github.com/airbytehq/airbyte/pull/42550)  | Fix error on reporting counts.                                                                                                                                 |
 | 0.44.0     | 2024-08-01 | [\#42405](https://github.com/airbytehq/airbyte/pull/42405)  | s3-destinations: Use async framework, adapt to support refreshes                                                                                               |
 | 0.43.6     | 2024-07-30 | [\#42540](https://github.com/airbytehq/airbyte/pull/42540)  | Fix generationId handling for destinations                                                                                                                     |

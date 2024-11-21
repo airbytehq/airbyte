@@ -18,6 +18,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.redshift.operation.RedshiftStagingStorageOperation
@@ -26,7 +27,6 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlG
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Optional
@@ -54,7 +54,7 @@ class RedshiftS3StagingStorageOperationTest {
     private val streamConfig =
         StreamConfig(
             streamId,
-            DestinationSyncMode.APPEND,
+            ImportType.APPEND,
             emptyList(),
             Optional.empty(),
             LinkedHashMap(),

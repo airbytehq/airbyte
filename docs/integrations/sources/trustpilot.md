@@ -61,6 +61,20 @@ The Trustpilot connector should not run into any limits under normal usage. Plea
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.2 | 2024-10-29 | [47937](https://github.com/airbytehq/airbyte/pull/47937) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47647](https://github.com/airbytehq/airbyte/pull/47647) | Update dependencies |
+| 0.3.0 | 2024-10-06 | [46529](https://github.com/airbytehq/airbyte/pull/46529) | Migrate to Manifest-only |
+| 0.2.13 | 2024-10-05 | [46507](https://github.com/airbytehq/airbyte/pull/46507) | Update dependencies |
+| 0.2.12 | 2024-09-28 | [46134](https://github.com/airbytehq/airbyte/pull/46134) | Update dependencies |
+| 0.2.11 | 2024-09-21 | [45789](https://github.com/airbytehq/airbyte/pull/45789) | Update dependencies |
+| 0.2.10 | 2024-09-14 | [45558](https://github.com/airbytehq/airbyte/pull/45558) | Update dependencies |
+| 0.2.9 | 2024-09-07 | [45227](https://github.com/airbytehq/airbyte/pull/45227) | Update dependencies |
+| 0.2.8 | 2024-08-31 | [45007](https://github.com/airbytehq/airbyte/pull/45007) | Update dependencies |
+| 0.2.7 | 2024-08-24 | [44686](https://github.com/airbytehq/airbyte/pull/44686) | Update dependencies |
+| 0.2.6 | 2024-08-17 | [44253](https://github.com/airbytehq/airbyte/pull/44253) | Update dependencies |
+| 0.2.5 | 2024-08-12 | [43819](https://github.com/airbytehq/airbyte/pull/43819) | Update dependencies |
+| 0.2.4 | 2024-08-10 | [43618](https://github.com/airbytehq/airbyte/pull/43618) | Update dependencies |
+| 0.2.3 | 2024-08-03 | [43213](https://github.com/airbytehq/airbyte/pull/43213) | Update dependencies |
 | `0.2.2` | 2024-08-05 | [42855](https://github.com/airbytehq/airbyte/pull/42855) | Fix refresh token URL |
 | `0.2.1` | 2024-07-27 | [40267](https://github.com/airbytehq/airbyte/pull/40267) | Update dependencies |
 | `0.2.0` | 2024-08-01 | [36200](https://github.com/airbytehq/airbyte/pull/36200) | Migrate to Low Code                               |

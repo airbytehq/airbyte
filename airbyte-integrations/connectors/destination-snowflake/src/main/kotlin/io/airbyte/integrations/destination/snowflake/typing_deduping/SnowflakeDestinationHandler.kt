@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.json.Jsons.emptyObject
@@ -27,7 +28,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import java.sql.Connection
-import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
@@ -42,45 +42,78 @@ import org.slf4j.LoggerFactory
 class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
         database,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        generationHandler =
+            object : JdbcGenerationHandler {
+                override fun getGenerationIdInTable(
+                    database: JdbcDatabase,
+                    namespace: String,
+                    name: String
+                ): Long? {
+                    throw NotImplementedError()
+                }
+            }
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
     private val databaseName = databaseName.uppercase(Locale.getDefault())
+    private data class SnowflakeTableInfo(
+        val schemaName: String,
+        val tableName: String,
+        val rowCount: Int
+    ) {}
+    private fun queryTable(schemaName: String, tableName: String): List<SnowflakeTableInfo> {
+        val showTablesQuery =
+            """
+                    SHOW TABLES LIKE '$tableName' IN "$databaseName"."$schemaName";
+                    """.trimIndent()
+        try {
+            val showTablesResult =
+                database.queryJsons(
+                    showTablesQuery,
+                )
+            return showTablesResult.map {
+                SnowflakeTableInfo(
+                    it["schema_name"].asText(),
+                    it["name"].asText(),
+                    it["rows"].asInt()
+                )
+            }
+        } catch (e: SnowflakeSQLException) {
+            val message = e.message
+            if (
+                message != null &&
+                    message.contains("does not exist, or operation cannot be performed.")
+            )
+                return emptyList()
+            else {
+                throw e
+            }
+        }
+    }
 
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
-        val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-        // convert list stream to array
-        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-        val names = streamIds.map { it.finalName }.toTypedArray()
-        val query =
-            """
-            |SELECT table_schema, table_name, row_count
-            |FROM information_schema.tables
-            |WHERE table_catalog = ? 
-            |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-            |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-            |""".trimMargin()
-        val bindValues = arrayOf(databaseName) + namespaces + names
-        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-        for (result in results) {
-            val tableSchema = result["TABLE_SCHEMA"].asText()
-            val tableName = result["TABLE_NAME"].asText()
-            val rowCount = result["ROW_COUNT"].asInt()
-            tableRowCounts
-                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
-                rowCount
+        val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
+        for (stream in streamIds) {
+            val tables = queryTable(stream.finalNamespace, stream.finalName)
+            tables.forEach {
+                if (it.tableName == stream.finalName) {
+                    tableRowCountsFromShowQuery
+                        .computeIfAbsent(it.schemaName) { LinkedHashMap() }[it.tableName] =
+                        it.rowCount
+                }
+            }
         }
-        return tableRowCounts
+        return tableRowCountsFromShowQuery
     }
 
     @Throws(Exception::class)
@@ -90,36 +123,15 @@ class SnowflakeDestinationHandler(
     ): InitialRawTableStatus {
         val rawTableName = id.rawName + suffix
         val tableExists =
-            database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
-                LOGGER.info(
-                    "Retrieving table from Db metadata: {} {}",
-                    id.rawNamespace,
-                    rawTableName
-                )
-                try {
-                    val rs =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace,
-                            rawTableName,
-                            null
-                        )
-                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
-                    // interpreted as uppercase
-                    // in db metadata calls. check for both
-                    val rsUppercase =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace.uppercase(),
-                            rawTableName.uppercase(),
-                            null
-                        )
-                    rs.next() || rsUppercase.next()
-                } catch (e: SQLException) {
-                    LOGGER.error("Failed to retrieve table metadata", e)
-                    throw RuntimeException(e)
-                }
+            queryTable(id.rawNamespace, rawTableName).any {
+                // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
+                // interpreted as uppercase
+                // in db metadata calls. check for both
+                (it.schemaName == id.rawNamespace && it.tableName == rawTableName) ||
+                    (it.schemaName == id.rawNamespace.uppercase() &&
+                        it.tableName == rawTableName.uppercase())
             }
+
         if (!tableExists) {
             return InitialRawTableStatus(
                 rawTableExists = false,
@@ -234,8 +246,27 @@ class SnowflakeDestinationHandler(
 
     @Throws(Exception::class)
     override fun execute(sql: Sql) {
-        val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT")
+        val beginBlock =
+            """
+            BEGIN
+            BEGIN TRANSACTION
+        """.trimIndent()
+
+        val endBlock =
+            """
+            COMMIT;
+            EXCEPTION
+            WHEN OTHER THEN
+                ROLLBACK;
+                BEGIN
+                    RAISE;
+                END;
+            END
+        """.trimIndent()
+
+        val transactions = sql.asSqlStrings(beginBlock, endBlock)
         val queryId = UUID.randomUUID()
+
         for (transaction in transactions) {
             val transactionId = UUID.randomUUID()
             LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction)
@@ -374,10 +405,10 @@ class SnowflakeDestinationHandler(
     override fun gatherInitialState(
         streamConfigs: List<StreamConfig>
     ): List<DestinationInitialStatus<SnowflakeState>> {
-        val destinationStates = super.getAllDestinationStates()
+        val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
-        val existingTables = findExistingTables(database, databaseName, streamIds)
+        val existingTables = findExistingTables(database, streamIds)
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
             .stream()
@@ -410,6 +441,17 @@ class SnowflakeDestinationHandler(
                             streamConfig.id.asPair(),
                             toDestinationState(emptyObject())
                         )
+                    val finalTableGenerationId =
+                        if (isFinalTablePresent && !isFinalTableEmpty) {
+                            // for now, just use 0. this means we will always use a temp final
+                            // table.
+                            // platform has a workaround for this, so it's OK.
+                            // TODO only fetch this on truncate syncs
+                            // TODO once we have destination state, use that instead of a query
+                            0L
+                        } else {
+                            null
+                        }
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
@@ -417,7 +459,13 @@ class SnowflakeDestinationHandler(
                         tempRawTableState,
                         isSchemaMismatch,
                         isFinalTableEmpty,
-                        destinationState
+                        destinationState,
+                        finalTableGenerationId = finalTableGenerationId,
+                        // I think the temp final table gen is always null?
+                        // since the only time we T+D into the temp table
+                        // is when we're committing the sync anyway
+                        // (i.e. we'll immediately rename it to the real table)
+                        finalTempTableGenerationId = null,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
@@ -487,6 +535,16 @@ class SnowflakeDestinationHandler(
         return database.queryJsons(sql)
     }
 
+    override fun getDeleteStatesSql(destinationStates: Map<StreamId, SnowflakeState>): String {
+        if (Math.random() < 0.01) {
+            LOGGER.info("actually deleting states")
+            return super.getDeleteStatesSql(destinationStates)
+        } else {
+            LOGGER.info("skipping state deletion")
+            return "SELECT 1" // We still need to send a valid SQL query.
+        }
+    }
+
     companion object {
         private val LOGGER: Logger =
             LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
@@ -498,42 +556,52 @@ class SnowflakeDestinationHandler(
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
-            databaseName: String,
             streamIds: List<StreamId>
-        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
-            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-            // convert list stream to array
-            val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-            val names = streamIds.map { it.finalName }.toTypedArray()
-            val query =
-                """
-                |SELECT table_schema, table_name, column_name, data_type, is_nullable 
-                |FROM information_schema.columns 
-                |WHERE table_catalog = ? 
-                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-                |ORDER BY table_schema, table_name, ordinal_position; 
-                |""".trimMargin()
-
-            val bindValues =
-                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
-            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-            for (result in results) {
-                val tableSchema = result["TABLE_SCHEMA"].asText()
-                val tableName = result["TABLE_NAME"].asText()
-                val columnName = result["COLUMN_NAME"].asText()
-                val dataType = result["DATA_TYPE"].asText()
-                val isNullable = result["IS_NULLABLE"].asText()
-                val tableDefinition =
+        ): Map<String, Map<String, TableDefinition>> {
+            val existingTables = HashMap<String, HashMap<String, TableDefinition>>()
+            for (stream in streamIds) {
+                val schemaName = stream.finalNamespace
+                val tableName = stream.finalName
+                val table = getTable(database, schemaName, tableName)
+                if (table != null) {
                     existingTables
-                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                        .computeIfAbsent(tableName) { _: String? ->
-                            TableDefinition(LinkedHashMap())
-                        }
-                tableDefinition.columns[columnName] =
-                    ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
+                        .computeIfAbsent(schemaName) { _: String? -> HashMap() }
+                        .computeIfAbsent(tableName) { _: String? -> table }
+                }
             }
             return existingTables
+        }
+
+        fun getTable(
+            database: JdbcDatabase,
+            schemaName: String,
+            tableName: String,
+        ): TableDefinition? {
+            try {
+                val columns = LinkedHashMap<String, ColumnDefinition>()
+                database.queryJsons("""DESCRIBE TABLE "$schemaName"."$tableName" """).map {
+                    val columnName = it["name"].asText()
+                    val dataType =
+                        when (
+                            val snowflakeDataType =
+                                it["type"].asText().takeWhile { char -> char != '(' }
+                        ) {
+                            "VARCHAR" -> "TEXT"
+                            else -> snowflakeDataType
+                        }
+
+                    val isNullable = it["null?"].asText() == "Y"
+                    columns[columnName] =
+                        ColumnDefinition(columnName, dataType, columnSize = 0, isNullable)
+                }
+                return TableDefinition(columns)
+            } catch (e: SnowflakeSQLException) {
+                if (e.message != null && e.message!!.contains("does not exist")) {
+                    return null
+                } else {
+                    throw e
+                }
+            }
         }
     }
 }

@@ -68,6 +68,12 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.2 | 2024-10-29 | [47891](https://github.com/airbytehq/airbyte/pull/47891) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47623](https://github.com/airbytehq/airbyte/pull/47623) | Update dependencies |
+| 0.2.0 | 2024-08-23 | [44615](https://github.com/airbytehq/airbyte/pull/44615) | Refactor connector to manifest-only format |
+| 0.1.16 | 2024-08-17 | [44279](https://github.com/airbytehq/airbyte/pull/44279) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43552](https://github.com/airbytehq/airbyte/pull/43552) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43181](https://github.com/airbytehq/airbyte/pull/43181) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42774](https://github.com/airbytehq/airbyte/pull/42774) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42365](https://github.com/airbytehq/airbyte/pull/42365) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41761](https://github.com/airbytehq/airbyte/pull/41761) | Update dependencies |

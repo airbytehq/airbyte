@@ -1,0 +1,2054 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://picqer.com/
+
+  Authentication Docs:
+  https://picqer.com/en/api#h-authentication
+
+  API Docs: https://picqer.com/en/api
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - idcustomer
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - idproduct
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    products_stock:
+      type: DeclarativeStream
+      name: products_stock
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products/{{ stream_partition.idproduct }}/stock
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: idproduct
+              partition_field: idproduct
+              stream:
+                $ref: "#/definitions/streams/products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products_stock"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      primary_key:
+        - idorder
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: orders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    backorders:
+      type: DeclarativeStream
+      name: backorders
+      primary_key:
+        - idbackorder
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: backorders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/backorders"
+    returns:
+      type: DeclarativeStream
+      name: returns
+      primary_key:
+        - idreturn
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: returns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/returns"
+    purchaseorders:
+      type: DeclarativeStream
+      name: purchaseorders
+      primary_key:
+        - idpurchaseorder
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: purchaseorders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchaseorders"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - idlocation
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    warehouses:
+      type: DeclarativeStream
+      name: warehouses
+      primary_key:
+        - idwarehouse
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: warehouses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/warehouses"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - iduser
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    suppliers:
+      type: DeclarativeStream
+      name: suppliers
+      primary_key:
+        - idsupplier
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: suppliers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppliers"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - idtag
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - idtemplate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    vatgroups:
+      type: DeclarativeStream
+      name: vatgroups
+      primary_key:
+        - idvatgroup
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: vatgroups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vatgroups"
+    stats:
+      type: DeclarativeStream
+      name: stats
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stats
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stats"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config.organization_name }}.picqer.com/api/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["username"] }}'
+      password: '{{ config["password"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/products_stock"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/backorders"
+  - $ref: "#/definitions/streams/returns"
+  - $ref: "#/definitions/streams/purchaseorders"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/warehouses"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/suppliers"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/vatgroups"
+  - $ref: "#/definitions/streams/stats"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - organization_name
+      - start_date
+    properties:
+      username:
+        type: string
+        title: Username
+        order: 0
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 1
+      organization_name:
+        type: string
+        description: The organization name which is used to login to picqer
+        title: Organization Name
+        order: 2
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: true
+    products: true
+    products_stock: true
+    orders: true
+    backorders: true
+    returns: true
+    purchaseorders: true
+    locations: true
+    warehouses: true
+    users: true
+    suppliers: true
+    tags: true
+    templates: true
+    vatgroups: true
+    stats: true
+  testedStreams:
+    customers:
+      streamHash: 4a977bc6fcbef14da384142217d8d386b1e7bc63
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products:
+      streamHash: 740dbaae29ec77a79951c6576662a94ff4ae3cad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    products_stock:
+      streamHash: 528e8fc296db1a2caad90935ba9f17f77c1b05d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    orders:
+      streamHash: e94ef59c4d3f5dfe113c6e016d45798a1889c0a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    backorders:
+      streamHash: 5fcacfef66676d663e48c566c086a45da08749b8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    returns:
+      streamHash: 6b8b82e02bda608148f2dd4c75a57c6020d30aaf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    purchaseorders:
+      streamHash: ab3a0919465ce1d8e8c26476ab1c630de628f994
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      streamHash: e14a5770065b1d3fe8ca97a6b205b58d901a42ff
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    warehouses:
+      streamHash: 0d27b2150745ce434f6ab6be0f69299f46ec72d0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: cee186f0603e0c9d11c164426820f7c0824cafbd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    suppliers:
+      streamHash: dd0381a030a37e298aa362ba2c7410a5b97663db
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 0bb0d9f17427128ef27d8cb7de8fa1758b564b32
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: 31e0d32ffdf474364041ee2a483b398308333e5e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    vatgroups:
+      streamHash: 6af7c51fe6dee899c8e0d8f0a262494106924742
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stats:
+      streamHash: 180ca36b18cf399d576f8ffaf26eb15186e69763
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            address:
+              type:
+                - string
+                - "null"
+            address2:
+              type:
+                - string
+                - "null"
+            city:
+              type:
+                - string
+                - "null"
+            contactname:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            defaultdelivery:
+              type:
+                - boolean
+                - "null"
+            defaultinvoice:
+              type:
+                - boolean
+                - "null"
+            full_address:
+              type:
+                - string
+                - "null"
+            idcustomer_address:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            region:
+              type:
+                - string
+                - "null"
+            zipcode:
+              type:
+                - string
+                - "null"
+      calculatevat:
+        type:
+          - boolean
+          - "null"
+      comment_count:
+        type:
+          - number
+          - "null"
+      contactname:
+        type:
+          - string
+          - "null"
+      customerid:
+        type:
+          - string
+          - "null"
+      default_order_remarks:
+        type:
+          - string
+          - "null"
+      defaultorderremarks:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      emailaddress:
+        type:
+          - string
+          - "null"
+      idcustomer:
+        type: number
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - object
+          - "null"
+      telephone:
+        type:
+          - string
+          - "null"
+      vatnumber:
+        type:
+          - string
+          - "null"
+    required:
+      - idcustomer
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      assembled:
+        type:
+          - boolean
+          - "null"
+      barcode:
+        type:
+          - string
+          - "null"
+      comment_count:
+        type:
+          - number
+          - "null"
+      country_of_origin:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      deliverytime:
+        type:
+          - number
+          - "null"
+      fixedstockprice:
+        type:
+          - number
+          - "null"
+      height:
+        type:
+          - number
+          - "null"
+      hs_code:
+        type:
+          - string
+          - "null"
+      idproduct:
+        type: number
+      idvatgroup:
+        type:
+          - number
+          - "null"
+      images:
+        type:
+          - array
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      minimum_purchase_quantity:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      pricelists:
+        type:
+          - array
+          - "null"
+      productcode:
+        type:
+          - string
+          - "null"
+      productcode_supplier:
+        type:
+          - string
+          - "null"
+      productfields:
+        type:
+          - array
+          - "null"
+      purchase_in_quantities_of:
+        type:
+          - number
+          - "null"
+      show_on_portal:
+        type:
+          - boolean
+          - "null"
+      stock:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            freestock:
+              type:
+                - number
+                - "null"
+            idwarehouse:
+              type:
+                - number
+                - "null"
+            reserved:
+              type:
+                - number
+                - "null"
+            reservedallocations:
+              type:
+                - number
+                - "null"
+            reservedbackorders:
+              type:
+                - number
+                - "null"
+            reservedpicklists:
+              type:
+                - number
+                - "null"
+            stock:
+              type:
+                - number
+                - "null"
+      tags:
+        type:
+          - object
+          - "null"
+      unlimitedstock:
+        type:
+          - boolean
+          - "null"
+      updated:
+        type: string
+      weight:
+        type:
+          - number
+          - "null"
+      width:
+        type:
+          - number
+          - "null"
+    required:
+      - idproduct
+      - updated
+  products_stock:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      freestock:
+        type:
+          - number
+          - "null"
+      idwarehouse:
+        type:
+          - number
+          - "null"
+      reserved:
+        type:
+          - number
+          - "null"
+      reservedallocations:
+        type:
+          - number
+          - "null"
+      reservedbackorders:
+        type:
+          - number
+          - "null"
+      reservedpicklists:
+        type:
+          - number
+          - "null"
+      stock:
+        type:
+          - number
+          - "null"
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      auto_split:
+        type:
+          - boolean
+          - "null"
+      calculatevat:
+        type:
+          - boolean
+          - "null"
+      comment_count:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      customer_remarks:
+        type:
+          - string
+          - "null"
+      deliveryaddress:
+        type:
+          - string
+          - "null"
+      deliveryaddress2:
+        type:
+          - string
+          - "null"
+      deliverycity:
+        type:
+          - string
+          - "null"
+      deliverycontactname:
+        type:
+          - string
+          - "null"
+      deliverycountry:
+        type:
+          - string
+          - "null"
+      deliveryname:
+        type:
+          - string
+          - "null"
+      deliveryregion:
+        type:
+          - string
+          - "null"
+      deliveryzipcode:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - number
+          - "null"
+      emailaddress:
+        type:
+          - string
+          - "null"
+      full_delivery_address:
+        type:
+          - string
+          - "null"
+      full_invoice_address:
+        type:
+          - string
+          - "null"
+      idorder:
+        type: number
+      idtemplate:
+        type:
+          - number
+          - "null"
+      invoiceaddress:
+        type:
+          - string
+          - "null"
+      invoiceaddress2:
+        type:
+          - string
+          - "null"
+      invoicecity:
+        type:
+          - string
+          - "null"
+      invoicecontactname:
+        type:
+          - string
+          - "null"
+      invoicecountry:
+        type:
+          - string
+          - "null"
+      invoiced:
+        type:
+          - boolean
+          - "null"
+      invoicename:
+        type:
+          - string
+          - "null"
+      invoiceregion:
+        type:
+          - string
+          - "null"
+      invoicezipcode:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      orderfields:
+        type:
+          - array
+          - "null"
+      orderid:
+        type:
+          - string
+          - "null"
+      partialdelivery:
+        type:
+          - boolean
+          - "null"
+      picklists:
+        type:
+          - array
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            amount_cancelled:
+              type:
+                - number
+                - "null"
+            has_parts:
+              type:
+                - boolean
+                - "null"
+            idorder_product:
+              type:
+                - number
+                - "null"
+            idproduct:
+              type:
+                - number
+                - "null"
+            idvatgroup:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            productcode:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - number
+                - "null"
+      public_status_page:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      telephone:
+        type:
+          - string
+          - "null"
+      updated:
+        type: string
+      via_portal:
+        type:
+          - boolean
+          - "null"
+      warehouses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    required:
+      - idorder
+      - updated
+  backorders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - number
+          - "null"
+      amount_available:
+        type:
+          - number
+          - "null"
+      amountavailable:
+        type:
+          - number
+          - "null"
+      created_at:
+        type: string
+      has_parts:
+        type:
+          - boolean
+          - "null"
+      idbackorder:
+        type: number
+      idorder:
+        type:
+          - number
+          - "null"
+      idproduct:
+        type:
+          - number
+          - "null"
+      idwarehouse:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+    required:
+      - idbackorder
+      - created_at
+  returns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comment_count:
+        type:
+          - number
+          - "null"
+      contactname:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      full_address:
+        type:
+          - string
+          - "null"
+      idreturn:
+        type: number
+      idreturn_status:
+        type:
+          - number
+          - "null"
+      idtemplate:
+        type:
+          - number
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      returnid:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - idreturn
+      - updated_at
+  purchaseorders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comment_count:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      created_by_iduser:
+        type:
+          - number
+          - "null"
+      idpurchaseorder:
+        type: number
+      idtemplate:
+        type:
+          - number
+          - "null"
+      idwarehouse:
+        type:
+          - number
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            amountreceived:
+              type:
+                - number
+                - "null"
+            idproduct:
+              type:
+                - number
+                - "null"
+            idpurchaseorder_product:
+              type:
+                - number
+                - "null"
+            idvatgroup:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            productcode:
+              type:
+                - string
+                - "null"
+            productcode_supplier:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - number
+                - "null"
+      purchaseorderid:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      supplier_name:
+        type:
+          - string
+          - "null"
+      supplier_orderid:
+        type:
+          - string
+          - "null"
+      updated:
+        type: string
+    required:
+      - idpurchaseorder
+      - updated
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      idlocation:
+        type: number
+      idwarehouse:
+        type:
+          - number
+          - "null"
+      is_bulk_location:
+        type:
+          - boolean
+          - "null"
+      is_exclusive_location:
+        type:
+          - boolean
+          - "null"
+      location_type:
+        type:
+          - object
+          - "null"
+        properties:
+          color:
+            type:
+              - string
+              - "null"
+          default:
+            type:
+              - boolean
+              - "null"
+          idlocation_type:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      unlink_on_empty:
+        type:
+          - boolean
+          - "null"
+    required:
+      - idlocation
+  warehouses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accept_orders:
+        type:
+          - boolean
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      counts_for_general_stock:
+        type:
+          - boolean
+          - "null"
+      idwarehouse:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+    required:
+      - idwarehouse
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      emailaddress:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      iduser:
+        type: number
+      last_login_at:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - iduser
+      - updated_at
+  suppliers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      address2:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      comment_count:
+        type:
+          - number
+          - "null"
+      contactname:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      emailaddress:
+        type:
+          - string
+          - "null"
+      full_address:
+        type:
+          - string
+          - "null"
+      idsupplier:
+        type: number
+      language:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      telephone:
+        type:
+          - string
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"
+    required:
+      - idsupplier
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      idtag:
+        type: number
+      inherit:
+        type:
+          - boolean
+          - "null"
+      textColor:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - idtag
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      default:
+        type:
+          - boolean
+          - "null"
+      idtemplate:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - idtemplate
+  vatgroups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      idvatgroup:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      percentage:
+        type:
+          - number
+          - "null"
+      standard:
+        type:
+          - boolean
+          - "null"
+    required:
+      - idvatgroup
+  stats:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active-products:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      backorders:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      closed-picklists-this-week:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      closed-picklists-today:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      inactive-products:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      new-customers-this-week:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      new-orders-this-week:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      new-orders-today:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      open-orders:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      open-picklists:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      total-orders:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+      total-products:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"

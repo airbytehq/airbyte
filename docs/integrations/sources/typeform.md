@@ -101,6 +101,18 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.3.19 | 2024-11-04 | [48301](https://github.com/airbytehq/airbyte/pull/48301) | Update dependencies |
+| 1.3.18 | 2024-10-29 | [46853](https://github.com/airbytehq/airbyte/pull/46853) | Update dependencies |
+| 1.3.17 | 2024-10-05 | [46479](https://github.com/airbytehq/airbyte/pull/46479) | Update dependencies |
+| 1.3.16 | 2024-09-28 | [46170](https://github.com/airbytehq/airbyte/pull/46170) | Update dependencies |
+| 1.3.15 | 2024-09-21 | [45495](https://github.com/airbytehq/airbyte/pull/45495) | Update dependencies |
+| 1.3.14 | 2024-09-07 | [45269](https://github.com/airbytehq/airbyte/pull/45269) | Update dependencies |
+| 1.3.13 | 2024-08-31 | [45016](https://github.com/airbytehq/airbyte/pull/45016) | Update dependencies |
+| 1.3.12 | 2024-08-24 | [44690](https://github.com/airbytehq/airbyte/pull/44690) | Update dependencies |
+| 1.3.11 | 2024-08-17 | [44315](https://github.com/airbytehq/airbyte/pull/44315) | Update dependencies |
+| 1.3.10 | 2024-08-12 | [43875](https://github.com/airbytehq/airbyte/pull/43875) | Update dependencies |
+| 1.3.9 | 2024-08-10 | [43496](https://github.com/airbytehq/airbyte/pull/43496) | Update dependencies |
+| 1.3.8 | 2024-08-03 | [43212](https://github.com/airbytehq/airbyte/pull/43212) | Update dependencies |
 | 1.3.7 | 2024-07-27 | [42726](https://github.com/airbytehq/airbyte/pull/42726) | Update dependencies |
 | 1.3.6 | 2024-07-20 | [42183](https://github.com/airbytehq/airbyte/pull/42183) | Update dependencies |
 | 1.3.5 | 2024-07-13 | [41739](https://github.com/airbytehq/airbyte/pull/41739) | Update dependencies |

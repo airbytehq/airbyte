@@ -49,6 +49,20 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.3.3 | 2024-11-04 | [48291](https://github.com/airbytehq/airbyte/pull/48291) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47898](https://github.com/airbytehq/airbyte/pull/47898) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47580](https://github.com/airbytehq/airbyte/pull/47580) | Update dependencies |
+| 0.3.0 | 2024-10-05 | [46416](https://github.com/airbytehq/airbyte/pull/46416) | Migrate to Manifest-only CDK |
+| 0.2.20 | 2024-10-05 | [46455](https://github.com/airbytehq/airbyte/pull/46455) | Update dependencies |
+| 0.2.19 | 2024-09-28 | [46199](https://github.com/airbytehq/airbyte/pull/46199) | Update dependencies |
+| 0.2.18 | 2024-09-21 | [45735](https://github.com/airbytehq/airbyte/pull/45735) | Update dependencies |
+| 0.2.17 | 2024-09-14 | [45508](https://github.com/airbytehq/airbyte/pull/45508) | Update dependencies |
+| 0.2.16 | 2024-09-07 | [45309](https://github.com/airbytehq/airbyte/pull/45309) | Update dependencies |
+| 0.2.15 | 2024-08-31 | [45035](https://github.com/airbytehq/airbyte/pull/45035) | Update dependencies |
+| 0.2.14 | 2024-08-24 | [44638](https://github.com/airbytehq/airbyte/pull/44638) | Update dependencies |
+| 0.2.13 | 2024-08-17 | [44308](https://github.com/airbytehq/airbyte/pull/44308) | Update dependencies |
+| 0.2.12 | 2024-08-12 | [43918](https://github.com/airbytehq/airbyte/pull/43918) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43129](https://github.com/airbytehq/airbyte/pull/43129) | Update dependencies |
 | 0.2.10 | 2024-07-27 | [42621](https://github.com/airbytehq/airbyte/pull/42621) | Update dependencies |
 | 0.2.9 | 2024-07-20 | [42390](https://github.com/airbytehq/airbyte/pull/42390) | Update dependencies |
 | 0.2.8 | 2024-07-13 | [41926](https://github.com/airbytehq/airbyte/pull/41926) | Update dependencies |

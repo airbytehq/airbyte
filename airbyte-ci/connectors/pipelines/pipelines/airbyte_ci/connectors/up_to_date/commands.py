@@ -12,7 +12,7 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
 
 @click.command(
     cls=DaggerPipelineCommand,
-    short_help="Get the selected Python connectors up to date.",
+    short_help="Get the selected connectors up to date.",
 )
 @click.option(
     "--dep",
@@ -58,7 +58,6 @@ async def up_to_date(
     no_bump: bool,
     open_reports: bool,
 ) -> bool:
-
     if create_prs and not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
             "GitHub access token is required to create or simulate a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable."

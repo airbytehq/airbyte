@@ -2,13 +2,13 @@ data:
   connectorType: destination
   connectorSubtype: api
   definitionId: 3eb4d99c-11fa-4561-a259-fc88e0c2f8f4
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/destination-convex
   githubIssueLabel: destination-convex
   icon: convex.svg
   license: MIT
   name: Convex
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

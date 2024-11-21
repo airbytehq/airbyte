@@ -10,7 +10,6 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from connectors_insights.utils import never_fail_exec
 
 if TYPE_CHECKING:
-
     import dagger
     from connector_ops.utils import Connector  # type: ignore
 
@@ -48,7 +47,7 @@ async def get_pylint_output(dagger_client: dagger.Client, connector: Connector) 
         .from_(connector.image_address)
         .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
         .with_new_file("__init__.py", contents="")
-        .with_exec(["pip", "install", "pylint"], skip_entrypoint=True)
+        .with_exec(["pip", "install", "pylint"])
         .with_workdir(connector.technical_name.replace("-", "_"))
         .with_env_variable("PYTHONPATH", ".")
         .with_new_file("custom_plugin.py", contents=cdk_deprecation_checker_path.read_text())

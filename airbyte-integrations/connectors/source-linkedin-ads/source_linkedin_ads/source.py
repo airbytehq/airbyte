@@ -6,11 +6,11 @@ import logging
 from copy import deepcopy
 from typing import Any, List, Mapping, Optional, Tuple
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 from .utils import update_specific_key
 
@@ -88,6 +88,7 @@ class SourceLinkedinAds(YamlDeclarativeSource):
             )
             for stream_config in self._initialize_cache_for_parent_streams(custom_ad_analytics_configs)
         ]
+
         return custom_ad_analytics_streams
 
     @staticmethod
@@ -99,13 +100,22 @@ class SourceLinkedinAds(YamlDeclarativeSource):
         :param config: Configuration mapping containing custom ad analytics report parameters.
         :return: List of custom ad analytics stream configurations.
         """
+
         custom_stream_configs = []
         for stream_config in stream_configs:
             if stream_config["name"] == "ad_campaign_analytics":
                 for ad_report in config.get("ad_analytics_reports", []):
                     updated_config = deepcopy(stream_config)
-                    update_specific_key(updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})")
-                    update_specific_key(updated_config, "name", ad_report.get("name"))
+                    update_specific_key(
+                        updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})", condition_func=lambda d: d.get("q")
+                    )
+                    update_specific_key(
+                        updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"]
+                    )
+
+                    # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
+                    update_specific_key(updated_config, "name", f"custom_{ad_report.get('name')}")
                     update_specific_key(updated_config, "timeGranularity", f"(value:{ad_report.get('time_granularity')})")
+
                     custom_stream_configs.append(updated_config)
         return custom_stream_configs

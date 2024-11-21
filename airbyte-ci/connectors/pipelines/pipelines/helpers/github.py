@@ -152,7 +152,11 @@ def create_or_update_github_pull_request(
                 content = base64.b64encode(file.read()).decode("utf-8")  # Encode file content to base64
                 blob = repo.create_git_blob(content, "base64")
                 changed_file = ChangedFile(path=str(modified_file), sha=blob.sha)
-        changed_files.append(changed_file)
+            changed_files.append(changed_file)
+        else:
+            logger.info(f"{modified_file} no longer exists, adding to PR as a deletion")
+            changed_file = ChangedFile(path=str(modified_file), sha=None)
+            changed_files.append(changed_file)
     existing_ref = None
     try:
         existing_ref = repo.get_git_ref(f"heads/{branch_id}")

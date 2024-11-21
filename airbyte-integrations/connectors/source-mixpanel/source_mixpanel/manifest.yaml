@@ -39,10 +39,10 @@ definitions:
         action: FAIL
         error_message: Unable to perform a request. Payment Required.
       - predicate: "{{ 'Retry-After' in headers }}"
-        action: RETRY
+        action: RATE_LIMITED
         error_message: Query rate limit exceeded.
       - error_message_contains: "Query rate limit exceeded"
-        action: RETRY
+        action: RATE_LIMITED
         error_message: Query rate limit exceeded.
       - http_codes: [500]
         error_message_contains: "unknown error"

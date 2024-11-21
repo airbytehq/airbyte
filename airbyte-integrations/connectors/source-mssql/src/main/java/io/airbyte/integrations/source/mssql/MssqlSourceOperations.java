@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.db.DataTypeUtils.OFFSETDATETIME_FORMATTER;
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -183,7 +183,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
       throws SQLException {
     try {
-      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
+      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, TIMESTAMPTZ_FORMATTER);
       final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(offsetDateTime.getOffset()).toLocalDateTime());
       // Final step of conversion from
       // OffsetDateTime (a Java construct) object -> Timestamp (a Java construct) ->

@@ -65,6 +65,13 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.2 | 2024-11-04 | [48177](https://github.com/airbytehq/airbyte/pull/48177) | Update dependencies |
+| 0.2.1 | 2024-10-29 | [47769](https://github.com/airbytehq/airbyte/pull/47769) | Update dependencies |
+| 0.2.0 | 2024-08-19 | [44419](https://github.com/airbytehq/airbyte/pull/44419) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-17 | [44340](https://github.com/airbytehq/airbyte/pull/44340) | Update dependencies |
+| 0.1.14 | 2024-08-12 | [43919](https://github.com/airbytehq/airbyte/pull/43919) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43531](https://github.com/airbytehq/airbyte/pull/43531) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43136](https://github.com/airbytehq/airbyte/pull/43136) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42717](https://github.com/airbytehq/airbyte/pull/42717) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42137](https://github.com/airbytehq/airbyte/pull/42137) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41751](https://github.com/airbytehq/airbyte/pull/41751) | Update dependencies |

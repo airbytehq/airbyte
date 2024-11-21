@@ -119,7 +119,7 @@ Example:
 ```yaml
 partition_router:
   type: SubstreamPartitionRouter
-  parent_streams_configs:
+  parent_stream_configs:
     - stream: "#/repositories_stream"
       parent_key: "id"
       partition_field: "repository"
@@ -146,6 +146,7 @@ retriever:
       - stream: "#/repositories_stream"
         parent_key: "id"
         partition_field: "repository"
+        incremental_dependency: true
 ```
 
 ## Nested streams

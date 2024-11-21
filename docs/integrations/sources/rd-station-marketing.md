@@ -47,6 +47,12 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.3.3 | 2024-10-29 | [47936](https://github.com/airbytehq/airbyte/pull/47936) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47577](https://github.com/airbytehq/airbyte/pull/47577) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-14 | [44081](https://github.com/airbytehq/airbyte/pull/44081) | Refactor connector to manifest-only format |
+| 0.2.8 | 2024-08-10 | [43486](https://github.com/airbytehq/airbyte/pull/43486) | Update dependencies |
+| 0.2.7 | 2024-08-03 | [43085](https://github.com/airbytehq/airbyte/pull/43085) | Update dependencies |
 | 0.2.6 | 2024-07-27 | [42665](https://github.com/airbytehq/airbyte/pull/42665) | Update dependencies |
 | 0.2.5 | 2024-07-20 | [42187](https://github.com/airbytehq/airbyte/pull/42187) | Update dependencies |
 | 0.2.4 | 2024-07-13 | [41898](https://github.com/airbytehq/airbyte/pull/41898) | Update dependencies |

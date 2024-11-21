@@ -1,4 +1,4 @@
-version: 1.3.1
+version: 4.1.0
 
 type: DeclarativeSource
 
@@ -55,7 +55,6 @@ definitions:
       name: account_users
       primary_key:
         - account
-        - user
       retriever:
         type: SimpleRetriever
         requester:
@@ -97,6 +96,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
@@ -124,7 +124,6 @@ definitions:
           request_parameters:
             q: search
             search: "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
-
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -135,6 +134,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 500
@@ -155,6 +162,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
@@ -164,7 +172,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/campaign_groups"
+          $ref: "#/schemas/campaigns"
     campaign_groups:
       type: DeclarativeStream
       name: campaign_groups
@@ -182,7 +190,6 @@ definitions:
           request_parameters:
             q: search
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
-
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -193,6 +200,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 500
@@ -213,6 +228,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
@@ -269,6 +285,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -397,8 +421,8 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
-                    value: "{{parameters['pivot_by']}}"
+                      - pivot
+                    value: "CAMPAIGN"
                     value_type: string
           extractor:
             type: CustomRecordExtractor
@@ -421,8 +445,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -472,7 +496,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "CREATIVE"
                     value_type: string
           extractor:
@@ -496,8 +520,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -547,7 +571,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "IMPRESSION_DEVICE_TYPE"
                     value_type: string
           extractor:
@@ -571,8 +595,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -622,7 +646,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COMPANY_SIZE"
                     value_type: string
           extractor:
@@ -646,8 +670,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -697,7 +721,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COUNTRY_V2"
                     value_type: string
           extractor:
@@ -721,8 +745,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -772,7 +796,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_JOB_FUNCTION"
                     value_type: string
           extractor:
@@ -796,8 +820,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -847,7 +871,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_JOB_TITLE"
                     value_type: string
           extractor:
@@ -871,8 +895,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -922,7 +946,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_INDUSTRY"
                     value_type: string
           extractor:
@@ -946,8 +970,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -997,7 +1021,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_SENIORITY"
                     value_type: string
           extractor:
@@ -1021,8 +1045,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -1072,7 +1096,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_REGION_V2"
                     value_type: string
           extractor:
@@ -1096,8 +1120,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -1147,7 +1171,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COMPANY"
                     value_type: string
           extractor:
@@ -1171,8 +1195,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: P1D
-        step: P200D
+        cursor_granularity: P0D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -1299,58 +1323,58 @@ spec:
         examples:
           - 123456789
         default: []
-        ad_analytics_reports:
-          title: Custom Ad Analytics Reports
-          type: array
-          items:
-            type: object
-            title: Ad Analytics Report Configuration
-            description: "Config for custom ad Analytics Report"
-            required:
-              - name
-              - pivot_by
-              - time_granularity
-            properties:
-              name:
-                title: Report Name
-                description: "The name for the custom report."
-                type: string
-              pivot_by:
-                title: Pivot Category
-                description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
-                type: string
-                enum:
-                  - COMPANY
-                  - ACCOUNT
-                  - SHARE
-                  - CAMPAIGN
-                  - CREATIVE
-                  - CAMPAIGN_GROUP
-                  - CONVERSION
-                  - CONVERSATION_NODE
-                  - CONVERSATION_NODE_OPTION_INDEX
-                  - SERVING_LOCATION
-                  - CARD_INDEX
-                  - MEMBER_COMPANY_SIZE
-                  - MEMBER_INDUSTRY
-                  - MEMBER_SENIORITY
-                  - MEMBER_JOB_TITLE
-                  - MEMBER_JOB_FUNCTION
-                  - MEMBER_COUNTRY_V2
-                  - MEMBER_REGION_V2
-                  - MEMBER_COMPANY
-                  - PLACEMENT_NAME
-                  - IMPRESSION_DEVICE_TYPE
-              time_granularity:
-                title: Time Granularity
-                description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
-                type: string
-                enum:
-                  - ALL
-                  - DAILY
-                  - MONTHLY
-                  - YEARLY
-          default: []
+      ad_analytics_reports:
+        title: Custom Ad Analytics Reports
+        type: array
+        items:
+          type: object
+          title: Ad Analytics Report Configuration
+          description: "Config for custom ad Analytics Report"
+          required:
+            - name
+            - pivot_by
+            - time_granularity
+          properties:
+            name:
+              title: Report Name
+              description: "The name for the custom report."
+              type: string
+            pivot_by:
+              title: Pivot Category
+              description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
+              type: string
+              enum:
+                - COMPANY
+                - ACCOUNT
+                - SHARE
+                - CAMPAIGN
+                - CREATIVE
+                - CAMPAIGN_GROUP
+                - CONVERSION
+                - CONVERSATION_NODE
+                - CONVERSATION_NODE_OPTION_INDEX
+                - SERVING_LOCATION
+                - CARD_INDEX
+                - MEMBER_COMPANY_SIZE
+                - MEMBER_INDUSTRY
+                - MEMBER_SENIORITY
+                - MEMBER_JOB_TITLE
+                - MEMBER_JOB_FUNCTION
+                - MEMBER_COUNTRY_V2
+                - MEMBER_REGION_V2
+                - MEMBER_COMPANY
+                - PLACEMENT_NAME
+                - IMPRESSION_DEVICE_TYPE
+            time_granularity:
+              title: Time Granularity
+              description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
+              type: string
+              enum:
+                - ALL
+                - DAILY
+                - MONTHLY
+                - YEARLY
+        default: []
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2666,7 +2690,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -3173,7 +3197,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -3680,7 +3704,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -4187,7 +4211,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -4694,7 +4718,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -5201,7 +5225,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -5708,7 +5732,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -6215,7 +6239,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -6722,7 +6746,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -7229,7 +7253,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -7736,7 +7760,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string

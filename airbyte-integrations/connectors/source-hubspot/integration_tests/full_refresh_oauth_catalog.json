@@ -56,6 +56,15 @@
     },
     {
       "stream": {
+        "name": "deal_splits",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "deals",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -123,6 +132,15 @@
     {
       "stream": {
         "name": "goals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "leads",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

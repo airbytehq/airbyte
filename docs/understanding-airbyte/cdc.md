@@ -26,6 +26,7 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - The modifications you are trying to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made from `TRUNCATE`/`ALTER` won't appear in logs and therefore in your destination.
 - There are database-specific limitations. See the documentation pages for individual connectors for more information.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
+- The final table will not show the records whose most recent entry has been deleted, as denoted by _ab_cdc_deleted_at.
 
 ## Current Support
 

@@ -4,12 +4,12 @@ import json
 from unittest import TestCase
 
 from advetiser_slices import mock_advertisers_slices
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
 from source_tiktok_marketing import SourceTiktokMarketing
 
@@ -88,12 +88,14 @@ class TestAdsReportHourly(TestCase):
         "real_time_app_install_cost",
         "app_install",
     ]
-
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
         return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()
 
-    def config(self):
-        return ConfigBuilder().with_end_date("2024-01-02").build()
+    def config(self, include_deleted:bool=False):
+        config_to_build = ConfigBuilder().with_end_date("2024-01-02")
+        if include_deleted:
+            config_to_build = config_to_build.with_include_deleted()
+        return config_to_build.build()
 
     def state(self):
         return (
@@ -109,11 +111,8 @@ class TestAdsReportHourly(TestCase):
             .build()
         )
 
-    def mock_response(self, http_mocker: HttpMocker):
-        http_mocker.get(
-            HttpRequest(
-                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
+    def mock_response(self, http_mocker: HttpMocker, include_deleted=False):
+        query_params = {
                     "service_type": "AUCTION",
                     "report_type": "BASIC",
                     "data_level": "AUCTION_AD",
@@ -123,24 +122,22 @@ class TestAdsReportHourly(TestCase):
                     "end_date": self.config()["start_date"],
                     "page_size": 1000,
                     "advertiser_id": self.advertiser_id,
-                },
-            ),
-            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
-        )
+                }
+        if include_deleted:
+            query_params["filtering"] = '[{"field_name": "ad_status", "filter_type": "IN", "filter_value": "[\\"STATUS_ALL\\"]"}]'
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
-                    "service_type": "AUCTION",
-                    "report_type": "BASIC",
-                    "data_level": "AUCTION_AD",
-                    "dimensions": '["ad_id", "stat_time_hour"]',
-                    "metrics": str(self.metrics).replace("'", '"'),
-                    "start_date": self.config()["end_date"],
-                    "end_date": self.config()["end_date"],
-                    "page_size": 1000,
-                    "advertiser_id": self.advertiser_id,
-                },
+                query_params=query_params,
+            ),
+            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+        )
+        query_params["start_date"] =  query_params["end_date"] = self.config()["end_date"]
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
             ),
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
@@ -165,9 +162,19 @@ class TestAdsReportHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
+
+    @HttpMocker()
+    def test_read_with_include_deleted(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        self.mock_response(http_mocker, include_deleted=True)
+
+        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        assert len(output.records) == 2
+        assert output.records[0].record.data.get("ad_id") is not None
+        assert output.records[0].record.data.get("stat_time_hour") is not None
 
 
 class TestAdGroupsReportsHourly(TestCase):
@@ -232,8 +239,11 @@ class TestAdGroupsReportsHourly(TestCase):
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
         return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()
 
-    def config(self):
-        return ConfigBuilder().with_end_date("2024-01-02").build()
+    def config(self, include_deleted:bool=False):
+        config_to_build = ConfigBuilder().with_end_date("2024-01-02")
+        if include_deleted:
+            config_to_build = config_to_build.with_include_deleted()
+        return config_to_build.build()
 
     def state(self):
         return (
@@ -252,11 +262,7 @@ class TestAdGroupsReportsHourly(TestCase):
     @HttpMocker()
     def test_basic_read(self, http_mocker: HttpMocker):
         mock_advertisers_slices(http_mocker, self.config())
-
-        http_mocker.get(
-            HttpRequest(
-                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
+        query_params = {
                     "service_type": "AUCTION",
                     "report_type": "BASIC",
                     "data_level": "AUCTION_ADGROUP",
@@ -266,25 +272,19 @@ class TestAdGroupsReportsHourly(TestCase):
                     "end_date": self.config()["start_date"],
                     "page_size": 1000,
                     "advertiser_id": self.advertiser_id,
-                },
-            ),
-            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
-        )
-
+                }
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
-                    "service_type": "AUCTION",
-                    "report_type": "BASIC",
-                    "data_level": "AUCTION_ADGROUP",
-                    "dimensions": '["adgroup_id", "stat_time_hour"]',
-                    "metrics": str(self.metrics).replace("'", '"'),
-                    "start_date": self.config()["end_date"],
-                    "end_date": self.config()["end_date"],
-                    "page_size": 1000,
-                    "advertiser_id": self.advertiser_id,
-                },
+                query_params=query_params,
+            ),
+            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+        )
+        query_params["start_date"] = query_params["end_date"] = self.config()["end_date"]
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
             ),
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
@@ -339,10 +339,46 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
+    @HttpMocker()
+    def test_read_with_include_deleted(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        filtering = '[{"field_name": "adgroup_status", "filter_type": "IN", "filter_value": "[\\"STATUS_ALL\\"]"}]'
+        query_params = {
+                    "service_type": "AUCTION",
+                    "report_type": "BASIC",
+                    "data_level": "AUCTION_ADGROUP",
+                    "dimensions": '["adgroup_id", "stat_time_hour"]',
+                    "metrics": str(self.metrics).replace("'", '"'),
+                    "start_date": self.config()["start_date"],
+                    "end_date": self.config()["start_date"],
+                    "page_size": 1000,
+                    "advertiser_id": self.advertiser_id,
+                    "filtering": filtering,
+                }
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
+            ),
+            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+        )
+        query_params["start_date"] = query_params["end_date"] = self.config()["end_date"]
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
+            ),
+            HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
+        )
+
+        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        assert len(output.records) == 2
+        assert output.records[0].record.data.get("adgroup_id") is not None
+        assert output.records[0].record.data.get("stat_time_hour") is not None
 
 class TestAdvertisersReportsHourly(TestCase):
     stream_name = "advertisers_reports_hourly"
@@ -456,7 +492,7 @@ class TestAdvertisersReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -500,8 +536,11 @@ class TestCampaignsReportsHourly(TestCase):
     def catalog(self, sync_mode: SyncMode = SyncMode.full_refresh):
         return CatalogBuilder().with_stream(name=self.stream_name, sync_mode=sync_mode).build()
 
-    def config(self):
-        return ConfigBuilder().with_end_date("2024-01-02").build()
+    def config(self, include_deleted:bool=False):
+        config_to_build = ConfigBuilder().with_end_date("2024-01-02")
+        if include_deleted:
+            config_to_build = config_to_build.with_include_deleted()
+        return config_to_build.build()
 
     def state(self):
         return (
@@ -517,11 +556,8 @@ class TestCampaignsReportsHourly(TestCase):
             .build()
         )
 
-    def mock_response(self, http_mocker: HttpMocker):
-        http_mocker.get(
-            HttpRequest(
-                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
+    def mock_response(self, http_mocker: HttpMocker, include_deleted:bool=False):
+        query_params = {
                     "service_type": "AUCTION",
                     "report_type": "BASIC",
                     "data_level": "AUCTION_CAMPAIGN",
@@ -531,25 +567,22 @@ class TestCampaignsReportsHourly(TestCase):
                     "end_date": self.config()["start_date"],
                     "page_size": 1000,
                     "advertiser_id": self.advertiser_id,
-                },
+                }
+        if include_deleted:
+            query_params["filtering"] = '[{"field_name": "campaign_status", "filter_type": "IN", "filter_value": "[\\"STATUS_ALL\\"]"}]'
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                query_params=query_params,
             ),
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
         )
 
+        query_params["start_date"] = query_params["end_date"] = self.config()["end_date"]
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params={
-                    "service_type": "AUCTION",
-                    "report_type": "BASIC",
-                    "data_level": "AUCTION_CAMPAIGN",
-                    "dimensions": '["campaign_id", "stat_time_hour"]',
-                    "metrics": str(self.metrics).replace("'", '"'),
-                    "start_date": self.config()["end_date"],
-                    "end_date": self.config()["end_date"],
-                    "page_size": 1000,
-                    "advertiser_id": self.advertiser_id,
-                },
+                query_params=query_params,
             ),
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
@@ -574,6 +607,16 @@ class TestCampaignsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.dict()["states"] == [
+        assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
+
+    @HttpMocker()
+    def test_read_with_include_deleted(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        self.mock_response(http_mocker, include_deleted=True)
+
+        output = read(SourceTiktokMarketing(), self.config(include_deleted=True), self.catalog())
+        assert len(output.records) == 2
+        assert output.records[0].record.data.get("campaign_id") is not None
+        assert output.records[0].record.data.get("stat_time_hour") is not None

@@ -1,0 +1,398 @@
+{
+  "streams": [
+    {
+      "name": "campaigns",
+      "relations": {
+        "appId": "applications.id",
+        "contentId": "contents.id",
+        "emailCampaignGroupId": "marketing_emails.emailCampaignGroupId"
+      }
+    },
+    {
+      "name": "companies",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_parent_company_id": "companies.id"
+      }
+    },
+    {
+      "name": "contact_lists",
+      "relations": {
+        "parentId": "contact_lists.listId",
+        "authorId": "owners.userId",
+        "portalId": "portals.id"
+      }
+    },
+    {
+      "name": "contacts",
+      "relations": {
+        "properties_associatedcompanyid": "companies.id",
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "contacts_form_submissions",
+      "relations": {
+        "canonical-vid": "contacts.id",
+        "portal-id": "portals.id"
+      }
+    },
+    {
+      "name": "contacts_list_memberships",
+      "relations": {
+        "canonical-vid": "contacts.id",
+        "static-list-id": "contact_lists.listId"
+      }
+    },
+    {
+      "name": "contacts_merged_audit",
+      "relations": {
+        "canonical-vid": "contacts.id",
+        "vid-to-merge": "contacts.id",
+        "user-id": "owners.userId"
+      }
+    },
+    {
+      "name": "deal_pipelines",
+      "relations": {
+        "objectTypeId": "object_types.id"
+      }
+    },
+    {
+      "name": "deals",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_primary_company_id": "companies.id"
+      }
+    },
+    {
+      "name": "deals_archived",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_primary_company_id": "companies.id"
+      }
+    },
+    {
+      "name": "email_events",
+      "relations": {
+        "emailCampaignId": "campaigns.id",
+        "emailCampaignGroupId": "marketing_emails.emailCampaignGroupId",
+        "portalId": "portals.id",
+        "requestedByUserId": "owners.userId"
+      }
+    },
+    {
+      "name": "email_subscriptions",
+      "relations": {
+        "portalId": "portals.id",
+        "businessUnitId": "business_units.id"
+      }
+    },
+    {
+      "name": "engagements",
+      "relations": {
+        "teamId": "teams.id",
+        "portalId": "portals.id",
+        "createdBy": "owners.userId",
+        "modifiedBy": "owners.userId",
+        "ownerId": "owners.userId",
+        "metadata_createdFromLinkId": "links.id",
+        "metadata_calleeObjectId": "contacts.id",
+        "metadata_externalAccountId": "external_accounts.id",
+        "metadata_facsimileSendId": "engagements_emails.id",
+        "metadata_sourceId": "engagements_emails.id"
+      }
+    },
+    {
+      "name": "engagements_calls",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_call_callee_object_id": "contacts.id",
+        "properties_hs_call_external_account_id": "external_accounts.id"
+      }
+    },
+    {
+      "name": "engagements_emails",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "engagements_meetings",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_meeting_created_from_link_id": "links.id"
+      }
+    },
+    {
+      "name": "engagements_notes",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "engagements_tasks",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "forms",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_folder_id": "folders.id",
+        "properties_hs_feedback_survey_id": "feedback_surveys.id"
+      }
+    },
+    {
+      "name": "form_submissions",
+      "relations": {
+        "formId": "forms.id"
+      }
+    },
+    {
+      "name": "goals",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_assignee_team_id": "teams.id",
+        "properties_hs_assignee_user_id": "owners.userId",
+        "properties_hs_goal_target_group_id": "goal_target_groups.id",
+        "properties_hs_team_id": "teams.id",
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "line_items",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "marketing_emails",
+      "relations": {
+        "authorUserId": "owners.userId",
+        "createdById": "owners.userId",
+        "folderId": "folders.id",
+        "leadFlowId": "lead_flows.id",
+        "primaryEmailCampaignId": "campaigns.id",
+        "publishedById": "owners.userId",
+        "subscription": "email_subscriptions.id",
+        "emailCampaignGroupId": "campaigns.emailCampaignGroupId"
+      }
+    },
+    {
+      "name": "owners",
+      "relations": {
+        "userId": "users.id"
+      }
+    },
+    {
+      "name": "owners_archived",
+      "relations": {
+        "userId": "users.id"
+      }
+    },
+    {
+      "name": "products",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_folder_id": "folders.id"
+      }
+    },
+    {
+      "name": "contacts_property_history",
+      "relations": {
+        "updated-by-user-id": "owners.userId",
+        "canonical-vid": "contacts.id",
+        "portal-id": "portals.id"
+      }
+    },
+    {
+      "name": "companies_property_history",
+      "relations": {
+        "updatedByUserId": "owners.userId",
+        "companyId": "companies.id"
+      }
+    },
+    {
+      "name": "deals_property_history",
+      "relations": {
+        "updatedByUserId": "owners.userId",
+        "dealId": "deals.id"
+      }
+    },
+    {
+      "name": "subscription_changes",
+      "relations": {
+        "portalId": "portals.id"
+      }
+    },
+    {
+      "name": "tickets",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id",
+        "properties_hs_custom_inbox": "inboxes.id",
+        "properties_hs_inbox_id": "inboxes.id",
+        "properties_hs_originating_email_engagement_id": "engagements_emails.id",
+        "properties_hs_primary_company_id": "companies.id",
+        "properties_hs_ticket_id": "tickets.id"
+      }
+    },
+    {
+      "name": "ticket_pipelines",
+      "relations": {}
+    },
+    {
+      "name": "workflows",
+      "relations": {
+        "lastUpdatedByUserId": "owners.userId",
+        "originalAuthorUserId": "owners.userId",
+        "portalId": "portals.id"
+      }
+    },
+    {
+      "name": "contacts_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "companies_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "deals_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "tickets_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "engagements_calls_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "engagements_emails_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "engagements_meetings_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "engagements_notes_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "engagements_tasks_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "goals_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "line_items_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "products_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "pets",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "cars",
+      "relations": {
+        "properties_hs_created_by_user_id": "owners.userId",
+        "properties_hs_updated_by_user_id": "owners.userId",
+        "properties_hubspot_owner_id": "owners.userId",
+        "properties_hubspot_team_id": "teams.id"
+      }
+    },
+    {
+      "name": "pets_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    },
+    {
+      "name": "cars_web_analytics",
+      "relations": {
+        "properties_hs_user_id": "owners.userId"
+      }
+    }
+  ]
+}

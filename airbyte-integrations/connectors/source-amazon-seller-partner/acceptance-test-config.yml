@@ -99,6 +99,10 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_FORECASTING_RETAIL_REPORT
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
+          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
   incremental:
     tests:
       - config_path: "secrets/config.json"

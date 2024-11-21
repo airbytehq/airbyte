@@ -10,9 +10,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.8.1
+  dockerImageTag: 1.8.16
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
+  erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
@@ -22,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-github
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-paypal-transaction
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

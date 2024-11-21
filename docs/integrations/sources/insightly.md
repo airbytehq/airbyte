@@ -72,6 +72,11 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.2 | 2024-10-29 | [47917](https://github.com/airbytehq/airbyte/pull/47917) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-15 | [44140](https://github.com/airbytehq/airbyte/pull/44140) | Refactor connector to manifest-only format |
+| 0.2.16 | 2024-08-10 | [43646](https://github.com/airbytehq/airbyte/pull/43646) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43206](https://github.com/airbytehq/airbyte/pull/43206) | Update dependencies |
 | 0.2.14 | 2024-07-27 | [42785](https://github.com/airbytehq/airbyte/pull/42785) | Update dependencies |
 | 0.2.13 | 2024-07-20 | [42203](https://github.com/airbytehq/airbyte/pull/42203) | Update dependencies |
 | 0.2.12 | 2024-07-13 | [41747](https://github.com/airbytehq/airbyte/pull/41747) | Update dependencies |

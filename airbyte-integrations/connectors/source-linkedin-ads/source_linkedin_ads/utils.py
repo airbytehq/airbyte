@@ -113,16 +113,27 @@ ANALYTICS_FIELDS_V2: List = [
 FIELDS_CHUNK_SIZE = 18
 
 
-def update_specific_key(target_dict, target_key, target_value):
+def update_specific_key(target_dict, target_key, target_value, condition_func=None, excluded_keys=None):
+    if excluded_keys is None:
+        excluded_keys = []
+
     for key, value in target_dict.items():
-        if key == target_key:
+        # Skip any keys that are in excluded_keys
+        if key in excluded_keys:
+            continue
+        # Apply the condition function if provided, and only update if the condition is true
+        if key == target_key and (condition_func is None or condition_func(target_dict)):
             target_dict[key] = target_value
         elif isinstance(value, dict):
             # Recursively update nested dictionaries
-            target_dict[key] = update_specific_key(value, target_key, target_value)
+            target_dict[key] = update_specific_key(value, target_key, target_value, condition_func, excluded_keys)
         elif isinstance(value, list):
             # Recursively update lists
-            target_dict[key] = [update_specific_key(item, target_key, target_value) if isinstance(item, dict) else item for item in value]
+            target_dict[key] = [
+                update_specific_key(item, target_key, target_value, condition_func, excluded_keys) if isinstance(item, dict) else item
+                for item in value
+            ]
+
     return target_dict
 
 

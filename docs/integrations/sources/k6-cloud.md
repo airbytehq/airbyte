@@ -32,6 +32,12 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.3 | 2024-10-29 | [47895](https://github.com/airbytehq/airbyte/pull/47895) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47454](https://github.com/airbytehq/airbyte/pull/47454) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-15 | [44137](https://github.com/airbytehq/airbyte/pull/44137) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-10 | [43493](https://github.com/airbytehq/airbyte/pull/43493) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43077](https://github.com/airbytehq/airbyte/pull/43077) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42789](https://github.com/airbytehq/airbyte/pull/42789) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42249](https://github.com/airbytehq/airbyte/pull/42249) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41871](https://github.com/airbytehq/airbyte/pull/41871) | Update dependencies |

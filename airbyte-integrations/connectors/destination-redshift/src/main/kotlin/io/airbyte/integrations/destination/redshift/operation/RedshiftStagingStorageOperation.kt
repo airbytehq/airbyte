@@ -100,7 +100,7 @@ class RedshiftStagingStorageOperation(
             return null
         }
 
-        return generation.first()[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID].asLong()
+        return generation.first()[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID]?.asLong() ?: 0
     }
 
     override fun writeToStage(
@@ -114,7 +114,12 @@ class RedshiftStagingStorageOperation(
             "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName} to path $objectPath"
         }
         val filename =
-            s3StorageOperations.uploadRecordsToBucket(data, streamId.rawNamespace, objectPath)
+            s3StorageOperations.uploadRecordsToBucket(
+                data,
+                streamId.rawNamespace,
+                objectPath,
+                streamConfig.generationId
+            )
 
         log.info {
             "Starting copy to target table from stage: ${streamId.rawName}$suffix in destination from stage: $objectPath/$filename."

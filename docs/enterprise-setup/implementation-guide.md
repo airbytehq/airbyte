@@ -119,9 +119,16 @@ stringData:
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+  # Azure Blob Storage Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+
   # AWS Secret Manager
   aws-secret-manager-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  # Azure Secret Manager
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 
 ```
 
@@ -219,13 +226,6 @@ Follow these instructions to add the Airbyte helm repository:
 ```yaml
 global:
   edition: enterprise
-
-# Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
-workload-api-server:
-  enabled: true
-
-workload-launcher:
-  enabled:
 ```
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
@@ -240,8 +240,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
-      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -272,8 +272,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
-        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -360,23 +360,39 @@ Set `authenticationType` to `instanceProfile` if the compute infrastructure runn
 </TabItem>
 <TabItem value="GCS" label="GCS" default>
 
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
 ```yaml
 global:
   storage:
     type: "GCS"
-    storageSecretName: gcp-cred-secrets
+    storageSecretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
 </TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
+</TabItem>
+
 </Tabs>
 </details>
 
@@ -427,6 +443,25 @@ secretsManager:
 ```
 
 </TabItem>
+
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>
 
 </details>

@@ -58,6 +58,16 @@ The API key that you are assigned is rate-limited.
 
 | Version | Date       | Pull Request                                              | Subject                               |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
+| 0.2.0 | 2024-10-06 | [46525](https://github.com/airbytehq/airbyte/pull/46525) | Converting to manifest-only format |
+| 0.1.18 | 2024-10-05 | [46490](https://github.com/airbytehq/airbyte/pull/46490) | Update dependencies |
+| 0.1.17 | 2024-09-28 | [46113](https://github.com/airbytehq/airbyte/pull/46113) | Update dependencies |
+| 0.1.16 | 2024-09-21 | [45817](https://github.com/airbytehq/airbyte/pull/45817) | Update dependencies |
+| 0.1.15 | 2024-09-14 | [45295](https://github.com/airbytehq/airbyte/pull/45295) | Update dependencies |
+| 0.1.14 | 2024-08-31 | [45004](https://github.com/airbytehq/airbyte/pull/45004) | Update dependencies |
+| 0.1.13 | 2024-08-24 | [44685](https://github.com/airbytehq/airbyte/pull/44685) | Update dependencies |
+| 0.1.12 | 2024-08-17 | [44356](https://github.com/airbytehq/airbyte/pull/44356) | Update dependencies |
+| 0.1.11 | 2024-08-10 | [43609](https://github.com/airbytehq/airbyte/pull/43609) | Update dependencies |
+| 0.1.10 | 2024-08-03 | [43122](https://github.com/airbytehq/airbyte/pull/43122) | Update dependencies |
 | 0.1.9 | 2024-07-27 | [42598](https://github.com/airbytehq/airbyte/pull/42598) | Update dependencies |
 | 0.1.8 | 2024-07-20 | [42217](https://github.com/airbytehq/airbyte/pull/42217) | Update dependencies |
 | 0.1.7 | 2024-07-13 | [41870](https://github.com/airbytehq/airbyte/pull/41870) | Update dependencies |

@@ -160,5 +160,18 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                     ),
             ),
         )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres Debezium Connection Error",
+                regexMatchingPattern = ".*cannot read from logical replication slot.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "The configured replication slot has been dropped or has corrupted. Please recreate the replication slot.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: ERROR: cannot read from logical replication slot \"airbyte_slot\"",
+                referenceLinks = listOf("https://github.com/airbytehq/oncall/issues/5981"),
+            ),
+        )
     }
 }

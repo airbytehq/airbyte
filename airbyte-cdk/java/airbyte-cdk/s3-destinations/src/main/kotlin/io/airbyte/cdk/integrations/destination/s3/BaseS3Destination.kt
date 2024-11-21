@@ -19,9 +19,12 @@ import java.util.function.Consumer
 private val LOGGER = KotlinLogging.logger {}
 
 abstract class BaseS3Destination
+@JvmOverloads
 protected constructor(
     protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
-    protected val environment: Map<String, String> = System.getenv()
+    protected val environment: Map<String, String> = System.getenv(),
+    private val memoryRatio: Double = 0.5,
+    private val nThreads: Int = 5
 ) : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = S3NameTransformer()
 
@@ -74,7 +77,10 @@ protected constructor(
                 outputRecordCollector,
                 S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
                 s3Config,
-                catalog
+                catalog,
+                memoryRatio,
+                nThreads,
+                featureFlags
             )
     }
 

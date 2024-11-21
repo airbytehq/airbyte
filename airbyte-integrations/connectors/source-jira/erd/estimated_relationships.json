@@ -1,0 +1,266 @@
+{
+  "streams": [
+    {
+      "name": "application_roles",
+      "relations": {}
+    },
+    {
+      "name": "avatars",
+      "relations": {}
+    },
+    {
+      "name": "boards",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "dashboards",
+      "relations": {}
+    },
+    {
+      "name": "filters",
+      "relations": {}
+    },
+    {
+      "name": "groups",
+      "relations": {}
+    },
+    {
+      "name": "issue_fields",
+      "relations": {}
+    },
+    {
+      "name": "issue_field_configurations",
+      "relations": {}
+    },
+    {
+      "name": "issue_link_types",
+      "relations": {}
+    },
+    {
+      "name": "issue_navigator_settings",
+      "relations": {}
+    },
+    {
+      "name": "issue_notification_schemes",
+      "relations": {}
+    },
+    {
+      "name": "issue_priorities",
+      "relations": {}
+    },
+    {
+      "name": "issue_resolutions",
+      "relations": {}
+    },
+    {
+      "name": "issue_security_schemes",
+      "relations": {}
+    },
+    {
+      "name": "issue_types",
+      "relations": {}
+    },
+    {
+      "name": "issue_type_schemes",
+      "relations": {}
+    },
+    {
+      "name": "issue_type_screen_schemes",
+      "relations": {}
+    },
+    {
+      "name": "jira_settings",
+      "relations": {}
+    },
+    {
+      "name": "labels",
+      "relations": {}
+    },
+    {
+      "name": "permissions",
+      "relations": {}
+    },
+    {
+      "name": "permission_schemes",
+      "relations": {}
+    },
+    {
+      "name": "projects",
+      "relations": {
+        "lead": "users.accountId",
+        "deletedBy": "users.accountId",
+        "archivedBy": "users.accountId"
+      }
+    },
+    {
+      "name": "project_categories",
+      "relations": {}
+    },
+    {
+      "name": "project_roles",
+      "relations": {}
+    },
+    {
+      "name": "project_types",
+      "relations": {}
+    },
+    {
+      "name": "screens",
+      "relations": {}
+    },
+    {
+      "name": "screen_schemes",
+      "relations": {}
+    },
+    {
+      "name": "time_tracking",
+      "relations": {}
+    },
+    {
+      "name": "users",
+      "relations": {}
+    },
+    {
+      "name": "workflows",
+      "relations": {}
+    },
+    {
+      "name": "workflow_schemes",
+      "relations": {}
+    },
+    {
+      "name": "workflow_statuses",
+      "relations": {}
+    },
+    {
+      "name": "workflow_status_categories",
+      "relations": {}
+    },
+    {
+      "name": "filter_sharing",
+      "relations": {}
+    },
+    {
+      "name": "issue_custom_field_contexts",
+      "relations": {}
+    },
+    {
+      "name": "issue_custom_field_options",
+      "relations": {}
+    },
+    {
+      "name": "issue_properties",
+      "relations": {}
+    },
+    {
+      "name": "issue_remote_links",
+      "relations": {}
+    },
+    {
+      "name": "issue_transitions",
+      "relations": {
+        "issueId": "issues.id"
+      }
+    },
+    {
+      "name": "issue_votes",
+      "relations": {
+        "issueId": "issues.id"
+      }
+    },
+    {
+      "name": "issue_watchers",
+      "relations": {
+        "issueId": "issues.id"
+      }
+    },
+    {
+      "name": "project_avatars",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "project_components",
+      "relations": {
+        "projectId": "projects.id",
+        "leadAccountId": "users.accountId"
+      }
+    },
+    {
+      "name": "project_email",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "project_permission_schemes",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "project_versions",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "screen_tabs",
+      "relations": {
+        "screenId": "screens.id"
+      }
+    },
+    {
+      "name": "screen_tab_fields",
+      "relations": {
+        "screenId": "screens.id",
+        "tabId": "screen_tabs.id"
+      }
+    },
+    {
+      "name": "sprints",
+      "relations": {
+        "originBoardId": "boards.id",
+        "boardId": "boards.id"
+      }
+    },
+    {
+      "name": "users_groups_detailed",
+      "relations": {}
+    },
+    {
+      "name": "board_issues",
+      "relations": {
+        "boardId": "boards.id"
+      }
+    },
+    {
+      "name": "issues",
+      "relations": {
+        "projectId": "projects.id"
+      }
+    },
+    {
+      "name": "sprint_issues",
+      "relations": {
+        "sprintId": "sprints.id"
+      }
+    },
+    {
+      "name": "issue_comments",
+      "relations": {
+        "issueId": "issues.id",
+        "author": "users.accountId"
+      }
+    },
+    {
+      "name": "issue_worklogs",
+      "relations": {
+        "issueId": "issues.id"
+      }
+    }
+  ]
+}

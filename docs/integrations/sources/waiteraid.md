@@ -61,6 +61,13 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.2.3 | 2024-10-29 | [47835](https://github.com/airbytehq/airbyte/pull/47835) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47610](https://github.com/airbytehq/airbyte/pull/47610) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-14 | [44047](https://github.com/airbytehq/airbyte/pull/44047) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43789](https://github.com/airbytehq/airbyte/pull/43789) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43568](https://github.com/airbytehq/airbyte/pull/43568) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43242](https://github.com/airbytehq/airbyte/pull/43242) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42762](https://github.com/airbytehq/airbyte/pull/42762) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42207](https://github.com/airbytehq/airbyte/pull/42207) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41777](https://github.com/airbytehq/airbyte/pull/41777) | Update dependencies |

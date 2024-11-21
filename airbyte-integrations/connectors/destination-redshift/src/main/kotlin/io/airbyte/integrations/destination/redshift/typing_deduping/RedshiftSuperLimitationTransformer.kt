@@ -13,10 +13,10 @@ import io.airbyte.commons.json.Jsons.emptyObject
 import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.commons.json.Jsons.serialize
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
@@ -77,7 +77,7 @@ class RedshiftSuperLimitationTransformer(
         // convert List<ColumnId> to Set<ColumnId> for faster lookup
         val primaryKeys =
             streamConfig.primaryKey.stream().map(ColumnId::originalName).collect(Collectors.toSet())
-        val syncMode = streamConfig.destinationSyncMode
+        val syncMode = streamConfig.postImportAction
         val transformationInfo =
             transformNodes(jsonNode, DEFAULT_PREDICATE_VARCHAR_GREATER_THAN_64K)
         val originalBytes = transformationInfo.originalBytes
@@ -97,7 +97,7 @@ class RedshiftSuperLimitationTransformer(
                 transformedBytes
             )
             val minimalNode = constructMinimalJsonWithPks(jsonNode, primaryKeys, cursorField)
-            if (minimalNode.isEmpty && syncMode == DestinationSyncMode.APPEND_DEDUP) {
+            if (minimalNode.isEmpty && syncMode == ImportType.DEDUPE) {
                 // Fail the sync if PKs are missing in DEDUPE, no point sending an empty record to
                 // destination.
                 throw RuntimeException(

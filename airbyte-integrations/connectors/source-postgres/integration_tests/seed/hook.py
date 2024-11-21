@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 import psycopg2
+import pytz
 from psycopg2 import extensions, sql
 
 catalog_write_file = "/connector/integration_tests/temp/configured_catalog_copy.json"
@@ -23,6 +24,8 @@ secret_config_file = '/connector/secrets/config.json'
 secret_active_config_file = '/connector/integration_tests/temp/config_active.json'
 secret_config_cdc_file = '/connector/secrets/config_cdc.json'
 secret_active_config_cdc_file = '/connector/integration_tests/temp/config_cdc_active.json'
+
+la_timezone = pytz.timezone('America/Los_Angeles')
 
 def connect_to_db() -> extensions.connection:
     with open(secret_config_file) as f:
@@ -124,7 +127,7 @@ def create_table(conn: extensions.connection, schema_name: str, table_name: str)
         cursor.close()
 
 def generate_schema_date_with_suffix() -> str:
-    current_date = datetime.datetime.now().strftime("%Y%m%d")
+    current_date = datetime.datetime.now(la_timezone).strftime("%Y%m%d")
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"{current_date}_{suffix}"
 
@@ -251,7 +254,7 @@ def delete_schemas_with_prefix(conn, date_prefix):
 
 def teardown() -> None:
     conn = connect_to_db()
-    today = datetime.datetime.now()
+    today = datetime.datetime.now(la_timezone)
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
     delete_schemas_with_prefix(conn, formatted_yesterday)

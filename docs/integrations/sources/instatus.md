@@ -67,6 +67,19 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.1.23 | 2024-10-28 | [47027](https://github.com/airbytehq/airbyte/pull/47027) | Update dependencies |
+| 0.1.22 | 2024-10-12 | [46843](https://github.com/airbytehq/airbyte/pull/46843) | Update dependencies |
+| 0.1.21 | 2024-10-05 | [46484](https://github.com/airbytehq/airbyte/pull/46484) | Update dependencies |
+| 0.1.20 | 2024-09-28 | [46115](https://github.com/airbytehq/airbyte/pull/46115) | Update dependencies |
+| 0.1.19 | 2024-09-21 | [45731](https://github.com/airbytehq/airbyte/pull/45731) | Update dependencies |
+| 0.1.18 | 2024-09-14 | [45514](https://github.com/airbytehq/airbyte/pull/45514) | Update dependencies |
+| 0.1.17 | 2024-09-07 | [45275](https://github.com/airbytehq/airbyte/pull/45275) | Update dependencies |
+| 0.1.16 | 2024-08-31 | [44990](https://github.com/airbytehq/airbyte/pull/44990) | Update dependencies |
+| 0.1.15 | 2024-08-24 | [44634](https://github.com/airbytehq/airbyte/pull/44634) | Update dependencies |
+| 0.1.14 | 2024-08-17 | [44241](https://github.com/airbytehq/airbyte/pull/44241) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43747](https://github.com/airbytehq/airbyte/pull/43747) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43495](https://github.com/airbytehq/airbyte/pull/43495) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43135](https://github.com/airbytehq/airbyte/pull/43135) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42724](https://github.com/airbytehq/airbyte/pull/42724) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42208](https://github.com/airbytehq/airbyte/pull/42208) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41779](https://github.com/airbytehq/airbyte/pull/41779) | Update dependencies |

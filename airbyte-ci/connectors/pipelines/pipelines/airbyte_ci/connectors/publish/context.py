@@ -4,6 +4,7 @@
 
 """Module declaring context related classes."""
 
+from enum import Enum
 from typing import List, Optional
 
 import asyncclick as click
@@ -14,6 +15,12 @@ from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
 from pipelines.models.secrets import Secret
+
+
+class RolloutMode(Enum):
+    ROLLBACK = "Rollback"
+    PUBLISH = "Publish"
+    PROMOTE = "Promote"
 
 
 class PublishConnectorContext(ConnectorContext):
@@ -38,6 +45,7 @@ class PublishConnectorContext(ConnectorContext):
         git_repo_url: str,
         python_registry_url: str,
         python_registry_check_url: str,
+        rollout_mode: RolloutMode,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -46,7 +54,9 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
         use_local_cdk: bool = False,
+        use_cdk_ref: Optional[str] = None,
         python_registry_token: Optional[Secret] = None,
+        ci_github_access_token: Optional[Secret] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -56,11 +66,13 @@ class PublishConnectorContext(ConnectorContext):
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
         self.python_registry_check_url = python_registry_check_url
-        pipeline_name = f"Publish {connector.technical_name}"
+        self.rollout_mode = rollout_mode
+
+        pipeline_name = f"{rollout_mode.value} {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
-        if use_local_cdk and not self.pre_release:
-            raise click.UsageError("Publishing with the local CDK is only supported for pre-release publishing.")
+        if (use_local_cdk or use_cdk_ref) and not self.pre_release:
+            raise click.UsageError("Publishing with CDK overrides is only supported for pre-release publishing.")
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -80,10 +92,12 @@ class PublishConnectorContext(ConnectorContext):
             ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
+            use_cdk_ref=use_cdk_ref,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
             s3_build_cache_access_key_id=s3_build_cache_access_key_id,
             s3_build_cache_secret_key=s3_build_cache_secret_key,
+            ci_github_access_token=ci_github_access_token,
         )
 
         # Reassigning current class required instance attribute
@@ -106,6 +120,15 @@ class PublishConnectorContext(ConnectorContext):
         else:
             return metadata_tag
 
+    @property
+    def should_send_slack_message(self) -> bool:
+        should_send = super().should_send_slack_message
+        if not should_send:
+            return False
+        if self.pre_release:
+            return False
+        return True
+
     def get_slack_channels(self) -> List[str]:
         if self.state in [ContextState.FAILURE, ContextState.ERROR]:
             return [PUBLISH_UPDATES_SLACK_CHANNEL, PUBLISH_FAILURE_SLACK_CHANNEL]
@@ -115,7 +138,7 @@ class PublishConnectorContext(ConnectorContext):
     def create_slack_message(self) -> str:
 
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
-        message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
+        message = f"*{self.rollout_mode.value} <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
             message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"
         else:

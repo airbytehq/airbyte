@@ -7,3 +7,5 @@
 {"stream":"average_session_length","data":{"date":"2024-07-01T00:00:00","length":0.0},"emitted_at":1722380352267}
 {"stream":"average_session_length","data":{"date":"2024-07-02T00:00:00","length":0.0},"emitted_at":1722380352269}
 {"stream":"average_session_length","data":{"date":"2024-07-03T00:00:00","length":0.0},"emitted_at":1722380352271}
+{"stream":"events_list","data":{"autohidden":false,"id":56782999,"value":"Daily Ad Metrics","display":"Daily Ad Metrics","hidden":false,"deleted":false,"flow_hidden":false,"timeline_hidden":false,"non_active":false,"in_waitroom":false,"waitroom_approved":null,"name":"Daily Ad Metrics","totals":0,"totals_delta":0},"emitted_at":1723221146371}
+{"stream":"events_list","data":{"autohidden":false,"id":59048900,"value":"[Shopify] Checkout Started","display":"[Shopify] Checkout Started","hidden":false,"deleted":false,"flow_hidden":false,"timeline_hidden":false,"non_active":false,"in_waitroom":false,"waitroom_approved":null,"name":"[Shopify] Checkout Started","totals":0,"totals_delta":-1.0},"emitted_at":1723221146373}

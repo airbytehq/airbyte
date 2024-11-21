@@ -2,10 +2,6 @@ version: 6.5.2
 
 type: DeclarativeSource
 
-description: >-
-  Add an optional users_to_fetch filter to only retriever calls from a subset of
-  users
-
 check:
   type: CheckStream
   stream_names:
@@ -218,7 +214,7 @@ definitions:
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
           request_body_json:
-            filter: "{\"callFromDate\": \"{{ config[\"start_date\"] }}\"}"
+            filter: '{"callFromDate": "{{ config["start_date"] }}"}'
         record_selector:
           type: RecordSelector
           extractor:
@@ -249,8 +245,8 @@ definitions:
     url_base: https://api.gong.io/v2/
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"access_key_secret\"] }}"
-      username: "{{ config[\"access_key\"] }}"
+      username: '{{ config["access_key"] }}'
+      password: '{{ config["access_key_secret"] }}'
 
 streams:
   - $ref: "#/definitions/streams/users"

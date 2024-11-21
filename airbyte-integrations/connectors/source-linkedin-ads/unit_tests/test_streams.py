@@ -36,19 +36,21 @@ def load_json_file(file_name: str) -> Mapping[str, Any]:
     with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
         return json.load(data)
 
-@freeze_time("2024-07-29")
+
+@freeze_time("2021-03-01")
 def test_analytics_stream_slices(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
-    print([dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())])
     assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == load_json_file("output_slices.json")
 
 
 def test_read_records(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
-    requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))", json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
+    requests_mock.get(
+        "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+        json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAnalytics",
         [

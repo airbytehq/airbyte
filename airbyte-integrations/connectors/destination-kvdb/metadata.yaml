@@ -1,5 +1,5 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: f2e549cd-8e2a-48f8-822d-cc13630eb42d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/destination-kvdb
   githubIssueLabel: destination-kvdb
   icon: kvdb.svg

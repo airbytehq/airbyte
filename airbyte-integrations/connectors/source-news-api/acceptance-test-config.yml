@@ -3,7 +3,7 @@
 connector_image: airbyte/source-news-api:dev
 tests:
   spec:
-    - spec_path: "integration_tests/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

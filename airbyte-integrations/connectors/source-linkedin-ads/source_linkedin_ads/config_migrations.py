@@ -4,10 +4,11 @@
 
 
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, List, Mapping
 
 from airbyte_cdk import AirbyteEntrypoint, Source, create_connector_config_control_message
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 
 logger = logging.getLogger("airbyte_logger")
 
@@ -54,7 +55,7 @@ class MigrateCredentials(ABC):
         Args:
         - migrated_config (Mapping[str, Any]): The migrated configuration.
         """
-        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
@@ -73,4 +74,4 @@ class MigrateCredentials(ABC):
         if config_path:
             config = source.read_config(config_path)
             if cls.should_migrate(config):
-                cls.emit_control_message(cls.modify_and_save(config_path, source, config))
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))

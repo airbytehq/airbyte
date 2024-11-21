@@ -34,6 +34,10 @@ inputs:
     description: "GCP credentials for GCP Secret Manager"
     required: false
     default: ""
+  gcp_integration_tester_credentials:
+    description: "GCP credentials for integration tests"
+    required: false
+    default: ""
   git_repo_url:
     description: "Git repository URL"
     default: https://github.com/airbytehq/airbyte.git
@@ -103,6 +107,15 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+    - name: Debug-print local paths checked out
+      shell: bash
+      run: |
+        set -x
+        echo "Working directory: $(pwd)"
+        ls -la
+        ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
+        ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
+
     - name: Docker login
       id: docker-login
       uses: docker/login-action@v3

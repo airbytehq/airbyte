@@ -11,9 +11,9 @@ data:
   remoteRegistries:
     pypi:
       enabled: false
-      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      # TODO: Set enabled=true after `pyab validate` is passing.
       packageName: airbyte-source-kustomer-singer
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

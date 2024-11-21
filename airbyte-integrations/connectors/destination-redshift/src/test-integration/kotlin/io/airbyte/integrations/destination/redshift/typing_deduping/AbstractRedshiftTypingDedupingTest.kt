@@ -345,6 +345,13 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
+    }
+
     protected fun generateRandomString(totalLength: Int): String {
         return RANDOM.ints('a'.code, 'z'.code + 1)
             .limit(totalLength.toLong())

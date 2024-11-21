@@ -15,6 +15,6 @@ async def list_files_in_directory(dagger_client: dagger.Client, directory: dagge
         .from_("bash:latest")
         .with_mounted_directory("/to_list", directory)
         .with_workdir("/to_list")
-        .with_exec(["find", ".", "-type", "f"])
+        .with_exec(["find", ".", "-type", "f"], use_entrypoint=True)
         .stdout()
     ).splitlines()

@@ -1,6 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-
+import "dotenv/config.js";
 const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -14,6 +14,7 @@ const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHead
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
+const docMetaTags = require("./src/remark/docMetaTags");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -49,6 +50,15 @@ const config = {
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
     },
   ],
+  headTags: [
+    {
+      tagName: "meta",
+      attributes: {
+        name: "zd-site-verification",
+        content: "plvcr4wcl9abmq0itvi63c",
+      },
+    },
+  ],
 
   plugins: [
     [
@@ -78,7 +88,9 @@ const config = {
       },
     }),
   ],
-
+  customFields: {
+    requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+  },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
@@ -102,6 +114,7 @@ const config = {
             docsHeaderDecoration,
             enterpriseDocsHeaderInformation,
             productInformation,
+            docMetaTags,
           ],
         },
         blog: false,

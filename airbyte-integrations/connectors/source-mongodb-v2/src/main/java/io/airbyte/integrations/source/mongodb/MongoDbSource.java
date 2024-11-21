@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,28 +60,21 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
-
-        if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
-          /*
-           * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
-           * needs to actually execute a command in order to fetch the cluster description. Querying for the
-           * authorized collections guarantees that the cluster description will be available to the driver.
-           */
-          if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
-            return new AirbyteConnectionStatus()
-                .withMessage("Target MongoDB database does not contain any authorized collections.")
-                .withStatus(AirbyteConnectionStatus.Status.FAILED);
-          }
-          if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
-            LOGGER.error("Target MongoDB instance is not a replica set cluster.");
-            return new AirbyteConnectionStatus()
-                .withMessage("Target MongoDB instance is not a replica set cluster.")
-                .withStatus(AirbyteConnectionStatus.Status.FAILED);
-          }
-        } else {
-          LOGGER.error("Unable to perform connection check.  Database '" + databaseName + "' does not exist.");
-          return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Database does not exist.  Please check the source's configured database name.");
+        /*
+         * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
+         * needs to actually execute a command in order to fetch the cluster description. Querying for the
+         * authorized collections guarantees that the cluster description will be available to the driver.
+         */
+        if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+          return new AirbyteConnectionStatus()
+              .withMessage("Target MongoDB database does not contain any authorized collections.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+        if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
+          LOGGER.error("Target MongoDB instance is not a replica set cluster.");
+          return new AirbyteConnectionStatus()
+              .withMessage("Target MongoDB instance is not a replica set cluster.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
@@ -184,7 +178,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         mongoClient.getDatabase(sourceConfig.getDatabaseName()),
         sourceConfig,
         true,
-        true);
+        true,
+        emmitedAt,
+        Optional.empty());
 
     return fullRefreshIterators;
   }

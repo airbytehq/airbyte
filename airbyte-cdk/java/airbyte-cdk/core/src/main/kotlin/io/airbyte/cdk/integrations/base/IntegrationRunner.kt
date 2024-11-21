@@ -316,6 +316,45 @@ internal constructor(
         }
     }
 
+    data class OrphanedThreadInfo
+    private constructor(
+        val thread: Thread,
+        val threadCreationInfo: ThreadCreationInfo,
+        val lastStackTrace: List<StackTraceElement>
+    ) {
+        fun getLogString(): String {
+            return String.format(
+                "%s (%s)\n Thread stacktrace: %s",
+                thread.name,
+                thread.state,
+                lastStackTrace.joinToString("\n        at ")
+            )
+        }
+
+        companion object {
+            fun getAll(): List<OrphanedThreadInfo> {
+                return ThreadUtils.getAllThreads().mapNotNull { getForThread(it) }
+            }
+
+            fun getForThread(thread: Thread): OrphanedThreadInfo? {
+                val threadCreationInfo =
+                    getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
+                val stack = thread.stackTrace.asList()
+                if (threadCreationInfo == null) {
+                    return null
+                }
+                return OrphanedThreadInfo(thread, threadCreationInfo, stack)
+            }
+
+            // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the
+            // opened method
+            private val getMethod: Method =
+                ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also {
+                    it.isAccessible = true
+                }
+        }
+    }
+
     class ThreadCreationInfo {
         val stack: List<StackTraceElement> = Thread.currentThread().stackTrace.asList()
         val time: Instant = Instant.now()
@@ -327,24 +366,12 @@ internal constructor(
     companion object {
         private val threadCreationInfo: InheritableThreadLocal<ThreadCreationInfo> =
             object : InheritableThreadLocal<ThreadCreationInfo>() {
-                override fun childValue(parentValue: ThreadCreationInfo): ThreadCreationInfo {
+                override fun childValue(parentValue: ThreadCreationInfo?): ThreadCreationInfo {
                     return ThreadCreationInfo()
                 }
             }
 
         const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
-
-        // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the
-        // opened method
-        private val getMethod: Method =
-            ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also {
-                it.isAccessible = true
-            }
-
-        @JvmStatic
-        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
-            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
-        }
 
         /**
          * Filters threads that should not be considered when looking for orphaned threads at
@@ -355,11 +382,11 @@ internal constructor(
          * active so long as the database connection pool is open.
          */
         @VisibleForTesting
-        private val orphanedThreadPredicates: MutableList<(Thread) -> Boolean> =
-            mutableListOf({ runningThread: Thread ->
-                (runningThread.name != Thread.currentThread().name &&
-                    !runningThread.isDaemon &&
-                    TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+        private val orphanedThreadPredicates: MutableList<(OrphanedThreadInfo) -> Boolean> =
+            mutableListOf({ runningThreadInfo: OrphanedThreadInfo ->
+                (runningThreadInfo.thread.name != Thread.currentThread().name &&
+                    !runningThreadInfo.thread.isDaemon &&
+                    TYPE_AND_DEDUPE_THREAD_NAME != runningThreadInfo.thread.name)
             })
 
         const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
@@ -402,12 +429,12 @@ internal constructor(
         }
 
         @JvmStatic
-        fun addOrphanedThreadFilter(predicate: (Thread) -> (Boolean)) {
+        fun addOrphanedThreadFilter(predicate: (OrphanedThreadInfo) -> (Boolean)) {
             orphanedThreadPredicates.add(predicate)
         }
 
-        fun filterOrphanedThread(thread: Thread): Boolean {
-            return orphanedThreadPredicates.all { it(thread) }
+        fun filterOrphanedThread(threadInfo: OrphanedThreadInfo): Boolean {
+            return orphanedThreadPredicates.all { it(threadInfo) }
         }
 
         /**
@@ -437,8 +464,8 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread)
-            if (runningThreads.isNotEmpty()) {
+            val runningThreadInfos = OrphanedThreadInfo.getAll().filter(::filterOrphanedThread)
+            if (runningThreadInfos.isNotEmpty()) {
                 LOGGER.warn {
                     """
                   The main thread is exiting while children non-daemon threads from a connector are still active.
@@ -457,18 +484,15 @@ internal constructor(
                             .daemon(true)
                             .build()
                     )
-                for (runningThread in runningThreads) {
-                    val str =
-                        "Active non-daemon thread: " +
-                            dumpThread(runningThread) +
-                            "\ncreationStack=${getThreadCreationInfo(runningThread)}"
+                for (runningThreadInfo in runningThreadInfos) {
+                    val str = "Active non-daemon thread info: ${runningThreadInfo.getLogString()}"
                     LOGGER.warn { str }
                     // even though the main thread is already shutting down, we still leave some
                     // chances to the children
                     // threads to close properly on their own.
                     // So, we schedule an interrupt hook after a fixed time delay instead...
                     scheduledExecutorService.schedule(
-                        { runningThread.interrupt() },
+                        { runningThreadInfo.thread.interrupt() },
                         interruptTimeDelay.toLong(),
                         interruptTimeUnit
                     )
@@ -493,6 +517,7 @@ internal constructor(
         }
 
         private fun dumpThread(thread: Thread): String {
+            OrphanedThreadInfo.getForThread(thread)
             return String.format(
                 "%s (%s)\n Thread stacktrace: %s",
                 thread.name,

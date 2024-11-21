@@ -40,6 +40,18 @@ The Commcare source connector supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.22 | 2024-10-29 | [47767](https://github.com/airbytehq/airbyte/pull/47767) | Update dependencies |
+| 0.1.21 | 2024-10-28 | [46795](https://github.com/airbytehq/airbyte/pull/46795) | Update dependencies |
+| 0.1.20 | 2024-10-05 | [46413](https://github.com/airbytehq/airbyte/pull/46413) | Update dependencies |
+| 0.1.19 | 2024-09-28 | [46163](https://github.com/airbytehq/airbyte/pull/46163) | Update dependencies |
+| 0.1.18 | 2024-09-21 | [45758](https://github.com/airbytehq/airbyte/pull/45758) | Update dependencies |
+| 0.1.17 | 2024-09-14 | [45549](https://github.com/airbytehq/airbyte/pull/45549) | Update dependencies |
+| 0.1.16 | 2024-09-07 | [45266](https://github.com/airbytehq/airbyte/pull/45266) | Update dependencies |
+| 0.1.15 | 2024-08-31 | [45038](https://github.com/airbytehq/airbyte/pull/45038) | Update dependencies |
+| 0.1.14 | 2024-08-24 | [44714](https://github.com/airbytehq/airbyte/pull/44714) | Update dependencies |
+| 0.1.13 | 2024-08-17 | [44261](https://github.com/airbytehq/airbyte/pull/44261) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43590](https://github.com/airbytehq/airbyte/pull/43590) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43193](https://github.com/airbytehq/airbyte/pull/43193) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42748](https://github.com/airbytehq/airbyte/pull/42748) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42184](https://github.com/airbytehq/airbyte/pull/42184) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41907](https://github.com/airbytehq/airbyte/pull/41907) | Update dependencies |
