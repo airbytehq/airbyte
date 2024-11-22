@@ -94,6 +94,9 @@ poetry run mypy base_images --check-untyped-defs
 ```
 ## CHANGELOG
 
+### 1.2.0
+- Improve new version prompt to pick bump type with optional pre-release version.
+
 ### 1.1.0
 - Add a cache ttl for base image listing to avoid DockerHub rate limiting.
 
