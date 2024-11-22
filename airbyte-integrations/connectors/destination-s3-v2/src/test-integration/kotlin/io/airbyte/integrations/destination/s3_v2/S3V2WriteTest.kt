@@ -48,7 +48,6 @@ abstract class S3V2WriteTest(
         super.testFunkyCharacters()
     }
 
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413?")
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
@@ -124,25 +123,16 @@ class S3V2WriteTestJsonStaging :
     ) {
 
     @Test
-    @Disabled(
-        "Test framework doesn't await ack before killing the sync, so the behavior is unpredictable"
-    )
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
 
     @Test
-    @Disabled(
-        "Test framework doesn't await ack before killing the sync, so the behavior is unpredictable"
-    )
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
     @Test
-    @Disabled(
-        "Test framework doesn't await ack before killing the sync, so the behavior is unpredictable"
-    )
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()
     }
