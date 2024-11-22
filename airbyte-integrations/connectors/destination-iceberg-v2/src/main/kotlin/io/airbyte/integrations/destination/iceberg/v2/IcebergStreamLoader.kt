@@ -36,7 +36,11 @@ class IcebergStreamLoader(
         totalSizeBytes: Long
     ): Batch {
         icebergTableWriterFactory
-            .create(table = table, generationId = icebergUtil.constructGenerationIdSuffix(stream))
+            .create(
+                table = table,
+                generationId = icebergUtil.constructGenerationIdSuffix(stream),
+                importType = stream.importType
+            )
             .use { writer ->
                 log.info { "Writing records to branch $stagingBranchName" }
                 records.forEach { record ->

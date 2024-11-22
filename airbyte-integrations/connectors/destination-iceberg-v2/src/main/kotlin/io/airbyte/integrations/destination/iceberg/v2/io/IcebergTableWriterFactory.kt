@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.Overwrite
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
@@ -30,9 +34,11 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
      * @param table An Iceberg [Table]
+     * @param generationId ID assigned to the data generation associated with the incoming data.
+     * @param importType The [ImportType] of the sync job.
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
-    fun create(table: Table, generationId: String): BaseTaskWriter<Record> {
+    fun create(table: Table, generationId: String, importType: ImportType): BaseTaskWriter<Record> {
         icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
@@ -52,23 +58,25 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
                 WRITE_TARGET_FILE_SIZE_BYTES,
                 WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
             )
-        return if (identifierFieldIds == null || identifierFieldIds.isEmpty()) {
-            newAppendWriter(
-                table = table,
-                appenderFactory = appenderFactory,
-                targetFileSize = targetFileSize,
-                outputFileFactory = outputFileFactory,
-                format = format
-            )
-        } else {
-            newDeltaWriter(
-                table = table,
-                identifierFieldIds = identifierFieldIds,
-                appenderFactory = appenderFactory,
-                targetFileSize = targetFileSize,
-                outputFileFactory = outputFileFactory,
-                format = format
-            )
+        return when (importType) {
+            is Append,
+            Overwrite ->
+                newAppendWriter(
+                    table = table,
+                    appenderFactory = appenderFactory,
+                    targetFileSize = targetFileSize,
+                    outputFileFactory = outputFileFactory,
+                    format = format
+                )
+            is Dedupe ->
+                newDeltaWriter(
+                    table = table,
+                    identifierFieldIds = identifierFieldIds,
+                    appenderFactory = appenderFactory,
+                    targetFileSize = targetFileSize,
+                    outputFileFactory = outputFileFactory,
+                    format = format
+                )
         }
     }
 
