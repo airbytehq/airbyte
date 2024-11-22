@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.assertGenerationIdSuffixIsOfValidFormat
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat
@@ -26,7 +25,7 @@ import org.apache.iceberg.util.PropertyUtil
  * and whether primary keys are configured on the destination table's schema.
  */
 @Singleton
-class IcebergTableWriterFactory {
+class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
@@ -34,7 +33,7 @@ class IcebergTableWriterFactory {
      * @return The [BaseTaskWriter] that writes records to the target [Table].
      */
     fun create(table: Table, generationId: String): BaseTaskWriter<Record> {
-        assertGenerationIdSuffixIsOfValidFormat(generationId)
+        icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table

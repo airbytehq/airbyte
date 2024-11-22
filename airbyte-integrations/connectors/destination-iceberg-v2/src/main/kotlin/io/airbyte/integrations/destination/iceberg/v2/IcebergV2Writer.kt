@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.destination.iceberg.v2
 
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
-import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
@@ -20,21 +17,17 @@ import org.apache.iceberg.Schema
 class IcebergV2Writer(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: IcebergV2Configuration,
+    private val icebergUtil: IcebergUtil,
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val properties =
-            IcebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
-        val catalog = IcebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
+            icebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
+        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val primaryKeys =
-            when (stream.importType) {
-                is Dedupe -> (stream.importType as Dedupe).primaryKey
-                else -> emptyList()
-            }
-        val schema = pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         val table =
-            IcebergUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = stream.descriptor,
                 catalog = catalog,
                 schema = schema,
@@ -47,6 +40,7 @@ class IcebergV2Writer(
             stream = stream,
             table = table,
             icebergTableWriterFactory = icebergTableWriterFactory,
+            icebergUtil = icebergUtil,
             pipeline = pipeline,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.nessieServerConfiguration.mainBranchName,
@@ -58,13 +52,13 @@ class IcebergV2Writer(
             catalogSchema
                 .asStruct()
                 .fields()
-                .map { Triple(it.name(), it.type(), it.isOptional) }
+                .map { Triple(it.name(), it.type().typeId(), it.isOptional) }
                 .toSet()
         val existingFieldSet =
             tableSchema
                 .asStruct()
                 .fields()
-                .map { Triple(it.name(), it.type(), it.isOptional) }
+                .map { Triple(it.name(), it.type().typeId(), it.isOptional) }
                 .toSet()
 
         val missingInIncoming = existingFieldSet - incomingFieldSet

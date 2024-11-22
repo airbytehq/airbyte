@@ -96,10 +96,9 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
     val mutableListOf = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
-
     val icebergTypeConverter = AirbyteTypeToIcebergSchema()
     this.properties.entries.forEach { (name, field) ->
-        val id = UUID.randomUUID().hashCode()
+        val id = generatedSchemaFieldId()
         mutableListOf.add(
             NestedField.of(
                 id,
@@ -114,3 +113,5 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
     }
     return Schema(mutableListOf, identifierFields)
 }
+
+private fun generatedSchemaFieldId() = UUID.randomUUID().hashCode()
