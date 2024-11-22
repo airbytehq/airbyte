@@ -444,6 +444,21 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     }
 
     @Test
+    fun testHandleEmptySpilledFile() = runTest {
+        taskLauncher.handleNewSpilledFile(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 0L, Range.singleton(0))
+        )
+
+        mockSpillToDiskTaskFactory.streamHasRun[MockDestinationCatalogFactory.stream1.descriptor]
+            ?.receive()
+            ?: Assertions.fail("SpillToDiskTask not run")
+
+        delay(500)
+        Assertions.assertTrue(processRecordsTaskFactory.hasRun.tryReceive().isFailure)
+    }
+
+    @Test
     fun testHandleNewBatch() = runTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
         val streamManager =
@@ -492,6 +507,18 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         )
         closeStreamTaskFactory.hasRun.receive()
         Assertions.assertTrue(true)
+    }
+
+    @Test
+    fun handleEmptyBatch() = runTest {
+        val range = TreeRangeSet.create(listOf(Range.closed(0L, 0L)))
+        val streamManager =
+            syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
+        streamManager.markEndOfStream()
+
+        val emptyBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), range)
+        taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1.descriptor, emptyBatch)
+        closeStreamTaskFactory.hasRun.receive()
     }
 
     @Test

@@ -182,6 +182,11 @@ class DefaultStreamManager(
             return false
         }
 
+        /* A closed empty stream is always complete. */
+        if (recordCount.get() == 0L) {
+            return true
+        }
+
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 

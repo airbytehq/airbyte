@@ -249,15 +249,17 @@ class ConnectorRunner:
             List[AirbyteMessage]: The list of AirbyteMessages emitted by the connector.
         """
         container = self._connector_under_test_container
+        current_user = (await container.with_exec(["whoami"]).stdout()).strip()
+        container = container.with_user(current_user)
         container = container.with_exec(["mkdir", "-p", self.DATA_DIR])
         if not enable_caching:
             container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
         if config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)), owner=current_user)
         if state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state))
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state), owner=current_user)
         if catalog:
-            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json())
+            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json(), owner=current_user)
         try:
             output = await self._read_output_from_file(airbyte_command, container)
         except dagger.QueryError as e:
