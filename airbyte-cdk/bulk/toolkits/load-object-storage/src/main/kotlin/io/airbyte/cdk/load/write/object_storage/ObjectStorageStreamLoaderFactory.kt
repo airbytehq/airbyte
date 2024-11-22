@@ -113,6 +113,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
+        log.info { "Start processing file" }
         if (pathFactory.supportsStaging) {
             throw IllegalStateException("Staging is not supported for files")
         }
@@ -135,6 +136,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                 localFile.inputStream().use { it.copyTo(outputStream) }
             }
         localFile.delete()
+        log.info { "Finished processing file" }
         return FinalizedObject(remoteObject = obj)
     }
 
