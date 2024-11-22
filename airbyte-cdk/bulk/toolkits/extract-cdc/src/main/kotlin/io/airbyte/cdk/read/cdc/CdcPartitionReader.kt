@@ -133,63 +133,11 @@ class CdcPartitionReader<T : Comparable<T>>(
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             val event = DebeziumEvent(changeEvent)
-            numEvents.incrementAndGet()
-            if (event.sourceRecord == null) numEventsWithoutSourceRecord.incrementAndGet()
-            // Process records, ignoring heartbeats which are only used for completion checks.
-            val eventType: EventType = run {
-                // Debezium outputs a tombstone event that has a value of null. This is an artifact
-                // of how it interacts with kafka. We want to ignore it. More on the tombstone:
-                // https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
-                if (event.isTombstone) return@run EventType.TOMBSTONE
-                if (event.isHeartbeat) return@run EventType.HEARTBEAT
-                if (event.key == null || event.value == null) return@run EventType.INVALID_JSON
-                val streamRecordConsumer: StreamRecordConsumer =
-                    findStreamRecordConsumer(event.key, event.value)
-                        ?: return@run EventType.RECORD_DISCARDED_BY_STREAM_ID
-                val deserializedRecord: DeserializedRecord =
-                    readerOps.deserialize(event.key, event.value, streamRecordConsumer.stream)
-                        ?: return@run EventType.RECORD_DISCARDED_BY_DESERIALIZE
-                streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
-                return@run EventType.RECORD_EMITTED
-            }
+            val eventType: EventType = emitRecord(event)
             // Update counters.
-            when (eventType) {
-                EventType.TOMBSTONE -> numTombstones
-                EventType.HEARTBEAT -> numHeartbeats
-                EventType.INVALID_JSON,
-                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
-                EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
-                EventType.RECORD_EMITTED -> numEmittedRecords
-            }.incrementAndGet()
+            updateCounters(event, eventType)
             // Look for reasons to close down the engine.
-            val closeReason: CloseReason = run {
-                if (input.isSynthetic && eventType != EventType.HEARTBEAT) {
-                    // Special case where the engine started with a synthetic offset:
-                    // don't even consider closing the engine unless handling a heartbeat event.
-                    // For some databases, such as Oracle, Debezium actually needs to snapshot the
-                    // schema in order to collect the database schema history and there's no point
-                    // in interrupting it until the snapshot is done.
-                    return
-                }
-                if (!coroutineContext.isActive) {
-                    return@run CloseReason.TIMEOUT
-                }
-                val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
-                if (currentPosition == null || currentPosition < upperBound) {
-                    return
-                }
-                // Close because the current event is past the sync upper bound.
-                when (eventType) {
-                    EventType.TOMBSTONE,
-                    EventType.HEARTBEAT ->
-                        CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
-                    EventType.RECORD_EMITTED,
-                    EventType.INVALID_JSON,
-                    EventType.RECORD_DISCARDED_BY_DESERIALIZE,
-                    EventType.RECORD_DISCARDED_BY_STREAM_ID ->
-                        CloseReason.RECORD_REACHED_TARGET_POSITION
-                }
-            }
+            val closeReason: CloseReason = findCloseReason(event, eventType) ?: return
             // At this point, if we haven't returned already, we want to close down the engine.
             if (!closeReasonReference.compareAndSet(null, closeReason)) {
                 // An earlier event has already triggered closing down the engine, do nothing.
@@ -201,6 +149,38 @@ class CdcPartitionReader<T : Comparable<T>>(
             Thread({ engine.close() }, "debezium-close").start()
         }
 
+        private fun emitRecord(event: DebeziumEvent): EventType {
+            if (event.isTombstone) {
+                // Debezium outputs a tombstone event that has a value of null. This is an artifact
+                // of how it interacts with kafka. We want to ignore it. More on the tombstone:
+                // https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
+                return EventType.TOMBSTONE
+            }
+            if (event.isHeartbeat) {
+                // Heartbeats are only used for their position.
+                return EventType.HEARTBEAT
+            }
+            if (event.key == null) {
+                // Sometimes, presumably due to bugs in Debezium, the key isn't valid JSON.
+                return EventType.KEY_JSON_INVALID
+            }
+            if (event.value == null) {
+                // Sometimes, presumably due to bugs in Debezium, the value isn't valid JSON.
+                return EventType.VALUE_JSON_INVALID
+            }
+            val streamRecordConsumer: StreamRecordConsumer =
+                findStreamRecordConsumer(event.key, event.value)
+                // Ignore events which can't be mapped to a stream.
+                ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+            val deserializedRecord: DeserializedRecord =
+                readerOps.deserialize(event.key, event.value, streamRecordConsumer.stream)
+                // Ignore events which can't be deserialized into records.
+                ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
+            // Emit the record at the end of the happy path.
+            streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
+            return EventType.RECORD_EMITTED
+        }
+
         private fun findStreamRecordConsumer(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue
@@ -210,6 +190,51 @@ class CdcPartitionReader<T : Comparable<T>>(
             val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
             val streamID: StreamIdentifier = StreamIdentifier.from(desc)
             return streamRecordConsumers[streamID]
+        }
+
+        private fun updateCounters(event: DebeziumEvent, eventType: EventType) {
+            numEvents.incrementAndGet()
+            if (event.sourceRecord == null) {
+                numEventsWithoutSourceRecord.incrementAndGet()
+            }
+            when (eventType) {
+                EventType.TOMBSTONE -> numTombstones
+                EventType.HEARTBEAT -> numHeartbeats
+                EventType.KEY_JSON_INVALID,
+                EventType.VALUE_JSON_INVALID,
+                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
+                EventType.RECORD_EMITTED -> numEmittedRecords
+            }.incrementAndGet()
+        }
+
+        private fun findCloseReason(event: DebeziumEvent, eventType: EventType): CloseReason? {
+            if (input.isSynthetic && eventType != EventType.HEARTBEAT) {
+                // Special case where the engine started with a synthetic offset:
+                // don't even consider closing the engine unless handling a heartbeat event.
+                // For some databases, such as Oracle, Debezium actually needs to snapshot the
+                // schema in order to collect the database schema history and there's no point
+                // in interrupting it until the snapshot is done.
+                return null
+            }
+            if (!coroutineContext.isActive) {
+                return CloseReason.TIMEOUT
+            }
+            val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
+            if (currentPosition == null || currentPosition < upperBound) {
+                return null
+            }
+            // Close because the current event is past the sync upper bound.
+            return when (eventType) {
+                EventType.TOMBSTONE,
+                EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                EventType.KEY_JSON_INVALID,
+                EventType.VALUE_JSON_INVALID,
+                EventType.RECORD_EMITTED,
+                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                EventType.RECORD_DISCARDED_BY_STREAM_ID ->
+                    CloseReason.RECORD_REACHED_TARGET_POSITION
+            }
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {
@@ -236,7 +261,8 @@ class CdcPartitionReader<T : Comparable<T>>(
     private enum class EventType {
         TOMBSTONE,
         HEARTBEAT,
-        INVALID_JSON,
+        KEY_JSON_INVALID,
+        VALUE_JSON_INVALID,
         RECORD_DISCARDED_BY_DESERIALIZE,
         RECORD_DISCARDED_BY_STREAM_ID,
         RECORD_EMITTED,
