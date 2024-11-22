@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.state.object_storage
 
 import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.MockPathFactory
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.state.DestinationStateManager
@@ -142,6 +143,15 @@ class ObjectStorageDestinationStateTest {
         }
 
         @Test
+        fun testFallbackToMetadataState(d: Dependencies) = runTest {
+            val generations =
+                ObjectStorageDestinationStateTestWithoutStaging().loadMetadata(d, stream1)
+            val state = d.stateManager.getState(stream1)
+            ObjectStorageDestinationStateTestWithoutStaging().validateMetadata(state, generations)
+            Assertions.assertEquals(2L, state.nextPartNumber)
+        }
+
+        @Test
         fun testGetObjectsToMoveAndDelete(d: Dependencies) = runTest {
             val state = d.stateManager.getState(stream1)
             state.addObject(generationId = 0L, "old-finalized", partNumber = 0L, isStaging = false)
@@ -192,11 +202,13 @@ class ObjectStorageDestinationStateTest {
     )
     @Property(name = "object-storage-destination-state-test.use-staging", value = "false")
     inner class ObjectStorageDestinationStateTestWithoutStaging {
-        @Test
-        fun testRecoveringFromMetadata(d: Dependencies) = runTest {
+        suspend fun loadMetadata(
+            d: Dependencies,
+            stream: DestinationStream
+        ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream1.descriptor.namespace}/${stream1.descriptor.name}/"
+                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}/"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),
@@ -211,7 +223,13 @@ class ObjectStorageDestinationStateTest {
                     NoopProcessor
                 ) { it.write(0) }
             }
-            val state = d.stateManager.getState(stream1)
+            return generations
+        }
+
+        fun validateMetadata(
+            state: ObjectStorageDestinationState,
+            generations: List<Triple<Int, String, Long>>
+        ) {
             Assertions.assertEquals(
                 generations
                     .groupBy { it.first }
@@ -233,7 +251,13 @@ class ObjectStorageDestinationStateTest {
                 state.generations.toList(),
                 "state should be recovered from metadata"
             )
+        }
 
+        @Test
+        fun testRecoveringFromMetadata(d: Dependencies) = runTest {
+            val generations = loadMetadata(d, stream1)
+            val state = d.stateManager.getState(stream1)
+            validateMetadata(state, generations)
             Assertions.assertEquals(2L, state.nextPartNumber)
         }
     }
