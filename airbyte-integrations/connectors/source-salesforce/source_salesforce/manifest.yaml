@@ -26,7 +26,7 @@ definitions:
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
-          type: SimpleRetrieverit
+          type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
             path: sobjects/{{parameters["stream_name"]}}/describe

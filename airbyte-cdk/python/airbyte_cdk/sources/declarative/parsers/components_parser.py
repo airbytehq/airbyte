@@ -105,7 +105,7 @@ class DynamicComponentsParser(ComponentsParser):
         kwargs = {"stream_template_config": stream_template_config}
 
         for components_value in self.retriever.read_records({}):
-            print(components_value["name"])
+
             updated_config = deepcopy(stream_template_config)
             kwargs["components_value"] = components_value
 
