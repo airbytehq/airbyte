@@ -32,6 +32,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
     implementation 'org.apache.logging.log4j:log4j-layout-template-json:2.24.0'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+    implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
 
     // this is only needed because of exclusions in airbyte-protocol
