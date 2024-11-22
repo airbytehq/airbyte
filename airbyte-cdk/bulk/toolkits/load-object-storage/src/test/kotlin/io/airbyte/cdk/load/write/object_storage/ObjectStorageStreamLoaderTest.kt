@@ -17,7 +17,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -33,14 +36,14 @@ class ObjectStorageStreamLoaderTest {
         mockk(relaxed = true)
 
     private val objectStorageStreamLoader =
-        ObjectStorageStreamLoader(
+        spyk(ObjectStorageStreamLoader(
             stream,
             client,
             compressor,
             pathFactory,
             writerFactory,
             destinationStateManager
-        )
+        ))
 
     @Test
     fun `test processFile`() = runTest {
@@ -54,6 +57,8 @@ class ObjectStorageStreamLoaderTest {
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
         coEvery { destinationStateManager.getState(stream) } returns mockedStateStorage
+        val mockedFile = mockk<File>(relaxed = true)
+        every { objectStorageStreamLoader.createFile(any()) } returns mockedFile
 
         val expectedKey = Path.of(stagingDirectory.toString(), fileUrl).toString()
         val metadata =
@@ -71,5 +76,6 @@ class ObjectStorageStreamLoaderTest {
             mockRemoteObject,
             (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
         )
+        verify { mockedFile.delete() } 
     }
 }

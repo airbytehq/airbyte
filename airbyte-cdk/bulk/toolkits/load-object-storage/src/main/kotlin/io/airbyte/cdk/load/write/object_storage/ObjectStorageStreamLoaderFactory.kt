@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
@@ -128,13 +129,19 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             isStaging = false
         )
 
+        val localFile = createFile(file.fileMessage.fileUrl!!)
+
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
             }
+        localFile.delete()
         return FinalizedObject(remoteObject = obj)
     }
+
+    @VisibleForTesting
+    fun createFile(url: String) = File(url)
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun processBatch(batch: Batch): Batch {
