@@ -46,11 +46,9 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -59,8 +57,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -69,7 +65,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -263,7 +258,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     blob = """{"foo": "bar1"}""",
                     sourceRecordCount = 1
                 ),
-                fillerMessage = DestinationRecord(
+                fillerRecord = DestinationRecord(
                     namespace = randomizedNamespace,
                     name = "test_stream",
                     data = """{"id": 56}""",
