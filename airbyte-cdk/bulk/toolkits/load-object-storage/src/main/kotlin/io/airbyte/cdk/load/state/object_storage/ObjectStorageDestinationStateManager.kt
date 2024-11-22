@@ -100,6 +100,7 @@ class ObjectStorageDestinationState(
                 }
                 .flatten()
 
+    @get:JsonIgnore
     val nextPartNumber: Long
         get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
 
