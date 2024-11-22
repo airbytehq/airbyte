@@ -9,8 +9,7 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.StreamRecordConsumer
-import io.airbyte.cdk.util.Jsons
-import io.debezium.embedded.EmbeddedEngineChangeEvent
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
@@ -132,29 +131,24 @@ class CdcPartitionReader<T : Comparable<T>>(
         private val coroutineContext: CoroutineContext,
     ) : Consumer<ChangeEvent<String?, String?>> {
 
-        override fun accept(event: ChangeEvent<String?, String?>) {
+        override fun accept(changeEvent: ChangeEvent<String?, String?>) {
+            val event = DebeziumEvent(changeEvent)
             numEvents.incrementAndGet()
-            // Get SourceRecord object if possible.
-            // This object is the preferred way to obtain the current position.
-            val sourceRecord: SourceRecord? =
-                (event as? EmbeddedEngineChangeEvent<*, *, *>)?.sourceRecord()
-            if (sourceRecord == null) numEventsWithoutSourceRecord.incrementAndGet()
-            // Debezium outputs a tombstone event that has a value of null. This is an artifact
-            // of how it interacts with kafka. We want to ignore it. More on the tombstone:
-            // https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
-            val debeziumRecordValue: DebeziumRecordValue? =
-                event.value()?.let { DebeziumRecordValue(Jsons.readTree(it)) }
+            if (event.sourceRecord == null) numEventsWithoutSourceRecord.incrementAndGet()
             // Process records, ignoring heartbeats which are only used for completion checks.
             val eventType: EventType = run {
-                if (debeziumRecordValue == null) return@run EventType.TOMBSTONE
-                if (debeziumRecordValue.isHeartbeat) return@run EventType.HEARTBEAT
-                val debeziumRecordKey = DebeziumRecordKey(Jsons.readTree(event.key()))
-                val deserializedRecord: DeserializedRecord =
-                    readerOps.deserialize(debeziumRecordKey, debeziumRecordValue)
-                        ?: return@run EventType.RECORD_DISCARDED_BY_DESERIALIZE
+                // Debezium outputs a tombstone event that has a value of null. This is an artifact
+                // of how it interacts with kafka. We want to ignore it. More on the tombstone:
+                // https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
+                if (event.isTombstone) return@run EventType.TOMBSTONE
+                if (event.isHeartbeat) return@run EventType.HEARTBEAT
+                if (event.key == null || event.value == null) return@run EventType.INVALID_JSON
                 val streamRecordConsumer: StreamRecordConsumer =
-                    streamRecordConsumers[deserializedRecord.streamID]
+                    findStreamRecordConsumer(event.key, event.value)
                         ?: return@run EventType.RECORD_DISCARDED_BY_STREAM_ID
+                val deserializedRecord: DeserializedRecord =
+                    readerOps.deserialize(event.key, event.value, streamRecordConsumer.stream)
+                        ?: return@run EventType.RECORD_DISCARDED_BY_DESERIALIZE
                 streamRecordConsumer.accept(deserializedRecord.data, deserializedRecord.changes)
                 return@run EventType.RECORD_EMITTED
             }
@@ -162,6 +156,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             when (eventType) {
                 EventType.TOMBSTONE -> numTombstones
                 EventType.HEARTBEAT -> numHeartbeats
+                EventType.INVALID_JSON,
                 EventType.RECORD_DISCARDED_BY_DESERIALIZE,
                 EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
                 EventType.RECORD_EMITTED -> numEmittedRecords
@@ -179,7 +174,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 if (!coroutineContext.isActive) {
                     return@run CloseReason.TIMEOUT
                 }
-                val currentPosition: T? = position(sourceRecord) ?: position(debeziumRecordValue)
+                val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
                 if (currentPosition == null || currentPosition < upperBound) {
                     return
                 }
@@ -189,6 +184,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                     EventType.HEARTBEAT ->
                         CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
                     EventType.RECORD_EMITTED,
+                    EventType.INVALID_JSON,
                     EventType.RECORD_DISCARDED_BY_DESERIALIZE,
                     EventType.RECORD_DISCARDED_BY_STREAM_ID ->
                         CloseReason.RECORD_REACHED_TARGET_POSITION
@@ -203,6 +199,17 @@ class CdcPartitionReader<T : Comparable<T>>(
             log.info { "Shutting down Debezium engine: ${closeReason.message}." }
             // TODO : send close analytics message
             Thread({ engine.close() }, "debezium-close").start()
+        }
+
+        private fun findStreamRecordConsumer(
+            key: DebeziumRecordKey,
+            value: DebeziumRecordValue
+        ): StreamRecordConsumer? {
+            val name: String = readerOps.findStreamName(key, value) ?: return null
+            val namespace: String? = readerOps.findStreamNamespace(key, value)
+            val desc: StreamDescriptor = StreamDescriptor().withNamespace(namespace).withName(name)
+            val streamID: StreamIdentifier = StreamIdentifier.from(desc)
+            return streamRecordConsumers[streamID]
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {
@@ -229,6 +236,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     private enum class EventType {
         TOMBSTONE,
         HEARTBEAT,
+        INVALID_JSON,
         RECORD_DISCARDED_BY_DESERIALIZE,
         RECORD_DISCARDED_BY_STREAM_ID,
         RECORD_EMITTED,
