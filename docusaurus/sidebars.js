@@ -85,10 +85,7 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs, [
-      "readme",
-      "assets"
-    ]
+    enterpriseConnectorDocs, ["readme"]
   );
 }
 
