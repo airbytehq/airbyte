@@ -4,13 +4,18 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.MapperPipeline
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogProperties.URI
@@ -32,6 +37,8 @@ import org.apache.iceberg.data.Record
 
 private val logger = KotlinLogging.logger {}
 
+const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
+
 /**
  * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
  * Iceberg [TableIdentifier].
@@ -43,10 +50,12 @@ fun DestinationStream.Descriptor.toIcebergTableIdentifier(): TableIdentifier {
 }
 
 /** Collection of Iceberg related utilities. */
-object IcebergUtil {
+@Singleton
+class IcebergUtil {
     internal class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
+
     fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
         if (!generationIdRegex.matches(generationId)) {
             throw InvalidFormatException(
@@ -142,7 +151,7 @@ object IcebergUtil {
         // TODO figure out how to detect the actual operation value
         return RecordWrapper(
             delegate = dataMapped.toIcebergRecord(tableSchema),
-            operation = Operation.INSERT
+            operation = getOperation(record = record, importType = stream.importType)
         )
     }
 
@@ -180,9 +189,33 @@ object IcebergUtil {
             }
     }
 
+    fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
+        val primaryKeys =
+            when (stream.importType) {
+                is Dedupe -> (stream.importType as Dedupe).primaryKey
+                else -> emptyList()
+            }
+        return pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+    }
+
     private fun getSortOrder(schema: Schema): SortOrder {
         val builder = SortOrder.builderFor(schema)
         schema.identifierFieldNames().forEach { builder.asc(it) }
         return builder.build()
     }
+
+    private fun getOperation(
+        record: DestinationRecord,
+        importType: ImportType,
+    ): Operation =
+        if (
+            record.data is ObjectValue &&
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null
+        ) {
+            Operation.DELETE
+        } else if (importType is Dedupe) {
+            Operation.UPDATE
+        } else {
+            Operation.INSERT
+        }
 }

@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -204,9 +205,15 @@ class DefaultDestinationTaskLauncher(
         stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile
     ) {
-        log.info { "Starting process records task for $stream, file $file" }
-        val task = processRecordsTaskFactory.make(this, stream, file)
-        enqueue(task)
+        if (file.totalSizeBytes > 0L) {
+            log.info { "Starting process records task for ${stream}, file $file" }
+            val task = processRecordsTaskFactory.make(this, stream, file)
+            enqueue(task)
+        } else {
+            log.info { "No records to process in $file, skipping process records" }
+            // TODO: Make this `maybeCloseStream` or something
+            handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
+        }
         if (!file.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)

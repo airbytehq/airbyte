@@ -19,7 +19,6 @@ import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.io.CloseableIterable
 import org.apache.iceberg.io.CloseableIterator
-import org.apache.iceberg.io.CloseableIterator.empty
 import org.apache.iceberg.io.FileIO
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -29,11 +28,12 @@ internal class IcebergTableCleanerTest {
     @Test
     fun testClearingTableWithPrefix() {
         val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
+        val icebergUtil: IcebergUtil = mockk()
         val tableIdentifier: TableIdentifier = mockk()
         val fileIo: S3FileIO = mockk { every { deletePrefix(any()) } returns Unit }
         val tableLocation = "table/location"
 
-        val cleaner = IcebergTableCleaner()
+        val cleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -49,11 +49,12 @@ internal class IcebergTableCleanerTest {
     @Test
     fun testClearingTableWithoutPrefix() {
         val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
+        val icebergUtil: IcebergUtil = mockk()
         val tableIdentifier: TableIdentifier = mockk()
         val fileIo: FileIO = mockk()
         val tableLocation = "table/location"
 
-        val cleaner = IcebergTableCleaner()
+        val cleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -68,7 +69,10 @@ internal class IcebergTableCleanerTest {
 
     @Test
     fun `deleteGenerationId handles empty scan results gracefully`() {
-        val cleaner = IcebergTableCleaner()
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
+        val cleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
 
         val tasks = CloseableIterable.empty<FileScanTask>()
@@ -83,7 +87,10 @@ internal class IcebergTableCleanerTest {
 
     @Test
     fun `deleteGenerationId deletes matching file via deleteFile`() {
-        val cleaner = IcebergTableCleaner()
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
+        val cleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
@@ -107,7 +114,7 @@ internal class IcebergTableCleanerTest {
         }
 
         verify {
-            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete().toBranch(eq("staging"))
             delete.deleteFile(fileScanTask.file().path())
             delete.commit()
@@ -116,7 +123,10 @@ internal class IcebergTableCleanerTest {
 
     @Test
     fun `deleteGenerationId should not delete non matching file via deleteFile`() {
-        val cleaner = IcebergTableCleaner()
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
+        val cleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
         val generationIdSuffix = "ab-generation-id-10-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-10-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
@@ -140,7 +150,7 @@ internal class IcebergTableCleanerTest {
         }
 
         verify(exactly = 0) {
-            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete().toBranch(any())
             delete.deleteFile(any<DataFile>())
             delete.commit()

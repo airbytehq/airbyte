@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -25,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import java.time.Clock
 import java.util.stream.Stream
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -87,6 +89,58 @@ class FlushTickTaskTest {
             coVerify { queues[it]!!.publish(capture(msgSlot)) }
             assert(msgSlot.captured.value is StreamFlushEvent)
         }
+    }
+
+    @Test
+    fun `does not attempt to send flush events for closed queues`() = runTest {
+        every { catalog.streams } returns
+            listOf(Fixtures.stream1, Fixtures.stream2, Fixtures.stream3)
+        val queue1 = mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true)
+        val queue2 =
+            mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true) {
+                every { isClosedForPublish() } returns true
+            }
+        val queue3 = mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true)
+
+        every { recordQueueSupplier.get(Fixtures.stream1.descriptor) } returns queue1
+        every { recordQueueSupplier.get(Fixtures.stream2.descriptor) } returns queue2
+        every { recordQueueSupplier.get(Fixtures.stream3.descriptor) } returns queue3
+
+        task.waitAndPublishFlushTick()
+
+        val msgSlot1 = slot<Reserved<DestinationStreamEvent>>()
+        coVerify(exactly = 1) { queue1.publish(capture(msgSlot1)) }
+        assert(msgSlot1.captured.value is StreamFlushEvent)
+
+        // no event should be sent for 2
+        coVerify(exactly = 0) { queue2.publish(any()) }
+
+        val msgSlot3 = slot<Reserved<DestinationStreamEvent>>()
+        coVerify(exactly = 1) { queue3.publish(capture(msgSlot3)) }
+        assert(msgSlot3.captured.value is StreamFlushEvent)
+    }
+
+    @Test
+    fun `handles channel closed exceptions due to race`() = runTest {
+        every { catalog.streams } returns listOf(Fixtures.stream1, Fixtures.stream2)
+        val queue1 =
+            mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true) {
+                coEvery { publish(any()) } throws ClosedSendChannelException("Closed.")
+            }
+        val queue2 = mockk<MessageQueue<Reserved<DestinationStreamEvent>>>(relaxed = true)
+
+        every { recordQueueSupplier.get(Fixtures.stream1.descriptor) } returns queue1
+        every { recordQueueSupplier.get(Fixtures.stream2.descriptor) } returns queue2
+
+        task.waitAndPublishFlushTick()
+
+        val msgSlot1 = slot<Reserved<DestinationStreamEvent>>()
+        coVerify(exactly = 1) { queue1.publish(capture(msgSlot1)) }
+        assert(msgSlot1.captured.value is StreamFlushEvent)
+
+        val msgSlot2 = slot<Reserved<DestinationStreamEvent>>()
+        coVerify(exactly = 1) { queue2.publish(capture(msgSlot2)) }
+        assert(msgSlot2.captured.value is StreamFlushEvent)
     }
 
     companion object {
