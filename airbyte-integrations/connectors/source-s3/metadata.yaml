@@ -48,7 +48,7 @@ data:
     - suite: liveTests
       testConnections:
         - name: S3 → End-to-End Testing (/dev/null)
-          id: 4658df2e-6612-4ef2-af7b-5393ca1f11f5
+          id: ee403b69-86b1-429e-bcdf-3be4292bab98
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-S3_AVRO__CREDS
