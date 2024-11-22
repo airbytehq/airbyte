@@ -140,8 +140,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         return FinalizedObject(remoteObject = obj)
     }
 
-    @VisibleForTesting
-    fun createFile(url: String) = File(url)
+    @VisibleForTesting fun createFile(url: String) = File(url)
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun processBatch(batch: Batch): Batch {

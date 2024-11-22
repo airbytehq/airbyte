@@ -36,14 +36,16 @@ class ObjectStorageStreamLoaderTest {
         mockk(relaxed = true)
 
     private val objectStorageStreamLoader =
-        spyk(ObjectStorageStreamLoader(
-            stream,
-            client,
-            compressor,
-            pathFactory,
-            writerFactory,
-            destinationStateManager
-        ))
+        spyk(
+            ObjectStorageStreamLoader(
+                stream,
+                client,
+                compressor,
+                pathFactory,
+                writerFactory,
+                destinationStateManager
+            )
+        )
 
     @Test
     fun `test processFile`() = runTest {
@@ -76,6 +78,6 @@ class ObjectStorageStreamLoaderTest {
             mockRemoteObject,
             (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
         )
-        verify { mockedFile.delete() } 
+        verify { mockedFile.delete() }
     }
 }
