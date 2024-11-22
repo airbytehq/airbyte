@@ -184,8 +184,8 @@ definitions:
       name: "items"
       path: ""
       items_per_page: 1
-      page_size: 20
-      nested_items_per_page: 20
+      page_size: 100
+      nested_items_per_page: 100
       parent_key: "pulse_id"
       field_path: ["data", "boards", "*", "items_page", "items", "*"] # for first and further incremental pagination responses
       field_path_pagination: ["data", "next_items_page", "items", "*"] # for cursor pagination responses
