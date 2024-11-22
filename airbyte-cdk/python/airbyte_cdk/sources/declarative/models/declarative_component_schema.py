@@ -677,6 +677,27 @@ class TypesPair(BaseModel):
     current_type: str
 
 
+class SchemaTypeIdentifier(BaseModel):
+    type: Optional[Literal['SchemaTypeIdentifier']] = None
+    schema_pointer: List[str] = Field(
+        ...,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Schema Path',
+    )
+    key_pointer: List[str] = Field(
+        ...,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Key Path',
+    )
+    type_pointer: Optional[List[str]] = Field(
+        None,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        title='Type Path',
+    )
+    types_map: Optional[List[TypesPair]] = None
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
@@ -1648,22 +1669,9 @@ class DynamicSchemaLoader(BaseModel):
             title='Incremental Sync',
         )
     )
-    schema_pointer: Optional[List[str]] = Field(
-        None,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
-        title='Schema Path',
+    schema_type_identifier: Optional[SchemaTypeIdentifier] = Field(
+        None, description='placeholder', title='Schema Path'
     )
-    key_pointer: Optional[List[str]] = Field(
-        None,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
-        title='Key Path',
-    )
-    type_pointer: Optional[List[str]] = Field(
-        None,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
-        title='Type Path',
-    )
-    types_map: Optional[List[TypesPair]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 

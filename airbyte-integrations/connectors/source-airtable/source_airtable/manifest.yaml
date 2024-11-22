@@ -88,14 +88,15 @@ definitions:
               field_path: [ "tables" ]
             record_filter:
               condition: "{{ record['id'] == parameters['table_id'] }}"
-        schema_pointer: ["fields"]
-        key_pointer: ["name"]
-        type_pointer: ["type"]
-        types_map:
-          - target_type: string
-            current_type: singleLineText
-          - target_type: string
-            current_type: multilineText
+        schema_type_identifier:
+          schema_pointer: ["fields"]
+          key_pointer: ["name"]
+          type_pointer: ["type"]
+          types_map:
+            - target_type: string
+              current_type: singleLineText
+            - target_type: string
+              current_type: multilineText
   base_requester:
     type: HttpRequester
     url_base: https://api.airtable.com/v0

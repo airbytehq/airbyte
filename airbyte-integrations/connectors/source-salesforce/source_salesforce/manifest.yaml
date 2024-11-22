@@ -37,12 +37,13 @@ definitions:
               field_path: [ ]
             record_filter:
               condition: "{{ record['name'] == parameters['stream_name'] }}"
-        schema_pointer: ["fields"]
-        key_pointer: ["name"]
-        type_pointer: ["type"]
-        types_map:
-          - target_type: string
-            current_type: combobox
+        schema_type_identifier:
+          schema_pointer: ["fields"]
+          key_pointer: ["name"]
+          type_pointer: ["type"]
+          types_map:
+            - target_type: string
+              current_type: combobox
   base_requester:
     type: HttpRequester
     url_base: https://airbyte--connector.sandbox.my.salesforce.com/services/data/v57.0/

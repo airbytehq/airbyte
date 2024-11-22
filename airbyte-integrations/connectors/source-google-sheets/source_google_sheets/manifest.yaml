@@ -34,8 +34,9 @@ definitions:
             extractor:
               type: DpathExtractor
               field_path: [ ]
-        schema_pointer: ["values", "0"]
-        key_pointer: []
+        schema_type_identifier:
+          schema_pointer: ["values", "0"]
+          key_pointer: []
   base_requester:
     type: HttpRequester
     url_base: https://sheets.googleapis.com/v4/spreadsheets/

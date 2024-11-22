@@ -23,15 +23,12 @@ class TypesPair:
 
 
 @dataclass
-class DynamicSchemaLoader(SchemaLoader):
-    retriever: Retriever
-    config: Config
+class SchemaTypeIdentifier:
     schema_pointer: List[Union[InterpolatedString, str]]
     key_pointer: List[Union[InterpolatedString, str]]
     parameters: InitVar[Mapping[str, Any]]
-    types_map: List[TypesPair]
     type_pointer: Optional[List[Union[InterpolatedString, str]]] = None
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    types_map: List[TypesPair] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.schema_pointer = self._update_pointer(pointer=self.schema_pointer, parameters=parameters)
@@ -49,8 +46,17 @@ class DynamicSchemaLoader(SchemaLoader):
 
         return _pointer
 
+
+@dataclass
+class DynamicSchemaLoader(SchemaLoader):
+    retriever: Retriever
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    schema_type_identifier: SchemaTypeIdentifier
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
     def _replace_type_if_not_valid(self, field_type):
-        for types_pair in self.types_map:
+        for types_pair in self.schema_type_identifier.types_map:
             if field_type == types_pair.current_type:
                 return types_pair.target_type
         return field_type
@@ -58,11 +64,11 @@ class DynamicSchemaLoader(SchemaLoader):
     def get_json_schema(self) -> Mapping[str, Any]:
         response_json = next(self.retriever.read_records({}), None)
 
-        raw_schema = self._extract_data(response_json, self.schema_pointer) if response_json else []
+        raw_schema = self._extract_data(response_json, self.schema_type_identifier.schema_pointer) if response_json else []
 
         # For each property definition in the raw schema:
-        # - Extract `field_key` using `self.key_pointer` and ensure it's a valid string.
-        # - Extract `field_type` using `self.type_pointer`, defaulting to "string" if not provided.
+        # - Extract `field_key` using `self.schema_type_identifier.key_pointer` and ensure it's a valid string.
+        # - Extract `field_type` using `self.schema_type_identifier.type_pointer`, defaulting to "string" if not provided.
         # - Validate `field_type`:
         #   - It should be either a string (e.g., "string", "integer") or
         #   - A list of exactly two strings (e.g., ["string", "null"]). As normalization do not support more than two types.
@@ -70,11 +76,11 @@ class DynamicSchemaLoader(SchemaLoader):
         properties = {
             field_key: {"type": field_type}
             for property_definition in raw_schema
-            if (field_key := self._extract_data(property_definition, self.key_pointer))
+            if (field_key := self._extract_data(property_definition, self.schema_type_identifier.key_pointer))
             and isinstance(field_key, str)
             and (
-                field_type := self._replace_type_if_not_valid(self._extract_data(property_definition, self.type_pointer, default="string"))
-                if self.type_pointer
+                field_type := self._replace_type_if_not_valid(self._extract_data(property_definition, self.schema_type_identifier.type_pointer, default="string"))
+                if self.schema_type_identifier.type_pointer
                 else "string"
             )
             and (

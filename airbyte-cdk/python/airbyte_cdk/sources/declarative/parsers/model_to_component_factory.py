@@ -89,6 +89,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DynamicComponentsParser as DynamicComponentsParserModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DynamicSchemaLoader as DynamicSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SchemaTypeIdentifier as SchemaTypeIdentifierModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     ExponentialBackoffStrategy as ExponentialBackoffStrategyModel,
 )
@@ -170,6 +171,7 @@ from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRet
 from airbyte_cdk.sources.declarative.schema import (
     DefaultSchemaLoader,
     DynamicSchemaLoader,
+    SchemaTypeIdentifier,
     InlineSchemaLoader,
     JsonFileSchemaLoader,
     TypesPair,
@@ -255,6 +257,7 @@ class ModelToComponentFactory:
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             DynamicSchemaLoaderModel: self.create_dynamic_schema_loader,
+            SchemaTypeIdentifierModel: self.create_schema_type_identifier,
             TypesPairModel: self.create_types_pair,
             DynamicComponentsParserModel: self.create_dynamic_components_parser,
             MapComponentsDefinitionModel: self.create_map_components_definition,
@@ -1123,8 +1126,18 @@ class ModelToComponentFactory:
         return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
 
     @staticmethod
-    def create_types_pair(model: TypesPairModel, **kwargs: Any):
+    def create_types_pair(model: TypesPairModel, **kwargs: Any) -> TypesPairModel:
         return TypesPair(target_type=model.target_type, current_type=model.current_type)
+
+    def create_schema_type_identifier(self, model: SchemaTypeIdentifierModel, config: Config, **kwargs: Any) -> SchemaTypeIdentifier:
+        types_map = [self._create_component_from_model(types_pair, config=config) for types_pair in model.types_map]
+        return SchemaTypeIdentifier(
+            schema_pointer=model.schema_pointer,
+            key_pointer=model.key_pointer,
+            type_pointer=model.type_pointer,
+            types_map=types_map,
+            parameters=model.parameters or {},
+        )
 
     def create_dynamic_schema_loader(
         self, model: DynamicSchemaLoaderModel, config: Config, **kwargs: Any
@@ -1139,14 +1152,11 @@ class ModelToComponentFactory:
             stream_slicer=combined_slicers,
             transformations=[],
         )
-        types_map = [self._create_component_from_model(types_pair, config=config) for types_pair in model.types_map]
+        schema_type_identifier = self._create_component_from_model(model.schema_type_identifier, config=config, parameters=model.parameters or {})
         return DynamicSchemaLoader(
             retriever=retriever,
             config=config,
-            schema_pointer=model.schema_pointer,
-            key_pointer=model.key_pointer,
-            type_pointer=model.type_pointer,
-            types_map=types_map,
+            schema_type_identifier=schema_type_identifier,
             parameters=model.parameters or {},
         )
 

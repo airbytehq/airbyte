@@ -39,12 +39,13 @@ definitions:
               field_path: ["results"]
             record_filter:
               condition: "{{ record['id'] == parameters['schema_id'] }}"
-        schema_pointer: ["properties"]
-        key_pointer: ["name"]
-        type_pointer: ["type"]
-        types_map:
-          - target_type: string
-            current_type: enumeration
+        schema_type_identifier:
+          schema_pointer: ["properties"]
+          key_pointer: ["name"]
+          type_pointer: ["type"]
+          types_map:
+            - target_type: string
+              current_type: enumeration
   base_requester:
     type: HttpRequester
     url_base: https://api.hubapi.com

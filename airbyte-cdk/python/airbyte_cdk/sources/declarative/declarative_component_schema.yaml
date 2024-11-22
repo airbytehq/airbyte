@@ -1807,30 +1807,17 @@ definitions:
         type: string
       current_type:
         type: string
-  DynamicSchemaLoader:
-    title: Dynamic Schema Loader
+  SchemaTypeIdentifier:
+    title: Schema Type Identifier
     description: placeholder
     type: object
     required:
-      - type
-      - retriever
+      - schema_pointer
+      - key_pointer
     properties:
       type:
         type: string
-        enum: [DynamicSchemaLoader]
-      retriever:
-        title: Retriever
-        description: Component used to coordinate how records are extracted across stream slices and request pages.
-        anyOf:
-          - "$ref": "#/definitions/AsyncRetriever"
-          - "$ref": "#/definitions/CustomRetriever"
-          - "$ref": "#/definitions/SimpleRetriever"
-      incremental_sync:
-        title: Incremental Sync
-        description: Component used to fetch data incrementally based on a time field in the data.
-        anyOf:
-          - "$ref": "#/definitions/CustomIncrementalSync"
-          - "$ref": "#/definitions/DatetimeBasedCursor"
+        enum: [ SchemaTypeIdentifier ]
       schema_pointer:
         title: Schema Path
         description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).
@@ -1859,6 +1846,38 @@ definitions:
         type: array
         items:
           - "$ref": "#/definitions/TypesPair"
+      $parameters:
+        type: object
+        additionalProperties: true
+  DynamicSchemaLoader:
+    title: Dynamic Schema Loader
+    description: placeholder
+    type: object
+    required:
+      - type
+      - retriever
+    properties:
+      type:
+        type: string
+        enum: [DynamicSchemaLoader]
+      retriever:
+        title: Retriever
+        description: Component used to coordinate how records are extracted across stream slices and request pages.
+        anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
+          - "$ref": "#/definitions/CustomRetriever"
+          - "$ref": "#/definitions/SimpleRetriever"
+      # We need to pass incremental_sync because it is required by the component factory at the stage where we create combine_slicers for the retriever. In the final version, we need to determine how to remove this field from this context.
+      incremental_sync:
+        title: Incremental Sync
+        description: Component used to fetch data incrementally based on a time field in the data.
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
+      schema_type_identifier:
+        title: Schema Path
+        description: placeholder
+        "$ref": "#/definitions/SchemaTypeIdentifier"
       $parameters:
         type: object
         additionalProperties: true
