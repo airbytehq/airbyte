@@ -54,10 +54,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
-    // temporary dependencies so that we can continue running the legacy test suite.
-    // eventually we should remove those tests + rely solely on the bulk CDK tests.
-    // integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
-    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
 
 test {
