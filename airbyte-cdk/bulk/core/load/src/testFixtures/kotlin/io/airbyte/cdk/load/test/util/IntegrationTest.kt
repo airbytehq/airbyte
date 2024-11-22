@@ -33,6 +33,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -183,12 +184,21 @@ abstract class IntegrationTest(
         }
     }
 
+    /**
+     * Run a sync until it acknowledges the given state message, then kill the sync. This method
+     * is useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
+     * behaviors.
+     *
+     * A common pattern is to call [runSyncUntilStateAck], and then call
+     * `dumpAndDiffRecords(..., allowUnexpectedRecord = true)` to verify that [records] were
+     * written to the destination.
+     */
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
-        messages: List<DestinationRecord>,
+        records: List<DestinationRecord>,
         inputStateMessage: StreamCheckpoint,
-        fillerMessage: DestinationRecord,
+        fillerRecord: DestinationRecord,
         allowGracefulShutdown: Boolean,
     ): AirbyteStateMessage {
         val destination =
@@ -199,14 +209,11 @@ abstract class IntegrationTest(
             )
         return runBlocking(Dispatchers.IO) {
             launch {
-                try {
-                    destination.run()
-                } catch (e: DestinationUncleanExitException) {
-                    // swallow exception, we're sending a stream incomplete or killing the
-                    // destination, so it's expected to crash
-                }
+                // expect an exception. we're sending a stream incomplete or killing the
+                // destination, so it's expected to crash
+                assertThrows<DestinationUncleanExitException> { destination.run() }
             }
-            messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
+            records.forEach { destination.sendMessage(it.asProtocolMessage()) }
             destination.sendMessage(inputStateMessage.asProtocolMessage())
 
             val outputStateMessage: AirbyteStateMessage
@@ -214,7 +221,7 @@ abstract class IntegrationTest(
             while (true) {
                 // limit ourselves to 2M messages, which should be enough to force a flush
                 if (i < 2_000_000) {
-                    destination.sendMessage(fillerMessage.asProtocolMessage())
+                    destination.sendMessage(fillerRecord.asProtocolMessage())
                     i++
                 } else {
                     delay(1000)
