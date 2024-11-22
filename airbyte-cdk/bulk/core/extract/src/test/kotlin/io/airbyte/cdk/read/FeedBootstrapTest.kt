@@ -60,6 +60,10 @@ class FeedBootstrapTest {
                     is Global -> globalStateValue
                     is Stream -> streamStateValue
                 }
+
+            override fun resetFeedStates() {
+                // no-op
+            }
         }
 
     fun Feed.bootstrap(stateQuerier: StateQuerier): FeedBootstrap<*> =
@@ -140,6 +144,9 @@ class FeedBootstrapTest {
             object : StateQuerier {
                 override val feeds: List<Feed> = listOf(stream)
                 override fun current(feed: Feed): OpaqueStateValue? = null
+                override fun resetFeedStates() {
+                    // no-op
+                }
             }
         val streamBootstrap = stream.bootstrap(stateQuerier) as StreamFeedBootstrap
         val consumer: StreamRecordConsumer = streamBootstrap.streamRecordConsumer()
