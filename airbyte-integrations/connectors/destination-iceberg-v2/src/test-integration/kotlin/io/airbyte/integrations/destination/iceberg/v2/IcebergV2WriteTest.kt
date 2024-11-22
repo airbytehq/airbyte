@@ -10,13 +10,19 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2TestUtil.PATH
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import org.junit.jupiter.api.Disabled
+import org.junit.ClassRule
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.testcontainers.containers.DockerComposeContainer
 
-abstract class IcebergV2WriteTest(path: Path) :
+
+abstract class IcebergV2WriteTest(configContents: String) :
     BasicFunctionalityIntegrationTest(
-        Files.readString(path),
+        configContents,
         IcebergV2Specification::class.java,
         FakeDataDumper,
         NoopDestinationCleaner,
@@ -29,8 +35,29 @@ abstract class IcebergV2WriteTest(path: Path) :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = StronglyTyped(),
-    )
+) {
+    companion object {
+      @JvmStatic
+      @BeforeAll
+      fun setup() {
+        NessieTestContainers.start()
+      }
+    }
+}
 
-// TODO replace this with a real test class for an actual config
-@Disabled("nowhere even close to functional")
-class IcebergNessieMinioWriteTest : IcebergV2WriteTest(PATH)
+class IcebergNessieMinioWriteTest : IcebergV2WriteTest(config) {
+    companion object {
+        // TODO we need to inject the service host/port into this config
+        //   i.e. testcontainers.getServiceHost / testcontainers.getServicePort
+        //   ... so this probably should be a function getConfig()
+        val config = """
+            {
+              "s3_bucket_name": "test_bucket",
+              "s3_bucket_region": "us-east-1",
+              "server_uri": "localhost",
+              "warehouse_location": "foo",
+              "main_branch_name": "main"
+            }
+        """.trimIndent()
+    }
+}
