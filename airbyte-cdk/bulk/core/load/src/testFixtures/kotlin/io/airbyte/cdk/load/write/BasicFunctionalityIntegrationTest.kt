@@ -629,15 +629,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 42,
                 syncId = 42,
             )
-        // Run a sync, but don't emit a stream status. This should not delete any existing data.
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                configContents,
-                stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
-                streamStatus = null,
-            )
-        }
+        // Run a sync, but emit a status incomplete. This should not delete any existing data.
+        runSyncUntilStateAck(
+            configContents,
+            stream2,
+            listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
+            StreamCheckpoint(
+                randomizedNamespace,
+                stream2.descriptor.name,
+                """{}""",
+                sourceRecordCount = 1,
+            ),
+            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
+            allowGracefulShutdown = true,
+        )
         dumpAndDiffRecords(
             parsedConfig,
             listOfNotNull(
@@ -702,6 +707,7 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
             "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+            allowUnexpectedRecord = true,
         )
     }
 
@@ -754,15 +760,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 42,
                 syncId = 42,
             )
-        // Run a sync, but don't emit a stream status.
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                configContents,
-                stream,
-                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
-                streamStatus = null,
-            )
-        }
+        // Run a sync, but emit a stream status incomplete.
+        runSyncUntilStateAck(
+            configContents,
+            stream,
+            listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
+            StreamCheckpoint(
+                randomizedNamespace,
+                stream.descriptor.name,
+                """{}""",
+                sourceRecordCount = 1,
+            ),
+            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
+            allowGracefulShutdown = true,
+        )
         dumpAndDiffRecords(
             parsedConfig,
             if (commitDataIncrementally) {
@@ -813,6 +824,7 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
             "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+            allowUnexpectedRecord = true,
         )
     }
 
@@ -909,15 +921,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 42,
                 syncId = 42,
             )
-        // Run a sync, but don't emit a stream status. This should not delete any existing data.
-        assertThrows<DestinationUncleanExitException> {
-            runSync(
-                configContents,
-                stream2,
-                listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
-                streamStatus = null,
-            )
-        }
+        // Run a sync, but emit a stream status incomplete. This should not delete any existing data.
+        runSyncUntilStateAck(
+            configContents,
+            stream2,
+            listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
+            StreamCheckpoint(
+                randomizedNamespace,
+                stream2.descriptor.name,
+                """{}""",
+                sourceRecordCount = 1,
+            ),
+            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
+            allowGracefulShutdown = true,
+        )
         dumpAndDiffRecords(
             parsedConfig,
             listOfNotNull(
@@ -1005,6 +1022,7 @@ abstract class BasicFunctionalityIntegrationTest(
             primaryKey = listOf(listOf("id")),
             cursor = null,
             "Records were incorrect after a successful sync following a failed sync. This may indicate that we are not retaining data from the failed sync.",
+            allowUnexpectedRecord = true,
         )
     }
 
