@@ -41,6 +41,12 @@ class RecordDiffer(
      * files).
      */
     val nullEqualsUnset: Boolean = false,
+    /**
+     * Most tests should require the destination to contain an exact list of records. However, some
+     * tests expect a record to be present, but may also expect other unspecified records to exist.
+     * Those tests should set this parameter to true.
+     */
+    val allowUnexpectedRecord: Boolean = false,
 ) {
     private fun extract(data: Map<String, AirbyteValue>, path: List<String>): AirbyteValue {
         return when (path.size) {
@@ -133,8 +139,10 @@ class RecordDiffer(
                 matches.add(MatchingRecords(expectedRecord, actualRecord = null))
                 expectedRecordIndex++
             } else {
-                // There's an extra actual record
-                matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                if (!allowUnexpectedRecord) {
+                    // There's an extra actual record
+                    matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                }
                 actualRecordIndex++
             }
         }
@@ -144,9 +152,16 @@ class RecordDiffer(
             matches.add(MatchingRecords(expectedRecords[expectedRecordIndex], actualRecord = null))
             expectedRecordIndex++
         }
-        while (actualRecordIndex < actualRecords.size) {
-            matches.add(MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex]))
-            actualRecordIndex++
+        if (!allowUnexpectedRecord) {
+            while (actualRecordIndex < actualRecords.size) {
+                matches.add(
+                    MatchingRecords(
+                        expectedRecord = null,
+                        actualRecords[actualRecordIndex]
+                    )
+                )
+                actualRecordIndex++
+            }
         }
 
         // We've paired up all the records, now find just the ones that are wrong.

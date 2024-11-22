@@ -9,9 +9,14 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import java.time.Instant
 import java.time.LocalDateTime
@@ -20,6 +25,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -91,6 +97,7 @@ abstract class IntegrationTest(
         primaryKey: List<List<String>>,
         cursor: List<String>?,
         reason: String? = null,
+        allowUnexpectedRecord: Boolean = false,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
@@ -100,6 +107,7 @@ abstract class IntegrationTest(
                 primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },
                 cursor = cursor?.let { nameMapper.mapFieldName(it) },
                 nullEqualsUnset = nullEqualsUnset,
+                allowUnexpectedRecord = allowUnexpectedRecord,
             )
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
@@ -172,6 +180,66 @@ abstract class IntegrationTest(
             }
             destination.shutdown()
             destination.readMessages()
+        }
+    }
+
+    fun runSyncUntilStateAck(
+        configContents: String,
+        stream: DestinationStream,
+        messages: List<DestinationRecord>,
+        inputStateMessage: StreamCheckpoint,
+        fillerMessage: DestinationRecord,
+        allowGracefulShutdown: Boolean,
+    ): AirbyteStateMessage {
+        val destination =
+            destinationProcessFactory.createDestinationProcess(
+                "write",
+                configContents,
+                DestinationCatalog(listOf(stream)).asProtocolObject(),
+            )
+        return runBlocking(Dispatchers.IO) {
+            launch {
+                try {
+                    destination.run()
+                } catch (e: DestinationUncleanExitException) {
+                    // swallow exception, we're sending a stream incomplete or killing the
+                    // destination, so it's expected to crash
+                }
+            }
+            messages.forEach { destination.sendMessage(it.asProtocolMessage()) }
+            destination.sendMessage(inputStateMessage.asProtocolMessage())
+
+            val outputStateMessage: AirbyteStateMessage
+            var i = 0
+            while (true) {
+                // limit ourselves to 2M messages, which should be enough to force a flush
+                if (i < 2_000_000) {
+                    destination.sendMessage(fillerMessage.asProtocolMessage())
+                    i++
+                } else {
+                    delay(1000)
+                }
+                val returnedMessages = destination.readMessages()
+                if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
+                    outputStateMessage =
+                        returnedMessages
+                            .filter { it.type == AirbyteMessage.Type.STATE }
+                            .map { it.state }
+                            .first()
+                    break
+                }
+            }
+            if (allowGracefulShutdown) {
+                destination.sendMessage(
+                    DestinationRecordStreamIncomplete(stream.descriptor, System.currentTimeMillis())
+                        .asProtocolMessage()
+                )
+                destination.shutdown()
+            } else {
+                destination.kill()
+            }
+
+            outputStateMessage
         }
     }
 
