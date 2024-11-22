@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -52,7 +53,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
-    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile)
+    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long)
 }
 
 /**
@@ -117,7 +118,7 @@ class DefaultDestinationTaskLauncher(
 
     // Exception handling
     private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
     // Input Comsumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
@@ -204,9 +205,15 @@ class DefaultDestinationTaskLauncher(
         stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile
     ) {
-        log.info { "Starting process records task for $stream, file $file" }
-        val task = processRecordsTaskFactory.make(this, stream, file)
-        enqueue(task)
+        if (file.totalSizeBytes > 0L) {
+            log.info { "Starting process records task for ${stream}, file $file" }
+            val task = processRecordsTaskFactory.make(this, stream, file)
+            enqueue(task)
+        } else {
+            log.info { "No records to process in $file, skipping process records" }
+            // TODO: Make this `maybeCloseStream` or something
+            handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
+        }
         if (!file.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
@@ -266,7 +273,11 @@ class DefaultDestinationTaskLauncher(
         succeeded.send(true)
     }
 
-    override suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile) {
-        enqueue(processFileTaskFactory.make(this, stream, file))
+    override suspend fun handleFile(
+        stream: DestinationStream.Descriptor,
+        file: DestinationFile,
+        index: Long
+    ) {
+        enqueue(processFileTaskFactory.make(this, stream, file, index))
     }
 }

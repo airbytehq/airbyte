@@ -107,7 +107,9 @@ sealed class ObjectStorageFormatSpecification(
 }
 
 interface FlatteningSpecificationProvider {
-    @get:JsonSchemaTitle("Flattening") @get:JsonProperty("flattening") val flattening: Flattening?
+    @get:JsonSchemaTitle("Flattening")
+    @get:JsonProperty("flattening", defaultValue = "No flattening")
+    val flattening: Flattening?
 
     enum class Flattening(@get:JsonValue val flatteningName: String) {
         NO_FLATTENING("No flattening"),

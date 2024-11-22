@@ -11,7 +11,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
-import io.airbyte.cdk.data.LocalDateTimeCodec.formatter
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -30,7 +29,7 @@ import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.util.Base64
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
@@ -158,7 +157,10 @@ class MysqlJdbcPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue =
-            streamFeedBootstrap.currentState ?: return coldStart(streamState)
+            when (streamFeedBootstrap.currentState?.isEmpty) {
+                false -> streamFeedBootstrap.currentState!!
+                else -> return coldStart(streamState)
+            }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -315,7 +317,7 @@ class MysqlJdbcPartitionFactory(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: DateTimeParseException) {
                             // Resolve to use the new format.
                             Jsons.valueToTree(stateValue)
                         }
@@ -331,7 +333,7 @@ class MysqlJdbcPartitionFactory(
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: DateTimeParseException) {
                             // Resolve to use the new format.
                             Jsons.valueToTree(stateValue)
                         }

@@ -67,6 +67,7 @@
             },
             "flattening" : {
               "type" : "string",
+              "default" : "No flattening",
               "enum" : [ "No flattening", "Root level flattening" ],
               "title" : "Flattening"
             },
@@ -114,6 +115,7 @@
             },
             "flattening" : {
               "type" : "string",
+              "default" : "No flattening",
               "enum" : [ "No flattening", "Root level flattening" ],
               "title" : "Flattening"
             },
