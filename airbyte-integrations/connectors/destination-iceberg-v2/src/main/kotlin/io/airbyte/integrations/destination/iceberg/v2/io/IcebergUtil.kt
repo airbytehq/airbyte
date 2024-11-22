@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.MapperPipeline
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
@@ -204,18 +205,15 @@ class IcebergUtil {
     }
 
     private fun getOperation(
-        @Suppress("UNUSED_PARAMETER") record: DestinationRecord,
+        record: DestinationRecord,
         importType: ImportType,
     ): Operation =
-        // TODO This disabled out of caution due to the potential cost of serializing every record
-        // to check
-        //        the deletion status.  This should be revisited when there is a cheaper way to do
-        // this, such
-        //        as after a protocol change that explicitly states the operation.
-        //        if (record.data.toJson().get(AIRBYTE_CDC_DELETE_COLUMN) != null) {
-        //            Operation.DELETE
-        //        } else
-        if (importType is Dedupe) {
+        if (
+            record.data is ObjectValue &&
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null
+        ) {
+            Operation.DELETE
+        } else if (importType is Dedupe) {
             Operation.UPDATE
         } else {
             Operation.INSERT

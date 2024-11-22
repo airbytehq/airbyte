@@ -44,7 +44,6 @@ import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -211,7 +210,6 @@ internal class IcebergUtilTest {
     }
 
     @Test
-    @Disabled("disabled until detecting deletes are supported")
     fun testConvertAirbyteRecordToIcebergRecordDelete() {
         val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
