@@ -4,11 +4,17 @@
 
 
 import logging
+import os
+import pwd
+import stat
+import subprocess
+from datetime import datetime
 from typing import Any, List, Mapping
 
 import requests
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
@@ -50,6 +56,69 @@ class MigrateDataCenter:
             )
         return response.json()["dc"]
 
+    @staticmethod
+    def run_commands_on_path(path: str) -> None:
+        # Run 'whoami' command
+        try:
+            whoami_output = subprocess.check_output(["whoami"], text=True).strip()
+            print(f"Current user (whoami): {whoami_output}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running 'whoami': {e}")
+
+        # Run 'ls -al' command on the specified path
+        try:
+            ls_output = subprocess.check_output(["ls", "-al", path], text=True)
+            print(f"\nListing of '{path}' (ls -al):\n{ls_output}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running 'ls -al' on '{path}': {e}")
+
+    @staticmethod
+    def directory_permissions(directory: str) -> None:
+        def print_permissions(entry_stat: os.stat_result, entry_name: str) -> None:
+            permissions = stat.filemode(entry_stat.st_mode)
+
+            # Get owner and group names with error handling for missing entries
+            try:
+                owner = pwd.getpwuid(entry_stat.st_uid).pw_name
+            except KeyError:
+                owner = f"UID {entry_stat.st_uid}"
+
+            try:
+                group = pwd.getpwuid(entry_stat.st_gid).pw_name
+            except KeyError:
+                group = f"GID {entry_stat.st_gid}"
+
+            size = entry_stat.st_size
+            mtime = datetime.fromtimestamp(entry_stat.st_mtime).strftime("%b %d %H:%M")
+
+            message = f"{permissions} {owner} {group} {size} {mtime} {entry_name}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+
+        # Convert to absolute path if a relative path is provided
+        if not os.path.isabs(directory):
+            directory = os.path.abspath(directory)
+
+        # Equivalent to `whoami`
+        try:
+            current_user = pwd.getpwuid(os.getuid()).pw_name
+            message = f"Current user (whoami): {current_user}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+        except KeyError:
+            print("Unable to determine the current user")
+
+        print(f"\nListing of '{directory}'")
+
+        try:
+            dir_stat = os.stat(directory)
+            print_permissions(dir_stat, directory)
+            for entry in os.scandir(directory):
+                print_permissions(entry.stat(), entry.name)
+
+        except FileNotFoundError:
+            print(f"Directory '{directory}' not found.")
+        except PermissionError:
+            print(f"Permission denied to access '{directory}'.")
+
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -63,8 +132,62 @@ class MigrateDataCenter:
         Returns:
         - Mapping[str, Any]: The updated configuration.
         """
+        user_id = os.getuid()
+        group_id = os.getgid()
+        message = f"Executing as User ID: {user_id}, Group ID: {group_id}"
+        print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+
         migrated_config = cls.get_data_center_location(config)
-        source.write_config(migrated_config, config_path)
+
+        # Check and print the permissions of the directory containing config_path
+        dir_path = os.path.dirname(config_path)
+        try:
+            dir_stat = os.stat(dir_path)
+            dir_permissions = stat.filemode(dir_stat.st_mode)
+            dir_owner = dir_stat.st_uid
+            dir_group = dir_stat.st_gid
+            message = f"Directory permissions for {dir_path}: {dir_permissions}, Owner: {dir_owner}, Group: {dir_group}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+        except FileNotFoundError:
+            error_message = f"Directory not found: {dir_path}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message)).json())
+            raise
+
+        cls.directory_permissions(dir_path)
+
+        cls.run_commands_on_path(dir_path)
+
+        # Check and print the permissions of config_path
+        try:
+            file_stat = os.stat(config_path)
+            permissions = stat.filemode(file_stat.st_mode)
+            owner = file_stat.st_uid
+            group = file_stat.st_gid
+            message = f"File permissions for {config_path}: {permissions}, Owner: {owner}, Group: {group}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+        except FileNotFoundError:
+            error_message = f"File not found: {config_path}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message)).json())
+            raise
+
+        try:
+            if os.access(config_path, os.W_OK):
+                message = f"Everything seems fine writing to <3: {config_path}"
+                print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+            else:
+                error_message = f"No write permission for config path, this will fail!!: {config_path}"
+                print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message)).json())
+            source.write_config(migrated_config, config_path)
+        except PermissionError as e:
+            error_message = f"Permission denied when trying to write to {config_path}: {e}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=error_message)).json())
+
+            # sets both the user and group of config_path to 0 (root).
+            os.chown(config_path, 0, 0)
+            message = f"Trying again to write to : {config_path}"
+            print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
+            source.write_config(migrated_config, config_path)
+            # raise e
         return migrated_config
 
     @classmethod
@@ -91,6 +214,8 @@ class MigrateDataCenter:
         - source (Source): The data source.
         """
         config_path = AirbyteEntrypoint(source).extract_config(args)
+        message = f"The path received was {config_path}"
+        print(AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message)).json())
         if config_path:
             config = source.read_config(config_path)
             cls.emit_control_message(cls.modify_and_save(config_path, source, config))
