@@ -136,7 +136,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     @VisibleForTesting fun createFile(url: String) = File(url)
-    
+
     override suspend fun processBatch(batch: Batch): Batch {
         throw NotImplementedError(
             "All post-processing occurs in the close method; this should not be called"
