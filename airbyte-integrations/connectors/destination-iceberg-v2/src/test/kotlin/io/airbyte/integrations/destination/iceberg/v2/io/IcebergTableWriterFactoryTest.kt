@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class IcebergTableWriterFactoryTest {
+
     private val generationIdSuffix: String = "ab-generation-id-0-e"
 
     @Test
@@ -64,8 +65,11 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
 
-        val factory = IcebergTableWriterFactory()
+        val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer = factory.create(table = table, generationId = generationIdSuffix)
         assertNotNull(writer)
         assertEquals(PartitionedDeltaWriter::class.java, writer.javaClass)
@@ -110,13 +114,13 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
 
-        val factory = IcebergTableWriterFactory()
+        val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(
-                table = table,
-                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
-            )
+            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -159,13 +163,13 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
 
-        val factory = IcebergTableWriterFactory()
+        val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(
-                table = table,
-                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
-            )
+            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
         assertNotNull(writer)
         assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
     }
@@ -208,13 +212,13 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
+        val icebergUtil: IcebergUtil = mockk {
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
+        }
 
-        val factory = IcebergTableWriterFactory()
+        val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(
-                table = table,
-                generationId = IcebergUtil.constructGenerationIdSuffix(Random.nextLong(100))
-            )
+            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }

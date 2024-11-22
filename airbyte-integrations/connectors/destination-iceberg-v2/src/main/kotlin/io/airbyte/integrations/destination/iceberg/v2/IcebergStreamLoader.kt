@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil.constructGenerationIdSuffix
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Table
 
@@ -25,6 +24,7 @@ class IcebergStreamLoader(
     override val stream: DestinationStream,
     private val table: Table,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
+    private val icebergUtil: IcebergUtil,
     private val pipeline: MapperPipeline,
     private val stagingBranchName: String,
     private val mainBranchName: String
@@ -36,12 +36,12 @@ class IcebergStreamLoader(
         totalSizeBytes: Long
     ): Batch {
         icebergTableWriterFactory
-            .create(table = table, generationId = constructGenerationIdSuffix(stream))
+            .create(table = table, generationId = icebergUtil.constructGenerationIdSuffix(stream))
             .use { writer ->
                 log.info { "Writing records to branch $stagingBranchName" }
                 records.forEach { record ->
                     val icebergRecord =
-                        IcebergUtil.toRecord(
+                        icebergUtil.toRecord(
                             record = record,
                             stream = stream,
                             tableSchema = table.schema(),
@@ -77,8 +77,10 @@ class IcebergStreamLoader(
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map { constructGenerationIdSuffix(it) }
-                val icebergTableCleaner = IcebergTableCleaner()
+                    (0 until stream.minimumGenerationId).map(
+                        icebergUtil::constructGenerationIdSuffix
+                    )
+                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
                 icebergTableCleaner.deleteGenerationId(
                     table,
                     DEFAULT_STAGING_BRANCH,
