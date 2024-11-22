@@ -179,6 +179,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.7
+
+Mount connection objects to readable paths in the container for rootless images.
+
 ### 0.19.6
 
 Write connector output to a different in container path to avoid permission issues now that connector images are rootless.

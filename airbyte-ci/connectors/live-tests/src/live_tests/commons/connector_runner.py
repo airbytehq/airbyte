@@ -21,10 +21,11 @@ from live_tests.commons.proxy import Proxy
 
 
 class ConnectorRunner:
-    IN_CONTAINER_CONFIG_PATH = "/data/config.json"
-    IN_CONTAINER_CONFIGURED_CATALOG_PATH = "/data/catalog.json"
-    IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "live_testing/output.txt"
+    DATA_DIR = "/airbyte/data"
+    IN_CONTAINER_CONFIG_PATH = f"{DATA_DIR}/config.json"
+    IN_CONTAINER_CONFIGURED_CATALOG_PATH = f"{DATA_DIR}/catalog.json"
+    IN_CONTAINER_STATE_PATH = f"{DATA_DIR}/state.json"
+    IN_CONTAINER_OUTPUT_PATH = f"{DATA_DIR}/output.txt"
     IN_CONTAINER_OBFUSCATOR_PATH = "/user/local/bin/record_obfuscator.py"
 
     def __init__(
@@ -117,6 +118,7 @@ class ConnectorRunner:
         self,
     ) -> ExecutionResult:
         container = self._connector_under_test_container
+        container = container.with_exec(["mkdir", "-p", self.DATA_DIR])
         # Do not cache downstream dagger layers
         container = container.with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
 
@@ -148,10 +150,6 @@ class ConnectorRunner:
             assert entrypoint, "The connector container has no entrypoint"
             airbyte_command = entrypoint + self.full_command
 
-            assert not self.IN_CONTAINER_OUTPUT_PATH.startswith("/"), "Output path must be relative"
-            output_in_subdir = len(self.IN_CONTAINER_OUTPUT_PATH.split("/")) > 1
-            if output_in_subdir:
-                container = container.with_exec(["mkdir", "-p", self.IN_CONTAINER_OUTPUT_PATH.rsplit("/", 1)[0]])
             container = container.with_exec(
                 [
                     "sh",

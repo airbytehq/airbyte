@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.9.7
+
+Mount connection objects to readable paths in the container for rootless images.
+ 
+## 3.9.6
+
+Write connector output to a writtable directory to avoid permission issues on rootless images.
+
 ## 3.9.5
 
 Fix parsing of inlined manifest specs in `test_match_expected`

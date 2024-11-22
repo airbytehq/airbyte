@@ -128,10 +128,11 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
 
 
 class ConnectorRunner:
-    IN_CONTAINER_CONFIG_PATH = "/data/config.json"
-    IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
-    IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    DATA_DIR = "/airbyte/data"
+    IN_CONTAINER_CONFIG_PATH = f"{DATA_DIR}/config.json"
+    IN_CONTAINER_CATALOG_PATH = f"{DATA_DIR}/catalog.json"
+    IN_CONTAINER_STATE_PATH = f"{DATA_DIR}/state.json"
+    IN_CONTAINER_OUTPUT_PATH = f"{DATA_DIR}/output.txt"
 
     def __init__(
         self,
@@ -248,6 +249,7 @@ class ConnectorRunner:
             List[AirbyteMessage]: The list of AirbyteMessages emitted by the connector.
         """
         container = self._connector_under_test_container
+        container = container.with_exec(["mkdir", "-p", self.DATA_DIR])
         if not enable_caching:
             container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
         if config:
@@ -278,6 +280,7 @@ class ConnectorRunner:
         local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
         entrypoint = await container.entrypoint()
         airbyte_command = entrypoint + airbyte_command
+
         container = container.with_exec(
             ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"]
         )
