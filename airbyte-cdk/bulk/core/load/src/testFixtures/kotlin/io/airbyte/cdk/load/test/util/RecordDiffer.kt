@@ -126,8 +126,8 @@ class RecordDiffer(
             expectedRecordIndex < expectedRecordsSorted.size &&
                 actualRecordIndex < actualRecordsSorted.size
         ) {
-            val expectedRecord = expectedRecords[expectedRecordIndex]
-            val actualRecord = actualRecords[actualRecordIndex]
+            val expectedRecord = expectedRecordsSorted[expectedRecordIndex]
+            val actualRecord = actualRecordsSorted[actualRecordIndex]
             val compare = everythingComparator.compare(expectedRecord, actualRecord)
             if (compare == 0) {
                 // These records are the same underlying record
