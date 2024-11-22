@@ -154,7 +154,7 @@ class AirbyteTypeToIcebergSchemaTest {
                     "email" to FieldType(StringType, true),
                 ),
             )
-        val schema = objectType.toIcebergSchema()
+        val schema = objectType.toIcebergSchema(mutableListOf(mutableListOf("age")))
 
         assertEquals(2, schema.columns().size)
         val ageColumn = schema.findField("age")
@@ -167,5 +167,9 @@ class AirbyteTypeToIcebergSchemaTest {
         assertNotNull(emailColumn)
         assertTrue(emailColumn!!.isOptional)
         assertEquals(Types.StringType.get(), emailColumn.type())
+
+        val identifierFieldIds = schema.identifierFieldIds()
+        assertEquals(1, identifierFieldIds.size)
+        assertEquals(true, identifierFieldIds.contains(ageColumn.fieldId()))
     }
 }

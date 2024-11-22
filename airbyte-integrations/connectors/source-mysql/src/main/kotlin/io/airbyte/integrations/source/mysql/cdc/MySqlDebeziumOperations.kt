@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
@@ -19,6 +18,7 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.cdc.CdcPartitionsCreator.OffsetInvalidNeedsResyncIllegalStateException
 import io.airbyte.cdk.read.cdc.DebeziumInput
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumOperations
@@ -37,7 +37,6 @@ import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLBooleanConverter
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLDateTimeConverter
 import io.airbyte.integrations.source.mysql.cdc.converters.MySQLNumericConverter
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
@@ -71,19 +70,13 @@ class MySqlDebeziumOperations(
 
     override fun deserialize(
         key: DebeziumRecordKey,
-        value: DebeziumRecordValue
+        value: DebeziumRecordValue,
+        stream: Stream,
     ): DeserializedRecord {
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
         val isDelete: Boolean = after.isNull
-        // Identify the stream.
-        val streamID: StreamIdentifier =
-            StreamIdentifier.from(
-                StreamDescriptor()
-                    .withName(source["table"].asText())
-                    .withNamespace(source["db"].asText())
-            )
         // Use either `before` or `after` as the record data, depending on the nature of the change.
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
         // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
@@ -107,8 +100,14 @@ class MySqlDebeziumOperations(
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(MysqlCdcMetaFields.CDC_CURSOR.id, LongCodec.encode(position.cursorValue))
         // Return a DeserializedRecord instance.
-        return DeserializedRecord(streamID, data, changes = emptyMap())
+        return DeserializedRecord(data, changes = emptyMap())
     }
+
+    override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        value.source["db"]?.asText()
+
+    override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
+        value.source["table"]?.asText()
 
     /**
      * Checks if GTIDs from previously saved state (debeziumInput) are still valid on DB. And also
@@ -306,6 +305,9 @@ class MySqlDebeziumOperations(
                 throw ConfigErrorException(
                     "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency."
                 )
+            }
+            if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
+                throw OffsetInvalidNeedsResyncIllegalStateException()
             }
             return synthesize()
         }

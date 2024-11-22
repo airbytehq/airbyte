@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -16,16 +18,17 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamRecordCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
@@ -55,7 +58,7 @@ class DefaultInputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher,
@@ -72,7 +75,7 @@ class DefaultInputConsumerTask(
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
-                    StreamRecordWrapped(
+                    StreamRecordEvent(
                         index = manager.countRecordIn(),
                         sizeBytes = sizeBytes,
                         record = message
@@ -81,17 +84,21 @@ class DefaultInputConsumerTask(
             }
             is DestinationRecordStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamRecordCompleteWrapped(index = manager.markEndOfStream())
+                val wrapped = StreamCompleteEvent(index = manager.markEndOfStream())
                 recordQueue.publish(reserved.replace(wrapped))
                 recordQueue.close()
             }
             is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
             is DestinationFile -> {
-                destinationTaskLauncher.handleFile(stream, message)
+                val index = manager.countRecordIn()
+                destinationTaskLauncher.handleFile(stream, message, index)
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
+                manager.markEndOfStream()
+                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
+                destinationTaskLauncher.handleNewBatch(stream, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -179,7 +186,7 @@ interface InputConsumerTaskFactory {
         catalog: DestinationCatalog,
         inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
         recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
     ): InputConsumerTask
@@ -193,7 +200,7 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
         catalog: DestinationCatalog,
         inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
         recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
     ): InputConsumerTask {
