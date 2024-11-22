@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer
@@ -70,7 +72,16 @@ internal class IcebergTableWriterFactoryTest {
         }
 
         val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
-        val writer = factory.create(table = table, generationId = generationIdSuffix)
+        val writer =
+            factory.create(
+                table = table,
+                generationId = generationIdSuffix,
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(primaryKeyIds.map { it.toString() }),
+                        cursor = primaryKeyIds.map { it.toString() }
+                    )
+            )
         assertNotNull(writer)
         assertEquals(PartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -120,7 +131,15 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
+            factory.create(
+                table = table,
+                generationId = "ab-generation-id-${Random.nextLong(100)}",
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(primaryKeyIds.map { it.toString() }),
+                        cursor = primaryKeyIds.map { it.toString() }
+                    )
+            )
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
     }
@@ -169,7 +188,11 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
+            factory.create(
+                table = table,
+                generationId = "ab-generation-id-${Random.nextLong(100)}",
+                importType = Append
+            )
         assertNotNull(writer)
         assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
     }
@@ -218,7 +241,11 @@ internal class IcebergTableWriterFactoryTest {
 
         val factory = IcebergTableWriterFactory(icebergUtil = icebergUtil)
         val writer =
-            factory.create(table = table, generationId = "ab-generation-id-${Random.nextLong(100)}")
+            factory.create(
+                table = table,
+                generationId = "ab-generation-id-${Random.nextLong(100)}",
+                importType = Append
+            )
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }
