@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -22,6 +24,7 @@ import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamCompleteEvent
@@ -88,10 +91,14 @@ class DefaultInputConsumerTask(
             is DestinationRecordStreamIncomplete ->
                 throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
             is DestinationFile -> {
-                destinationTaskLauncher.handleFile(stream, message)
+                val index = manager.countRecordIn()
+                destinationTaskLauncher.handleFile(stream, message, index)
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
+                manager.markEndOfStream()
+                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
+                destinationTaskLauncher.handleNewBatch(stream, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")

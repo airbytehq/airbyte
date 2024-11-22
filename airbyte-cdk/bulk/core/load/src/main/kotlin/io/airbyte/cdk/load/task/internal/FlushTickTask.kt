@@ -14,10 +14,12 @@ import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.SyncLevel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.time.Clock
+import kotlinx.coroutines.channels.ClosedSendChannelException
 
 @Singleton
 @Secondary
@@ -29,6 +31,8 @@ class FlushTickTask(
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
 ) : SyncLevel, KillableScope {
+    private val log = KotlinLogging.logger {}
+
     override suspend fun execute() {
         while (true) {
             waitAndPublishFlushTick()
@@ -41,7 +45,14 @@ class FlushTickTask(
 
         catalog.streams.forEach {
             val queue = recordQueueSupplier.get(it.descriptor)
-            queue.publish(Reserved(value = StreamFlushEvent(clock.millis())))
+            if (queue.isClosedForPublish()) {
+                return@forEach
+            }
+            try {
+                queue.publish(Reserved(value = StreamFlushEvent(clock.millis())))
+            } catch (e: ClosedSendChannelException) {
+                log.info { "Attempted to flush closed queue for ${it.descriptor}. Ignoring..." }
+            }
         }
     }
 }

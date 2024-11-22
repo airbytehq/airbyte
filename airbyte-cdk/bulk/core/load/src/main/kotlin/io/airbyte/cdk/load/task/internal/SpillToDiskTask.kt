@@ -102,6 +102,11 @@ class DefaultSpillToDiskTask(
                                 }
                                 is StreamFlushEvent -> {
                                     val forceFlush = timeWindow.isComplete()
+                                    if (forceFlush) {
+                                        log.info {
+                                            "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $tmpFile of (${sizeBytes}b)"
+                                        }
+                                    }
                                     ReadResult(range, sizeBytes, forceFlush = forceFlush)
                                 }
                             }
