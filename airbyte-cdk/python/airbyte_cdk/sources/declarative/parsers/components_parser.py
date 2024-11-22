@@ -11,11 +11,9 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
-
-if TYPE_CHECKING:
-    from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
@@ -49,7 +47,7 @@ class ParsedMapComponentsDefinition:
 
 @dataclass
 class DynamicComponentsParser(ComponentsParser):
-    components_values_stream: "DeclarativeStream"
+    retriever: Retriever
     config: Config
     components_mapping: List[MapComponentsDefinition]
     parameters: InitVar[Mapping[str, Any]]
@@ -106,7 +104,8 @@ class DynamicComponentsParser(ComponentsParser):
     def parse_stream_components(self, stream_template_config: Dict[str, Any]) -> Dict[str, Any]:
         kwargs = {"stream_template_config": stream_template_config}
 
-        for components_value in self.components_values_stream.read_only_records():
+        for components_value in self.retriever.read_records({}):
+            print(components_value["name"])
             updated_config = deepcopy(stream_template_config)
             kwargs["components_value"] = components_value
 

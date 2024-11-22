@@ -93,7 +93,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
         stream_configs = self._stream_configs(self._source_config)
 
-        stream_configs += self._dynamic_streams_configs(self._source_config, config)
+        stream_configs = self._dynamic_streams_configs(
+            self._source_config, config
+        )  # Overwrite static streams to skip discovery for templates
 
         source_streams = [
             self._constructor.create_component(
@@ -249,7 +251,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             stream_configs = [
                 stream_config for stream_config in components_parser.parse_stream_components(stream_template_config=stream_template_config)
             ]
-        print(stream_configs)
+
         return stream_configs
 
     def _emit_manifest_debug_message(self, extra_args: dict[str, Any]) -> None:

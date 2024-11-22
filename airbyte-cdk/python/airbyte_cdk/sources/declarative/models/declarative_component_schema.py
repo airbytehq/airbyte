@@ -1609,8 +1609,17 @@ class HttpRequester(BaseModel):
 
 class DynamicComponentsParser(BaseModel):
     type: Literal['DynamicComponentsParser']
-    components_values_stream: DeclarativeStream = Field(
-        ..., description='Reference to the stream.', title='Stream'
+    retriever: Union[AsyncRetriever, CustomRetriever, SimpleRetriever] = Field(
+        ...,
+        description='Component used to coordinate how records are extracted across stream slices and request pages.',
+        title='Retriever',
+    )
+    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = (
+        Field(
+            None,
+            description='Component used to fetch data incrementally based on a time field in the data.',
+            title='Incremental Sync',
+        )
     )
     components_mapping: List[MapComponentsDefinition]
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
@@ -1627,11 +1636,17 @@ class DynamicDeclarativeStream(BaseModel):
 
 class DynamicSchemaLoader(BaseModel):
     type: Literal['DynamicSchemaLoader']
-    stream: DeclarativeStream = Field(
-        ..., description='Reference to the stream.', title='Stream'
+    retriever: Union[AsyncRetriever, CustomRetriever, SimpleRetriever] = Field(
+        ...,
+        description='Component used to coordinate how records are extracted across stream slices and request pages.',
+        title='Retriever',
     )
-    decoder: Optional[Union[JsonDecoder, XmlDecoder]] = Field(
-        None, description='Component used to decode the response.', title='Decoder'
+    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = (
+        Field(
+            None,
+            description='Component used to fetch data incrementally based on a time field in the data.',
+            title='Incremental Sync',
+        )
     )
     schema_pointer: Optional[List[str]] = Field(
         None,
@@ -1812,5 +1827,7 @@ DeclarativeSource.update_forward_refs()
 SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
+DynamicComponentsParser.update_forward_refs()
+DynamicSchemaLoader.update_forward_refs()
 SimpleRetriever.update_forward_refs()
 AsyncRetriever.update_forward_refs()

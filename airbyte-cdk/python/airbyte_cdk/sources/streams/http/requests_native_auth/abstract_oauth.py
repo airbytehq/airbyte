@@ -148,8 +148,7 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan)
         """
         response_json = self._get_refresh_access_token_response()
-
-        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+        return response_json[self.get_access_token_name()], response_json.get(self.get_expires_in_name(), 0)
 
     def _parse_token_expiration_date(self, value: Union[str, int]) -> pendulum.DateTime:
         """

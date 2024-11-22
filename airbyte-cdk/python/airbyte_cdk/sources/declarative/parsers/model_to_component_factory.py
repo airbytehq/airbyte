@@ -1127,15 +1127,22 @@ class ModelToComponentFactory:
         return TypesPair(target_type=model.target_type, current_type=model.current_type)
 
     def create_dynamic_schema_loader(
-        self, model: DynamicSchemaLoaderModel, config: Config, name: str, **kwargs: Any
+        self, model: DynamicSchemaLoaderModel, config: Config, **kwargs: Any
     ) -> DynamicSchemaLoader:
-        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        declarative_stream = self._create_component_from_model(model.stream, config=config)
+        combined_slicers = self._merge_stream_slicers(model=model, config=config)
+
+        retriever = self._create_component_from_model(
+            model=model.retriever,
+            config=config,
+            name="",
+            primary_key=None,
+            stream_slicer=combined_slicers,
+            transformations=[],
+        )
         types_map = [self._create_component_from_model(types_pair, config=config) for types_pair in model.types_map]
         return DynamicSchemaLoader(
-            stream=declarative_stream,
+            retriever=retriever,
             config=config,
-            decoder=decoder,
             schema_pointer=model.schema_pointer,
             key_pointer=model.key_pointer,
             type_pointer=model.type_pointer,
@@ -1623,7 +1630,17 @@ class ModelToComponentFactory:
         )
 
     def create_dynamic_components_parser(self, model: DynamicComponentsParserModel, config: Config) -> Any:
-        declarative_stream = self._create_component_from_model(model.components_values_stream, config=config)
+        combined_slicers = self._merge_stream_slicers(model=model, config=config)
+
+        retriever = self._create_component_from_model(
+            model=model.retriever,
+            config=config,
+            name="",
+            primary_key=None,
+            stream_slicer=combined_slicers,
+            transformations=[],
+        )
+
         components_mapping = [
             self._create_component_from_model(
                 model=map_components_definition_model,
@@ -1634,7 +1651,7 @@ class ModelToComponentFactory:
         ]
 
         return DynamicComponentsParser(
-            components_values_stream=declarative_stream,
+            retriever=retriever,
             config=config,
             components_mapping=components_mapping,
             parameters=model.parameters or {},

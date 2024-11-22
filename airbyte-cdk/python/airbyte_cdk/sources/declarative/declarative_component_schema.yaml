@@ -1752,10 +1752,19 @@ definitions:
       type:
         type: string
         enum: [DynamicComponentsParser]
-      components_values_stream:
-        title: Stream
-        description: Reference to the stream.
-        "$ref": "#/definitions/DeclarativeStream"
+      retriever:
+        title: Retriever
+        description: Component used to coordinate how records are extracted across stream slices and request pages.
+        anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
+          - "$ref": "#/definitions/CustomRetriever"
+          - "$ref": "#/definitions/SimpleRetriever"
+      incremental_sync:
+        title: Incremental Sync
+        description: Component used to fetch data incrementally based on a time field in the data.
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
       components_mapping:
         type: array
         items:
@@ -1765,7 +1774,7 @@ definitions:
         additionalProperties: true
     required:
       - type
-      - components_values_stream
+      - retriever
       - components_mapping
   StaticComponentsParser:
     type: object
@@ -1804,21 +1813,24 @@ definitions:
     type: object
     required:
       - type
-      - stream
+      - retriever
     properties:
       type:
         type: string
         enum: [DynamicSchemaLoader]
-      stream:
-        title: Stream
-        description: Reference to the stream.
-        "$ref": "#/definitions/DeclarativeStream"
-      decoder:
-        title: Decoder
-        description: Component used to decode the response.
+      retriever:
+        title: Retriever
+        description: Component used to coordinate how records are extracted across stream slices and request pages.
         anyOf:
-          - "$ref": "#/definitions/JsonDecoder"
-          - "$ref": "#/definitions/XmlDecoder"
+          - "$ref": "#/definitions/AsyncRetriever"
+          - "$ref": "#/definitions/CustomRetriever"
+          - "$ref": "#/definitions/SimpleRetriever"
+      incremental_sync:
+        title: Incremental Sync
+        description: Component used to fetch data incrementally based on a time field in the data.
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
       schema_pointer:
         title: Schema Path
         description: List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).

@@ -11,11 +11,9 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
-
-if TYPE_CHECKING:
-    from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass(frozen=True)
@@ -26,7 +24,7 @@ class TypesPair:
 
 @dataclass
 class DynamicSchemaLoader(SchemaLoader):
-    stream: "DeclarativeStream"
+    retriever: Retriever
     config: Config
     schema_pointer: List[Union[InterpolatedString, str]]
     key_pointer: List[Union[InterpolatedString, str]]
@@ -58,7 +56,7 @@ class DynamicSchemaLoader(SchemaLoader):
         return field_type
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        response_json = next(self.stream.read_only_records(), None)
+        response_json = next(self.retriever.read_records({}), None)
 
         raw_schema = self._extract_data(response_json, self.schema_pointer) if response_json else []
 
