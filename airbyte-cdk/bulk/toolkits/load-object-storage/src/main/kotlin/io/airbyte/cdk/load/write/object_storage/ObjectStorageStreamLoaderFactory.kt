@@ -66,10 +66,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val remoteObject: T,
         val partNumber: Long
     ) : ObjectStorageBatch
-    data class FileObject<T>(
-        override val state: Batch.State = Batch.State.PERSISTED,
-        val remoteObject: T,
-    ) : ObjectStorageBatch
     data class FinalizedObject<T>(
         override val state: Batch.State = Batch.State.COMPLETE,
         val remoteObject: T,
@@ -81,7 +77,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val state = destinationStateManager.getState(stream)
         val maxPartNumber =
             state.generations
-                .filter { it.generationId >= stream.minimumGenerationId }
                 .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
                 .maxOrNull()
         log.info { "Got max part number from destination state: $maxPartNumber" }
@@ -118,16 +113,27 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
+        if (pathFactory.supportsStaging) {
+            throw IllegalStateException("Staging is not supported for files")
+        }
         val key =
-            Path.of(pathFactory.getStagingDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
                 .toString()
+
+        val state = destinationStateManager.getState(stream)
+        state.addObject(
+            generationId = stream.generationId,
+            key = key,
+            partNumber = 0,
+            isStaging = false
+        )
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
             }
-        return FileObject(remoteObject = obj)
+        return FinalizedObject(remoteObject = obj)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -147,21 +153,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
                 val state = destinationStateManager.getState(stream)
                 state.removeObject(stream.generationId, stagedObject.remoteObject.key)
                 state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
-
-                val finalizedObject = FinalizedObject(remoteObject = newObject)
-                return finalizedObject
-            }
-            is FileObject<*> -> {
-                val fileObject = batch as FileObject<T>
-                val finalKey =
-                    pathFactory
-                        .getPathToFile(stream = stream, partNumber = null, isStaging = false)
-                        .toString()
-                val newObject = client.move(fileObject.remoteObject, finalKey)
-
-                val state = destinationStateManager.getState(stream)
-                state.removeObject(stream.generationId, fileObject.remoteObject.key)
-                state.addObject(stream.generationId, newObject.key, partNumber = null)
 
                 val finalizedObject = FinalizedObject(remoteObject = newObject)
                 return finalizedObject

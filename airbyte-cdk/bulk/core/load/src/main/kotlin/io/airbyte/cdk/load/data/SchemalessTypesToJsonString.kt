@@ -12,6 +12,7 @@ class SchemalessTypesToJsonString : AirbyteSchemaIdentityMapper {
     override fun mapObjectWithEmptySchema(schema: ObjectTypeWithEmptySchema): AirbyteType =
         StringType
     override fun mapArrayWithoutSchema(schema: ArrayTypeWithoutSchema): AirbyteType = StringType
+    override fun mapUnknown(schema: UnknownType): AirbyteType = StringType
 }
 
 class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {

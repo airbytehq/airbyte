@@ -155,7 +155,8 @@ class ObjectStorageDestinationStateTest {
         @Test
         fun testRecoveringFromMetadata(d: Dependencies) = runTest {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
-            val prefix = d.pathFactory.prefix
+            val prefix =
+                "${d.pathFactory.prefix}/${stream1.descriptor.namespace}/${stream1.descriptor.name}/"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),

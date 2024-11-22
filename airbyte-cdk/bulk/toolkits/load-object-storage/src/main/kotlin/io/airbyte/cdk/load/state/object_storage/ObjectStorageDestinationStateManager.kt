@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.util.readIntoClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
@@ -120,9 +120,7 @@ class ObjectStorageStagingPersister(
         try {
             log.info { "Loading destination state from $key" }
             return client.get(key) { inputStream ->
-                Jsons.readTree(inputStream).let {
-                    Jsons.treeToValue(it, ObjectStorageDestinationState::class.java)
-                }
+                inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
             log.info { "No destination state found at $key: $e" }
@@ -141,10 +139,17 @@ class ObjectStorageFallbackPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        val prefix = pathFactory.prefix
         val matcher = pathFactory.getPathMatcher(stream)
+        val pathConstant = pathFactory.getFinalDirectory(stream, streamConstant = true).toString()
+        val firstVariableIndex = pathConstant.indexOfFirst { it == '$' }
+        val longestUnambiguous =
+            if (firstVariableIndex > 0) {
+                pathConstant.substring(0, firstVariableIndex)
+            } else {
+                pathConstant
+            }
         client
-            .list(prefix)
+            .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
             .toList()
             .groupBy {
