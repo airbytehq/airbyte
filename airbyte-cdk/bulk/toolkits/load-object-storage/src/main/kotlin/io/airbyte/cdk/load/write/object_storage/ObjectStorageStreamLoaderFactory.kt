@@ -134,7 +134,9 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     }
 
     override suspend fun processBatch(batch: Batch): Batch {
-        throw NotImplementedError("All post-processing occurs in the close method; this should not be called")
+        throw NotImplementedError(
+            "All post-processing occurs in the close method; this should not be called"
+        )
     }
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {
