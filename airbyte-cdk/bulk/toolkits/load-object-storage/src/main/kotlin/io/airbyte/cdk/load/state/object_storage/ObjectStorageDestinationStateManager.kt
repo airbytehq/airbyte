@@ -129,6 +129,7 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
+    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
@@ -145,8 +146,8 @@ class ObjectStorageStagingPersister(
                 inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
-            log.info { "No destination state found at $key: $e" }
-            return ObjectStorageDestinationState()
+            log.info { "No destination state found at $key: $e; falling back to metadata search" }
+            return fallbackPersister.load(stream)
         }
     }
 
