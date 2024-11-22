@@ -24,7 +24,7 @@ class ConnectorRunner:
     IN_CONTAINER_CONFIG_PATH = "/data/config.json"
     IN_CONTAINER_CONFIGURED_CATALOG_PATH = "/data/catalog.json"
     IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    IN_CONTAINER_OUTPUT_PATH = "live_testing/output.txt"
     IN_CONTAINER_OBFUSCATOR_PATH = "/user/local/bin/record_obfuscator.py"
 
     def __init__(
@@ -147,7 +147,11 @@ class ConnectorRunner:
             entrypoint = await container.entrypoint()
             assert entrypoint, "The connector container has no entrypoint"
             airbyte_command = entrypoint + self.full_command
-            # We are piping the output to a file to avoid QueryError: file size exceeds limit 134217728
+
+            assert not self.IN_CONTAINER_OUTPUT_PATH.startswith("/"), "Output path must be relative"
+            output_in_subdir = len(self.IN_CONTAINER_OUTPUT_PATH.split("/")) > 1
+            if output_in_subdir:
+                container = container.with_exec(["mkdir", "-p", self.IN_CONTAINER_OUTPUT_PATH.rsplit("/", 1)[0]])
             container = container.with_exec(
                 [
                     "sh",
