@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import jakarta.inject.Singleton
 
@@ -22,7 +22,7 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
 
     override fun deserialize(serialized: String): DestinationMessage {
         try {
-            val airbyteMessage = Jsons.readValue(serialized, AirbyteMessage::class.java)
+            val airbyteMessage = serialized.deserializeToClass(AirbyteMessage::class.java)
             return messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
         } catch (t: Throwable) {
             throw RuntimeException("Failed to deserialize AirbyteMessage")

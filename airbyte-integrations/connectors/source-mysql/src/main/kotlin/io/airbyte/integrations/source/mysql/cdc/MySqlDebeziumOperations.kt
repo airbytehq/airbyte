@@ -19,6 +19,7 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.cdc.CdcPartitionsCreator.OffsetInvalidNeedsResyncIllegalStateException
 import io.airbyte.cdk.read.cdc.DebeziumInput
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumOperations
@@ -306,6 +307,9 @@ class MySqlDebeziumOperations(
                 throw ConfigErrorException(
                     "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency."
                 )
+            }
+            if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
+                throw OffsetInvalidNeedsResyncIllegalStateException()
             }
             return synthesize()
         }

@@ -90,7 +90,7 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
