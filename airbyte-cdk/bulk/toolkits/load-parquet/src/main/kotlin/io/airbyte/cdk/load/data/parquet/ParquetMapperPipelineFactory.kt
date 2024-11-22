@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
+import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessTypesToJsonString
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.TimeStringToInteger
@@ -22,6 +23,7 @@ class ParquetMapperPipelineFactory : MapperPipelineFactory {
             stream.schema,
             listOf(
                 SchemalessTypesToJsonString() to SchemalessValuesToJsonString(),
+                AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 AirbyteSchemaNoopMapper() to TimeStringToInteger(),
                 MergeUnions() to AirbyteValueNoopMapper(),
                 UnionTypeToDisjointRecord() to UnionValueToDisjointRecord(),

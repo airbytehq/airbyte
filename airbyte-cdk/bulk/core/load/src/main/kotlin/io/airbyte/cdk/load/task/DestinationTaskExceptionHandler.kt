@@ -30,12 +30,12 @@ sealed interface LeveledTask : Task
 interface SyncLevel : LeveledTask
 
 interface StreamLevel : LeveledTask {
-    val stream: DestinationStream
+    val streamDescriptor: DestinationStream.Descriptor
 }
 
 interface DestinationTaskExceptionHandler<T : Task, U : Task> : TaskExceptionHandler<T, U> {
     suspend fun handleSyncFailure(e: Exception)
-    suspend fun handleStreamFailure(stream: DestinationStream, e: Exception)
+    suspend fun handleStreamFailure(stream: DestinationStream.Descriptor, e: Exception)
     suspend fun handleSyncFailed()
 }
 
@@ -104,19 +104,19 @@ T : ScopedTask {
     }
 
     inner class StreamTaskWrapper(
-        private val stream: DestinationStream,
+        private val stream: DestinationStream.Descriptor,
         private val syncManager: SyncManager,
         override val innerTask: ScopedTask,
     ) : WrappedTask<ScopedTask> {
         override suspend fun execute() {
             // Stop dispatching tasks if the stream has been killed by a failure elsewhere.
             // Specifically fail if the stream was marked succeeded: we should not be in this state.
-            val streamManager = syncManager.getStreamManager(stream.descriptor)
+            val streamManager = syncManager.getStreamManager(stream)
             if (!streamManager.isActive()) {
                 val result = streamManager.awaitStreamResult()
                 if (result is StreamSucceeded) {
                     throw IllegalStateException(
-                        "Task $innerTask run after its stream ${stream.descriptor} has succeeded. This should not happen."
+                        "Task $innerTask run after its stream ${stream} has succeeded. This should not happen."
                     )
                 }
                 log.info {
@@ -159,7 +159,7 @@ T : ScopedTask {
     override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
         return when (task) {
             is SyncLevel -> SyncTaskWrapper(syncManager, task)
-            is StreamLevel -> StreamTaskWrapper(task.stream, syncManager, task)
+            is StreamLevel -> StreamTaskWrapper(task.streamDescriptor, syncManager, task)
             else -> throw IllegalArgumentException("Task without level: $task")
         }
     }
@@ -167,7 +167,7 @@ T : ScopedTask {
     override suspend fun handleSyncFailure(e: Exception) {
         log.error { "Sync failed: $e: killing remaining streams" }
         catalog.streams.forEach {
-            val task = failStreamTaskFactory.make(this, e, it, kill = true)
+            val task = failStreamTaskFactory.make(this, e, it.descriptor, kill = true)
             taskScopeProvider.launch(NoHandlingWrapper(task))
         }
         if (failSyncTaskEnqueued.setOnce()) {
@@ -178,8 +178,8 @@ T : ScopedTask {
         }
     }
 
-    override suspend fun handleStreamFailure(stream: DestinationStream, e: Exception) {
-        log.error { "Caught failure in stream task: $e for ${stream.descriptor}, failing stream" }
+    override suspend fun handleStreamFailure(stream: DestinationStream.Descriptor, e: Exception) {
+        log.error { "Caught failure in stream task: $e for ${stream}, failing stream" }
         val failStreamTask = failStreamTaskFactory.make(this, e, stream, kill = false)
         taskScopeProvider.launch(NoHandlingWrapper(failStreamTask))
     }
