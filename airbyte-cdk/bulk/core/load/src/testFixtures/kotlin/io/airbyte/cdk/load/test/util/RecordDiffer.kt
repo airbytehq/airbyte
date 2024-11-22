@@ -155,10 +155,7 @@ class RecordDiffer(
         if (!allowUnexpectedRecord) {
             while (actualRecordIndex < actualRecords.size) {
                 matches.add(
-                    MatchingRecords(
-                        expectedRecord = null,
-                        actualRecords[actualRecordIndex]
-                    )
+                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex])
                 )
                 actualRecordIndex++
             }

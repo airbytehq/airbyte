@@ -120,47 +120,45 @@ class RecordDifferTest {
         )
     }
 
-    /**
-     * Verify that the differ can sort records which are identical other than the PK
-     */
+    /** Verify that the differ can sort records which are identical other than the PK */
     @Test
     fun testSortPk() {
-        val diff = RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null).diffRecords(
-            listOf(
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "foo"),
-                    airbyteMeta = null,
-                ),
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 2, "name" to "bar"),
-                    airbyteMeta = null,
-                ),
-            ),
-            listOf(
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 2, "name" to "bar"),
-                    airbyteMeta = null,
-                ),
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "foo"),
-                    airbyteMeta = null,
-                ),
-            )
-        )
+        val diff =
+            RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null)
+                .diffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "foo"),
+                            airbyteMeta = null,
+                        ),
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 2, "name" to "bar"),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 2, "name" to "bar"),
+                            airbyteMeta = null,
+                        ),
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "foo"),
+                            airbyteMeta = null,
+                        ),
+                    )
+                )
         assertEquals(null, diff)
     }
 
-    /**
-     * Verify that the differ can sort records which are identical other than the cursor
-     */
+    /** Verify that the differ can sort records which are identical other than the cursor */
     @Test
     fun testSortCursor() {
         val diff =
@@ -198,41 +196,41 @@ class RecordDifferTest {
         assertEquals(null, diff)
     }
 
-    /**
-     * Verify that the differ can sort records which are identical other than extractedAt
-     */
+    /** Verify that the differ can sort records which are identical other than extractedAt */
     @Test
     fun testSortExtractedAt() {
-        val diff = RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null).diffRecords(
-            listOf(
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "foo"),
-                    airbyteMeta = null,
-                ),
-                OutputRecord(
-                    extractedAt = 1,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "bar"),
-                    airbyteMeta = null,
-                ),
-            ),
-            listOf(
-                OutputRecord(
-                    extractedAt = 1,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "bar"),
-                    airbyteMeta = null,
-                ),
-                OutputRecord(
-                    extractedAt = 0,
-                    generationId = 0,
-                    data = mapOf("id" to 1, "name" to "foo"),
-                    airbyteMeta = null,
-                ),
-            )
-        )
+        val diff =
+            RecordDiffer(primaryKey = listOf(listOf("id")), cursor = null)
+                .diffRecords(
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "foo"),
+                            airbyteMeta = null,
+                        ),
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "bar"),
+                            airbyteMeta = null,
+                        ),
+                    ),
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "bar"),
+                            airbyteMeta = null,
+                        ),
+                        OutputRecord(
+                            extractedAt = 0,
+                            generationId = 0,
+                            data = mapOf("id" to 1, "name" to "foo"),
+                            airbyteMeta = null,
+                        ),
+                    )
+                )
         assertEquals(null, diff)
     }
 }

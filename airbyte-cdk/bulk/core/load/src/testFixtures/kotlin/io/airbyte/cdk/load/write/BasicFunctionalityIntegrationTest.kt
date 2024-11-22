@@ -241,31 +241,26 @@ abstract class BasicFunctionalityIntegrationTest(
                     minimumGenerationId = 0,
                     syncId = 42,
                 )
-            val stateMessage = runSyncUntilStateAck(
-                configContents,
-                stream,
-                listOf(
-                    DestinationRecord(
-                        namespace = randomizedNamespace,
-                        name = "test_stream",
-                        data = """{"id": 12}""",
-                        emittedAtMs = 1234,
-                    )
-                ),
-                StreamCheckpoint(
-                    streamNamespace = randomizedNamespace,
-                    streamName = "test_stream",
-                    blob = """{"foo": "bar1"}""",
-                    sourceRecordCount = 1
-                ),
-                fillerRecord = DestinationRecord(
-                    namespace = randomizedNamespace,
-                    name = "test_stream",
-                    data = """{"id": 56}""",
-                    emittedAtMs = 1234,
-                ),
-                allowGracefulShutdown = false,
-            )
+            val stateMessage =
+                runSyncUntilStateAck(
+                    configContents,
+                    stream,
+                    listOf(
+                        DestinationRecord(
+                            namespace = randomizedNamespace,
+                            name = "test_stream",
+                            data = """{"id": 12}""",
+                            emittedAtMs = 1234,
+                        )
+                    ),
+                    StreamCheckpoint(
+                        streamNamespace = randomizedNamespace,
+                        streamName = "test_stream",
+                        blob = """{"foo": "bar1"}""",
+                        sourceRecordCount = 1
+                    ),
+                    allowGracefulShutdown = false,
+                )
             runSync(configContents, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
@@ -635,8 +630,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 """{}""",
                 sourceRecordCount = 1,
             ),
-            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
-            allowGracefulShutdown = true,
+            allowGracefulShutdown = false,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -766,8 +760,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 """{}""",
                 sourceRecordCount = 1,
             ),
-            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
-            allowGracefulShutdown = true,
+            allowGracefulShutdown = false,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -916,7 +909,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 42,
                 syncId = 42,
             )
-        // Run a sync, but emit a stream status incomplete. This should not delete any existing data.
+        // Run a sync, but emit a stream status incomplete. This should not delete any existing
+        // data.
         runSyncUntilStateAck(
             configContents,
             stream2,
@@ -927,8 +921,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 """{}""",
                 sourceRecordCount = 1,
             ),
-            makeInputRecord(42, "2024-01-23T02:00:00Z", 200),
-            allowGracefulShutdown = true,
+            allowGracefulShutdown = false,
         )
         dumpAndDiffRecords(
             parsedConfig,

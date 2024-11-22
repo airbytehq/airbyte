@@ -211,6 +211,11 @@ class DockerizedDestination(
         destinationStdin.newLine()
     }
 
+    override fun sendMessage(string: String) {
+        destinationStdin.write(string)
+        destinationStdin.newLine()
+    }
+
     override fun readMessages(): List<AirbyteMessage> {
         return destinationOutput.newMessages()
     }
