@@ -41,7 +41,7 @@ class FlushTickTask(
 
     @VisibleForTesting
     suspend fun waitAndPublishFlushTick() {
-        coroutineTimeUtils.delay(tickIntervalMs)
+        // coroutineTimeUtils.delay(tickIntervalMs)
 
         catalog.streams.forEach {
             val queue = recordQueueSupplier.get(it.descriptor)
