@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.test.util.RecordDiffer
 import java.util.concurrent.ConcurrentHashMap
 
 object MockDestinationBackend {
-    private val files: MutableMap<String, MutableList<OutputRecord>> = ConcurrentHashMap()
+    private val files: ConcurrentHashMap<String, MutableList<OutputRecord>> = ConcurrentHashMap()
 
     fun insert(filename: String, vararg records: OutputRecord) {
         getFile(filename).addAll(records)
