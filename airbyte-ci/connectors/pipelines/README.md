@@ -850,6 +850,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.43.0  | [#36545](https://github.com/airbytehq/airbyte/pull/36545)  | Switch to `airbyte` user when available in Python base image.                                                                |
 | 4.42.2  | [#48404](https://github.com/airbytehq/airbyte/pull/48404)  | Include `advanced_auth` in spec migration for manifest-only pipeline                                                         |
 | 4.42.1  | [#47316](https://github.com/airbytehq/airbyte/pull/47316)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |
 | 4.42.0  | [#47386](https://github.com/airbytehq/airbyte/pull/47386)  | Version increment check: make sure consecutive RC remain on the same version.                                                |
