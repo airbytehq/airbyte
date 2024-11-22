@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.8
+
+Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
+
 ## 3.9.7
 
 Mount connection objects to readable paths in the container for rootless images.
