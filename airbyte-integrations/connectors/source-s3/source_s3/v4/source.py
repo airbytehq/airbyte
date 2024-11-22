@@ -52,7 +52,6 @@ class SourceS3(FileBasedSource):
         Used to override the default read_config so that when the new file-based S3 connector processes a config
         in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
         validate the config against the new spec.
-        dumb change
         """
         config = super().read_config(config_path)
         if not SourceS3._is_v4_config(config):
