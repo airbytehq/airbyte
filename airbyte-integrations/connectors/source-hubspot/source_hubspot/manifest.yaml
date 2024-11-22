@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - tables
+    - pets
 
 definitions:
   streams:
@@ -25,21 +25,20 @@ definitions:
             field_path: []
       schema_loader:
         type: DynamicSchemaLoader
-        stream:
-          type: DeclarativeStream
+        retriever:
+          type: SimpleRetriever
           $parameters:
             schema_id: "schema_id"
-          retriever:
-            requester:
-              $ref: "#/definitions/base_requester"
-              path: /crm/v3/schemas
-              http_method: GET
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path: ["results"]
-              record_filter:
-                condition: "{{ record['id'] == parameters['schema_id'] }}"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: /crm/v3/schemas
+            http_method: GET
+          record_selector:
+            extractor:
+              type: DpathExtractor
+              field_path: ["results"]
+            record_filter:
+              condition: "{{ record['id'] == parameters['schema_id'] }}"
         schema_pointer: ["properties"]
         key_pointer: ["name"]
         type_pointer: ["type"]
@@ -78,17 +77,16 @@ dynamic_streams:
       $ref: "#/definitions/streams/custom_object"
     components_parser:
       type: DynamicComponentsParser
-      components_values_stream:
-        type: DeclarativeStream
-        retriever:
-          requester:
-            $ref: "#/definitions/base_requester"
-            path: /crm/v3/schemas
-            http_method: GET
-          record_selector:
-            extractor:
-              type: DpathExtractor
-              field_path: ["results"]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm/v3/schemas
+          http_method: GET
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: ["results"]
       components_mapping:
         - type: MapComponentsDefinition
           key: name

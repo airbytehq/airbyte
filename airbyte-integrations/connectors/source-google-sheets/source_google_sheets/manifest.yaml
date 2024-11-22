@@ -24,17 +24,16 @@ definitions:
             field_path: []
       schema_loader:
         type: DynamicSchemaLoader
-        stream:
-          type: DeclarativeStream
-          retriever:
-            requester:
-              $ref: "#/definitions/base_requester"
-              path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:1
-              http_method: GET
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path: []
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: 1Zi1addRSXvXNf3-fxMhEGlshsgTl6tg76fvzaGjuy50/values/Sheet1!1:1
+            http_method: GET
+          record_selector:
+            extractor:
+              type: DpathExtractor
+              field_path: [ ]
         schema_pointer: ["values", "0"]
         key_pointer: []
   base_requester:

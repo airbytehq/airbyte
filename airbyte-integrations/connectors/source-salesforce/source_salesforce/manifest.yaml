@@ -1,0 +1,111 @@
+version: 5.17.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - CalendarView
+
+definitions:
+  streams:
+    custom_object:
+      type: DeclarativeStream
+      name: custom_object
+      $parameters:
+        stream_name: "stream_name"
+      retriever:
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sobjects/{{parameters["stream_name"]}}/describe
+          http_method: GET
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetrieverit
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: sobjects/{{parameters["stream_name"]}}/describe
+            http_method: GET
+          record_selector:
+            extractor:
+              type: DpathExtractor
+              field_path: [ ]
+            record_filter:
+              condition: "{{ record['name'] == parameters['stream_name'] }}"
+        schema_pointer: ["fields"]
+        key_pointer: ["name"]
+        type_pointer: ["type"]
+        types_map:
+          - target_type: string
+            current_type: combobox
+  base_requester:
+    type: HttpRequester
+    url_base: https://airbyte--connector.sandbox.my.salesforce.com/services/data/v57.0/
+    authenticator: "#/definitions/authenticator"
+  # TODO: Update authenticator to fetch some additional fields and paste to config
+  authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://test.salesforce.com/services/oauth2/token
+    grant_type: refresh_token
+    client_id: '{{ config["client_id"] }}'
+    client_secret: '{{ config["client_secret"] }}'
+    refresh_token: '{{ config["refresh_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/custom_object"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_object"
+    components_parser:
+      type: DynamicComponentsParser
+      retriever:
+        type: SimpleRetriever
+        $parameters:
+          streams_black_list: [
+  'Announcement', 'AppTabMember', 'CollaborationGroupRecord', 'ColorDefinition',
+  'ContentFolderItem', 'ContentFolderMember', 'DataStatistics', 'DatacloudDandBCompany',
+  'EntityParticle', 'FieldDefinition', 'FieldHistoryArchive', 'FlexQueueItem',
+  'FlowVariableView', 'FlowVersionView', 'IconDefinition', 'IdeaComment',
+  'NetworkUserHistoryRecent', 'OwnerChangeOptionInfo', 'PicklistValueInfo', 'PlatformAction',
+  'RelationshipDomain', 'RelationshipInfo', 'SearchLayout', 'SiteDetail',
+  'UserEntityAccess', 'UserFieldAccess', 'Vote', 'AIPredictionEvent',
+  'ActivityHistory', 'AggregateResult', 'ApiAnomalyEvent', 'ApiEventStream',
+  'AssetTokenEvent', 'AsyncOperationEvent', 'AsyncOperationStatus', 'AttachedContentDocument',
+  'AttachedContentNote', 'BatchApexErrorEvent', 'BulkApiResultEvent', 'CombinedAttachment',
+  'ConcurLongRunApexErrEvent', 'ContentBody', 'CredentialStuffingEvent', 'DataType',
+  'DatacloudAddress', 'EmailStatus', 'FeedLike', 'FeedSignal',
+  'FeedTrackedChange', 'FlowExecutionErrorEvent', 'FolderedContentDocument', 'LightningUriEventStream',
+  'ListViewChartInstance', 'ListViewEventStream', 'LoginAsEventStream', 'LoginEventStream',
+  'LogoutEventStream', 'LookedUpFromActivity', 'Name', 'NoteAndAttachment',
+  'OpenActivity', 'OrgLifecycleNotification', 'OutgoingEmail', 'OutgoingEmailRelation',
+  'OwnedContentDocument', 'PlatformStatusAlertEvent', 'ProcessExceptionEvent', 'ProcessInstanceHistory',
+  'QuoteTemplateRichTextData', 'RemoteKeyCalloutEvent', 'ReportAnomalyEvent', 'ReportEventStream',
+  'SessionHijackingEvent', 'UriEventStream', 'UserRecordAccess'
+]
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sobjects
+          http_method: GET
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: [ "sobjects" ]
+          record_filter:
+#            condition: "{{ record['name'] not in parameters['streams_black_list'] }}"
+            condition: "{{ record['name'] in ['CalendarView', 'Attachment'] }}"  # Filter by name to speed up discover and limit schema calls
+      components_mapping:
+        - type: MapComponentsDefinition
+          key: name
+          value: "{{ components_value['name'] }}"
+          condition: "{{ td['name'] == 'custom_object' }}"
+        - type: MapComponentsDefinition
+          key: stream_name
+          value: "{{ components_value['name'] }}"

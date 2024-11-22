@@ -66,30 +66,28 @@ definitions:
             field_path: ["records"]
       schema_loader:
         type: DynamicSchemaLoader
-        stream:
-          type: DeclarativeStream
-          name: tables
+        retriever:
+          type: SimpleRetriever
           $parameters:
             table_id: "table_id"
-          retriever:
-            requester:
-              $ref: "#/definitions/base_requester"
-              path: meta/bases/{{stream_partition['id']}}/tables
-              http_method: GET
-            partition_router:
-              type: SubstreamPartitionRouter
-              parent_stream_configs:
-                - type: ParentStreamConfig
-                  parent_key: id
-                  partition_field: id
-                  stream:
-                    $ref: "#/definitions/streams/bases"
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path: ["tables"]
-              record_filter:
-                condition: "{{ record['id'] == parameters['table_id'] }}"
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: meta/bases/{{stream_partition['id']}}/tables
+            http_method: GET
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: id
+                stream:
+                  $ref: "#/definitions/streams/bases"
+          record_selector:
+            extractor:
+              type: DpathExtractor
+              field_path: [ "tables" ]
+            record_filter:
+              condition: "{{ record['id'] == parameters['table_id'] }}"
         schema_pointer: ["fields"]
         key_pointer: ["name"]
         type_pointer: ["type"]
@@ -130,8 +128,24 @@ dynamic_streams:
       $ref: "#/definitions/streams/custom_object"
     components_parser:
       type: DynamicComponentsParser
-      components_values_stream:
-        $ref: "#/definitions/streams/tables"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases/{{stream_partition['id']}}/tables
+          http_method: GET
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/bases"
+        record_selector:
+          extractor:
+            type: DpathExtractor
+            field_path: [ "tables" ]
       components_mapping:
         - type: MapComponentsDefinition
           key: name

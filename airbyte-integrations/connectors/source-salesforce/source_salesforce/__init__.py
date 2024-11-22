@@ -3,5 +3,6 @@
 #
 
 from .source import SourceSalesforce
+from .source_dynamic import SourceDynamicSalesforce
 
-__all__ = ["SourceSalesforce"]
+__all__ = ["SourceSalesforce", "SourceDynamicSalesforce"]

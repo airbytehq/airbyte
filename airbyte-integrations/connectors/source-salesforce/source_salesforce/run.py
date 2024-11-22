@@ -11,7 +11,7 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_salesforce import SourceSalesforce
+from source_salesforce import SourceDynamicSalesforce, SourceSalesforce
 
 
 def _get_source(args: List[str]):
@@ -19,10 +19,10 @@ def _get_source(args: List[str]):
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
     try:
-        return SourceSalesforce(
-            SourceSalesforce.read_catalog(catalog_path) if catalog_path else None,
-            SourceSalesforce.read_config(config_path) if config_path else None,
-            SourceSalesforce.read_state(state_path) if state_path else None,
+        return SourceDynamicSalesforce(
+            SourceDynamicSalesforce.read_catalog(catalog_path) if catalog_path else None,
+            SourceDynamicSalesforce.read_config(config_path) if config_path else None,
+            SourceDynamicSalesforce.read_state(state_path) if state_path else None,
         )
     except Exception as error:
         print(
@@ -42,7 +42,6 @@ def _get_source(args: List[str]):
 
 
 def run():
-    init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
