@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
@@ -25,7 +24,6 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -185,20 +183,18 @@ abstract class IntegrationTest(
     }
 
     /**
-     * Run a sync until it acknowledges the given state message, then kill the sync. This method
-     * is useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
+     * Run a sync until it acknowledges the given state message, then kill the sync. This method is
+     * useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
      * behaviors.
      *
-     * A common pattern is to call [runSyncUntilStateAck], and then call
-     * `dumpAndDiffRecords(..., allowUnexpectedRecord = true)` to verify that [records] were
-     * written to the destination.
+     * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
+     * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
      */
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
         records: List<DestinationRecord>,
         inputStateMessage: StreamCheckpoint,
-        fillerRecord: DestinationRecord,
         allowGracefulShutdown: Boolean,
     ): AirbyteStateMessage {
         val destination =
@@ -217,15 +213,8 @@ abstract class IntegrationTest(
             destination.sendMessage(inputStateMessage.asProtocolMessage())
 
             val outputStateMessage: AirbyteStateMessage
-            var i = 0
             while (true) {
-                // limit ourselves to 2M messages, which should be enough to force a flush
-                if (i < 2_000_000) {
-                    destination.sendMessage(fillerRecord.asProtocolMessage())
-                    i++
-                } else {
-                    delay(1000)
-                }
+                destination.sendMessage("")
                 val returnedMessages = destination.readMessages()
                 if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
                     outputStateMessage =
@@ -237,10 +226,7 @@ abstract class IntegrationTest(
                 }
             }
             if (allowGracefulShutdown) {
-                destination.sendMessage(
-                    DestinationRecordStreamIncomplete(stream.descriptor, System.currentTimeMillis())
-                        .asProtocolMessage()
-                )
+                destination.sendMessage("{\"unparseable")
                 destination.shutdown()
             } else {
                 destination.kill()

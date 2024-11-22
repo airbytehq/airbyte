@@ -100,12 +100,11 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach {
-                        writer.accept(it)
-                    }
+                    records.forEach { writer.accept(it) }
                 }
             }
-        log.info { "Finished writing records to $key" }
+        log.info { "Finished writing records to $key, persisting state" }
+        destinationStateManager.persistState(stream)
         return RemoteObject(remoteObject = obj, partNumber = partNumber)
     }
 
