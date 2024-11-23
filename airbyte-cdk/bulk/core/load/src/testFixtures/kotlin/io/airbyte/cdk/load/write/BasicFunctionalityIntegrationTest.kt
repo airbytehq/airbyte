@@ -128,6 +128,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
+    val envVars: Map<String, String> = emptyMap(),
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -169,7 +170,8 @@ abstract class BasicFunctionalityIntegrationTest(
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                     )
-                )
+                ),
+                envVars = envVars,
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
@@ -248,15 +250,16 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val destination =
                 destinationProcessFactory.createDestinationProcess(
-                    "write",
-                    configContents,
-                    DestinationCatalog(
+                    command ="write",
+                    configContents = configContents,
+                    catalog = DestinationCatalog(
                             listOf(
                                 makeStream("test_stream1"),
                                 makeStream("test_stream2"),
                             )
                         )
                         .asProtocolObject(),
+                    envVars = envVars
                 )
             launch {
                 try {
@@ -421,14 +424,14 @@ abstract class BasicFunctionalityIntegrationTest(
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
         runSync(
-            configContents,
-            DestinationCatalog(
+            configContents = configContents,
+            catalog = DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
                 )
             ),
-            listOf(
+           messages = listOf(
                 DestinationRecord(
                     namespace = stream1.descriptor.namespace,
                     name = stream1.descriptor.name,
@@ -441,7 +444,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     data = """{"id": 5678}""",
                     emittedAtMs = 1234,
                 ),
-            )
+            ),
+            envVars = envVars
         )
         assertAll(
             {
@@ -544,7 +548,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     serialized = "",
                 )
             }
-        runSync(configContents, catalog, messages)
+        runSync(configContents = configContents, catalog = catalog, messages = messages, envVars = envVars)
         assertAll(
             catalog.streams.map { stream ->
                 {
@@ -1117,7 +1121,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     """{"id": 42, "name": "first_value"}""",
                     emittedAtMs = 1234L,
                 )
-            )
+            ),
+            envVars = envVars,
         )
         val finalStream = makeStream(syncId = 43)
         runSync(
@@ -1130,7 +1135,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     """{"id": 42, "name": "second_value"}""",
                     emittedAtMs = 1234,
                 )
-            )
+            ),
+            envVars = envVars,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -1472,7 +1478,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             }
         // Just verify that we don't crash.
-        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
+        assertDoesNotThrow { runSync( configContents = configContents, catalog = DestinationCatalog(streams), messages = messages, envVars = envVars) }
     }
 
     /**

@@ -249,6 +249,7 @@ class DockerizedDestinationFactory(
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(

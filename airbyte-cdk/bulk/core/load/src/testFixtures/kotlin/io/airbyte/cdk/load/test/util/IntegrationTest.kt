@@ -118,8 +118,9 @@ abstract class IntegrationTest(
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> =
-        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus, envVars)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -152,12 +153,16 @@ abstract class IntegrationTest(
          * ```
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
+        envVars: Map<String, String> = emptyMap(),
     ): List<AirbyteMessage> {
+        println("------ we here")
+        println("------ $destinationProcessFactory")
         val destination =
             destinationProcessFactory.createDestinationProcess(
-                "write",
-                configContents,
-                catalog.asProtocolObject(),
+                command = "write",
+                configContents = configContents,
+                catalog = catalog.asProtocolObject(),
+                envVars = envVars,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }

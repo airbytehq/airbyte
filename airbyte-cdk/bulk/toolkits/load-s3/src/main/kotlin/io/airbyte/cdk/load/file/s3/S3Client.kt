@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -217,6 +218,11 @@ class S3ClientFactory(
                         roleSessionName = AIRBYTE_STS_SESSION_NAME,
                         externalId = externalId
                     )
+//                println("Assuming role: ${arnRole.awsArnRoleConfiguration.roleArn}")
+//                println("Key id  ${System.getenv(AWS_ACCESS_KEY_ID)}")
+//                println("Access key ${System.getenv(AWS_SECRET_ACCESS_KEY)}")
+//                println("External id ${System.getenv(EXTERNAL_ID)}")
+
                 val creds = StaticCredentialsProvider {
                     accessKeyId = System.getenv(AWS_ACCESS_KEY_ID)
                     secretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY)

@@ -24,6 +24,7 @@ class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
+    envVars: Map<String, String> = emptyMap(),
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -51,6 +52,7 @@ class NonDockerizedDestination(
                 configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
+                envVars = envVars,
                 featureFlags = featureFlags,
             )
     }
@@ -97,9 +99,10 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        envVars: Map<String, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
+        return NonDockerizedDestination(command, configContents, catalog, envVars, *featureFlags)
     }
 }
