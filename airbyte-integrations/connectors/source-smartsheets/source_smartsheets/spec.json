@@ -116,6 +116,13 @@
         },
         "description": "A List of available columns which metadata can be pulled from.",
         "order": 3
+      },
+      "is_report": {
+        "title": "Is Report",
+        "type": "boolean",
+        "description": "If true, the source will treat the provided sheet_id as a report. If false, the source will treat the provided sheet_id as a sheet.",
+        "default": false,
+        "order": 4
       }
     }
   },
