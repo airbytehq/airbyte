@@ -85,8 +85,7 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs,
-    ["readme"]
+    enterpriseConnectorDocs, ["readme"]
   );
 }
 
@@ -342,6 +341,7 @@ const buildAConnector = {
       ],
     },
     "connector-development/connector-specification-reference",
+    "connector-development/writing-connector-docs",
     "connector-development/schema-reference",
     "connector-development/connector-metadata-file",
     "connector-development/best-practices",
@@ -719,6 +719,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
         "release_notes/aug_2024",

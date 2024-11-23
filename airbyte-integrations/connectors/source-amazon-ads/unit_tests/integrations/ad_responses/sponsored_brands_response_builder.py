@@ -13,7 +13,9 @@ class SponsoredBrandsResponseBuilder(HttpResponseBuilder):
         return cls(find_template("sponsored_brands_ad_groups", __file__), ListTemplatePath(), pagination_strategy)
 
     @classmethod
-    def ad_groups_non_breaking_error_response(cls, pagination_strategy: Optional[PaginationStrategy] = None) -> "SponsoredBrandsResponseBuilder":
+    def ad_groups_non_breaking_error_response(
+        cls, pagination_strategy: Optional[PaginationStrategy] = None
+    ) -> "SponsoredBrandsResponseBuilder":
         return cls(find_template("non_breaking_error", __file__), ListTemplatePath(), pagination_strategy)
 
     @classmethod

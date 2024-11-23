@@ -1,0 +1,335 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - surveys
+
+definitions:
+  streams:
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nudges
+          http_method: GET
+          request_parameters:
+            limit: "500"
+            start_date: "{{config['start_date']}}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 500
+                    action: FAIL
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 504
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['id'] in config['survey_ids'] if config['survey_ids']
+              else true}}
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+    responses:
+      type: DeclarativeStream
+      name: responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: nudges/{{ stream_slice.parent_id }}/responses.json
+          http_method: GET
+          request_parameters:
+            limit: "500"
+            start_date: "{{config['start_date']}}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 500
+                    action: FAIL
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 504
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.CustomExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/surveys"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/responses"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.qualaroo.com/api/v1/
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_declarative_manifest.components.CustomAuthenticator
+      username: "{{config['key']}}"
+      password: "{{config['token']}}"
+
+streams:
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/responses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+      - key
+      - start_date
+    properties:
+      token:
+        type: string
+        description: >-
+          A Qualaroo token. See the <a
+          href="https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API">docs</a>
+          for instructions on how to generate it.
+        title: API token
+        airbyte_secret: true
+        order: 0
+      key:
+        type: string
+        description: >-
+          A Qualaroo token. See the <a
+          href="https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API">docs</a>
+          for instructions on how to generate it.
+        title: API key
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2021-03-01T00:00:00.000Z"
+        order: 2
+      survey_ids:
+        type: array
+        description: >-
+          IDs of the surveys from which you'd like to replicate data. If left
+          empty, data from all surveys to which you have access will be
+          replicated.
+        items:
+          type: string
+          pattern: ^[0-9]{1,8}$
+        title: Qualaroo survey IDs
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    surveys: false
+    responses: false
+  yamlComponents:
+    streams:
+      responses:
+        - recordSelector
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  surveys:
+    type: object
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      active:
+        type:
+          - "null"
+          - boolean
+      canonical_name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      site_id:
+        type:
+          - "null"
+          - integer
+      survey_url:
+        type:
+          - "null"
+          - string
+      uuid:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  responses:
+    type: object
+    properties:
+      anon_visitor_id:
+        type:
+          - "null"
+          - string
+      answered_questions:
+        type: array
+        items:
+          type:
+            - "null"
+            - object
+      emitted_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+      identity:
+        type:
+          - "null"
+          - string
+      ip_address:
+        type:
+          - "null"
+          - string
+      location:
+        type:
+          - "null"
+          - string
+      nps:
+        type:
+          - "null"
+          - object
+        properties:
+          category:
+            type:
+              - "null"
+              - string
+          reason:
+            type:
+              - "null"
+              - string
+          respondent_id:
+            type:
+              - "null"
+              - integer
+          response_uri:
+            type:
+              - "null"
+              - string
+          score:
+            type:
+              - "null"
+              - integer
+          time:
+            type:
+              - "null"
+              - string
+            format: date-time
+      nudge_id:
+        type:
+          - "null"
+          - integer
+      nudge_name:
+        type:
+          - "null"
+          - string
+      page:
+        type:
+          - "null"
+          - string
+      properties:
+        type:
+          - "null"
+          - object
+      referrer:
+        type:
+          - "null"
+          - string
+      time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user_agent:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
