@@ -103,6 +103,8 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, "/data"),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
+                    "-e",
+                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
                 ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(

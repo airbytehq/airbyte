@@ -9,4 +9,4 @@ airbyte:
     rate-ms: 900000 # 15 minutes
     window-ms: 900000 # 15 minutes
   destination:
-    record-batch-size: 209715200 # 200MB
+    record-batch-size: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE:209715200}
