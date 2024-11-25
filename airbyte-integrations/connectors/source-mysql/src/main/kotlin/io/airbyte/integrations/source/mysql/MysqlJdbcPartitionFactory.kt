@@ -295,7 +295,6 @@ class MysqlJdbcPartitionFactory(
                 // Incremental complete.
                 return null
             }
-
             return MysqlJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
                 streamState,

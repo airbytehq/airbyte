@@ -237,6 +237,7 @@ class MysqlCursorBasedIntegrationTest {
     }
     """
 
+    // Legacy mysql connector saved the following state for an empty table in user cursor mode
     val V1_STATE_EMPTY_CURSOR: String =
         """  
       {
