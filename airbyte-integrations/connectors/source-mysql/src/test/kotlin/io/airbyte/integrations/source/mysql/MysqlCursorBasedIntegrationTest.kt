@@ -42,9 +42,7 @@ class MysqlCursorBasedIntegrationTest {
                 stmt.execute("DELETE FROM test.$tableName")
             }
             connection.createStatement().use { stmt: Statement ->
-                stmt.execute(
-                    "INSERT INTO test.$tableName (k, v) VALUES (10, 'foo'), (20, 'bar')"
-                )
+                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (10, 'foo'), (20, 'bar')")
             }
         }
     }
@@ -92,13 +90,13 @@ class MysqlCursorBasedIntegrationTest {
 
     @Test
     fun testWithV1StateEmptyCursor() {
-        var state: AirbyteStateMessage = Jsons.readValue(V1_STATE_EMPTY_CURSOR, AirbyteStateMessage::class.java)
+        var state: AirbyteStateMessage =
+            Jsons.readValue(V1_STATE_EMPTY_CURSOR, AirbyteStateMessage::class.java)
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
         assertEquals(recordMessageFromRun1.size, 2)
     }
-
 
     @Test
     fun testWithFullRefresh() {
@@ -135,11 +133,9 @@ class MysqlCursorBasedIntegrationTest {
         assertTrue(run1.records().isEmpty())
 
         val run2: BufferingOutputConsumer =
-            CliRunner.source("read", config, fullRefreshCatalog)
-                .run()
+            CliRunner.source("read", config, fullRefreshCatalog).run()
         assertTrue(run2.states().isEmpty())
         assertTrue(run2.records().isEmpty())
-
     }
 
     @Test
@@ -161,9 +157,7 @@ class MysqlCursorBasedIntegrationTest {
             CliRunner.source("read", config, getConfiguredCatalog()).run()
         assertTrue(run2.states().isEmpty())
         assertTrue(run2.records().isEmpty())
-
     }
-
 
     companion object {
         val log = KotlinLogging.logger {}
@@ -260,5 +254,4 @@ class MysqlCursorBasedIntegrationTest {
         }
     }
     """
-
 }

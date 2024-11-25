@@ -34,14 +34,17 @@ data class MysqlJdbcStreamStateValue(
             cursorCheckpoint: JsonNode,
             stream: Stream,
         ): OpaqueStateValue {
-            return when(cursorCheckpoint.isNull) {
+            return when (cursorCheckpoint.isNull) {
                 true -> Jsons.nullNode()
-                false -> Jsons.valueToTree(MysqlJdbcStreamStateValue(
-                    cursorField = listOf(cursor.id),
-                    cursors = cursorCheckpoint.asText(),
-                    streamName = stream.name,
-                    streamNamespace = stream.namespace!!
-                ) )
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            cursorField = listOf(cursor.id),
+                            cursors = cursorCheckpoint.asText(),
+                            streamName = stream.name,
+                            streamNamespace = stream.namespace!!
+                        )
+                    )
             }
         }
 
@@ -51,15 +54,16 @@ data class MysqlJdbcStreamStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return when(primaryKeyCheckpoint.first().isNull) {
+            return when (primaryKeyCheckpoint.first().isNull) {
                 true -> Jsons.nullNode()
-                false -> Jsons.valueToTree(
-                    MysqlJdbcStreamStateValue(
-                        pkName = primaryKeyField.id,
-                        pkValue = primaryKeyCheckpoint.first().asText(),
-                        stateType = StateType.PRIMARY_KEY.stateType,
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = primaryKeyCheckpoint.first().asText(),
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                        )
                     )
-                )
             }
         }
 
@@ -71,23 +75,24 @@ data class MysqlJdbcStreamStateValue(
             stream: Stream
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return when(primaryKeyCheckpoint.first().isNull) {
+            return when (primaryKeyCheckpoint.first().isNull) {
                 true -> Jsons.nullNode()
-                false -> Jsons.valueToTree(
-                    MysqlJdbcStreamStateValue(
-                        pkName = primaryKeyField.id,
-                        pkValue = primaryKeyCheckpoint.first().asText(),
-                        stateType = StateType.PRIMARY_KEY.stateType,
-                        incrementalState =
-                            Jsons.valueToTree(
-                                MysqlJdbcStreamStateValue(
-                                    cursorField = listOf(cursor.id),
-                                    streamName = stream.name,
-                                    streamNamespace = stream.namespace!!
-                                )
-                            ),
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = primaryKeyCheckpoint.first().asText(),
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                            incrementalState =
+                                Jsons.valueToTree(
+                                    MysqlJdbcStreamStateValue(
+                                        cursorField = listOf(cursor.id),
+                                        streamName = stream.name,
+                                        streamNamespace = stream.namespace!!
+                                    )
+                                ),
+                        )
                     )
-                )
             }
         }
     }

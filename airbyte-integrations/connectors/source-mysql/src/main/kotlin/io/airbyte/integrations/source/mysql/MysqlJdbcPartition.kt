@@ -35,7 +35,6 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MysqlJdbcPartition(

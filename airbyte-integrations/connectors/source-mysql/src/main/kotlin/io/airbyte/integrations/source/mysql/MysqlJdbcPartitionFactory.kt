@@ -157,18 +157,21 @@ class MysqlJdbcPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
 
-        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt to read it
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
         if (streamFeedBootstrap.currentState?.isNull == true) {
             return null
         }
 
         // A legacy saved state may be null for an empty table. We will attempt to read it again
-        if (streamFeedBootstrap.currentState == null || streamFeedBootstrap.currentState?.isEmpty == true) {
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
             return coldStart(streamState)
         }
 
-        val opaqueStateValue: OpaqueStateValue =
-                streamFeedBootstrap.currentState!!
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 

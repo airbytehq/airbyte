@@ -94,8 +94,10 @@ class StateManager(
      * are emitted).
      */
     fun checkpoint(): List<AirbyteStateMessage> {
-        return listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
-            .filter { it.stream.streamState.isNull.not() }
+        return listOfNotNull(global?.checkpoint()) +
+            nonGlobal
+                .mapNotNull { it.value.checkpoint() }
+                .filter { it.stream.streamState.isNull.not() }
     }
 
     private sealed class BaseStateManager<K : Feed>(
@@ -210,7 +212,8 @@ class StateManager(
                             when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
                                 null,
                                 true -> Jsons.objectNode()
-                                false -> streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                                false -> streamStateForCheckpoint.opaqueStateValue
+                                        ?: Jsons.objectNode()
                             }
                         ),
                 )
