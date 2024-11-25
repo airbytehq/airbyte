@@ -156,12 +156,15 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        if ((streamFeedBootstrap.currentState?.isNull == true).not() && (streamFeedBootstrap.currentState == null || streamFeedBootstrap.currentState?.isEmpty == true)) {
-            return coldStart(streamState)
-        }
+
         if (streamFeedBootstrap.currentState?.isNull == true) {
             return null
         }
+
+        if (streamFeedBootstrap.currentState == null || streamFeedBootstrap.currentState?.isEmpty == true) {
+            return coldStart(streamState)
+        }
+
         val opaqueStateValue: OpaqueStateValue =
                 streamFeedBootstrap.currentState!!
 
