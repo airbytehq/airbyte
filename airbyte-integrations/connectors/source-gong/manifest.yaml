@@ -25,8 +25,7 @@ definitions:
           path: /users
           http_method: GET
           request_parameters:
-            fromDateTime: "{{ stream_interval['start_time'] }}"
-            toDateTime: "{{ stream_interval['end_time'] }}"
+            fromDateTime: "{{ config['start_time'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -63,9 +62,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
-          request_parameters:
-            fromDateTime: "{{ stream_interval['start_time'] }}"
-            toDateTime: "{{ stream_interval['end_time'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -87,6 +83,30 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started
+        lookback_window: P1D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date=\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDateTime
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDateTime
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -104,8 +124,7 @@ definitions:
           http_method: POST
           request_body_json:
             filter:
-              fromDateTime: "{{ stream_interval['start_time'] }}"
-              toDateTime: "{{ stream_interval['end_time'] }}"
+              fromDateTime: "{{ config['start_time'] }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -175,9 +194,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /settings/scorecards
           http_method: GET
-          request_parameters:
-            fromDateTime: "{{ stream_interval['start_time'] }}"
-            toDateTime: "{{ stream_interval['end_time'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -199,6 +215,29 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date=\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDateTime
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: toDateTime
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -214,9 +253,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
-          request_parameters:
-            fromDateTime: "{{ stream_interval['start_time'] }}"
-            toDateTime: "{{ config['end_time'] }}"
           request_body_json:
             filter: "{\"callFromDate\": \"{{ config[\"start_date\"] }}\"}"
           error_handler:
@@ -320,6 +356,7 @@ spec:
     required:
       - access_key
       - access_key_secret
+      - start_date=
     properties:
       access_key:
         type: string
@@ -333,22 +370,16 @@ spec:
         order: 1
         title: Gong Access Key Secret
         airbyte_secret: true
-      start_date:
-        type: string
-        description: >-
-          The date from which to list calls, in the ISO-8601 format; if not
-          specified, the calls start with the earliest recorded call. For
-          web-conference calls recorded by Gong, the date denotes its scheduled
-          time, otherwise, it denotes its actual start time.
-        order: 2
-        title: Start date
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        examples:
-          - "2018-02-18T08:00:00Z"
       users_to_fetch:
         type: array
-        order: 3
+        order: 2
         title: users_to_fetch
+      start_date=:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 3
     additionalProperties: true
 
 metadata:
@@ -361,53 +392,54 @@ metadata:
     transcripts: false
   testedStreams:
     users:
-      streamHash: e0cc2fdfa0a36f997bfc28a8336fd59a963075be
+      streamHash: 9894168105b8352159ea4cd955dc327754d2025f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     calls:
-      streamHash: f098011a32a9a2db4f971dfe0b7ab7a1fdd15f27
+      streamHash: a1bed0d0635e19f336ddb962e97ed9037c45f50b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     extensiveCalls:
-      streamHash: a9c7deb61d665ddf5336931907422a0c0f0bae05
+      streamHash: af197a4e6708f5da10717fb131f7e93483705229
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     scorecards:
-      streamHash: 6a5d0dae34490533d9c16ccf5f80bf1b322759c0
+      streamHash: 45fa4dd990682e184451e7cab78c3774a4218344
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     answeredScorecards:
-      streamHash: c6bef050368f502212f57d1a8dc1be39903377e8
+      streamHash: c7c6c788a79e443d01587d8b1dac085023e2eabb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     transcripts:
-      streamHash: 3c8d888fe526f1716fa37a850de9767b382e6ded
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: c4724449511f838ec442d98d1b16b1ce30054a36
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
   users:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       active:
         type:
@@ -519,10 +551,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   calls:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       calendarEventId:
         type:
@@ -600,10 +632,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   extensiveCalls:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       collaboration:
         type:
@@ -1105,10 +1137,10 @@ schemas:
                 - "null"
     required:
       - id
-    additionalProperties: true
   scorecards:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       created:
         type:
@@ -1204,10 +1236,10 @@ schemas:
           - "null"
     required:
       - scorecardId
-    additionalProperties: true
   answeredScorecards:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       answeredScorecardId:
         type: string
@@ -1286,7 +1318,6 @@ schemas:
           - "null"
     required:
       - answeredScorecardId
-    additionalProperties: true
   transcripts:
     type: object
     $schema: http://json-schema.org/schema#
