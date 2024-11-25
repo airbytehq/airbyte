@@ -35,6 +35,7 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MysqlJdbcPartition(
@@ -212,14 +213,16 @@ class MysqlJdbcCdcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
-
+    private val log = KotlinLogging.logger {}
     override val completeState: OpaqueStateValue
-        get() =
-            MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
+        get() {
+            log.info {"*** upperBound: $upperBound ${upperBound?.get(0)}"}
+            return MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
                 primaryKeyCheckpoint =
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
+        }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -263,7 +266,7 @@ sealed class MysqlJdbcCursorPartition(
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
