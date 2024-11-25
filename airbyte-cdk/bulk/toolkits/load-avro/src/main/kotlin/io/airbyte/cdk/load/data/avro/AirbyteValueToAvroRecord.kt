@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.UnknownValue
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
@@ -34,8 +35,9 @@ class AirbyteValueToAvroRecord {
                     }
                 val record = GenericData.Record(recordSchema)
                 airbyteValue.values.forEach { (name, value) ->
-                    recordSchema.getField(name)?.let { field ->
-                        record.put(name, convert(value, field.schema()))
+                    val nameMangled = Transformations.toAvroSafeName(name)
+                    recordSchema.getField(nameMangled)?.let { field ->
+                        record.put(nameMangled, convert(value, field.schema()))
                     }
                 }
                 return record

@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import org.apache.avro.LogicalTypes
@@ -31,14 +32,16 @@ class AirbyteTypeToAvroSchema {
     fun convert(airbyteSchema: AirbyteType, path: List<String>): Schema {
         return when (airbyteSchema) {
             is ObjectType -> {
-                val name = path.last()
-                val namespace = path.take(path.size - 1).reversed().joinToString(".")
-                val builder = SchemaBuilder.record(name).namespace(namespace).fields()
+                val recordName = Transformations.toAvroSafeName(path.last())
+                val recordNamespace = path.take(path.size - 1).reversed().joinToString(".")
+                val namespaceMangled = Transformations.toAvroSafeNamespace(recordNamespace)
+                val builder = SchemaBuilder.record(recordName).namespace(namespaceMangled).fields()
                 airbyteSchema.properties.entries
                     .fold(builder) { acc, (name, field) ->
                         val converted = convert(field.type, path + name)
                         val propertySchema = maybeMakeNullable(field, converted)
-                        acc.name(name).type(propertySchema).let {
+                        val nameMangled = Transformations.toAlphanumericAndUnderscore(name)
+                        acc.name(nameMangled).type(propertySchema).let {
                             if (field.nullable) {
                                 it.withDefault(null)
                             } else {

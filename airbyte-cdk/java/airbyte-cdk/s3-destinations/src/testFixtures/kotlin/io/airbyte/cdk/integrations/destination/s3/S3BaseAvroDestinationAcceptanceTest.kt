@@ -59,6 +59,7 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                         S3DestinationAcceptanceTest.Companion.MAPPER.reader()
                     while (dataFileReader.hasNext()) {
                         val record = dataFileReader.next()
+                        println("read record: $record")
                         val jsonBytes =
                             AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
