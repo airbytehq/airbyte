@@ -444,7 +444,7 @@ class DestinationMessageFactory(
                             } else {
                                 DestinationRecordStreamComplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
