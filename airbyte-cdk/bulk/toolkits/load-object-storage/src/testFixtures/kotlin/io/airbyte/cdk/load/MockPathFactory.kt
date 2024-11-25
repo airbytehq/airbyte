@@ -27,12 +27,15 @@ open class MockPathFactory : PathFactory {
 
     override fun getStagingDirectory(
         stream: DestinationStream,
-        streamConstantPrefix: Boolean
+        substituteStreamAndNamespaceOnly: Boolean
     ): Path {
         return Path.of("$prefix/staging/${fromStream(stream)}")
     }
 
-    override fun getFinalDirectory(stream: DestinationStream, streamConstantPrefix: Boolean): Path {
+    override fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): Path {
         return Path.of("$prefix/${fromStream(stream)}")
     }
 
