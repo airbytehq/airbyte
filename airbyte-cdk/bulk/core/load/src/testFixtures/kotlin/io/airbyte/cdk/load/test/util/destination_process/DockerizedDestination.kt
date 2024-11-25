@@ -246,6 +246,10 @@ class DockerizedDestination(
     override fun kill() {
         process.destroyForcibly()
     }
+
+    override fun verifyFileDeleted() {
+        TODO("Not yet implemented")
+    }
 }
 
 class DockerizedDestinationFactory(
@@ -256,6 +260,7 @@ class DockerizedDestinationFactory(
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(

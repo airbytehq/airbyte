@@ -127,8 +127,9 @@ abstract class IntegrationTest(
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
+        useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> =
-        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus)
+        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus, useFileTransfer)
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the
@@ -161,12 +162,14 @@ abstract class IntegrationTest(
          * ```
          */
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
+        useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> {
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
+                useFileTransfer,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -180,6 +183,9 @@ abstract class IntegrationTest(
                 }
             }
             destination.shutdown()
+            if (useFileTransfer) {
+                destination.verifyFileDeleted()
+            }
             destination.readMessages()
         }
     }
@@ -198,12 +204,14 @@ abstract class IntegrationTest(
         records: List<DestinationRecord>,
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
+        useFileTransfer: Boolean = false,
     ): AirbyteStateMessage {
         val destination =
             destinationProcessFactory.createDestinationProcess(
                 "write",
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
+                useFileTransfer,
             )
         return runBlocking(Dispatchers.IO) {
             launch {

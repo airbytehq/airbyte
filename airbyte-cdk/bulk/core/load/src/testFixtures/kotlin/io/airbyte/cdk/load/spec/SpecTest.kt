@@ -64,7 +64,7 @@ abstract class SpecTest :
         }
         val expectedSpec = Files.readString(expectedSpecPath)
         val process =
-            destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags)
+            destinationProcessFactory.createDestinationProcess("spec", featureFlags = featureFlags, useFileTransfer = false)
         runBlocking { process.run() }
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }

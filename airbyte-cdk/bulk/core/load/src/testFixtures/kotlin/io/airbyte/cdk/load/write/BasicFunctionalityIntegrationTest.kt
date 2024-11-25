@@ -233,10 +233,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
-        nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
-        val file = File("/tmp/test_file")
-        val fileContentStr = "123"
-        file.writeText(fileContentStr)
+
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),
@@ -272,10 +269,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                     )
-                )
+                ),
+                useFileTransfer = true,
             )
 
-        assertFalse(file.exists())
+
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
         assertAll({
             assertEquals(
@@ -299,7 +297,7 @@ abstract class BasicFunctionalityIntegrationTest(
         val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
         val fileContent = dataDumper.dumpFile(config, stream)
 
-        assertEquals(listOf(fileContentStr), fileContent)
+        assertEquals(listOf("123"), fileContent)
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
