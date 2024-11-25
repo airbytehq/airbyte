@@ -183,7 +183,7 @@ abstract class IntegrationTest(
         // inside NonDockerizedDestination.
         // This field has no effect on DockerizedDestination, which explicitly
         // sets env vars when invoking `docker run`.
-        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+        @SystemStub lateinit var nonDockerMockEnvVars: EnvironmentVariables
 
         @JvmStatic
         @BeforeAll

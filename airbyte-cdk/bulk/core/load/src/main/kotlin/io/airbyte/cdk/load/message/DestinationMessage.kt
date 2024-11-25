@@ -390,6 +390,8 @@ class DestinationMessageFactory(
 
                     DestinationFile(
                         stream = stream.descriptor,
+
+
                         emittedAtMs = message.record.emittedAt,
                         serialized = serialized,
                         fileMessage =
