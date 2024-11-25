@@ -26,7 +26,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
                 "Catalog must have at least one stream: check that files are in the correct location."
             )
         }
-        log.info { "Destination catalog initialized: $streams"}
+        log.info { "Destination catalog initialized: $streams" }
     }
 
     fun getStream(name: String, namespace: String?): DestinationStream {
