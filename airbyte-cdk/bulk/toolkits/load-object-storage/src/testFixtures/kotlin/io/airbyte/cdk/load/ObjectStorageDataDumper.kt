@@ -54,11 +54,7 @@ class ObjectStorageDataDumper(
         // Note: this is implicitly a test of the `streamConstant` final directory
         // and the path matcher, so a failure here might imply a bug in the metadata-based
         // destination state loader, which lists by `prefix` and filters against the matcher.
-        val prefix =
-            pathFactory
-                .getFinalDirectory(stream, streamConstantPrefix = true)
-                .toString()
-                .takeWhile { it != '$' }
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
         val matcher = pathFactory.getPathMatcher(stream)
         return runBlocking {
             withContext(Dispatchers.IO) {
