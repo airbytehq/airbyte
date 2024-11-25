@@ -581,8 +581,8 @@ class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     cursor_field = "start_date"
     time_filter_template = "YYYY-MM-DD"
     slice_granularity = pendulum.duration(days=1)
-    path_name = "Records"
-    primary_key = [["account_sid"], ["category"]]
+    path_name = "Records/Daily"
+    primary_key = [["account_sid"], ["category"], ["start_date"], ["end_date"]]
     changeable_fields = ["as_of"]
 
 
