@@ -23,8 +23,14 @@ import java.util.*
 
 interface PathFactory {
     fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
-    fun getStagingDirectory(stream: DestinationStream, streamConstantPrefix: Boolean = false): Path
-    fun getFinalDirectory(stream: DestinationStream, streamConstantPrefix: Boolean = false): Path
+    fun getStagingDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean = false
+    ): Path
+    fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean = false
+    ): Path
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
@@ -232,24 +238,27 @@ class ObjectStoragePathFactory(
 
     override fun getStagingDirectory(
         stream: DestinationStream,
-        streamConstantPrefix: Boolean
+        substituteStreamAndNamespaceOnly: Boolean
     ): Path {
         val path =
             getFormattedPath(
-                    stream,
-                    if (streamConstantPrefix) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
-                )
-                .takeWhile { it != '$' }
+                stream,
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES
+            )
         return Paths.get(stagingPrefix, path)
     }
 
-    override fun getFinalDirectory(stream: DestinationStream, streamConstantPrefix: Boolean): Path {
+    override fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): Path {
         val path =
             getFormattedPath(
-                    stream,
-                    if (streamConstantPrefix) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
-                )
-                .takeWhile { it != '$' }
+                stream,
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES
+            )
         return Paths.get(prefix, path)
     }
 
@@ -258,9 +267,9 @@ class ObjectStoragePathFactory(
         isStaging: Boolean
     ): String {
         return if (isStaging) {
-                getStagingDirectory(stream, streamConstantPrefix = true)
+                getStagingDirectory(stream, substituteStreamAndNamespaceOnly = true)
             } else {
-                getFinalDirectory(stream, streamConstantPrefix = true)
+                getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true)
             }
             .toString()
             .takeWhile { it != '$' }

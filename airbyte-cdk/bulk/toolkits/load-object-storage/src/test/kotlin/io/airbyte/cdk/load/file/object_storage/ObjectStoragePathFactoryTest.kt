@@ -194,7 +194,9 @@ class ObjectStoragePathFactoryTest {
             val prefixOnly = "prefix/$namespace/$name"
             Assertions.assertEquals(
                 prefixOnly,
-                pathFactory.getFinalDirectory(stream1, streamConstantPrefix = true).toString(),
+                pathFactory
+                    .getFinalDirectory(stream1, substituteStreamAndNamespaceOnly = true)
+                    .toString(),
             )
         }
     }
