@@ -93,8 +93,5 @@ class MockBasicFunctionalityIntegrationTest :
         super.testBasicTypes()
     }
 
-    @Test
-    @Disabled
-    override fun testBasicWriteFile() {
-    }
+    @Test @Disabled override fun testBasicWriteFile() {}
 }
