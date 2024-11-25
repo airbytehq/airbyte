@@ -307,6 +307,7 @@ class ZendeskChatIdIncrementalCursor(DeclarativeCursor):
             return True
         else:
             return False
+
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
         return self.get_stream_state()
 
