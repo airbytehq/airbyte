@@ -34,7 +34,7 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
     use_microseconds: Union[InterpolatedString, str] = True
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._use_microseconds = InterpolatedString.create(self.use_microseconds, parameters=parameters).eval(self.config)
+        self._use_microseconds = InterpolatedString.create(self.use_microseconds, parameters=parameters)
         self._start_date = self.config.get("start_date")
         super().__post_init__(parameters=parameters)
 
@@ -307,6 +307,8 @@ class ZendeskChatIdIncrementalCursor(DeclarativeCursor):
             return True
         else:
             return False
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
 
 
 @dataclass
