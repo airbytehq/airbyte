@@ -130,7 +130,7 @@ T : ScopedTask {
                 log.warn { "Stream task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
-                log.error { "Caught exception in sync task $innerTask: $e" }
+                log.error { "Caught exception in stream task $innerTask: $e" }
                 handleStreamFailure(stream, e)
             }
         }

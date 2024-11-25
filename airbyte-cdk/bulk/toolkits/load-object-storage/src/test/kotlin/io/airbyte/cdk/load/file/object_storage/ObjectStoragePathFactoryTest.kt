@@ -41,7 +41,8 @@ class ObjectStoragePathFactoryTest {
                 )
             val epochMilli =
                 dateTime.toInstant(ZoneId.of("UTC").rules.getOffset(dateTime)).toEpochMilli()
-            setCurrentTime(epochMilli)
+            setSyncTime(epochMilli)
+            setCurrentTime(epochMilli + 1)
         }
     }
 
@@ -102,11 +103,12 @@ class ObjectStoragePathFactoryTest {
     inner class ObjectStoragePathFactoryTestWithStaging {
         @Test
         fun testBasicBehavior(pathFactory: ObjectStoragePathFactory, timeProvider: TimeProvider) {
-            val epochMilli = timeProvider.currentTimeMillis()
+            val syncTime = timeProvider.syncTimeMillis()
+            val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli"
-            val fileName = "2020_01_02-1577934245678-173-42.jsonl.gz"
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime"
+            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 "staging/$prefixOnly",
                 pathFactory.getStagingDirectory(stream1).toString(),
@@ -130,11 +132,11 @@ class ObjectStoragePathFactoryTest {
             pathFactory: ObjectStoragePathFactory,
             timeProvider: TimeProvider
         ) {
-            val epochMilli = timeProvider.currentTimeMillis()
+            val syncTime = timeProvider.syncTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
             val expectedToMatch =
-                "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-1577934245678-173-42.jsonl.gz"
+                "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/2020_01_02-1577934245678-173-42.jsonl.gz"
             val match = pathFactory.getPathMatcher(stream1).match(expectedToMatch)
             Assertions.assertTrue(match != null)
             Assertions.assertTrue(match?.partNumber == 173L)
@@ -153,11 +155,12 @@ class ObjectStoragePathFactoryTest {
     inner class ObjectStoragePathFactoryTestWithoutStaging {
         @Test
         fun testBasicBehavior(pathFactory: ObjectStoragePathFactory, timeProvider: TimeProvider) {
-            val epochMilli = timeProvider.currentTimeMillis()
+            val syncTime = timeProvider.syncTimeMillis()
+            val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$epochMilli"
-            val fileName = "2020_01_02-1577934245678-173-42.jsonl.gz"
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime"
+            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
                 pathFactory.getFinalDirectory(stream1).toString(),

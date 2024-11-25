@@ -77,6 +77,10 @@ class NonDockerizedDestination(
         destinationStdinPipe.println(message.serializeToString())
     }
 
+    override fun sendMessage(string: String) {
+        destinationStdinPipe.println(string)
+    }
+
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
 
     override suspend fun shutdown() {

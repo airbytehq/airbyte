@@ -32,7 +32,7 @@ object S3V2DataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): ObjectStorageDataDumper {
         val config =
-            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as S3V2Specification)
+            S3V2ConfigurationFactory(0L).makeWithoutExceptionHandling(spec as S3V2Specification)
         val s3Client = S3ClientFactory.make(config)
         val pathFactory = ObjectStoragePathFactory.from(config)
         return ObjectStorageDataDumper(

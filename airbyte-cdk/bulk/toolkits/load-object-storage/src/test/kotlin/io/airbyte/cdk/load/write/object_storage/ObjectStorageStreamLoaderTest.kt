@@ -76,7 +76,7 @@ class ObjectStorageStreamLoaderTest {
         coVerify { client.streamingUpload(expectedKey, metadata, compressor, any()) }
         assertEquals(
             mockRemoteObject,
-            (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
+            (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
         )
         verify { mockedFile.delete() }
     }
