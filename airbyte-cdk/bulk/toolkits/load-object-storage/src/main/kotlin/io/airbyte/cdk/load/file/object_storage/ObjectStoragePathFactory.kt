@@ -8,11 +8,11 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
 import java.time.ZoneId
@@ -22,14 +22,20 @@ import java.util.*
 
 interface PathFactory {
     fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
-    fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
-    fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean = false): Path
+    fun getStagingDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean = false
+    ): String
+    fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean = false
+    ): String
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
         isStaging: Boolean = false,
         extension: String? = null
-    ): Path
+    ): String
     fun getPathMatcher(stream: DestinationStream): PathMatcher
 
     val supportsStaging: Boolean
@@ -156,8 +162,12 @@ class ObjectStoragePathFactory(
         const val DEFAULT_FILE_FORMAT = "{part_number}{format_extension}"
         val PATH_VARIABLES =
             listOf(
-                PathVariable("NAMESPACE") { it.stream.descriptor.namespace ?: "" },
-                PathVariable("STREAM_NAME") { it.stream.descriptor.name },
+                PathVariable("NAMESPACE") {
+                    Transformations.toS3SafeCharacters(it.stream.descriptor.namespace ?: "")
+                },
+                PathVariable("STREAM_NAME") {
+                    Transformations.toS3SafeCharacters(it.stream.descriptor.name)
+                },
                 PathVariable("YEAR", """\d{4}""") {
                     ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).year.toString()
                 },
@@ -203,6 +213,7 @@ class ObjectStoragePathFactory(
                     // NOTE: We use a constant time for the path but wall time for the files
                     Instant.now().toEpochMilli().toString()
                 },
+                FileVariable("timestamp", """\d+""") { System.currentTimeMillis().toString() },
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()
                         ?: throw IllegalArgumentException(
@@ -224,22 +235,39 @@ class ObjectStoragePathFactory(
         }
     }
 
-    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
-        val path =
-            getFormattedPath(
-                stream,
-                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
-            )
-        return Paths.get(stagingPrefix, path)
+    private fun resolveRetainingTerminalSlash(prefix: String, path: String): String {
+        val asPath = Paths.get(prefix, path)
+        return if (path.endsWith('/')) {
+            asPath.toString() + "/"
+        } else {
+            asPath.toString()
+        }
     }
 
-    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
+    override fun getStagingDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): String {
         val path =
             getFormattedPath(
                 stream,
-                if (streamConstant) PATH_VARIABLES_STREAM_CONSTANT else PATH_VARIABLES
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES
             )
-        return Paths.get(prefix, path)
+        return resolveRetainingTerminalSlash(stagingPrefix, path)
+    }
+
+    override fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): String {
+        val path =
+            getFormattedPath(
+                stream,
+                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
+                else PATH_VARIABLES
+            )
+        return resolveRetainingTerminalSlash(prefix, path)
     }
 
     override fun getLongestStreamConstantPrefix(
@@ -247,11 +275,10 @@ class ObjectStoragePathFactory(
         isStaging: Boolean
     ): String {
         return if (isStaging) {
-                getStagingDirectory(stream, streamConstant = true)
+                getStagingDirectory(stream, substituteStreamAndNamespaceOnly = true)
             } else {
-                getFinalDirectory(stream, streamConstant = true)
+                getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true)
             }
-            .toString()
             .takeWhile { it != '$' }
     }
 
@@ -260,18 +287,21 @@ class ObjectStoragePathFactory(
         partNumber: Long?,
         isStaging: Boolean,
         extension: String?
-    ): Path {
+    ): String {
         val extensionResolved = extension ?: defaultExtension
         val path =
             if (isStaging) {
-                getStagingDirectory(stream)
-            } else {
-                getFinalDirectory(stream)
-            }
+                    getStagingDirectory(stream)
+                } else {
+                    getFinalDirectory(stream)
+                }
+                .toString()
         val context =
             VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
-        return path.resolve(fileName)
+        // NOTE: The old code does not actually resolve the path + filename, even tho the
+        // documentation says it does.
+        return "$path$fileName"
     }
 
     private fun getFormattedPath(
@@ -310,11 +340,13 @@ class ObjectStoragePathFactory(
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
             val pattern = variableToPattern[variable]
-            if (pattern != null) {
+            if (pattern == null) {
+                variable
+            } else if (pattern.isBlank()) {
+                ""
+            } else {
                 variableToIndex[variable] = variableToIndex.size + 1
                 "($pattern)"
-            } else {
-                variable
             }
         }
     }
@@ -337,8 +369,14 @@ class ObjectStoragePathFactory(
                 pathVariableToPattern,
                 variableToIndex
             )
-        val combined = Path.of(prefix).resolve(replacedForPath).resolve(replacedForFile).toString()
-
+        // NOTE the old code does not actually resolve the path + filename,
+        // even tho the documentation says it does.
+        val combined =
+            if (replacedForPath.startsWith('/')) {
+                "${prefix}$replacedForPath$replacedForFile"
+            } else {
+                "$prefix/$replacedForPath$replacedForFile"
+            }
         return PathMatcher(Regex(combined), variableToIndex)
     }
 }

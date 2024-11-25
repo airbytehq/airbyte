@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.nio.file.Path
 
 @Singleton
 @Requires(env = ["MockPathFactory"])
@@ -25,12 +24,25 @@ open class MockPathFactory : PathFactory {
         return "/${stream.descriptor.namespace}/${stream.descriptor.name}"
     }
 
-    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
-        return Path.of("$prefix/staging/${fromStream(stream)}")
+    override fun getLongestStreamConstantPrefix(
+        stream: DestinationStream,
+        isStaging: Boolean
+    ): String {
+        TODO("Not yet implemented")
     }
 
-    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
-        return Path.of("$prefix/${fromStream(stream)}")
+    override fun getStagingDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): String {
+        return "$prefix/staging/${fromStream(stream)}"
+    }
+
+    override fun getFinalDirectory(
+        stream: DestinationStream,
+        substituteStreamAndNamespaceOnly: Boolean
+    ): String {
+        return "$prefix/${fromStream(stream)}"
     }
 
     override fun getPathToFile(
@@ -38,16 +50,9 @@ open class MockPathFactory : PathFactory {
         partNumber: Long?,
         isStaging: Boolean,
         extension: String?
-    ): Path {
-        val prefix = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
-        return prefix.resolve("file")
-    }
-
-    override fun getLongestStreamConstantPrefix(
-        stream: DestinationStream,
-        isStaging: Boolean
     ): String {
-        TODO("Not yet implemented")
+        val prefix = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
+        return "${prefix}file"
     }
 
     override fun getPathMatcher(stream: DestinationStream): PathMatcher {

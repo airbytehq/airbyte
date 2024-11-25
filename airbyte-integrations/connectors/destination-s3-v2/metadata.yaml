@@ -86,6 +86,21 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_MIN_REQUIRED_PERMISSIONS_CREDS
+          fileName: s3_dest_min_required_permissions_creds.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_POLICY_MANAGER_CREDENTIALS
+          fileName: s3_dest_policy_manager_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
           fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
           secretStore:

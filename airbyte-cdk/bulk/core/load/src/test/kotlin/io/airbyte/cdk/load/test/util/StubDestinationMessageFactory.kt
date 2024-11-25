@@ -73,6 +73,7 @@ object StubDestinationMessageFactory {
             sourceStats = CheckpointMessage.Stats(recordCount),
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
+            originalTypeField = message.state.type,
         )
     }
 

@@ -38,59 +38,10 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
     ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
-    @Test
-    override fun testMidSyncCheckpointingStreamState() {
-        super.testMidSyncCheckpointingStreamState()
-    }
-
-    @Test
-    override fun testAppend() {
-        super.testAppend()
-    }
-
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
-
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
     }
 }
 
@@ -130,23 +81,7 @@ class S3V2WriteTestJsonStaging :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
         commitDataIncrementally = false
-    ) {
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-}
+    )
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
