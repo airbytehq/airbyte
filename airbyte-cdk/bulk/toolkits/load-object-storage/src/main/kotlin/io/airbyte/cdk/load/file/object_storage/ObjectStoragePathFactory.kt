@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
 import java.time.ZoneId
@@ -302,10 +301,11 @@ class ObjectStoragePathFactory(
         val extensionResolved = extension ?: defaultExtension
         val path =
             if (isStaging) {
-                getStagingDirectory(stream)
-            } else {
-                getFinalDirectory(stream)
-            }.toString()
+                    getStagingDirectory(stream)
+                } else {
+                    getFinalDirectory(stream)
+                }
+                .toString()
         val context =
             VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
@@ -381,11 +381,12 @@ class ObjectStoragePathFactory(
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
-        val combined = if (replacedForPath.startsWith('/')) {
-            "${prefix}$replacedForPath$replacedForFile"
-        } else {
-            "$prefix/$replacedForPath$replacedForFile"
-        }
+        val combined =
+            if (replacedForPath.startsWith('/')) {
+                "${prefix}$replacedForPath$replacedForFile"
+            } else {
+                "$prefix/$replacedForPath$replacedForFile"
+            }
         return PathMatcher(Regex(combined), variableToIndex)
     }
 }
