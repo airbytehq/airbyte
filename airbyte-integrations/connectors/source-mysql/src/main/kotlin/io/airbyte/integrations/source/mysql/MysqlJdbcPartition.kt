@@ -213,10 +213,8 @@ class MysqlJdbcCdcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
-    private val log = KotlinLogging.logger {}
     override val completeState: OpaqueStateValue
         get() {
-            log.info {"*** upperBound: $upperBound ${upperBound?.get(0)}"}
             return MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
                 primaryKey = checkpointColumns,
                 primaryKeyCheckpoint =
