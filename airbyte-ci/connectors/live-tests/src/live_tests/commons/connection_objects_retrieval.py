@@ -194,7 +194,11 @@ def get_connection_objects(
             raise ValueError("A catalog is required to run the command.")
         if not connection_object.state and ConnectionObject.STATE in requested_objects:
             raise ValueError("A state is required to run the command.")
-    return [connection_object]
+    # TODO: remove this once the connection-retriever is updated to return multiple connection objects
+    all_connection_objects = [connection_object]
+    all_connection_ids = [connection_object.connection_id for connection_object in all_connection_objects]
+    assert len(set(all_connection_ids)) == len(all_connection_ids), "Connection IDs must be unique."
+    return all_connection_objects
 
 
 def _get_connection_objects_from_retrieved_objects(

@@ -1,12 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import textwrap
 import time
 import webbrowser
 from collections.abc import AsyncGenerator, AsyncIterable, Callable, Generator, Iterable
+from itertools import product
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
@@ -354,19 +356,13 @@ def all_connection_objects(request: SubRequest) -> List[ConnectionObjects]:
     return request.config.stash[stash_keys.ALL_CONNECTION_OBJECTS]
 
 
-@pytest.fixture(scope="session")
-def connection_objects(all_connection_objects) -> ConnectionObjects:
-    return all_connection_objects[0]
-
-
-@pytest.fixture(scope="session")
-def connection_id(connection_objects) -> Optional[str]:
-    return connection_objects.connection_id
-
-
-@pytest.fixture(scope="session")
-def connector_config(connection_objects: ConnectionObjects) -> Optional[SecretDict]:
-    return connection_objects.source_config
+def get_connector_config(connection_objects: ConnectionObjects, control_connector: ConnectorUnderTest) -> Optional[SecretDict]:
+    if control_connector.actor_type is ActorType.SOURCE:
+        return connection_objects.source_config
+    elif control_connector.actor_type is ActorType.DESTINATION:
+        return connection_objects.destination_config
+    else:
+        raise ValueError(f"Actor type {control_connector.actor_type} is not supported")
 
 
 @pytest.fixture(scope="session")
@@ -379,34 +375,13 @@ def actor_id(connection_objects: ConnectionObjects, control_connector: Connector
         raise ValueError(f"Actor type {control_connector.actor_type} is not supported")
 
 
-@pytest.fixture(scope="session")
-def selected_streams(request: SubRequest) -> set[str]:
-    return request.config.stash[stash_keys.SELECTED_STREAMS]
-
-
-@pytest.fixture(scope="session")
-def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[set[str]]) -> ConfiguredAirbyteCatalog:
-    if not connection_objects.configured_catalog:
-        pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
-    assert connection_objects.configured_catalog is not None
-    return connection_objects.configured_catalog
-
-
-@pytest.fixture(scope="session")
-def target_discovered_catalog(discover_target_execution_result: ExecutionResult) -> AirbyteCatalog:
-    return get_catalog(discover_target_execution_result)
-
-
-@pytest.fixture(scope="session")
-def target_spec(spec_target_execution_result: ExecutionResult) -> ConnectorSpecification:
-    return get_spec(spec_target_execution_result)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def primary_keys_per_stream(
-    configured_catalog: ConfiguredAirbyteCatalog,
-) -> dict[str, Optional[list[str]]]:
-    return {stream.stream.name: stream.primary_key[0] if stream.primary_key else None for stream in configured_catalog.streams}
+def get_actor_id(connection_objects: ConnectionObjects, control_connector: ConnectorUnderTest) -> str | None:
+    if control_connector.actor_type is ActorType.SOURCE:
+        return connection_objects.source_id
+    elif control_connector.actor_type is ActorType.DESTINATION:
+        return connection_objects.destination_id
+    else:
+        raise ValueError(f"Actor type {control_connector.actor_type} is not supported")
 
 
 @pytest.fixture(scope="session")
@@ -449,528 +424,182 @@ def duckdb_path(request: SubRequest) -> Path:
     return request.config.stash[stash_keys.DUCKDB_PATH]
 
 
-@pytest.fixture(scope="session")
-def spec_control_execution_inputs(
+def get_execution_inputs_for_command(
+    command: Command,
+    connection_objects: ConnectionObjects,
     control_connector: ConnectorUnderTest,
-    actor_id: str,
     test_artifacts_directory: Path,
     duckdb_path: Path,
 ) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=control_connector,
-        actor_id=actor_id,
-        command=Command.SPEC,
-        global_output_dir=test_artifacts_directory,
-        duckdb_path=duckdb_path,
-    )
+    """Get the execution inputs for the given command and connection objects."""
+    actor_id = get_actor_id(connection_objects, control_connector)
+
+    inputs_arguments = {
+        "hashed_connection_id": connection_objects.hashed_connection_id,
+        "connector_under_test": control_connector,
+        "actor_id": actor_id,
+        "global_output_dir": test_artifacts_directory,
+        "command": command,
+        "duckdb_path": duckdb_path,
+    }
+
+    if command.needs_config:
+        connector_config = get_connector_config(connection_objects, control_connector)
+        if not connector_config:
+            pytest.skip("Config is not provided. The config fixture can't be used.")
+        inputs_arguments["config"] = connector_config
+    if command.needs_catalog:
+        configured_catalog = connection_objects.configured_catalog
+        if not configured_catalog:
+            pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
+        inputs_arguments["configured_catalog"] = connection_objects.configured_catalog
+    if command.needs_state:
+        state = connection_objects.state
+        if not state:
+            pytest.skip("State is not provided. The state fixture can't be used.")
+        inputs_arguments["state"] = state
+
+    return ExecutionInputs(**inputs_arguments)
 
 
-@pytest.fixture(scope="session")
-def spec_control_connector_runner(
-    request: SubRequest,
+async def run_command(
     dagger_client: dagger.Client,
-    spec_control_execution_inputs: ExecutionInputs,
-) -> ConnectorRunner:
+    command: Command,
+    connection_objects: ConnectionObjects,
+    connector: ConnectorUnderTest,
+    test_artifacts_directory: Path,
+    duckdb_path: Path,
+    runs_in_ci,
+) -> ExecutionResult:
+    """Run the given command for the given connector and connection objects."""
+    execution_inputs = get_execution_inputs_for_command(command, connection_objects, connector, test_artifacts_directory, duckdb_path)
+    logging.info(f"Running {command} for {connector.target_or_control.value} connector {execution_inputs.connector_under_test.name}")
+    proxy_hostname = f"proxy_server_{command.value}_{execution_inputs.connector_under_test.version.replace('.', '_')}"
+    proxy = Proxy(dagger_client, proxy_hostname, connection_objects.connection_id)
     runner = ConnectorRunner(
         dagger_client,
-        spec_control_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-    )
-    return runner
-
-
-@pytest.fixture(scope="session")
-async def spec_control_execution_result(
-    request: SubRequest,
-    spec_control_execution_inputs: ExecutionInputs,
-    spec_control_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running spec for control connector {spec_control_execution_inputs.connector_under_test.name}")
-    execution_result = await spec_control_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_control_execution_result(execution_result)
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def spec_target_execution_inputs(
-    target_connector: ConnectorUnderTest,
-    actor_id: str,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=target_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.SPEC,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-def spec_target_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    spec_target_execution_inputs: ExecutionInputs,
-) -> ConnectorRunner:
-    runner = ConnectorRunner(
-        dagger_client,
-        spec_target_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-    )
-    return runner
-
-
-@pytest.fixture(scope="session")
-async def spec_target_execution_result(
-    request: SubRequest,
-    spec_target_execution_inputs: ExecutionInputs,
-    spec_target_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running spec for target connector {spec_target_execution_inputs.connector_under_test.name}")
-    execution_result = await spec_target_connector_runner.run()
-
-    request.config.stash[stash_keys.TEST_REPORT].add_target_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def check_control_execution_inputs(
-    control_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=control_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.CHECK,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def check_control_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    check_control_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(dagger_client, "proxy_server_check_control", connection_id)
-
-    runner = ConnectorRunner(
-        dagger_client,
-        check_control_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
+        execution_inputs,
+        runs_in_ci,
         http_proxy=proxy,
     )
-    yield runner
-    await proxy.clear_cache_volume()
+    execution_result = await runner.run()
+    return execution_result, proxy
 
 
-@pytest.fixture(scope="session")
-async def check_control_execution_result(
-    request: SubRequest,
-    check_control_execution_inputs: ExecutionInputs,
-    check_control_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running check for control connector {check_control_execution_inputs.connector_under_test.name}")
-    execution_result = await check_control_connector_runner.run()
-
-    request.config.stash[stash_keys.TEST_REPORT].add_control_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def check_target_execution_inputs(
-    target_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
+async def run_command_and_add_to_report(
+    dagger_client: dagger.Client,
+    command: Command,
+    connection_objects: ConnectionObjects,
+    connector: ConnectorUnderTest,
     test_artifacts_directory: Path,
     duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=target_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.CHECK,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def check_target_connector_runner(
-    request: SubRequest,
-    check_control_execution_result: ExecutionResult,
-    dagger_client: dagger.Client,
-    check_target_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(
-        dagger_client,
-        "proxy_server_check_target",
-        connection_id,
-        stream_for_server_replay=check_control_execution_result.http_dump,
-    )
-    runner = ConnectorRunner(
-        dagger_client,
-        check_target_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    yield runner
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def check_target_execution_result(
-    request: SubRequest,
-    test_artifacts_directory: Path,
-    check_target_execution_inputs: ExecutionInputs,
-    check_target_connector_runner: ConnectorRunner,
+    runs_in_ci,
+    test_report: TestReport,
 ) -> ExecutionResult:
-    logging.info(f"Running check for target connector {check_target_execution_inputs.connector_under_test.name}")
-    execution_result = await check_target_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_target_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def discover_control_execution_inputs(
-    control_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=control_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.DISCOVER,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def discover_control_execution_result(
-    request: SubRequest,
-    discover_control_execution_inputs: ExecutionInputs,
-    discover_control_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running discover for control connector {discover_control_execution_inputs.connector_under_test.name}")
-    execution_result = await discover_control_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_control_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def discover_target_execution_inputs(
-    target_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=target_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.DISCOVER,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def discover_control_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    discover_control_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(dagger_client, "proxy_server_discover_control", connection_id)
-
-    yield ConnectorRunner(
+    """Run the given command for the given connector and connection objects and add the results to the test report."""
+    execution_result, proxy = await run_command(
         dagger_client,
-        discover_control_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
+        command,
+        connection_objects,
+        connector,
+        test_artifacts_directory,
+        duckdb_path,
+        runs_in_ci,
     )
-    await proxy.clear_cache_volume()
+    test_report.add_control_execution_result(execution_result)
+    return execution_result, proxy
 
 
-@pytest.fixture(scope="session")
-async def discover_target_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    discover_control_execution_result: ExecutionResult,
-    discover_target_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(
-        dagger_client,
-        "proxy_server_discover_target",
-        connection_id,
-        stream_for_server_replay=discover_control_execution_result.http_dump,
+def generate_execution_results_fixture(command: Command, control_or_target: str) -> Callable:
+    """Dynamically generate the fixture for the given command and control/target.
+    This is mainly to avoid code duplication and to make the code more maintainable.
+    Declaring this explicitly for each command and control/target combination would be cumbersome.
+    """
+
+    if control_or_target not in ["control", "target"]:
+        raise ValueError("control_or_target should be either 'control' or 'target'")
+    if command not in [Command.SPEC, Command.CHECK, Command.DISCOVER, Command.READ, Command.READ_WITH_STATE]:
+
+        raise ValueError("command should be either 'spec', 'check', 'discover', 'read' or 'read_with_state'")
+
+    if control_or_target == "control":
+
+        @pytest.fixture(scope="session")
+        async def generated_fixture(
+            request: SubRequest, dagger_client: dagger.Client, control_connector: ConnectorUnderTest, test_artifacts_directory: Path
+        ) -> ExecutionResult:
+            connection_objects = request.param
+
+            execution_results, proxy = await run_command_and_add_to_report(
+                dagger_client,
+                command,
+                connection_objects,
+                control_connector,
+                test_artifacts_directory,
+                request.config.stash[stash_keys.DUCKDB_PATH],
+                request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
+                request.config.stash[stash_keys.TEST_REPORT],
+            )
+
+            yield execution_results
+            await proxy.clear_cache_volume()
+
+    else:
+
+        @pytest.fixture(scope="session")
+        async def generated_fixture(
+            request: SubRequest, dagger_client: dagger.Client, target_connector: ConnectorUnderTest, test_artifacts_directory: Path
+        ) -> ExecutionResult:
+            connection_objects = request.param
+
+            execution_results, proxy = await run_command_and_add_to_report(
+                dagger_client,
+                command,
+                connection_objects,
+                target_connector,
+                test_artifacts_directory,
+                request.config.stash[stash_keys.DUCKDB_PATH],
+                request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
+                request.config.stash[stash_keys.TEST_REPORT],
+            )
+
+            yield execution_results
+            await proxy.clear_cache_volume()
+
+    return generated_fixture
+
+
+def inject_fixtures() -> set[str]:
+    """Dynamically generate th execution result fixtures for all the combinations of commands and control/target.
+    The fixtures will be named as <command>_<control/target>_execution_result
+    Add the generated fixtures to the global namespace.
+    """
+    execution_result_fixture_names = []
+    for command, control_or_target in product([command for command in Command], ["control", "target"]):
+        fixture_name = f"{command.name.lower()}_{control_or_target}_execution_result"
+        globals()[fixture_name] = generate_execution_results_fixture(command, control_or_target)
+        execution_result_fixture_names.append(fixture_name)
+    return set(execution_result_fixture_names)
+
+
+EXECUTION_RESULT_FIXTURES = inject_fixtures()
+
+
+def pytest_generate_tests(metafunc):
+    """This function is called for each test function.
+    It helps in parameterizing the test functions with the connection objects.
+    It will provide the connection objects to the "*_execution_result" fixtures as parameters.
+    This will make sure that the tests are run for all the connection objects available in the configuration.
+    """
+    all_connection_objects = metafunc.config.stash[stash_keys.ALL_CONNECTION_OBJECTS]
+    requested_fixtures = [fixture_name for fixture_name in metafunc.fixturenames if fixture_name in EXECUTION_RESULT_FIXTURES]
+    assert isinstance(all_connection_objects, list), "all_connection_objects should be a list"
+
+    if not requested_fixtures:
+        return
+    metafunc.parametrize(
+        requested_fixtures,
+        [[c] * len(requested_fixtures) for c in all_connection_objects],
+        indirect=requested_fixtures,
+        ids=[f"CONNECTION {hashlib.sha256(c.connection_id.encode()).hexdigest()[:7]}" for c in all_connection_objects],
     )
-
-    yield ConnectorRunner(
-        dagger_client,
-        discover_target_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def discover_target_execution_result(
-    request: SubRequest,
-    discover_target_execution_inputs: ExecutionInputs,
-    discover_target_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running discover for target connector {discover_target_execution_inputs.connector_under_test.name}")
-    execution_result = await discover_target_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_target_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def read_control_execution_inputs(
-    control_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    configured_catalog: ConfiguredAirbyteCatalog,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=control_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.READ,
-        configured_catalog=configured_catalog,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-def read_target_execution_inputs(
-    target_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    configured_catalog: ConfiguredAirbyteCatalog,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    return ExecutionInputs(
-        connector_under_test=target_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.READ,
-        configured_catalog=configured_catalog,
-        config=connector_config,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def read_control_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    read_control_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(dagger_client, "proxy_server_read_control", connection_id)
-
-    yield ConnectorRunner(
-        dagger_client,
-        read_control_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def read_control_execution_result(
-    request: SubRequest,
-    read_control_execution_inputs: ExecutionInputs,
-    read_control_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running read for control connector {read_control_execution_inputs.connector_under_test.name}")
-    execution_result = await read_control_connector_runner.run()
-
-    request.config.stash[stash_keys.TEST_REPORT].add_control_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-async def read_target_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    read_target_execution_inputs: ExecutionInputs,
-    read_control_execution_result: ExecutionResult,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(
-        dagger_client,
-        "proxy_server_read_target",
-        connection_id,
-        stream_for_server_replay=read_control_execution_result.http_dump,
-    )
-
-    yield ConnectorRunner(
-        dagger_client,
-        read_target_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def read_target_execution_result(
-    request: SubRequest,
-    record_testsuite_property: Callable,
-    read_target_execution_inputs: ExecutionInputs,
-    read_target_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    logging.info(f"Running read for target connector {read_target_execution_inputs.connector_under_test.name}")
-    execution_result = await read_target_connector_runner.run()
-
-    request.config.stash[stash_keys.TEST_REPORT].add_target_execution_result(execution_result)
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-def read_with_state_control_execution_inputs(
-    control_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    configured_catalog: ConfiguredAirbyteCatalog,
-    state: dict,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    if not state:
-        pytest.skip("The state is not provided. Skipping the test as it's not possible to run a read with state.")
-    return ExecutionInputs(
-        connector_under_test=control_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.READ_WITH_STATE,
-        configured_catalog=configured_catalog,
-        config=connector_config,
-        state=state,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-def read_with_state_target_execution_inputs(
-    target_connector: ConnectorUnderTest,
-    actor_id: str,
-    connector_config: SecretDict,
-    configured_catalog: ConfiguredAirbyteCatalog,
-    state: dict,
-    test_artifacts_directory: Path,
-    duckdb_path: Path,
-) -> ExecutionInputs:
-    if not state:
-        pytest.skip("The state is not provided. Skipping the test as it's not possible to run a read with state.")
-    return ExecutionInputs(
-        connector_under_test=target_connector,
-        actor_id=actor_id,
-        global_output_dir=test_artifacts_directory,
-        command=Command.READ_WITH_STATE,
-        configured_catalog=configured_catalog,
-        config=connector_config,
-        state=state,
-        duckdb_path=duckdb_path,
-    )
-
-
-@pytest.fixture(scope="session")
-async def read_with_state_control_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    read_with_state_control_execution_inputs: ExecutionInputs,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(dagger_client, "proxy_server_read_with_state_control", connection_id)
-
-    yield ConnectorRunner(
-        dagger_client,
-        read_with_state_control_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def read_with_state_control_execution_result(
-    request: SubRequest,
-    read_with_state_control_execution_inputs: ExecutionInputs,
-    read_with_state_control_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    if read_with_state_control_execution_inputs.state is None:
-        pytest.skip("The control state is not provided. Skipping the test as it's not possible to run a read with state.")
-
-    logging.info(f"Running read with state for control connector {read_with_state_control_execution_inputs.connector_under_test.name}")
-    execution_result = await read_with_state_control_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_control_execution_result(execution_result)
-
-    return execution_result
-
-
-@pytest.fixture(scope="session")
-async def read_with_state_target_connector_runner(
-    request: SubRequest,
-    dagger_client: dagger.Client,
-    read_with_state_target_execution_inputs: ExecutionInputs,
-    read_with_state_control_execution_result: ExecutionResult,
-    connection_id: str,
-) -> AsyncGenerator:
-    proxy = Proxy(
-        dagger_client,
-        "proxy_server_read_with_state_target",
-        connection_id,
-        stream_for_server_replay=read_with_state_control_execution_result.http_dump,
-    )
-    yield ConnectorRunner(
-        dagger_client,
-        read_with_state_target_execution_inputs,
-        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
-        http_proxy=proxy,
-    )
-    await proxy.clear_cache_volume()
-
-
-@pytest.fixture(scope="session")
-async def read_with_state_target_execution_result(
-    request: SubRequest,
-    read_with_state_target_execution_inputs: ExecutionInputs,
-    read_with_state_target_connector_runner: ConnectorRunner,
-) -> ExecutionResult:
-    if read_with_state_target_execution_inputs.state is None:
-        pytest.skip("The target state is not provided. Skipping the test as it's not possible to run a read with state.")
-    logging.info(f"Running read with state for target connector {read_with_state_target_execution_inputs.connector_under_test.name}")
-    execution_result = await read_with_state_target_connector_runner.run()
-    request.config.stash[stash_keys.TEST_REPORT].add_target_execution_result(execution_result)
-
-    return execution_result
