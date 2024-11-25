@@ -9,9 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
-import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val log = KotlinLogging.logger {}
 /** A [StateQuerier] is like a read-only [StateManager]. */
 interface StateQuerier {
     /** [feeds] is all the [Feed]s in the configured catalog passed via the CLI. */
@@ -96,7 +94,6 @@ class StateManager(
      * are emitted).
      */
     fun checkpoint(): List<AirbyteStateMessage> {
-        log.info {"*** state manager: $global ${global?.streamStateManagers} $nonGlobal ${nonGlobal.entries}"}
         return listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
             .filter { it.stream.streamState.isNull.not() }
     }
@@ -203,7 +200,6 @@ class StateManager(
             for ((_, streamStateManager) in streamStateManagers) {
                 val streamStateForCheckpoint: StateForCheckpoint =
                     streamStateManager.takeForCheckpoint()
-                log.info {"*** global streamStateForCheckpoint: $streamStateForCheckpoint ${streamStateForCheckpoint.opaqueStateValue?.javaClass}"}
                 totalNumRecords += streamStateForCheckpoint.numRecords
                 if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
@@ -243,9 +239,7 @@ class StateManager(
         initialState: OpaqueStateValue?,
     ) : BaseStateManager<Stream>(stream, initialState) {
         fun checkpoint(): AirbyteStateMessage? {
-            log.info {"*** non global checkpoint"}
             val streamStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
-            log.info {"*** non global streamStateForCheckpoint: $streamStateForCheckpoint ${streamStateForCheckpoint.opaqueStateValue}"}
             if (streamStateForCheckpoint is Stale) {
                 return null
             }
