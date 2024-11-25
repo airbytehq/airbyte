@@ -221,7 +221,6 @@ class MysqlJdbcCdcRfrSnapshotPartition(
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
-
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
