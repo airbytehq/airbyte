@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.nio.file.Path
 
 @Singleton
 @Requires(env = ["MockPathFactory"])
