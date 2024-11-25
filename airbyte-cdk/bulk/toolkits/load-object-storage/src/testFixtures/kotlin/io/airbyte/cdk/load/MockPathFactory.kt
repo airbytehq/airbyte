@@ -35,15 +35,15 @@ open class MockPathFactory : PathFactory {
     override fun getStagingDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
-    ): Path {
-        return Path.of("$prefix/staging/${fromStream(stream)}")
+    ): String {
+        return "$prefix/staging/${fromStream(stream)}"
     }
 
     override fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
-    ): Path {
-        return Path.of("$prefix/${fromStream(stream)}")
+    ): String {
+        return "$prefix/${fromStream(stream)}"
     }
 
     override fun getPathToFile(
@@ -51,9 +51,9 @@ open class MockPathFactory : PathFactory {
         partNumber: Long?,
         isStaging: Boolean,
         extension: String?
-    ): Path {
+    ): String {
         val prefix = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
-        return prefix.resolve("file")
+        return "${prefix}file"
     }
 
     override fun getPathMatcher(stream: DestinationStream): PathMatcher {
