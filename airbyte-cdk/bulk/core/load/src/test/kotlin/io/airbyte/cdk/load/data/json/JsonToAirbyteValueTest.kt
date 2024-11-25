@@ -28,8 +28,9 @@ import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import java.math.BigDecimal
+import java.math.BigInteger
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -56,7 +57,7 @@ class JsonToAirbyteValueTest {
         val value =
             JsonToAirbyteValue().convert(JsonNodeFactory.instance.numberNode(42), IntegerType)
         Assertions.assertTrue(value is IntegerValue)
-        Assertions.assertEquals(42, (value as IntegerValue).value)
+        Assertions.assertEquals(BigInteger.valueOf(42), (value as IntegerValue).value)
     }
 
     @Test
@@ -136,7 +137,7 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.textNode("hello"),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(stringValue is StringValue)
         Assertions.assertEquals("hello", (stringValue as StringValue).value)
@@ -145,10 +146,10 @@ class JsonToAirbyteValueTest {
             JsonToAirbyteValue()
                 .convert(
                     JsonNodeFactory.instance.numberNode(42),
-                    UnionType(listOf(StringType, IntegerType))
+                    UnionType.of(StringType, IntegerType)
                 )
         Assertions.assertTrue(intValue is IntegerValue)
-        Assertions.assertEquals(42, (intValue as IntegerValue).value)
+        Assertions.assertEquals(BigInteger.valueOf(42), (intValue as IntegerValue).value)
     }
 
     @Test
@@ -185,7 +186,7 @@ class JsonToAirbyteValueTest {
         val value =
             JsonToAirbyteValue()
                 .convert(
-                    Jsons.readTree("""{"foo": 1}"""),
+                    """{"foo": 1}""".deserializeToNode(),
                     ObjectType(
                         properties =
                             linkedMapOf(

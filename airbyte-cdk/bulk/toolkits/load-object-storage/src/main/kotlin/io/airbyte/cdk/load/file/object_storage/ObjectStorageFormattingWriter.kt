@@ -10,11 +10,13 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
@@ -40,14 +42,16 @@ class ObjectStorageFormattingWriterFactory(
         stream: DestinationStream,
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
+        val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream)
+            is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
             is AvroFormatConfiguration ->
                 AvroFormattingWriter(
                     stream,
                     outputStream,
                     formatConfigProvider.objectStorageFormatConfiguration
                         as AvroFormatConfiguration,
+                    flatten
                 )
             is ParquetFormatConfiguration ->
                 ParquetFormattingWriter(
@@ -55,8 +59,9 @@ class ObjectStorageFormattingWriterFactory(
                     outputStream,
                     formatConfigProvider.objectStorageFormatConfiguration
                         as ParquetFormatConfiguration,
+                    flatten
                 )
-            is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream)
+            is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream, flatten)
         }
     }
 }
@@ -64,9 +69,12 @@ class ObjectStorageFormattingWriterFactory(
 class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
+    private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
     override fun accept(record: DestinationRecord) {
-        outputStream.write(record.dataWithAirbyteMeta(stream).toJson().serializeToString())
+        outputStream.write(
+            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toJson().serializeToString()
+        )
         outputStream.write("\n")
     }
 
@@ -78,11 +86,16 @@ class JsonFormattingWriter(
 class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
+    private val rootLevelFlattening: Boolean
 ) : ObjectStorageFormattingWriter {
-    private val printer = stream.schema.withAirbyteMeta().toCsvPrinterWithHeader(outputStream)
+    private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
+    private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     override fun accept(record: DestinationRecord) {
-        printer.printRecord(*record.dataWithAirbyteMeta(stream).toCsvRecord())
+        printer.printRecord(
+            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
+        )
     }
+
     override fun close() {
         printer.close()
     }
@@ -92,12 +105,19 @@ class AvroFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
+    private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+    private val pipeline = AvroMapperPipelineFactory().create(stream)
+    private val avroSchema =
+        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
     override fun accept(record: DestinationRecord) {
-        writer.write(record.dataWithAirbyteMeta(stream).toAvroRecord(avroSchema))
+        val dataMapped =
+            pipeline
+                .map(record.data, record.meta?.changes)
+                .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+        writer.write(dataMapped.toAvroRecord(avroSchema))
     }
 
     override fun close() {
@@ -109,12 +129,19 @@ class ParquetFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
+    private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
-    private val avroSchema = stream.schema.withAirbyteMeta().toAvroSchema(stream.descriptor)
+    private val pipeline = ParquetMapperPipelineFactory().create(stream)
+    private val avroSchema =
+        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
     override fun accept(record: DestinationRecord) {
-        writer.write(record.dataWithAirbyteMeta(stream).toAvroRecord(avroSchema))
+        val dataMapped =
+            pipeline
+                .map(record.data, record.meta?.changes)
+                .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+        writer.write(dataMapped.toAvroRecord(avroSchema))
     }
 
     override fun close() {

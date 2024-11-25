@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
@@ -34,7 +33,6 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
@@ -90,7 +88,7 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }

@@ -35,8 +35,8 @@ definitions:
       datetime: "{{ format_datetime(config['start_date'], '%s') }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc().strftime('%s') }}"
-      datetime_format: "%s"
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     datetime_format: "%s"
     cursor_granularity: PT1S
     step: P1M
@@ -312,9 +312,14 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: source_chargebee.components.CustomFieldTransformation
+      - type: AddFields
+        fields:
+          - path: ["subscription_id"]
+            value_type: string
+            value: "{{ stream_slice.subscription_id }}"
     $parameters:
       name: "subscription_with_scheduled_changes"
-      primary_key: "id"
+      primary_key: "subscription_id"
       path: "/subscriptions/{{ stream_slice.subscription_id }}/retrieve_with_scheduled_changes"
   transaction_stream:
     $ref: "#/definitions/base_incremental_stream"

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
@@ -35,15 +36,22 @@ class AirbyteTypeToAvroSchema {
                 val builder = SchemaBuilder.record(name).namespace(namespace).fields()
                 airbyteSchema.properties.entries
                     .fold(builder) { acc, (name, field) ->
-                        // NOTE: We will not support nullable at this stage.
-                        // All nullables should have been converted to union[this, null] upstream
-                        // TODO: Enforce this
-                        acc.name(name).type(convert(field.type, path + name)).noDefault()
+                        val converted = convert(field.type, path + name)
+                        val propertySchema = maybeMakeNullable(field, converted)
+                        acc.name(name).type(propertySchema).let {
+                            if (field.nullable) {
+                                it.withDefault(null)
+                            } else {
+                                it.noDefault()
+                            }
+                        }
                     }
                     .endRecord()
             }
             is ArrayType -> {
-                SchemaBuilder.array().items(convert(airbyteSchema.items.type, path + "items"))
+                val converted = convert(airbyteSchema.items.type, path + "items")
+                val itemsSchema = maybeMakeNullable(airbyteSchema.items, converted)
+                SchemaBuilder.array().items(itemsSchema)
             }
             is ArrayTypeWithoutSchema ->
                 throw IllegalArgumentException("Array type without schema is not supported")
@@ -70,9 +78,23 @@ class AirbyteTypeToAvroSchema {
                 LogicalTypes.timestampMicros().addToSchema(schema)
             }
             is UnionType -> Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
-            is UnknownType -> throw IllegalArgumentException("Unknown type: ${airbyteSchema.what}")
+            is UnknownType -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
+
+    private fun maybeMakeNullable(
+        airbyteSchema: FieldType,
+        avroSchema: Schema,
+    ): Schema =
+        if (airbyteSchema.nullable && avroSchema.type != Schema.Type.UNION) {
+            SchemaBuilder.unionOf().nullType().and().type(avroSchema).endUnion()
+        } else if (airbyteSchema.nullable && avroSchema.type == Schema.Type.UNION) {
+            avroSchema.types
+                .fold(SchemaBuilder.unionOf().nullType()) { acc, type -> acc.and().type(type) }
+                .endUnion()
+        } else {
+            avroSchema
+        }
 }
 
 fun ObjectType.toAvroSchema(stream: DestinationStream.Descriptor): Schema {

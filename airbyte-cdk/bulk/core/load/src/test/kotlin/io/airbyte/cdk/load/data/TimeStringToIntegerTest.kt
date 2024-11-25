@@ -4,9 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.test.util.Root
-import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -14,7 +11,7 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapDate() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         listOf(
                 "2021-1-1" to 18628,
                 "2021-01-01" to 18628,
@@ -26,7 +23,7 @@ class TimeStringToIntegerTest {
             .forEach {
                 Assertions.assertEquals(
                     IntValue(it.second),
-                    mapper.mapDate(DateValue(it.first), emptyList()),
+                    mapper.mapDate(DateValue(it.first), AirbyteValueIdentityMapper.Context()).first,
                     "Failed for ${it.first} to ${it.second}"
                 )
             }
@@ -65,11 +62,16 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapTimestampWithTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimestampWithTimezone(TimestampValue(it.first), emptyList()),
+                mapper
+                    .mapTimestampWithTimezone(
+                        TimestampValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -77,11 +79,16 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testMapTimestampWithoutTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimestampWithoutTimezone(TimestampValue(it.first), emptyList()),
+                mapper
+                    .mapTimestampWithoutTimezone(
+                        TimestampValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -100,11 +107,13 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testTimeWithTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimeWithTimezone(TimeValue(it.first), emptyList()),
+                mapper
+                    .mapTimeWithTimezone(TimeValue(it.first), AirbyteValueIdentityMapper.Context())
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -112,40 +121,18 @@ class TimeStringToIntegerTest {
 
     @Test
     fun testTimeWithoutTimezone() {
-        val mapper = TimeStringToInteger(DestinationRecord.Meta())
+        val mapper = TimeStringToInteger()
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimeWithoutTimezone(TimeValue(it.first), emptyList()),
+                mapper
+                    .mapTimeWithoutTimezone(
+                        TimeValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
-    }
-
-    @Test
-    fun testBasicSchemaBehavior() {
-        val (inputSchema, expectedOutput) =
-            SchemaRecordBuilder<Root>()
-                .with(DateType, IntegerType)
-                .withRecord()
-                .with(TimestampTypeWithTimezone, IntegerType)
-                .endRecord()
-                .with(TimestampTypeWithoutTimezone, IntegerType)
-                .withRecord()
-                .with(TimeTypeWithTimezone, IntegerType)
-                .withRecord()
-                .with(TimeTypeWithoutTimezone, IntegerType)
-                .endRecord()
-                .endRecord()
-                .withUnion(
-                    expectedInstead =
-                        FieldType(UnionType(listOf(IntegerType, IntegerType)), nullable = false)
-                )
-                .with(DateType)
-                .with(TimeTypeWithTimezone)
-                .endUnion()
-                .build()
-        val output = TimeStringTypeToIntegerType().map(inputSchema)
-        Assertions.assertEquals(expectedOutput, output)
     }
 }

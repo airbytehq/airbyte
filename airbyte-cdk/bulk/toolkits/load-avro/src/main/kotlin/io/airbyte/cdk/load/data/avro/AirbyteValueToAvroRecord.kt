@@ -25,25 +25,39 @@ class AirbyteValueToAvroRecord {
     fun convert(airbyteValue: AirbyteValue, schema: Schema): Any? {
         when (airbyteValue) {
             is ObjectValue -> {
-                val record = GenericData.Record(schema)
+                val recordSchema =
+                    if (schema.type == Schema.Type.UNION) {
+                        schema.types.find { it.type == Schema.Type.RECORD }
+                            ?: throw IllegalArgumentException("Union must contain a record type")
+                    } else {
+                        schema
+                    }
+                val record = GenericData.Record(recordSchema)
                 airbyteValue.values.forEach { (name, value) ->
-                    schema.getField(name)?.let { field ->
+                    recordSchema.getField(name)?.let { field ->
                         record.put(name, convert(value, field.schema()))
                     }
                 }
                 return record
             }
             is ArrayValue -> {
-                val array = GenericData.Array<Any>(airbyteValue.values.size, schema)
+                val arraySchema =
+                    if (schema.type == Schema.Type.UNION) {
+                        schema.types.find { it.type == Schema.Type.ARRAY }
+                            ?: throw IllegalArgumentException("Union must contain an array type")
+                    } else {
+                        schema
+                    }
+                val array = GenericData.Array<Any>(airbyteValue.values.size, arraySchema)
                 airbyteValue.values.forEach { value ->
-                    array.add(convert(value, schema.elementType))
+                    array.add(convert(value, arraySchema.elementType))
                 }
                 return array
             }
             is BooleanValue -> return airbyteValue.value
             is DateValue ->
                 throw IllegalArgumentException("String-based date types are not supported")
-            is IntegerValue -> return airbyteValue.value
+            is IntegerValue -> return airbyteValue.value.toLong()
             is IntValue -> return airbyteValue.value
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()

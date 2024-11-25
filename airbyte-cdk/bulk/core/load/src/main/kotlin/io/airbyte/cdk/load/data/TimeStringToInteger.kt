@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -14,23 +13,11 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-class TimeStringTypeToIntegerType : AirbyteSchemaIdentityMapper {
-    override fun mapDate(schema: DateType): AirbyteType = IntegerType
-    override fun mapTimeTypeWithTimezone(schema: TimeTypeWithTimezone): AirbyteType = IntegerType
-    override fun mapTimeTypeWithoutTimezone(schema: TimeTypeWithoutTimezone): AirbyteType =
-        IntegerType
-    override fun mapTimestampTypeWithTimezone(schema: TimestampTypeWithTimezone): AirbyteType =
-        IntegerType
-    override fun mapTimestampTypeWithoutTimezone(
-        schema: TimestampTypeWithoutTimezone
-    ): AirbyteType = IntegerType
-}
-
 /**
  * NOTE: To keep parity with the old avro/parquet code, we will always first try to parse the value
  * as with timezone, then fall back to without. But in theory we should be more strict.
  */
-class TimeStringToInteger(meta: DestinationRecord.Meta) : AirbyteValueIdentityMapper(meta) {
+class TimeStringToInteger : AirbyteValueIdentityMapper() {
     companion object {
         private val DATE_TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern(
@@ -42,9 +29,10 @@ class TimeStringToInteger(meta: DestinationRecord.Meta) : AirbyteValueIdentityMa
             )
     }
 
-    override fun mapDate(value: DateValue, path: List<String>): AirbyteValue {
+    override fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> {
+        value as DateValue
         val epochDay = LocalDate.parse(value.value, DATE_TIME_FORMATTER).toEpochDay()
-        return IntValue(epochDay.toInt())
+        return IntValue(epochDay.toInt()) to context
     }
 
     private fun toMicrosOfDayWithTimezone(timeString: String): Long {
@@ -65,11 +53,17 @@ class TimeStringToInteger(meta: DestinationRecord.Meta) : AirbyteValueIdentityMa
         }
     }
 
-    override fun mapTimeWithTimezone(value: TimeValue, path: List<String>): AirbyteValue =
-        IntegerValue(toMicrosOfDay(value.value))
+    override fun mapTimeWithTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toMicrosOfDay((value as TimeValue).value)) to context
 
-    override fun mapTimeWithoutTimezone(value: TimeValue, path: List<String>): AirbyteValue =
-        IntegerValue(toMicrosOfDay(value.value))
+    override fun mapTimeWithoutTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toMicrosOfDay((value as TimeValue).value)) to context
 
     private fun toEpochMicrosWithTimezone(timestampString: String): Long {
         val zdt = ZonedDateTime.parse(timestampString, DATE_TIME_FORMATTER)
@@ -91,10 +85,14 @@ class TimeStringToInteger(meta: DestinationRecord.Meta) : AirbyteValueIdentityMa
         }
     }
 
-    override fun mapTimestampWithTimezone(value: TimestampValue, path: List<String>): AirbyteValue =
-        IntegerValue(toEpochMicros(value.value))
+    override fun mapTimestampWithTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toEpochMicros((value as TimestampValue).value)) to context
     override fun mapTimestampWithoutTimezone(
-        value: TimestampValue,
-        path: List<String>
-    ): AirbyteValue = IntegerValue(toEpochMicros(value.value))
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> =
+        IntegerValue(toEpochMicros((value as TimestampValue).value)) to context
 }

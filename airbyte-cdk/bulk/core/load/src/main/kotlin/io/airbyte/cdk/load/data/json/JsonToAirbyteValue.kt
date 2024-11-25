@@ -6,8 +6,9 @@ package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Converts from json to airbyte value, performing the minimum validation necessary to marshal to a
@@ -71,7 +72,7 @@ class JsonToAirbyteValue {
         return if (json.isTextual) {
             StringValue(json.asText())
         } else {
-            StringValue(Jsons.writeValueAsString(json))
+            StringValue(json.serializeToString())
         }
     }
 
@@ -90,10 +91,10 @@ class JsonToAirbyteValue {
     private fun toInteger(json: JsonNode): IntegerValue {
         val longVal =
             when {
-                json.isBoolean -> if (json.asBoolean()) 1L else 0L
-                json.isIntegralNumber -> json.asLong()
-                json.isFloatingPointNumber -> json.asDouble().toLong()
-                json.isTextual -> json.asText().toLong()
+                json.isBoolean -> if (json.asBoolean()) BigInteger.ONE else BigInteger.ZERO
+                json.isIntegralNumber -> json.bigIntegerValue()
+                json.isFloatingPointNumber -> json.bigIntegerValue()
+                json.isTextual -> json.asText().toBigInteger()
                 else -> throw IllegalArgumentException("Could not convert $json to Integer")
             }
         return IntegerValue(longVal)
@@ -103,8 +104,8 @@ class JsonToAirbyteValue {
         val numVal =
             when {
                 json.isBoolean -> BigDecimal(if (json.asBoolean()) 1.0 else 0.0)
-                json.isIntegralNumber -> json.asLong().toBigDecimal()
-                json.isFloatingPointNumber -> json.asDouble().toBigDecimal()
+                json.isIntegralNumber -> json.decimalValue()
+                json.isFloatingPointNumber -> json.decimalValue()
                 json.isTextual -> json.asText().toBigDecimal()
                 else -> throw IllegalArgumentException("Could not convert $json to Number")
             }
@@ -117,7 +118,8 @@ class JsonToAirbyteValue {
         }
         val objectProperties = LinkedHashMap<String, AirbyteValue>()
         json.fields().forEach { (key, value) ->
-            val type = schema.properties[key]?.type ?: UnknownType("undeclared field")
+            // TODO: Would it be more correct just to pass undeclared fields through as unknowns?
+            val type = schema.properties[key]?.type ?: UnknownType(value)
             objectProperties[key] = convert(value, type)
         }
 
@@ -139,15 +141,7 @@ class JsonToAirbyteValue {
         )
     }
 
-    private fun toNull(json: JsonNode): NullValue {
-        if (!json.isNull) {
-            throw IllegalArgumentException("Null types must be null (not $json)")
-        }
-
-        return NullValue
-    }
-
-    private fun toUnion(json: JsonNode, options: List<AirbyteType>): AirbyteValue {
+    private fun toUnion(json: JsonNode, options: Set<AirbyteType>): AirbyteValue {
         val option =
             options.find { matchesStrictly(it, json) }
                 ?: options.find { matchesPermissively(it, json) }
@@ -157,7 +151,7 @@ class JsonToAirbyteValue {
         return convert(json, option)
     }
 
-    private fun fromJson(json: JsonNode): AirbyteValue {
+    fun fromJson(json: JsonNode): AirbyteValue {
         return when {
             json.isBoolean -> toBoolean(json)
             json.isIntegralNumber -> toInteger(json)
@@ -173,7 +167,7 @@ class JsonToAirbyteValue {
                         .toMap(LinkedHashMap())
                 )
             json.isNull -> NullValue
-            else -> UnknownValue("From unrecognized json: $json")
+            else -> UnknownValue(json)
         }
     }
 
