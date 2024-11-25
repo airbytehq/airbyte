@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.Closeable
@@ -109,11 +110,18 @@ class AvroFormattingWriter(
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    val log = KotlinLogging.logger {}
+
     private val pipeline = AvroMapperPipelineFactory().create(stream)
     private val avroSchema =
         pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
+
+    init {
+        log.info { "Generated avro schema: $avroSchema" }
+    }
+
     override fun accept(record: DestinationRecord) {
         val dataMapped =
             pipeline
@@ -133,11 +141,18 @@ class ParquetFormattingWriter(
     formatConfig: ParquetFormatConfiguration,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val log = KotlinLogging.logger {}
+
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
     private val avroSchema =
         pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
+
+    init {
+        log.info { "Generated avro schema: $avroSchema" }
+    }
+
     override fun accept(record: DestinationRecord) {
         val dataMapped =
             pipeline

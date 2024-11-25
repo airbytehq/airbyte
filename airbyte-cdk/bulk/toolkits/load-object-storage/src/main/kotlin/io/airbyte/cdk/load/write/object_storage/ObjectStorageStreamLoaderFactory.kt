@@ -83,9 +83,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     ): Batch {
         val partNumber = partNumber.getAndIncrement()
         val key =
-            pathFactory
-                .getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
-                .toString()
+            pathFactory.getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
 
         log.info { "Writing records to $key" }
         val state = destinationStateManager.getState(stream)
@@ -100,7 +98,11 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach { writer.accept(it) }
+                    records.forEach {
+                        // TODO: S3V2: Remove before release
+                        println("Writing record: $it")
+                        writer.accept(it)
+                    }
                 }
             }
         log.info { "Finished writing records to $key, persisting state" }
@@ -163,9 +165,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
                 (generationId, objectAndPart) ->
                 val newKey =
-                    pathFactory
-                        .getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
-                        .toString()
+                    pathFactory.getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
                 log.info {
                     "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey"
                 }
