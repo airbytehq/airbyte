@@ -97,9 +97,9 @@ class DestinationStreamFactory {
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
                 },
-            generationId = stream.generationId,
-            minimumGenerationId = stream.minimumGenerationId,
-            syncId = stream.syncId,
+            generationId = stream.generationId ?: 0,
+            minimumGenerationId = stream.minimumGenerationId ?: 0,
+            syncId = stream.syncId ?: 0,
             schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema)
         )
     }

@@ -66,7 +66,8 @@ class IcebergStreamLoader(
                 }
                 log.info { "Finished writing records to $stagingBranchName" }
             }
-
+        // This is temp and should be deleted
+        table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
         return SimpleBatch(Batch.State.COMPLETE)
     }
 
@@ -74,12 +75,28 @@ class IcebergStreamLoader(
         throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
+    override suspend fun processBatch(batch: Batch): Batch {
+        log.info {
+            "Committing the $mainBranchName to $stagingBranchName from process batch method"
+        }
+        table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+
+        return SimpleBatch(Batch.State.COMPLETE)
+    }
+
     override suspend fun close(streamFailure: StreamIncompleteResult?) {
+        log.info { "Closing the stream loader" }
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
+            log.info {
+                "Committing the $mainBranchName to $stagingBranchName from within the close method"
+            }
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
+                log.info {
+                    "Deleting generation ids, stream minimum generation id ${stream.minimumGenerationId}"
+                }
                 val generationIdsToDelete =
                     (0 until stream.minimumGenerationId).map(
                         icebergUtil::constructGenerationIdSuffix
