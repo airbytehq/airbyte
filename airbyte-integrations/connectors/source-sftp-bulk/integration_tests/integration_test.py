@@ -99,7 +99,7 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
 def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
     output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
-    expected_file_data = {'bytes': 37, 'file_relative_path': 'files/csv/test_1.csv', 'file_url': '/tmp/airbyte-file-transfer/files/csv/test_1.csv', 'modified': ANY, 'source_file_url': '/files/csv/test_1.csv'}
+    expected_file_data = {'bytes': 46_754_266, 'file_relative_path': 'files/file_transfer/file_transfer_1.csv', 'file_url': '/tmp/airbyte-file-transfer/files/file_transfer/file_transfer_1.csv', 'modified': ANY, 'source_file_url': '/files/file_transfer/file_transfer_1.csv'}
     assert len(output.records) == 1
     assert list(map(lambda record: record.record.file, output.records)) == [expected_file_data]
 
@@ -109,10 +109,10 @@ def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog
 
 
 @pytest.mark.slow
-@pytest.mark.limit_memory("11 MB")
+@pytest.mark.limit_memory("10 MB")
 def test_get_all_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_all_files_transfer: Mapping[str, Any]):
     """
-    - The Paramiko `get` method uses parallelization for efficiency, which may slightly increase memory usage.
+    - The Paramiko dependency `get` method uses requests parallelization for efficiency, which may slightly increase memory usage.
     - The test asserts that this memory increase remains below the files sizes being transferred.
     """
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_all_files_transfer, state=None)
@@ -122,4 +122,4 @@ def test_get_all_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCat
     files_paths = list(map(lambda record: record.record.file["file_url"], output.records))
     for file_path in files_paths:
         assert os.path.exists(file_path), f"File not found at path: {file_path}"
-    assert total_bytes == 428_284_793
+    assert total_bytes == 233_771_330
