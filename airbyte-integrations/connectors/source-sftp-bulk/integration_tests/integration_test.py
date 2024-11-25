@@ -93,6 +93,9 @@ def test_get_files_empty_files(configured_catalog: ConfiguredAirbyteCatalog, con
     output = read(source=source, config=config_with_wrong_glob_pattern, catalog=configured_catalog)
     assert len(output.records) == 0
 
+
+@pytest.mark.slow
+@pytest.mark.limit_memory("10 MB")
 def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_file_transfer: Mapping[str, Any]):
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_file_transfer, state=None)
     output = read(source=source, config=config_fixture_use_file_transfer, catalog=configured_catalog)
@@ -103,3 +106,20 @@ def test_get_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog
     # Additional assertion to check if the file exists at the file_url path
     file_path = expected_file_data['file_url']
     assert os.path.exists(file_path), f"File not found at path: {file_path}"
+
+
+@pytest.mark.slow
+@pytest.mark.limit_memory("11 MB")
+def test_get_all_file_csv_file_transfer(configured_catalog: ConfiguredAirbyteCatalog, config_fixture_use_all_files_transfer: Mapping[str, Any]):
+    """
+    - The Paramiko `get` method uses parallelization for efficiency, which may slightly increase memory usage.
+    - The test asserts that this memory increase remains below the files sizes being transferred.
+    """
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_use_all_files_transfer, state=None)
+    output = read(source=source, config=config_fixture_use_all_files_transfer, catalog=configured_catalog)
+    assert len(output.records) == 5
+    total_bytes = sum(list(map(lambda record: record.record.file["bytes"], output.records)))
+    files_paths = list(map(lambda record: record.record.file["file_url"], output.records))
+    for file_path in files_paths:
+        assert os.path.exists(file_path), f"File not found at path: {file_path}"
+    assert total_bytes == 428_284_793
