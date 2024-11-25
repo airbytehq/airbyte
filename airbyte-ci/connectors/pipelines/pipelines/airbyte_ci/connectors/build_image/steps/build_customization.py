@@ -57,6 +57,7 @@ def get_main_file_name(connector: Connector) -> str:
 
 def get_entrypoint(connector: Connector) -> List[str]:
     main_file_name = get_main_file_name(connector)
+    # adding a random comment to trigger the airbyte-ci build
     return ["ddtrace-run", "python", f"/airbyte/integration_code/{main_file_name}"]
 
 
