@@ -13,6 +13,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface SyncResult
 
@@ -79,7 +80,8 @@ class DefaultSyncManager(
         stream: DestinationStream.Descriptor
     ): StreamLoader? {
         val completable = streamLoaders[stream]
-        return completable?.let { if (it.isCompleted) it.await() else null }
+        // `.isCompleted` does not work as expected here.
+        return completable?.let { withTimeoutOrNull(1000L) { it.await() } }
     }
 
     override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
@@ -116,6 +118,16 @@ class DefaultSyncManager(
     }
 
     override suspend fun markInputConsumed() {
+        val incompleteStreams =
+            streamManagers
+                .filter { (_, manager) -> !manager.endOfStreamRead() }
+                .map { (stream, _) -> stream }
+        if (incompleteStreams.isNotEmpty()) {
+            val prettyStreams = incompleteStreams.map { it.toPrettyString() }
+            throw IllegalStateException(
+                "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
+            )
+        }
         inputConsumed.complete(true)
     }
 

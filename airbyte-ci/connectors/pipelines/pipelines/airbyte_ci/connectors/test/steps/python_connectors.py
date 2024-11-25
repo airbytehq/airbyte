@@ -155,16 +155,14 @@ class PytestStep(Step, ABC):
             # Install the connector python package in /test_environment with the extra dependencies
             await pipelines.dagger.actions.python.common.with_python_connector_installed(
                 self.context,
-                # Reset the entrypoint to run non airbyte commands
-                built_connector_container.with_entrypoint([]),
+                # Reset the entrypoint to run non airbyte commands and set the user to root to install the dependencies and access secrets
+                built_connector_container.with_entrypoint([]).with_user("root"),
                 str(self.context.connector.code_directory),
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
         if self.common_test_dependencies:
-            container_with_test_deps = container_with_test_deps.with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
-            )
+            container_with_test_deps = container_with_test_deps.with_exec(["pip", "install", f'{" ".join(self.common_test_dependencies)}'])
         return (
             container_with_test_deps
             # Mount the test config file
@@ -237,13 +235,7 @@ class PyAirbyteValidation(Step):
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
         )
-        return container_with_test_deps.with_exec(
-            [
-                "pip",
-                "install",
-                f"airbyte=={PYAIRBYTE_VERSION}",
-            ]
-        )
+        return container_with_test_deps.with_exec(["pip", "install", f"airbyte=={PYAIRBYTE_VERSION}"], use_entrypoint=True)
 
 
 class IntegrationTests(PytestStep):

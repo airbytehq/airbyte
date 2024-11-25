@@ -8,38 +8,51 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.file.MockTempFileProvider
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.MockTaskLauncher
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.context.annotation.Primary
-import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.coVerify
+import io.mockk.mockk
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
-import java.nio.file.Path
+import java.nio.file.Files
+import kotlin.io.path.outputStream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @MicronautTest(
     environments =
         [
-            "ProcessRecordsTaskTest",
             "MockDestinationCatalog",
-            "MockTaskLauncher",
         ]
 )
 class ProcessRecordsTaskTest {
-    @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
-    @Inject lateinit var launcher: MockTaskLauncher
+    private lateinit var diskManager: ReservationManager
+    private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
+    private lateinit var launcher: MockTaskLauncher
     @Inject lateinit var syncManager: SyncManager
+
+    @BeforeEach
+    fun setup() {
+        diskManager = mockk(relaxed = true)
+        launcher = MockTaskLauncher()
+        processRecordsTaskFactory =
+            DefaultProcessRecordsTaskFactory(
+                MockDeserializer(),
+                syncManager,
+                diskManager,
+            )
+    }
 
     class MockBatch(
         override val state: Batch.State,
@@ -61,7 +74,10 @@ class ProcessRecordsTaskTest {
             // To demonstrate that the primed data was actually processed
             val (sum, count) =
                 records.asSequence().fold(SumAndCount()) { acc, record ->
-                    SumAndCount(acc.sum + (record.data as IntegerValue).value, acc.count + 1)
+                    SumAndCount(
+                        acc.sum + (record.data as IntegerValue).value.toLong(),
+                        acc.count + 1
+                    )
                 }
             return MockBatch(
                 state = Batch.State.COMPLETE,
@@ -70,11 +86,17 @@ class ProcessRecordsTaskTest {
                 pmChecksum = sum
             )
         }
+
+        override suspend fun processFile(file: DestinationFile): Batch {
+            return MockBatch(
+                state = Batch.State.COMPLETE,
+                reportedByteSize = file.fileMessage.bytes ?: 0,
+                recordCount = 1,
+                pmChecksum = 1
+            )
+        }
     }
 
-    @Singleton
-    @Primary
-    @Requires(env = ["ProcessRecordsTaskTest"])
     class MockDeserializer : Deserializer<DestinationMessage> {
         override fun deserialize(serialized: String): DestinationMessage {
             return DestinationRecord(
@@ -92,22 +114,22 @@ class ProcessRecordsTaskTest {
         val byteSize = 999L
         val recordCount = 1024L
 
-        val mockFile =
-            MockTempFileProvider()
-                .createTempFile(directory = Path.of("tmp/"), prefix = "test", suffix = ".json")
-                as MockTempFileProvider.MockLocalFile
+        val mockFile = Files.createTempFile("test", ".jsonl")
         val file =
             SpilledRawMessagesLocalFile(
                 localFile = mockFile,
                 totalSizeBytes = byteSize,
+                indexRange = Range.closed(0, recordCount)
             )
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = MockDestinationCatalogFactory.stream1,
-                fileEnvelope = BatchEnvelope(file, Range.closed(0, 1024))
+                stream = MockDestinationCatalogFactory.stream1.descriptor,
+                file = file
             )
-        mockFile.linesToRead = (0 until recordCount).map { "$it" }.toMutableList()
+        mockFile.outputStream().use { outputStream ->
+            (0 until recordCount).forEach { outputStream.write("$it\n") }
+        }
 
         syncManager.registerStartedStreamLoader(MockStreamLoader())
         task.execute()
@@ -118,5 +140,7 @@ class ProcessRecordsTaskTest {
         Assertions.assertEquals(999, batch.reportedByteSize)
         Assertions.assertEquals(recordCount, batch.recordCount)
         Assertions.assertEquals((0 until recordCount).sum(), batch.pmChecksum)
+        Assertions.assertFalse(Files.exists(mockFile), "ensure task deleted file")
+        coVerify { diskManager.release(byteSize) }
     }
 }

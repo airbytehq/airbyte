@@ -12,9 +12,12 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.state.SyncSuccess
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -27,12 +30,12 @@ sealed interface LeveledTask : Task
 interface SyncLevel : LeveledTask
 
 interface StreamLevel : LeveledTask {
-    val stream: DestinationStream
+    val streamDescriptor: DestinationStream.Descriptor
 }
 
 interface DestinationTaskExceptionHandler<T : Task, U : Task> : TaskExceptionHandler<T, U> {
     suspend fun handleSyncFailure(e: Exception)
-    suspend fun handleStreamFailure(stream: DestinationStream, e: Exception)
+    suspend fun handleStreamFailure(stream: DestinationStream.Descriptor, e: Exception)
     suspend fun handleSyncFailed()
 }
 
@@ -64,6 +67,9 @@ T : LeveledTask,
 T : ScopedTask {
     val log = KotlinLogging.logger {}
 
+    val onException = AtomicReference(suspend {})
+    private val failSyncTaskEnqueued = AtomicBoolean(false)
+
     inner class SyncTaskWrapper(
         private val syncManager: SyncManager,
         override val innerTask: ScopedTask,
@@ -76,8 +82,9 @@ T : ScopedTask {
                         "Task $innerTask run after sync has succeeded. This should not happen."
                     )
                 }
-                log.info { "Sync task $innerTask skipped because sync has already failed." }
-                return
+                log.info {
+                    "Sync task $innerTask running after has already failed (this is not an error)."
+                }
             }
 
             try {
@@ -86,6 +93,7 @@ T : ScopedTask {
                 log.warn { "Sync task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
+                log.error { "Caught exception in sync task $innerTask: $e" }
                 handleSyncFailure(e)
             }
         }
@@ -96,23 +104,24 @@ T : ScopedTask {
     }
 
     inner class StreamTaskWrapper(
-        private val stream: DestinationStream,
+        private val stream: DestinationStream.Descriptor,
         private val syncManager: SyncManager,
         override val innerTask: ScopedTask,
     ) : WrappedTask<ScopedTask> {
         override suspend fun execute() {
             // Stop dispatching tasks if the stream has been killed by a failure elsewhere.
             // Specifically fail if the stream was marked succeeded: we should not be in this state.
-            val streamManager = syncManager.getStreamManager(stream.descriptor)
+            val streamManager = syncManager.getStreamManager(stream)
             if (!streamManager.isActive()) {
                 val result = streamManager.awaitStreamResult()
                 if (result is StreamSucceeded) {
                     throw IllegalStateException(
-                        "Task $innerTask run after its stream ${stream.descriptor} has succeeded. This should not happen."
+                        "Task $innerTask run after its stream ${stream} has succeeded. This should not happen."
                     )
                 }
-                log.info { "Stream task $innerTask skipped because stream has already failed." }
-                return
+                log.info {
+                    "Stream task $innerTask running after stream has already failed (this is not an error)."
+                }
             }
 
             try {
@@ -121,6 +130,7 @@ T : ScopedTask {
                 log.warn { "Stream task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
+                log.error { "Caught exception in stream task $innerTask: $e" }
                 handleStreamFailure(stream, e)
             }
         }
@@ -142,10 +152,14 @@ T : ScopedTask {
         }
     }
 
-    override fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
+    override suspend fun setCallback(callback: suspend () -> Unit) {
+        onException.set(callback)
+    }
+
+    override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
         return when (task) {
             is SyncLevel -> SyncTaskWrapper(syncManager, task)
-            is StreamLevel -> StreamTaskWrapper(task.stream, syncManager, task)
+            is StreamLevel -> StreamTaskWrapper(task.streamDescriptor, syncManager, task)
             else -> throw IllegalArgumentException("Task without level: $task")
         }
     }
@@ -153,20 +167,24 @@ T : ScopedTask {
     override suspend fun handleSyncFailure(e: Exception) {
         log.error { "Sync failed: $e: killing remaining streams" }
         catalog.streams.forEach {
-            val task = failStreamTaskFactory.make(this, e, it, kill = true)
+            val task = failStreamTaskFactory.make(this, e, it.descriptor, kill = true)
             taskScopeProvider.launch(NoHandlingWrapper(task))
         }
-        val failSyncTask = failSyncTaskFactory.make(this, e)
-        taskScopeProvider.launch(NoHandlingWrapper(failSyncTask))
+        if (failSyncTaskEnqueued.setOnce()) {
+            val failSyncTask = failSyncTaskFactory.make(this, e)
+            taskScopeProvider.launch(NoHandlingWrapper(failSyncTask))
+        } else {
+            log.info { "Sync fail task already launched, not triggering a second one" }
+        }
     }
 
-    override suspend fun handleStreamFailure(stream: DestinationStream, e: Exception) {
-        log.error { "Caught failure in stream task: $e for ${stream.descriptor}, failing stream" }
+    override suspend fun handleStreamFailure(stream: DestinationStream.Descriptor, e: Exception) {
+        log.error { "Caught failure in stream task: $e for ${stream}, failing stream" }
         val failStreamTask = failStreamTaskFactory.make(this, e, stream, kill = false)
         taskScopeProvider.launch(NoHandlingWrapper(failStreamTask))
     }
 
     override suspend fun handleSyncFailed() {
-        taskScopeProvider.kill()
+        onException.get().invoke()
     }
 }

@@ -12,15 +12,23 @@ from .base_request_builder import AmazonAdsBaseRequestBuilder
 class SponsoredBrandsV3ReportRequestBuilder(AmazonAdsBaseRequestBuilder):
     @classmethod
     def _init_report_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, report_type: str, metrics: List[str], report_date: Optional[str] = None
+        cls,
+        client_id: str,
+        client_access_token: str,
+        profile_id: str,
+        report_type: str,
+        metrics: List[str],
+        report_date: Optional[str] = None,
     ) -> "SponsoredBrandsV3ReportRequestBuilder":
-        return cls(f"reporting/reports") \
-            .with_client_id(client_id) \
-            .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_metrics(metrics) \
-            .with_report_date(report_date) \
+        return (
+            cls(f"reporting/reports")
+            .with_client_id(client_id)
+            .with_client_access_token(client_access_token)
+            .with_profile_id(profile_id)
+            .with_metrics(metrics)
+            .with_report_date(report_date)
             .with_report_type(report_type)
+        )
 
     @classmethod
     def init_purchased_asin_report_endpoint(
@@ -57,7 +65,7 @@ class SponsoredBrandsV3ReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         return None
 
     @property
-    def request_body(self) ->Optional[str]:
+    def request_body(self) -> Optional[str]:
         body: dict = OrderedDict()
         if self._report_type and self._report_date:
             body["name"] = f"{self._report_type} report {self._report_date}"
@@ -67,10 +75,7 @@ class SponsoredBrandsV3ReportRequestBuilder(AmazonAdsBaseRequestBuilder):
             body["endDate"] = self._report_date
 
         if self._report_type:
-            body["configuration"] = {
-                "adProduct": "SPONSORED_BRANDS",
-                "groupBy": self._report_config_group_by
-            }
+            body["configuration"] = {"adProduct": "SPONSORED_BRANDS", "groupBy": self._report_config_group_by}
 
         if self._metrics:
             body["configuration"]["columns"] = self._metrics

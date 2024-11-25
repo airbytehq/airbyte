@@ -1,0 +1,22 @@
+metadataSpecVersion: 1.0
+data:
+  name: AlloyDB for PostgreSQL
+  definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
+  connectorType: source
+  dockerRepository: airbyte/image-exists-1
+  githubIssueLabel: source-alloydb-strict-encrypt
+  dockerImageTag: 3.0.0-rc.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
+  connectorSubtype: database
+  releaseStage: generally_available
+  license: MIT
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: 2023-08-22
+        message: "This version changes the connector’s authentication method from `ApiKey` to `oAuth`, per the [API guide](https://amazon-sqs.com/api/someguide)."
+
+  tags:
+    - language:java

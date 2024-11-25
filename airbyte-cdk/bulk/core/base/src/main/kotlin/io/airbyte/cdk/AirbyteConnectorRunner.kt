@@ -2,13 +2,13 @@
 package io.airbyte.cdk
 
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
-import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -21,9 +21,11 @@ import picocli.CommandLine.Model.UsageMessageSpec
 class AirbyteSourceRunner(
     /** CLI args. */
     args: Array<out String>,
+    /** Environment variables. */
+    systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("source", args, testBeanDefinitions) {
+) : AirbyteConnectorRunner("source", args, systemEnv, testBeanDefinitions) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -36,10 +38,11 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
-    testEnvironments: Map<String, String> = emptyMap(),
+    /** Environment variables. */
+    systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("destination", args, testBeanDefinitions, testEnvironments) {
+) : AirbyteConnectorRunner("destination", args, systemEnv, testBeanDefinitions) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -55,10 +58,18 @@ class AirbyteDestinationRunner(
 sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
+    systemEnv: Map<String, String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
-    val testProperties: Map<String, String> = emptyMap(),
 ) {
-    val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
+    val envs: Array<String> =
+        arrayOf(Environment.CLI, connectorType) +
+            // Set feature flag environments.
+            FeatureFlag.active(systemEnv).map { it.micronautEnvironmentName } +
+            // Micronaut's TEST env detection relies on inspecting the stacktrace and checking for
+            // any junit calls. This doesn't work if we launch the connector from a different
+            // thread, e.g. `Dispatchers.IO`. Force the test env if needed. Some tests launch the
+            // connector from the IO context to avoid blocking themselves.
+            listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() })
 
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
@@ -73,7 +84,6 @@ sealed class AirbyteConnectorRunner(
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
                     *listOfNotNull(
-                            MapPropertySource("additional_properties", testProperties),
                             airbytePropertySource,
                             commandLinePropertySource,
                             MetadataYamlPropertySource(),
@@ -90,6 +100,11 @@ sealed class AirbyteConnectorRunner(
         if (!isTest) {
             // Required by the platform, otherwise syncs may hang.
             exitProcess(exitCode)
+        }
+        // At this point, we're in a test.
+        if (exitCode != 0) {
+            // Propagate failure to test callers.
+            throw ConnectorUncleanExitException(exitCode)
         }
     }
 }
