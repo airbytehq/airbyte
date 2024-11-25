@@ -74,7 +74,10 @@ class ProcessRecordsTaskTest {
             // To demonstrate that the primed data was actually processed
             val (sum, count) =
                 records.asSequence().fold(SumAndCount()) { acc, record ->
-                    SumAndCount(acc.sum + (record.data as IntegerValue).value, acc.count + 1)
+                    SumAndCount(
+                        acc.sum + (record.data as IntegerValue).value.toLong(),
+                        acc.count + 1
+                    )
                 }
             return MockBatch(
                 state = Batch.State.COMPLETE,
