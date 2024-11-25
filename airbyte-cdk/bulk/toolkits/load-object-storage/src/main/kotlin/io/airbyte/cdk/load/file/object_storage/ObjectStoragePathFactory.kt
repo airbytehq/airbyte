@@ -54,9 +54,8 @@ class ObjectStoragePathFactory(
     pathConfigProvider: ObjectStoragePathConfigurationProvider,
     formatConfigProvider: ObjectStorageFormatConfigurationProvider? = null,
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
-    timeProvider: TimeProvider,
+    private val timeProvider: TimeProvider,
 ) : PathFactory {
-    private val loadedAt = timeProvider.let { Instant.ofEpochMilli(it.currentTimeMillis()) }
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
     private val stagingPrefixResolved =
         pathConfig.stagingPrefix
@@ -111,7 +110,8 @@ class ObjectStoragePathFactory(
      */
     inner class VariableContext(
         val stream: DestinationStream,
-        val time: Instant = loadedAt,
+        val syncTime: Instant = Instant.ofEpochMilli(timeProvider.syncTimeMillis()),
+        val currentTimeProvider: TimeProvider = timeProvider,
         val extension: String? = null,
         val partNumber: Long? = null
     )
@@ -159,49 +159,60 @@ class ObjectStoragePathFactory(
                 PathVariable("NAMESPACE") { it.stream.descriptor.namespace ?: "" },
                 PathVariable("STREAM_NAME") { it.stream.descriptor.name },
                 PathVariable("YEAR", """\d{4}""") {
-                    ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).year.toString()
+                    ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).year.toString()
                 },
                 PathVariable("MONTH", """\d{2}""") {
                     String.format(
                         "%02d",
-                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).monthValue
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).monthValue
                     )
                 },
                 PathVariable("DAY", """\d{2}""") {
                     String.format(
                         "%02d",
-                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).dayOfMonth
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).dayOfMonth
                     )
                 },
                 PathVariable("HOUR", """\d{2}""") {
-                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).hour)
+                    String.format(
+                        "%02d",
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).hour
+                    )
                 },
                 PathVariable("MINUTE", """\d{2}""") {
-                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).minute)
+                    String.format(
+                        "%02d",
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).minute
+                    )
                 },
                 PathVariable("SECOND", """\d{2}""") {
-                    String.format("%02d", ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC")).second)
+                    String.format(
+                        "%02d",
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC")).second
+                    )
                 },
                 PathVariable("MILLISECOND", """\d{4}""") {
                     // Unclear why this is %04d, but that's what it was in the old code
                     String.format(
                         "%04d",
-                        ZonedDateTime.ofInstant(it.time, ZoneId.of("UTC"))
+                        ZonedDateTime.ofInstant(it.syncTime, ZoneId.of("UTC"))
                             .toLocalTime()
                             .toNanoOfDay() / 1_000_000 % 1_000
                     )
                 },
-                PathVariable("EPOCH", """\d+""") { it.time.toEpochMilli().toString() },
+                PathVariable("EPOCH", """\d+""") { it.syncTime.toEpochMilli().toString() },
                 PathVariable("UUID", """[a-fA-F0-9\\-]{36}""") { UUID.randomUUID().toString() }
             )
         val PATH_VARIABLES_STREAM_CONSTANT =
             PATH_VARIABLES.filter { it.variable == "NAMESPACE" || it.variable == "STREAM_NAME" }
         val FILENAME_VARIABLES =
             listOf(
-                FileVariable("date", """\d{4}_\d{2}_\d{2}""") { DATE_FORMATTER.format(it.time) },
+                FileVariable("date", """\d{4}_\d{2}_\d{2}""") {
+                    DATE_FORMATTER.format(it.syncTime)
+                },
                 FileVariable("timestamp", """\d+""") {
                     // NOTE: We use a constant time for the path but wall time for the files
-                    Instant.now().toEpochMilli().toString()
+                    it.currentTimeProvider.currentTimeMillis().toString()
                 },
                 FileVariable("part_number", """\d+""") {
                     it.partNumber?.toString()

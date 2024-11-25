@@ -47,7 +47,11 @@ open class MockPathFactory : PathFactory {
         stream: DestinationStream,
         isStaging: Boolean
     ): String {
-        TODO("Not yet implemented")
+        if (isStaging) {
+            return getStagingDirectory(stream).toString()
+        } else {
+            return getFinalDirectory(stream).toString()
+        }
     }
 
     override fun getPathMatcher(stream: DestinationStream): PathMatcher {
