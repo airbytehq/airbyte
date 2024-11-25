@@ -119,6 +119,12 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, configContents, catalog, useFileTransfer, *featureFlags)
+        return NonDockerizedDestination(
+            command,
+            configContents,
+            catalog,
+            useFileTransfer,
+            *featureFlags
+        )
     }
 }

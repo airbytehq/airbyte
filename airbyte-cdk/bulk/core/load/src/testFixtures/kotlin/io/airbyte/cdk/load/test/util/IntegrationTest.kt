@@ -129,7 +129,13 @@ abstract class IntegrationTest(
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> =
-        runSync(configContents, DestinationCatalog(listOf(stream)), messages, streamStatus, useFileTransfer)
+        runSync(
+            configContents,
+            DestinationCatalog(listOf(stream)),
+            messages,
+            streamStatus,
+            useFileTransfer
+        )
 
     /**
      * Run a sync with the given config+stream+messages, sending a trace message at the end of the

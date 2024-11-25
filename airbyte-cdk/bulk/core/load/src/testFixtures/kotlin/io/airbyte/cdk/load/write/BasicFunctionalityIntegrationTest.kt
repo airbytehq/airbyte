@@ -50,7 +50,6 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -62,7 +61,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
@@ -272,7 +270,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 ),
                 useFileTransfer = true,
             )
-
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
         assertAll({

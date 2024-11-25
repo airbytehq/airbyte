@@ -14,12 +14,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
+import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import kotlin.io.path.writeText
+import kotlin.test.assertFalse
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -37,6 +40,7 @@ class DockerizedDestination(
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     private val testName: String,
+    useFileTransfer: Boolean,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val process: Process
@@ -53,6 +57,7 @@ class DockerizedDestination(
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
+    private val fileTransferMountSource = Files.createTempDirectory("tmp")
 
     init {
         // This is largely copied from the old cdk's DockerProcessFactory /
@@ -72,7 +77,12 @@ class DockerizedDestination(
         // This directory will contain the actual inputs to the connector (config+catalog),
         // and is also mounted as a volume.
         val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
+        // This directory is being used for the file transfer feature.
 
+        if (useFileTransfer) {
+            val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
+            file.writeText("123")
+        }
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
@@ -103,6 +113,8 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, "/data"),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
+                    "-v",
+                    "$fileTransferMountSource:/tmp",
                     "-e",
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
                 ) +
@@ -115,6 +127,7 @@ class DockerizedDestination(
                         // Also also yes, we're relying on this env var >.>
                         "-e",
                         "WORKER_JOB_ID=0",
+                        "USE_FILE_TRANSFER=$useFileTransfer",
                         imageTag,
                         command,
                     ))
@@ -248,7 +261,8 @@ class DockerizedDestination(
     }
 
     override fun verifyFileDeleted() {
-        TODO("Not yet implemented")
+        val file = File(fileTransferMountSource.resolve("test_file").toUri())
+        assertFalse(file.exists())
     }
 }
 
@@ -269,6 +283,7 @@ class DockerizedDestinationFactory(
             configContents,
             catalog,
             testName,
+            useFileTransfer,
             *featureFlags,
         )
     }
