@@ -85,6 +85,13 @@ def config_fixture_use_file_transfer(docker_client) -> Mapping[str, Any]:
     yield config
 
 
+@pytest.fixture(name="config_fixture_use_all_files_transfer", scope="session")
+def config_fixture_use_all_files_transfer(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_use_all_files_transfer.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
 @pytest.fixture(name="config_private_key", scope="session")
 def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
