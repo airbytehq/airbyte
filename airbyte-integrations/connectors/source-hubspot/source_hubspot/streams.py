@@ -19,6 +19,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -282,7 +283,7 @@ class API:
     def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any]]]:
         data, response = self.get("/crm/v3/schemas", {})
         if not response.ok or "results" not in data:
-            self.logger.warn(self._parse_and_handle_errors(response))
+            self.logger.warning(self._parse_and_handle_errors(response))
             return ()
         for metadata in data["results"]:
             properties = self.get_properties(raw_schema=metadata)
@@ -424,15 +425,11 @@ class Stream(HttpStream, ABC):
         self._is_test = self.name in acceptance_test_config
         self._acceptance_test_config = acceptance_test_config.get(self.name, {})
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == HTTPStatus.UNAUTHORIZED:
-            message = response.json().get("message")
-            raise HubspotInvalidAuth(message, response=response)
-        return super().should_retry(response)
+    def get_backoff_strategy(self):
+        return HubspotBackoffStrategy()
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if response.status_code == codes.too_many_requests:
-            return float(response.headers.get("Retry-After", 3))
+    def get_error_handler(self):
+        return HubspotErrorHandler(logger=self.logger)
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -468,14 +465,12 @@ class Stream(HttpStream, ABC):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         self.update_request_properties(request_params, properties)
+        url=self.url_base + self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties)
+        headers=dict(request_headers, **self._authenticator.get_auth_header())
+        params=request_params
+        json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties),
-            headers=dict(request_headers, **self._authenticator.get_auth_header()),
-            params=request_params,
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         if self.use_cache:
@@ -484,10 +479,25 @@ class Stream(HttpStream, ABC):
                 self.cassete = cass
                 # vcr tries to find records based on the request, if such records exist, return from cache file
                 # else make a request and save record in cache file
-                response = self._send_request(request, request_kwargs)
-
+                _, response = self._http_client.send_request(
+                    http_method=self.http_method,
+                    url=url,
+                    request_kwargs=request_kwargs,
+                    headers=headers,
+                    params=params,
+                    json=json,
+                    data=data,
+                )
         else:
-            response = self._send_request(request, request_kwargs)
+            _, response = self._http_client.send_request(
+                    http_method=self.http_method,
+                    url=url,
+                    request_kwargs=request_kwargs,
+                    headers=headers,
+                    params=params,
+                    json=json,
+                    data=data,
+                )
 
         return response
 
@@ -872,6 +882,25 @@ class Stream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
         return HubspotAvailabilityStrategy()
+
+
+class HubspotErrorHandler(HttpStatusErrorHandler):
+
+    def interpret_response(self, response_or_exception = None):
+        if isinstance(response_or_exception, requests.Response):
+            if response_or_exception.status_code == HTTPStatus.UNAUTHORIZED:
+                message = response_or_exception.json().get("message")
+                raise HubspotInvalidAuth(message, response=response_or_exception)
+        return super().interpret_response(response_or_exception)
+
+
+class HubspotBackoffStrategy(DefaultBackoffStrategy):
+
+    def backoff_time(self, response_or_exception, **kwargs):
+        if isinstance(response_or_exception, requests.Response):
+            if response_or_exception.status_code == 429:
+                return float(response_or_exception.headers.get("Retry-After", 3))
+        return super().backoff_time(response_or_exception, **kwargs)
 
 
 class ClientSideIncrementalStream(Stream, CheckpointMixin):
@@ -2345,7 +2374,7 @@ class EmailSubscriptions(Stream):
     filter_old_records = False
 
 
-class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
+class WebAnalyticsStream(HttpSubStream, Stream, CheckpointMixin):
     """
     A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics

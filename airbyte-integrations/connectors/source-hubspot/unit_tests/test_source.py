@@ -13,6 +13,7 @@ import mock
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
@@ -184,7 +185,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.parse_obj(
+    catalog = ConfiguredAirbyteCatalog.model_validate(
         {
             "streams": [
                 {
@@ -199,12 +200,12 @@ def test_stream_forbidden(requests_mock, config, caplog):
             ]
         }
     )
-
-    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    with pytest.raises(AirbyteTracedException):
+        records = list(SourceHubspot().read(logger, config, catalog, {}))
+        records = [r for r in records if r.type == Type.RECORD]
+        assert not records
     assert json["message"] in caplog.text
     assert "The authenticated user does not have permissions to access the URL" in caplog.text
-    records = [r for r in records if r.type == Type.RECORD]
-    assert not records
 
 
 def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
@@ -225,7 +226,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
     requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.parse_obj(
+    catalog = ConfiguredAirbyteCatalog.model_validate(
         {
             "streams": [
                 {
@@ -241,11 +242,12 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
         }
     )
 
-    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    with pytest.raises(AirbyteTracedException):
+        records = list(SourceHubspot().read(logger, config, catalog, {}))
+        records = [r for r in records if r.type == Type.RECORD]
+        assert not records
     assert json["message"] in caplog.text
     assert "The authenticated user does not have permissions to access the URL" in caplog.text
-    records = [r for r in records if r.type == Type.RECORD]
-    assert not records
 
 
 class TestSplittingPropertiesFunctionality:

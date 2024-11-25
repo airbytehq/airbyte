@@ -3,12 +3,12 @@
 #
 
 import json
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 import requests
 from source_hubspot.errors import HubspotInvalidAuth
-from source_hubspot.streams import Stream
+from source_hubspot.streams import Stream, MarketingEmails
 
 
 # Define a mock function to be used with backoff.on_exception
@@ -28,7 +28,10 @@ def mock_retry_func(*args, **kwargs):
 @patch.multiple(Stream, __abstractmethods__=set())
 def test_handle_request_with_retry(common_params):
     # Create a mock instance of the Stream class
-    stream_instance = Stream(**common_params)
+    stream_instance = MarketingEmails(**common_params)
+
+    # Mock PreparedRequest
+    mock_prepared_request = MagicMock(requests.PreparedRequest)
 
     # Create a mock response
     mock_response = requests.Response()
@@ -36,7 +39,7 @@ def test_handle_request_with_retry(common_params):
     mock_response._content = json.dumps({"data": "Mocked response"}).encode()
 
     # Mock the _send_request method of the Stream class to return the mock response
-    with patch.object(stream_instance, "_send_request", return_value=mock_response):
+    with patch.object(stream_instance._http_client, "_send", return_value=mock_response):
         response = stream_instance.handle_request()
 
     assert response.status_code == 200
@@ -46,10 +49,11 @@ def test_handle_request_with_retry(common_params):
 @patch.multiple(Stream, __abstractmethods__=set())
 def test_handle_request_with_retry_token_expired(common_params):
     # Create a mock instance of the Stream class
-    stream_instance = Stream(**common_params)
+    stream_instance = MarketingEmails(**common_params)
+
 
     # Mock the _send_request method of the Stream class to raise HubspotInvalidAuth exception
-    with patch.object(stream_instance, "_send_request", side_effect=mock_retry_func) as mocked_send_request:
+    with patch.object(stream_instance._http_client, "_send", side_effect=mock_retry_func) as mocked_send_request:
         with pytest.raises(HubspotInvalidAuth):
             stream_instance.handle_request()
 
