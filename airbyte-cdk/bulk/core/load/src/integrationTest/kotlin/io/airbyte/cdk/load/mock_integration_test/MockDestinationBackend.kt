@@ -13,9 +13,11 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.RecordDiffer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 object MockDestinationBackend {
-    private val files: MutableMap<String, MutableList<OutputRecord>> = ConcurrentHashMap()
+    private val files: ConcurrentHashMap<String, ConcurrentLinkedQueue<OutputRecord>> =
+        ConcurrentHashMap()
 
     fun insert(filename: String, vararg records: OutputRecord) {
         getFile(filename).addAll(records)
@@ -96,7 +98,7 @@ object MockDestinationBackend {
     }
 
     fun readFile(filename: String): List<OutputRecord> {
-        return getFile(filename)
+        return getFile(filename).toList()
     }
 
     fun deleteOldRecords(filename: String, minGenerationId: Long) {
@@ -105,8 +107,8 @@ object MockDestinationBackend {
         }
     }
 
-    private fun getFile(filename: String): MutableList<OutputRecord> {
-        return files.getOrPut(filename) { mutableListOf() }
+    private fun getFile(filename: String): ConcurrentLinkedQueue<OutputRecord> {
+        return files.getOrPut(filename) { ConcurrentLinkedQueue() }
     }
 }
 

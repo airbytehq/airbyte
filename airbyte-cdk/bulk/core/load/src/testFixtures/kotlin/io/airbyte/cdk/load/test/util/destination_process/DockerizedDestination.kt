@@ -103,6 +103,8 @@ class DockerizedDestination(
                     String.format("%s:%s", workspaceRoot, "/data"),
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
+                    "-e",
+                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
                 ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
@@ -208,6 +210,11 @@ class DockerizedDestination(
 
     override fun sendMessage(message: AirbyteMessage) {
         destinationStdin.write(message.serializeToString())
+        destinationStdin.newLine()
+    }
+
+    override fun sendMessage(string: String) {
+        destinationStdin.write(string)
         destinationStdin.newLine()
     }
 
