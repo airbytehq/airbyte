@@ -20,6 +20,9 @@ import java.nio.file.Path
  *
  * - Add any required custom fields to the spec w/ jackson annotations
  *
+ * - Add annotation overrides (note that this will replace the original annotation, so to extend an
+ * existing annotation, you must copy the original annotation and add the new fields).
+ *
  * - Create a class `{MyDestination}Configuration` extending [DestinationConfiguration]
  *
  * - Add the corresponding mixin `...ConfigurationProvider`s for any added spec mixins
