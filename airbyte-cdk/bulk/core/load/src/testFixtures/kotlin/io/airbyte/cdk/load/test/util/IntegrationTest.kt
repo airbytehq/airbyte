@@ -185,13 +185,12 @@ abstract class IntegrationTest(
     }
 
     /**
-     * Run a sync until it acknowledges the given state message, then kill the sync. This method
-     * is useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
+     * Run a sync until it acknowledges the given state message, then kill the sync. This method is
+     * useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
      * behaviors.
      *
-     * A common pattern is to call [runSyncUntilStateAck], and then call
-     * `dumpAndDiffRecords(..., allowUnexpectedRecord = true)` to verify that [records] were
-     * written to the destination.
+     * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
+     * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
      */
     fun runSyncUntilStateAck(
         configContents: String,
