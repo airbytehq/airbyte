@@ -26,17 +26,17 @@ interface PathFactory {
     fun getStagingDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean = false
-    ): Path
+    ): String
     fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean = false
-    ): Path
+    ): String
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
         isStaging: Boolean = false,
         extension: String? = null
-    ): Path
+    ): String
     fun getPathMatcher(stream: DestinationStream): PathMatcher
 
     val supportsStaging: Boolean
@@ -246,30 +246,39 @@ class ObjectStoragePathFactory(
         }
     }
 
+    private fun resolveRetainingTerminalSlash(prefix: String, path: String): String {
+        val asPath = Paths.get(prefix, path)
+        return if (path.endsWith('/')) {
+            asPath.toString() + "/"
+        } else {
+            asPath.toString()
+        }
+    }
+
     override fun getStagingDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
-    ): Path {
+    ): String {
         val path =
             getFormattedPath(
                 stream,
                 if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
                 else PATH_VARIABLES
             )
-        return Paths.get(stagingPrefix, path)
+        return resolveRetainingTerminalSlash(stagingPrefix, path)
     }
 
     override fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
-    ): Path {
+    ): String {
         val path =
             getFormattedPath(
                 stream,
                 if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
                 else PATH_VARIABLES
             )
-        return Paths.get(prefix, path)
+        return resolveRetainingTerminalSlash(prefix, path)
     }
 
     override fun getLongestStreamConstantPrefix(
@@ -281,7 +290,6 @@ class ObjectStoragePathFactory(
             } else {
                 getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true)
             }
-            .toString()
             .takeWhile { it != '$' }
     }
 
@@ -290,18 +298,20 @@ class ObjectStoragePathFactory(
         partNumber: Long?,
         isStaging: Boolean,
         extension: String?
-    ): Path {
+    ): String {
         val extensionResolved = extension ?: defaultExtension
         val path =
             if (isStaging) {
                 getStagingDirectory(stream)
             } else {
                 getFinalDirectory(stream)
-            }
+            }.toString()
         val context =
             VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
-        return path.resolve(fileName)
+        // NOTE: The old code does not actually resolve the path + filename, even tho the
+        // documentation says it does.
+        return "$path$fileName"
     }
 
     private fun getFormattedPath(
@@ -369,8 +379,13 @@ class ObjectStoragePathFactory(
                 pathVariableToPattern,
                 variableToIndex
             )
-        val combined = Path.of("$prefix/$replacedForPath").resolve(replacedForFile).toString()
-
+        // NOTE the old code does not actually resolve the path + filename,
+        // even tho the documentation says it does.
+        val combined = if (replacedForPath.startsWith('/')) {
+            "${prefix}$replacedForPath$replacedForFile"
+        } else {
+            "$prefix/$replacedForPath$replacedForFile"
+        }
         return PathMatcher(Regex(combined), variableToIndex)
     }
 }
