@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFact
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamIncompleteResult
@@ -22,7 +24,9 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.io.File
 import java.io.OutputStream
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
@@ -74,7 +78,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val state = destinationStateManager.getState(stream)
         val maxPartNumber =
             state.generations
-                .filter { it.generationId >= stream.minimumGenerationId }
                 .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
                 .maxOrNull()
         log.info { "Got max part number from destination state: $maxPartNumber" }
@@ -110,20 +113,58 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun processBatch(batch: Batch): Batch {
-        val stagedObject = batch as StagedObject<T>
-        val finalKey =
-            pathFactory.getPathToFile(stream, stagedObject.partNumber, isStaging = false).toString()
-        log.info { "Moving staged object from ${stagedObject.remoteObject.key} to $finalKey" }
-        val newObject = client.move(stagedObject.remoteObject, finalKey)
+    override suspend fun processFile(file: DestinationFile): Batch {
+        if (pathFactory.supportsStaging) {
+            throw IllegalStateException("Staging is not supported for files")
+        }
+        val key =
+            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+                .toString()
 
         val state = destinationStateManager.getState(stream)
-        state.removeObject(stream.generationId, stagedObject.remoteObject.key)
-        state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
+        state.addObject(
+            generationId = stream.generationId,
+            key = key,
+            partNumber = 0,
+            isStaging = false
+        )
 
-        val finalizedObject = FinalizedObject(remoteObject = newObject)
-        return finalizedObject
+        val localFile = createFile(file.fileMessage.fileUrl!!)
+
+        val metadata = ObjectStorageDestinationState.metadataFor(stream)
+        val obj =
+            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
+                File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
+            }
+        localFile.delete()
+        return FinalizedObject(remoteObject = obj)
+    }
+
+    @VisibleForTesting fun createFile(url: String) = File(url)
+
+    @Suppress("UNCHECKED_CAST")
+    override suspend fun processBatch(batch: Batch): Batch {
+        when (batch) {
+            is StagedObject<*> -> {
+                val stagedObject = batch as StagedObject<T>
+                val finalKey =
+                    pathFactory
+                        .getPathToFile(stream, stagedObject.partNumber, isStaging = false)
+                        .toString()
+                log.info {
+                    "Moving staged object from ${stagedObject.remoteObject.key} to $finalKey"
+                }
+                val newObject = client.move(stagedObject.remoteObject, finalKey)
+
+                val state = destinationStateManager.getState(stream)
+                state.removeObject(stream.generationId, stagedObject.remoteObject.key)
+                state.addObject(stream.generationId, newObject.key, stagedObject.partNumber)
+
+                val finalizedObject = FinalizedObject(remoteObject = newObject)
+                return finalizedObject
+            }
+            else -> throw IllegalStateException("Unexpected batch type: $batch")
+        }
     }
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {

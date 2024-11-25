@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -62,7 +62,7 @@ data class DestinationRecord(
         changes: MutableList<Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
@@ -124,18 +124,6 @@ data class DestinationFile(
     val fileMessage: AirbyteRecordMessageFile
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
-    constructor(
-        namespace: String?,
-        name: String,
-        emittedAtMs: Long,
-        fileMessage: AirbyteRecordMessageFile
-    ) : this(
-        stream = DestinationStream.Descriptor(namespace, name),
-        emittedAtMs = emittedAtMs,
-        serialized = "",
-        fileMessage = fileMessage
-    )
-
     class AirbyteRecordMessageFile {
         constructor(
             fileUrl: String? = null,
@@ -185,20 +173,26 @@ data class DestinationFile(
         var sourceFileUrl: String? = null
     }
 
-    override fun asProtocolMessage(): AirbyteMessage =
-        AirbyteMessage()
+    override fun asProtocolMessage(): AirbyteMessage {
+        val file =
+            mapOf(
+                "file_url" to fileMessage.fileUrl,
+                "file_relative_path" to fileMessage.fileRelativePath,
+                "source_file_url" to fileMessage.sourceFileUrl,
+                "modified" to fileMessage.modified,
+                "bytes" to fileMessage.bytes,
+            )
+
+        return AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
                     .withStream(stream.name)
                     .withNamespace(stream.namespace)
                     .withEmittedAt(emittedAtMs)
-                    .withAdditionalProperty("file_url", fileMessage.fileUrl)
-                    .withAdditionalProperty("file_relative_path", fileMessage.fileRelativePath)
-                    .withAdditionalProperty("source_file_url", fileMessage.sourceFileUrl)
-                    .withAdditionalProperty("modified", fileMessage.modified)
-                    .withAdditionalProperty("bytes", fileMessage.bytes)
+                    .withAdditionalProperty("file", file)
             )
+    }
 }
 
 private fun statusToProtocolMessage(
@@ -299,7 +293,7 @@ data class StreamCheckpoint(
     ) : this(
         Checkpoint(
             DestinationStream.Descriptor(streamNamespace, streamName),
-            state = Jsons.deserialize(blob)
+            state = blob.deserializeToNode()
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
@@ -330,7 +324,7 @@ data class GlobalCheckpoint(
         blob: String,
         sourceRecordCount: Long,
     ) : this(
-        state = Jsons.deserialize(blob),
+        state = blob.deserializeToNode(),
         Stats(sourceRecordCount),
         additionalProperties = emptyMap(),
     )
@@ -364,7 +358,7 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("airbyte.file-transfer.enabled") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
@@ -390,30 +384,22 @@ class DestinationMessageFactory(
                         name = message.record.stream,
                     )
                 if (fileTransferEnabled) {
+                    @Suppress("UNCHECKED_CAST")
+                    val fileMessage =
+                        message.record.additionalProperties["file"] as Map<String, Any>
+
                     DestinationFile(
                         stream = stream.descriptor,
                         emittedAtMs = message.record.emittedAt,
                         serialized = serialized,
                         fileMessage =
                             DestinationFile.AirbyteRecordMessageFile(
-                                fileUrl =
-                                    message.record.additionalProperties["file_url"] as String?,
-                                bytes =
-                                    toLong(
-                                        message.record.additionalProperties["bytes"],
-                                        "message.record.bytes"
-                                    ),
-                                fileRelativePath =
-                                    message.record.additionalProperties["file_relative_path"]
-                                        as String?,
+                                fileUrl = fileMessage["file_url"] as String?,
+                                bytes = toLong(fileMessage["bytes"], "message.record.bytes"),
+                                fileRelativePath = fileMessage["file_relative_path"] as String?,
                                 modified =
-                                    toLong(
-                                        message.record.additionalProperties["modified"],
-                                        "message.record.modified"
-                                    ),
-                                sourceFileUrl =
-                                    message.record.additionalProperties["source_file_url"]
-                                        as String?
+                                    toLong(fileMessage["modified"], "message.record.modified"),
+                                sourceFileUrl = fileMessage["source_file_url"] as String?
                             )
                     )
                 } else {
