@@ -246,55 +246,55 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        val fileMessage = DestinationFile.AirbyteRecordMessageFile(
-            fileUrl = "/tmp/test_file",
-            bytes = 1234L,
-            fileRelativePath = "path/to/file",
-            modified = 4321L,
-            sourceFileUrl = "file://path/to/source",
-        )
+        val fileMessage =
+            DestinationFile.AirbyteRecordMessageFile(
+                fileUrl = "/tmp/test_file",
+                bytes = 1234L,
+                fileRelativePath = "path/to/file",
+                modified = 4321L,
+                sourceFileUrl = "file://path/to/source",
+            )
 
-        val messages = runSync(
-            configContents,
-            stream,
-            listOf(
-                DestinationFile(
-                    stream = stream.descriptor,
-                    emittedAtMs = 1234,
-                    serialized = "",
-                    fileMessage = fileMessage,
-                ),
-                StreamCheckpoint(
-                    streamName = stream.descriptor.name,
-                    streamNamespace = stream.descriptor.namespace,
-                    blob = """{"foo": "bar"}""",
-                    sourceRecordCount = 1,
+        val messages =
+            runSync(
+                configContents,
+                stream,
+                listOf(
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = 1234,
+                        serialized = "",
+                        fileMessage = fileMessage,
+                    ),
+                    StreamCheckpoint(
+                        streamName = stream.descriptor.name,
+                        streamNamespace = stream.descriptor.namespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                    )
                 )
             )
-        )
 
         assertFalse(file.exists())
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
-        assertAll(
-            {
-                assertEquals(
-                    1,
-                    stateMessages.size,
-                    "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
-                )
-                assertEquals(
-                    StreamCheckpoint(
+        assertAll({
+            assertEquals(
+                1,
+                stateMessages.size,
+                "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
+            )
+            assertEquals(
+                StreamCheckpoint(
                         streamName = stream.descriptor.name,
                         streamNamespace = stream.descriptor.namespace,
                         blob = """{"foo": "bar"}""",
                         sourceRecordCount = 1,
                         destinationRecordCount = 1,
                     )
-                        .asProtocolMessage(),
-                    stateMessages.first()
-                )
-            }
-        )
+                    .asProtocolMessage(),
+                stateMessages.first()
+            )
+        })
 
         val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
         val fileContent = dataDumper.dumpFile(config, stream)

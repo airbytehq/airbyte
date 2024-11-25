@@ -87,7 +87,6 @@ class ObjectStorageDataDumper(
                 client
                     .list(prefix)
                     .map { listedObject: RemoteObject<*> ->
-
                         client.get(listedObject.key) { objectData: InputStream ->
                             val decompressed =
                                 when (compressionConfig?.compressor) {
