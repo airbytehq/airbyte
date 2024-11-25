@@ -435,7 +435,7 @@ class DestinationMessageFactory(
                         namespace = status.streamDescriptor.namespace,
                         name = status.streamDescriptor.name,
                     )
-                if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
+                if ((message.trace.type ?: AirbyteTraceMessage.Type.STREAM_STATUS) == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
