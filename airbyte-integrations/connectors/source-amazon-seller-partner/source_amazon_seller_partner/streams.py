@@ -1406,6 +1406,25 @@ class VendorOrders(VendorFulfillment):
         return f"vendor/orders/{VENDOR_ORDERS_API_VERSION}/purchaseOrders"
 
 
+class VendorOrdersStatus(VendorFulfillment):
+    """
+    API docs:
+    https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseordersstatus
+
+    API model:
+    https://github.com/amzn/selling-partner-api-models/blob/main/models/vendor-orders-api-model/vendorOrders.json
+    """
+
+    name = "VendorOrdersStatus"
+    records_path = "orders"
+    replication_start_date_field = "createdAfter"
+    replication_end_date_field = "createdBefore"
+    cursor_field = "createdBefore"
+
+    def path(self, **kwargs: Any) -> str:
+        return f"vendor/orders/{VENDOR_ORDERS_API_VERSION}/purchaseOrdersStatus"
+
+
 class FinanceStream(IncrementalAmazonSPStream, ABC):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
