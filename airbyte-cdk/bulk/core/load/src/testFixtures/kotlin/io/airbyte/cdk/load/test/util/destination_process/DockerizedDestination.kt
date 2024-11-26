@@ -127,6 +127,7 @@ class DockerizedDestination(
                         // Also also yes, we're relying on this env var >.>
                         "-e",
                         "WORKER_JOB_ID=0",
+                        "-e",
                         "USE_FILE_TRANSFER=$useFileTransfer",
                         imageTag,
                         command,
