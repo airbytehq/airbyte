@@ -28,7 +28,9 @@ import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
@@ -312,7 +314,13 @@ class MysqlJdbcPartitionFactory(
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
                         try {
                             val formatter: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                                DateTimeFormatterBuilder()
+                                    .appendPattern(timestampInStatePattern)
+                                    .optionalStart()
+                                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+                                    .optionalEnd()
+                                    .toFormatter()
+
                             Jsons.textNode(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)

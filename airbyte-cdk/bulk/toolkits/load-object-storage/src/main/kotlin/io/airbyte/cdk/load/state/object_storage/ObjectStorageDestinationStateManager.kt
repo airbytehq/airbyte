@@ -99,6 +99,28 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+
+    @get:JsonIgnore
+    val nextPartNumber: Long
+        get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+
+    /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
+    fun getStagedObjectsToFinalize(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> =
+        generations
+            .filter { it.isStaging && it.generationId >= minimumGenerationId }
+            .flatMap { it.objects.map { obj -> it.generationId to obj } }
+
+    /**
+     * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
+     * cleaned up.
+     */
+    fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = generations.partition { it.generationId >= minimumGenerationId }
+        val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
+        return toDrop.asSequence().flatMap {
+            it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
@@ -107,6 +129,7 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
+    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
@@ -123,8 +146,8 @@ class ObjectStorageStagingPersister(
                 inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
-            log.info { "No destination state found at $key: $e" }
-            return ObjectStorageDestinationState()
+            log.info { "No destination state found at $key: $e; falling back to metadata search" }
+            return fallbackPersister.load(stream)
         }
     }
 
@@ -140,14 +163,8 @@ class ObjectStorageFallbackPersister(
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val matcher = pathFactory.getPathMatcher(stream)
-        val pathConstant = pathFactory.getFinalDirectory(stream, streamConstant = true).toString()
-        val firstVariableIndex = pathConstant.indexOfFirst { it == '$' }
         val longestUnambiguous =
-            if (firstVariableIndex > 0) {
-                pathConstant.substring(0, firstVariableIndex)
-            } else {
-                pathConstant
-            }
+            pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
         client
             .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }

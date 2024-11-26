@@ -43,6 +43,17 @@ open class MockPathFactory : PathFactory {
         return prefix.resolve("file")
     }
 
+    override fun getLongestStreamConstantPrefix(
+        stream: DestinationStream,
+        isStaging: Boolean
+    ): String {
+        if (isStaging) {
+            return getStagingDirectory(stream).toString()
+        } else {
+            return getFinalDirectory(stream).toString()
+        }
+    }
+
     override fun getPathMatcher(stream: DestinationStream): PathMatcher {
         return PathMatcher(
             regex = Regex("$prefix/(.*)-(.*)$"),

@@ -9,9 +9,14 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
+import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import java.time.Instant
 import java.time.LocalDateTime
@@ -20,6 +25,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
@@ -27,6 +33,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -91,6 +98,7 @@ abstract class IntegrationTest(
         primaryKey: List<List<String>>,
         cursor: List<String>?,
         reason: String? = null,
+        allowUnexpectedRecord: Boolean = false,
     ) {
         val actualRecords: List<OutputRecord> = dataDumper.dumpRecords(config, stream)
         val expectedRecords: List<OutputRecord> =
@@ -100,6 +108,7 @@ abstract class IntegrationTest(
                 primaryKey = primaryKey.map { nameMapper.mapFieldName(it) },
                 cursor = cursor?.let { nameMapper.mapFieldName(it) },
                 nullEqualsUnset = nullEqualsUnset,
+                allowUnexpectedRecord = allowUnexpectedRecord,
             )
             .diffRecords(expectedRecords, actualRecords)
             ?.let {
@@ -172,6 +181,69 @@ abstract class IntegrationTest(
             }
             destination.shutdown()
             destination.readMessages()
+        }
+    }
+
+    /**
+     * Run a sync until it acknowledges the given state message, then kill the sync. This method is
+     * useful for tests that want to verify recovery-from-failure cases, e.g. truncate refresh
+     * behaviors.
+     *
+     * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
+     * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     */
+    fun runSyncUntilStateAck(
+        configContents: String,
+        stream: DestinationStream,
+        records: List<DestinationRecord>,
+        inputStateMessage: StreamCheckpoint,
+        allowGracefulShutdown: Boolean,
+    ): AirbyteStateMessage {
+        val destination =
+            destinationProcessFactory.createDestinationProcess(
+                "write",
+                configContents,
+                DestinationCatalog(listOf(stream)).asProtocolObject(),
+            )
+        return runBlocking(Dispatchers.IO) {
+            launch {
+                // expect an exception. we're sending a stream incomplete or killing the
+                // destination, so it's expected to crash
+                // TODO: This is a hack, not sure what's going on
+                if (destination is NonDockerizedDestination) {
+                    assertThrows<DestinationUncleanExitException> { destination.run() }
+                } else {
+                    destination.run()
+                }
+            }
+            records.forEach { destination.sendMessage(it.asProtocolMessage()) }
+            destination.sendMessage(inputStateMessage.asProtocolMessage())
+
+            val deferred = async {
+                val outputStateMessage: AirbyteStateMessage
+                while (true) {
+                    destination.sendMessage("")
+                    val returnedMessages = destination.readMessages()
+                    if (returnedMessages.any { it.type == AirbyteMessage.Type.STATE }) {
+                        outputStateMessage =
+                            returnedMessages
+                                .filter { it.type == AirbyteMessage.Type.STATE }
+                                .map { it.state }
+                                .first()
+                        break
+                    }
+                }
+                outputStateMessage
+            }
+            val outputStateMessage = deferred.await()
+            if (allowGracefulShutdown) {
+                destination.sendMessage("{\"unparseable")
+                destination.shutdown()
+            } else {
+                destination.kill()
+            }
+
+            outputStateMessage
         }
     }
 
