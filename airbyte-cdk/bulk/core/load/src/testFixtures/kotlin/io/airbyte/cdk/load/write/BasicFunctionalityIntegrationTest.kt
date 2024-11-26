@@ -66,7 +66,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
 sealed interface AllTypesBehavior
 

@@ -119,7 +119,7 @@ class DockerizedDestination(
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
                     "-e",
                     "USE_FILE_TRANSFER=$useFileTransfer",
-                    ) +
+                ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.
