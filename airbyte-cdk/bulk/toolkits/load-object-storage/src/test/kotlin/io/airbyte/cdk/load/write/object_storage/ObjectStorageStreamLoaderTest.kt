@@ -50,7 +50,7 @@ class ObjectStorageStreamLoaderTest {
     @Test
     fun `test processFile`() = runTest {
         val fileUrl = "fileUrl"
-        val stagingDirectory = Path.of("stagingDirectory")
+        val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
