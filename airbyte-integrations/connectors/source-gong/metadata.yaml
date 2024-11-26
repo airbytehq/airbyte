@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
-  dockerImageTag: 0.4.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-gong
   documentationUrl: https://docs.airbyte.com/integrations/sources/gong
   githubIssueLabel: source-gong
@@ -20,6 +20,11 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 changes format of the start_date field to include the time. eg. "2020-01-01" to "2020-01-01T00:00:00Z"
+        upgradeDeadline: "2024-12-14"
   remoteRegistries:
     pypi:
       enabled: false

@@ -40,7 +40,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.0 | 2024-11-25 | [](https://github.com/airbytehq/airbyte/pull/) | Add support for incremental syncs, fetching transcripts, and filtering calls on primary user id |
+| 1.0.0 | 2024-11-26 | [48690](https://github.com/airbytehq/airbyte/pull/) | Add support for incremental syncs, fetching transcripts, and filtering calls on primary user id |
 | 0.3.1 | 2024-10-29 | [47824](https://github.com/airbytehq/airbyte/pull/47824) | Update dependencies |
 | 0.3.0 | 2024-09-04 | [45117](https://github.com/airbytehq/airbyte/pull/45117) | Add new stream `extensive calls` |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
