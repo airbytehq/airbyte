@@ -110,7 +110,7 @@ class ObjectStoragePathFactoryTest {
             val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime"
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
             val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 "staging/$prefixOnly",
@@ -121,11 +121,11 @@ class ObjectStoragePathFactoryTest {
                 pathFactory.getFinalDirectory(stream1).toString(),
             )
             Assertions.assertEquals(
-                "staging/$prefixOnly/$fileName",
+                "staging/$prefixOnly$fileName",
                 pathFactory.getPathToFile(stream1, 173, true).toString(),
             )
             Assertions.assertEquals(
-                "$prefixOnly/$fileName",
+                "$prefixOnly$fileName",
                 pathFactory.getPathToFile(stream1, 173, false).toString(),
             )
         }
@@ -168,7 +168,7 @@ class ObjectStoragePathFactoryTest {
             pathFactory: ObjectStoragePathFactory,
             timeProvider: TimeProvider
         ) {
-            val epochMilli = timeProvider.currentTimeMillis()
+            val epochMilli = timeProvider.syncTimeMillis()
             val streamWithSpecial =
                 DestinationStream(
                     DestinationStream.Descriptor(
@@ -182,10 +182,10 @@ class ObjectStoragePathFactoryTest {
                     importType = Append
                 )
             val expectedPath =
-                "prefix/namespace/stream_with:special:characters/2020/01/02/03/04/05/0678/$epochMilli"
+                "prefix/namespace/stream_with:special:characters/2020/01/02/03/04/05/0678/$epochMilli/"
             Assertions.assertEquals(
                 expectedPath,
-                pathFactory.getFinalDirectory(streamWithSpecial).toString(),
+                pathFactory.getFinalDirectory(streamWithSpecial),
             )
         }
 
@@ -193,12 +193,10 @@ class ObjectStoragePathFactoryTest {
         fun testLongestConstantPrefix(pathFactory: ObjectStoragePathFactory) {
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name"
+            val prefixOnly = "prefix/$namespace/$name/"
             Assertions.assertEquals(
                 prefixOnly,
-                pathFactory
-                    .getFinalDirectory(stream1, substituteStreamAndNamespaceOnly = true)
-                    .toString(),
+                pathFactory.getLongestStreamConstantPrefix(stream1, false),
             )
         }
     }
@@ -219,15 +217,15 @@ class ObjectStoragePathFactoryTest {
             val wallTime = timeProvider.currentTimeMillis()
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
-            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime"
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
             val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
-                pathFactory.getFinalDirectory(stream1).toString(),
+                pathFactory.getFinalDirectory(stream1),
             )
             Assertions.assertEquals(
-                "$prefixOnly/$fileName",
-                pathFactory.getPathToFile(stream1, 173, false).toString(),
+                "$prefixOnly$fileName",
+                pathFactory.getPathToFile(stream1, 173, false),
             )
 
             Assertions.assertThrows(UnsupportedOperationException::class.java) {

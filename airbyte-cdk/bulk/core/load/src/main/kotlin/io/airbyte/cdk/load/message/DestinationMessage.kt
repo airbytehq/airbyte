@@ -436,9 +436,8 @@ class DestinationMessageFactory(
                         name = status.streamDescriptor.name,
                     )
                 if (
-                    (message.trace.type
-                        ?: AirbyteTraceMessage.Type.STREAM_STATUS) ==
-                        AirbyteTraceMessage.Type.STREAM_STATUS
+                    message.trace.type == null ||
+                        message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
                 ) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->

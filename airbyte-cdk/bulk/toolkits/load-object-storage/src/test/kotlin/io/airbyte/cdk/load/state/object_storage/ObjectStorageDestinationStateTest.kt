@@ -15,6 +15,7 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Singleton
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -110,9 +111,10 @@ class ObjectStorageDestinationStateTest {
         @Test
         fun testLoadingExistingState(d: Dependencies) = runTest {
             val key =
-                d.pathFactory
-                    .getStagingDirectory(stream1)
-                    .resolve(ObjectStorageStagingPersister.STATE_FILENAME)
+                Paths.get(
+                        d.pathFactory.getStagingDirectory(stream1),
+                        ObjectStorageStagingPersister.STATE_FILENAME
+                    )
                     .toString()
             d.mockClient.put(key, PERSISTED.toByteArray())
             val state = d.stateManager.getState(stream1)
@@ -251,14 +253,6 @@ class ObjectStorageDestinationStateTest {
                 state.generations.toList(),
                 "state should be recovered from metadata"
             )
-        }
-
-        @Test
-        fun testRecoveringFromMetadata(d: Dependencies) = runTest {
-            val generations = loadMetadata(d, stream1)
-            val state = d.stateManager.getState(stream1)
-            validateMetadata(state, generations)
-            Assertions.assertEquals(2L, state.nextPartNumber)
         }
 
         @Test

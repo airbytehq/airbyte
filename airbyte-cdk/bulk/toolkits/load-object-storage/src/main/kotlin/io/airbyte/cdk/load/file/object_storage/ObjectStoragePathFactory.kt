@@ -353,6 +353,9 @@ class ObjectStoragePathFactory(
             if (pattern == null) {
                 variable
             } else if (pattern.isBlank()) {
+                // This should only happen in the case of a blank namespace.
+                // This is to avoid inserting `()` and then trying to match
+                // `()/($streamName)` against `$streamName`.
                 ""
             } else {
                 variableToIndex[variable] = variableToIndex.size + 1
