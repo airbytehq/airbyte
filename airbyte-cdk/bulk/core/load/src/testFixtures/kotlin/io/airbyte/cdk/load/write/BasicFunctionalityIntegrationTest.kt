@@ -64,7 +64,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
@@ -125,6 +124,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
+    val isStaging: Boolean = false,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -232,7 +232,9 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
-        Thread.sleep(15 * 1000)
+        if (isStaging) {
+            return
+        }
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),

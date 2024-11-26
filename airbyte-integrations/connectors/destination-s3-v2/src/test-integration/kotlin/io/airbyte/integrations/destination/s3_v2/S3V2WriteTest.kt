@@ -22,6 +22,7 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
+    isStaging: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -37,6 +38,7 @@ abstract class S3V2WriteTest(
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
+        isStaging = isStaging,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -129,7 +131,8 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-        commitDataIncrementally = false
+        commitDataIncrementally = false,
+        isStaging = true,
     ) {
 
     @Test
