@@ -139,18 +139,7 @@ class DefaultDestinationTaskLauncher(
 
     override suspend fun run() {
         exceptionHandler.setCallback { succeeded.send(false) }
-        log.info {
-            "------------------------ ${System.getenv("USE_FILE_TRANSFER")} ${System.getenv("AIRBYTE_DESTINATION_RECORD_BATCH")}"
-        }
-        if (fileTransferEnabled) {
-            log.info {
-                "_______________________________File transfer is enabled ________________________________________"
-            }
-        } else {
-            log.info {
-                "_______________________________File transfer is NOT enabled ________________________________________"
-            }
-        }
+
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
         val inputConsumerTask =
