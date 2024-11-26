@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.util.readIntoClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
@@ -48,14 +48,14 @@ class ObjectStorageDestinationState(
     suspend fun addObject(
         generationId: Long,
         key: String,
-        partNumber: Long,
+        partNumber: Long?,
         isStaging: Boolean = false
     ) {
         val state = if (isStaging) State.STAGED else State.FINALIZED
         accessLock.withLock {
             generationMap
                 .getOrPut(state) { mutableMapOf() }
-                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber
+                .getOrPut(generationId) { mutableMapOf() }[key] = partNumber ?: 0L
         }
     }
 
@@ -99,6 +99,28 @@ class ObjectStorageDestinationState(
                     }
                 }
                 .flatten()
+
+    @get:JsonIgnore
+    val nextPartNumber: Long
+        get() = generations.flatMap { it.objects }.map { it.partNumber }.maxOrNull()?.plus(1) ?: 0L
+
+    /** Returns generationId -> objectAndPart for all staged objects that should be kept. */
+    fun getStagedObjectsToFinalize(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> =
+        generations
+            .filter { it.isStaging && it.generationId >= minimumGenerationId }
+            .flatMap { it.objects.map { obj -> it.generationId to obj } }
+
+    /**
+     * Returns generationId -> objectAndPart for all objects (staged and unstaged) that should be
+     * cleaned up.
+     */
+    fun getObjectsToDelete(minimumGenerationId: Long): Sequence<Pair<Long, ObjectAndPart>> {
+        val (toKeep, toDrop) = generations.partition { it.generationId >= minimumGenerationId }
+        val keepKeys = toKeep.flatMap { it.objects.map { obj -> obj.key } }.toSet()
+        return toDrop.asSequence().flatMap {
+            it.objects.filter { obj -> obj.key !in keepKeys }.map { obj -> it.generationId to obj }
+        }
+    }
 }
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
@@ -107,6 +129,7 @@ class ObjectStorageStagingPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     private val log = KotlinLogging.logger {}
+    private val fallbackPersister = ObjectStorageFallbackPersister(client, pathFactory)
 
     companion object {
         const val STATE_FILENAME = "__airbyte_state.json"
@@ -120,13 +143,11 @@ class ObjectStorageStagingPersister(
         try {
             log.info { "Loading destination state from $key" }
             return client.get(key) { inputStream ->
-                Jsons.readTree(inputStream).let {
-                    Jsons.treeToValue(it, ObjectStorageDestinationState::class.java)
-                }
+                inputStream.readIntoClass(ObjectStorageDestinationState::class.java)
             }
         } catch (e: Exception) {
-            log.info { "No destination state found at $key: $e" }
-            return ObjectStorageDestinationState()
+            log.info { "No destination state found at $key: $e; falling back to metadata search" }
+            return fallbackPersister.load(stream)
         }
     }
 
@@ -141,10 +162,11 @@ class ObjectStorageFallbackPersister(
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        val prefix = pathFactory.prefix
         val matcher = pathFactory.getPathMatcher(stream)
+        val longestUnambiguous =
+            pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
         client
-            .list(prefix)
+            .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
             .toList()
             .groupBy {

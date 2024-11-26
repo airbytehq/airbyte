@@ -41,6 +41,17 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
             it.first to it.second.changes.toList()
         }
 
+    fun nulledOut(
+        schema: AirbyteType,
+        context: Context,
+        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
+    ): Pair<AirbyteValue, Context> {
+        context.changes.add(
+            DestinationRecord.Change(context.path.joinToString("."), Change.NULLED, reason)
+        )
+        return mapInner(NullValue, schema, context)
+    }
+
     fun mapInner(
         value: AirbyteValue,
         schema: AirbyteType,
@@ -69,32 +80,23 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
                     is NumberType -> mapNumber(value as NumberValue, context)
                     is StringType -> mapString(value as StringValue, context)
                     is IntegerType -> mapInteger(value as IntegerValue, context)
-                    is DateType -> mapDate(value as DateValue, context)
+                    is DateType -> mapDate(value, context)
                     is TimeTypeWithTimezone ->
                         mapTimeWithTimezone(
-                            value as TimeValue,
+                            value,
                             context,
                         )
                     is TimeTypeWithoutTimezone ->
                         mapTimeWithoutTimezone(
-                            value as TimeValue,
+                            value,
                             context,
                         )
-                    is TimestampTypeWithTimezone ->
-                        mapTimestampWithTimezone(value as TimestampValue, context)
-                    is TimestampTypeWithoutTimezone ->
-                        mapTimestampWithoutTimezone(value as TimestampValue, context)
+                    is TimestampTypeWithTimezone -> mapTimestampWithTimezone(value, context)
+                    is TimestampTypeWithoutTimezone -> mapTimestampWithoutTimezone(value, context)
                     is UnknownType -> mapUnknown(value as UnknownValue, context)
                 }
             } catch (e: Exception) {
-                context.changes.add(
-                    DestinationRecord.Change(
-                        context.path.joinToString("."),
-                        Change.NULLED,
-                        Reason.DESTINATION_SERIALIZATION_ERROR
-                    )
-                )
-                mapInner(NullValue, schema, context)
+                nulledOut(schema, context)
             }
 
     open fun mapObject(
@@ -171,24 +173,30 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     open fun mapInteger(value: IntegerValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapDate(value: DateValue, context: Context): Pair<AirbyteValue, Context> =
+    /**
+     * Time types are only allowed to be strings on the wire, but can be Int/egerValue if passed
+     * through [TimeStringToInteger].
+     */
+    open fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context
 
-    open fun mapTimeWithTimezone(value: TimeValue, context: Context): Pair<AirbyteValue, Context> =
-        value to context
+    open fun mapTimeWithTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimeWithoutTimezone(
-        value: TimeValue,
+        value: AirbyteValue,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimestampWithTimezone(
-        value: TimestampValue,
+        value: AirbyteValue,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapTimestampWithoutTimezone(
-        value: TimestampValue,
+        value: AirbyteValue,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
 

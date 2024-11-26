@@ -32,10 +32,10 @@ interface ObjectStorageCompressionSpecificationProvider {
         "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
     )
     @get:JsonProperty("compression")
-    val compression: ObjectStorageCompressionSpecification
+    val compression: ObjectStorageCompressionSpecification?
 
     fun toCompressionConfiguration(): ObjectStorageCompressionConfiguration<*> {
-        return when (compression) {
+        return when (compression ?: NoCompressionSpecification()) {
             is NoCompressionSpecification -> ObjectStorageCompressionConfiguration(NoopProcessor)
             is GZIPCompressionSpecification -> ObjectStorageCompressionConfiguration(GZIPProcessor)
         }
