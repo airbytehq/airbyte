@@ -175,7 +175,7 @@ abstract class IntegrationTest(
                 "write",
                 configContents,
                 catalog.asProtocolObject(),
-                useFileTransfer,
+                useFileTransfer = useFileTransfer,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }

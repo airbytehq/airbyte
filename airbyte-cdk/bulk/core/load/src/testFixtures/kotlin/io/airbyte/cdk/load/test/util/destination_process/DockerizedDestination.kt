@@ -117,18 +117,17 @@ class DockerizedDestination(
                     "$fileTransferMountSource:/tmp",
                     "-e",
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
+                    "-e",
+                    "USE_FILE_TRANSFER=true",
                 ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
-
                         // Yes, we hardcode the job ID to 0.
                         // Also yes, this is available in the configured catalog
                         // via the syncId property.
                         // Also also yes, we're relying on this env var >.>
                         "-e",
                         "WORKER_JOB_ID=0",
-                        "-e",
-                        "USE_FILE_TRANSFER=$useFileTransfer",
                         imageTag,
                         command,
                     ))
