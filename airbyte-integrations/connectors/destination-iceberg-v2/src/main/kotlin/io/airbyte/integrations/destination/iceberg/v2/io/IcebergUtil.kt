@@ -36,6 +36,7 @@ import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
+import org.projectnessie.client.NessieConfigConstants
 
 private val logger = KotlinLogging.logger {}
 
@@ -178,18 +179,17 @@ class IcebergUtil {
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(icebergConfiguration: IcebergV2Configuration): Map<String, String> {
-        val property =
-            System.setProperty(
-                "aws.region",
-                icebergConfiguration.s3BucketConfiguration.s3BucketRegion.region
-            )
-        println(property)
-        //        https://projectnessie.org/nessie-latest/client_config/
+        System.setProperty(
+            "aws.region",
+            icebergConfiguration.s3BucketConfiguration.s3BucketRegion.region,
+        )
+        // https://projectnessie.org/nessie-latest/client_config/
         return mutableMapOf(
                 // TODO make configurable?
                 ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
                 URI to icebergConfiguration.nessieServerConfiguration.serverUri,
-                "nessie.ref" to icebergConfiguration.nessieServerConfiguration.mainBranchName,
+                NessieConfigConstants.CONF_NESSIE_REF to
+                    icebergConfiguration.nessieServerConfiguration.mainBranchName,
                 WAREHOUSE_LOCATION to
                     icebergConfiguration.nessieServerConfiguration.warehouseLocation,
                 // Use Iceberg's S3FileIO for file operations
@@ -204,9 +204,9 @@ class IcebergUtil {
             )
             .apply {
                 if (icebergConfiguration.nessieServerConfiguration.accessToken != null) {
-                    put("nessie.authentication.type", "BEARER")
+                    put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "BEARER")
                     put(
-                        "nessie.authentication.token",
+                        NessieConfigConstants.CONF_NESSIE_AUTH_TOKEN,
                         icebergConfiguration.nessieServerConfiguration.accessToken!!
                     )
                 }
