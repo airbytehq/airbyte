@@ -82,7 +82,7 @@ usersGroups = json.load(usersGroupsFile)
 groupPermissionsFile = open('groupPermissions.json')
 groupPermissions = json.load(groupPermissionsFile)
 
-0. - Enter your own credentials to use Airbyte API.
+# 0. - Enter your own credentials to use Airbyte API.
 s = airbyte_api.AirbyteAPI(
   server_url = 'http://<airbyte-base-url>.com/api/public/v1',
   security=models.Security(
@@ -112,7 +112,7 @@ for airbyteUserResponse in allAirbyteUsers:
     for group in userGroups:
       if group in groupPermissions:
         permissionsToGrant = groupPermissions[group]
-	  # for each permission to create
+      # for each permission to create
         for permission in permissionsToGrant:
           current_permission = existing_permissions.get(permission["scopeId"], None)
           if (current_permission is not None and permission["permissionType"].lower() == current_permission[0]):
