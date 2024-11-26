@@ -11,12 +11,12 @@
       "description": "Cancelled subscription for Something from Customer",
       "object_type": "subscription",
       "source": {
-          "account_id": null,
-          "api_token_id": null,
-          "account_email": null,
-          "api_token_name": null,
-          "origin": null,
-          "user_type": null
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": null,
+        "user_type": null
       },
       "updated_attributes": [],
       "verb": "cancelled"
@@ -30,12 +30,12 @@
       "description": "Deleted charge #2",
       "object_type": "charge",
       "source": {
-          "account_id": null,
-          "api_token_id": null,
-          "account_email": null,
-          "api_token_name": null,
-          "origin": "somewhere",
-          "user_type": "customer"
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": "somewhere",
+        "user_type": "customer"
       },
       "updated_attributes": [],
       "verb": "deleted"
@@ -49,12 +49,12 @@
       "description": "Failed charge #3",
       "object_type": "charge",
       "source": {
-          "account_id": null,
-          "api_token_id": null,
-          "account_email": null,
-          "api_token_name": null,
-          "origin": "api",
-          "user_type": null
+        "account_id": null,
+        "api_token_id": null,
+        "account_email": null,
+        "api_token_name": null,
+        "origin": "api",
+        "user_type": null
       },
       "updated_attributes": [],
       "verb": "failed"
