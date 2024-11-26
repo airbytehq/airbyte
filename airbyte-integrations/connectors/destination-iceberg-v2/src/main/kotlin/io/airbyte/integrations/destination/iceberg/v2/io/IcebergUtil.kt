@@ -179,11 +179,13 @@ class IcebergUtil {
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(icebergConfiguration: IcebergV2Configuration): Map<String, String> {
+        // Nessie does not allow explicitly setting the S3 bucket region.
+        // Instead, it relies on a static credentials provider, which retrieves the region
+        // from the system property. Therefore, we need to set the region this way.
         System.setProperty(
             "aws.region",
             icebergConfiguration.s3BucketConfiguration.s3BucketRegion.region,
         )
-        // https://projectnessie.org/nessie-latest/client_config/
         return mutableMapOf(
                 // TODO make configurable?
                 ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
