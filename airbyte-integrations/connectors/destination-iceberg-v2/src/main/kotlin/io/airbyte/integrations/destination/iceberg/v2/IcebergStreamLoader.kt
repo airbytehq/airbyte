@@ -75,7 +75,6 @@ class IcebergStreamLoader(
     }
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {
-        log.info { "Closing the stream loader" }
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
