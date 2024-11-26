@@ -155,6 +155,9 @@ class JsonSchemaToAirbyteType {
                     convertInner(it)
                 }
             }
+        if (unionOptions.isEmpty()) {
+            return UnknownType(parentSchema)
+        }
         return UnionType.of(unionOptions)
     }
 }

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -20,6 +21,7 @@ import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
+import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
@@ -29,6 +31,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.Closeable
 import java.io.OutputStream
+import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecord)
@@ -144,13 +147,15 @@ class ParquetFormattingWriter(
     private val log = KotlinLogging.logger {}
 
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
-    private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
-    private val writer =
-        outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
+    private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
+    private val avroSchema: Schema
+    private val writer: ParquetWriter
 
     init {
+        log.info { "Preprocessed schema for avro conversion: $mappedSchema" }
+        avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
         log.info { "Generated avro schema: $avroSchema" }
+        writer = outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
     }
 
     override fun accept(record: DestinationRecord) {
