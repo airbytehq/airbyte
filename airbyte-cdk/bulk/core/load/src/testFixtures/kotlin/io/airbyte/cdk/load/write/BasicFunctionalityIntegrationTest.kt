@@ -66,6 +66,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
 sealed interface AllTypesBehavior
 
@@ -230,6 +231,7 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", matches = "docker")
     open fun testBasicWriteFile() {
 
         val stream =

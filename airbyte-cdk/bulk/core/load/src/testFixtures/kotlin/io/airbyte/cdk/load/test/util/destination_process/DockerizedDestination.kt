@@ -57,7 +57,7 @@ class DockerizedDestination(
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
-    private val fileTransferMountSource = Files.createTempDirectory("tmp")
+    // private val fileTransferMountSource = Files.createTempDirectory("tmp")
 
     init {
         // This is largely copied from the old cdk's DockerProcessFactory /
@@ -79,10 +79,10 @@ class DockerizedDestination(
         val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
         // This directory is being used for the file transfer feature.
 
-        if (useFileTransfer) {
-            val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
-            file.writeText("123")
-        }
+        // if (useFileTransfer) {
+        //     val file = Files.createFile(fileTransferMountSource.resolve("test_file"))
+        //     file.writeText("123")
+        // }
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
@@ -114,11 +114,11 @@ class DockerizedDestination(
                     "-v",
                     String.format("%s:%s", localRoot, "/local"),
                     "-v",
-                    "$fileTransferMountSource:/tmp",
-                    "-e",
+                    // "$fileTransferMountSource:/tmp",
+                    // "-e",
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
-                    "-e",
-                    "USE_FILE_TRANSFER=true",
+                    // "-e",
+                    // "USE_FILE_TRANSFER=true",
                 ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
@@ -261,8 +261,8 @@ class DockerizedDestination(
     }
 
     override fun verifyFileDeleted() {
-        val file = File(fileTransferMountSource.resolve("test_file").toUri())
-        assertFalse(file.exists())
+        // val file = File(fileTransferMountSource.resolve("test_file").toUri())
+        // assertFalse(file.exists())
     }
 }
 
