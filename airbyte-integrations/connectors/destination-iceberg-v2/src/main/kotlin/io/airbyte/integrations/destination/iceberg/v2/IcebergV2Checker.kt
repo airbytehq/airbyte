@@ -25,21 +25,15 @@ class IcebergV2Checker(
     }
     private fun catalogValidation(config: IcebergV2Configuration) {
         val catalogProperties = icebergUtil.toCatalogProperties(config)
-        log.info { "PROPERTIES_PROPERTIES" }
-        catalogProperties.forEach { (key, value) -> log.info { "$key: $value" } }
-
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 
-        log.info { "CATALOG CREATED" }
-        val testTableIdentifier =
-            DestinationStream.Descriptor("airbyte_test_namespace", "airbyte_test_table")
+        val testTableIdentifier = DestinationStream.Descriptor(TEST_NAMESPACE, TEST_TABLE)
 
         val testTableSchema =
             Schema(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
-        log.info { "CREATING TABLE" }
         val table =
             icebergUtil.createTable(
                 testTableIdentifier,
@@ -48,17 +42,11 @@ class IcebergV2Checker(
                 catalogProperties,
             )
 
-        log.info { "TABLE CREATED" }
-
-        log.info { "CLEARNING TABLE" }
-
         icebergTableCleaner.clearTable(
             catalog,
             testTableIdentifier.toIcebergTableIdentifier(),
             table.io(),
             table.location()
         )
-
-        log.info { "TABLE CLEARED" }
     }
 }
