@@ -93,7 +93,7 @@ class DockerizedDestination(
         val shortImageName = imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
-
+        logger.info { "File transfer ${if (useFileTransfer) "is " else "isn't"} enabled" }
         val cmd: MutableList<String> =
             (listOf(
                     "docker",
