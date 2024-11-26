@@ -42,7 +42,6 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     "check",
                     configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
-                    useFileTransfer = false,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
@@ -71,7 +70,6 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
                     "check",
                     configContents = config,
                     featureFlags = featureFlags.toTypedArray(),
-                    useFileTransfer = false,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()

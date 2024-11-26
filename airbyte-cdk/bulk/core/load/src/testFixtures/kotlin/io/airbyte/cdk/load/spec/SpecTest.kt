@@ -67,7 +67,6 @@ abstract class SpecTest :
             destinationProcessFactory.createDestinationProcess(
                 "spec",
                 featureFlags = featureFlags,
-                useFileTransfer = false
             )
         runBlocking { process.run() }
         val messages = process.readMessages()
