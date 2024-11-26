@@ -2605,7 +2605,7 @@ spec:
         minimum: 1
         maximum: 25
         default: 10
-        examples: [ 1, 2, 3 ]
+        examples: [1, 2, 3]
         description: >-
           The number of worker threads to use for the sync.
           The performance upper boundary is based on the limit of your Asana pricing plan.
