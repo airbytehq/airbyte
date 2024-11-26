@@ -172,12 +172,7 @@ class ObjectStorageFallbackPersister(
         }
         client
             .list(longestUnambiguous)
-            .mapNotNull {
-                // TODO: S3V2: Remove logging the key
-                val match = matcher.match(it.key)
-                log.info { "Matched key $it: $match" }
-                match
-            }
+            .mapNotNull { matcher.match(it.key) }
             .toList()
             .groupBy {
                 client

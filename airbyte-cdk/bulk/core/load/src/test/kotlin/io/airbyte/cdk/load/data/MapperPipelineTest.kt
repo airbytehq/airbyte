@@ -22,7 +22,7 @@ class MapperPipelineTest {
             schema: ObjectTypeWithoutSchema,
             context: Context
         ): Pair<AirbyteValue, Context> {
-            if (value.values.size == 1) {
+            if ((value as ObjectValue).values.size == 1) {
                 throw IllegalStateException("Arbitrarily reject 1")
             }
             return IntegerValue(value.values.size.toLong()) to context

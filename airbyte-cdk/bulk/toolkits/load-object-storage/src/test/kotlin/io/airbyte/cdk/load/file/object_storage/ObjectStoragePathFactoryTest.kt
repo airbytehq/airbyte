@@ -158,7 +158,6 @@ class ObjectStoragePathFactoryTest {
             val expectedToMatch =
                 "prefix/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-1577934245678-173-42.jsonl.gz"
             val match = pathFactory.getPathMatcher(emptyNamespaceStream).match(expectedToMatch)
-            println(pathFactory.getPathMatcher(emptyNamespaceStream).regex)
             Assertions.assertTrue(match != null)
             Assertions.assertTrue(match?.partNumber == 173L)
         }

@@ -18,10 +18,7 @@ class MapperPipeline(
     init {
         val (schemaMappers, valueMappers) = schemaValueMapperPairs.unzip()
         val schemas =
-            schemaMappers.runningFold(inputSchema) { schema, mapper ->
-                println("mapping from schema=$schema using mapper=${mapper.javaClass.simpleName}")
-                mapper.map(schema)
-            }
+            schemaMappers.runningFold(inputSchema) { schema, mapper -> mapper.map(schema) }
         schemasWithMappers = schemas.zip(valueMappers)
         finalSchema = schemas.last()
     }
@@ -30,12 +27,7 @@ class MapperPipeline(
         schemasWithMappers.fold(data to (changes ?: emptyList())) {
             (value, changes),
             (schema, mapper) ->
-            // TODO: S3V2: Remove before release
-            val (valueNext, changesNext) = mapper.map(value, schema, changes)
-            println(
-                "MapperPipeline.map<${mapper.javaClass.simpleName}>(using schema=$schema): value=$valueNext, changes=$changesNext"
-            )
-            valueNext to changesNext
+            mapper.map(value, schema, changes)
         }
 }
 

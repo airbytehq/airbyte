@@ -108,7 +108,6 @@ class AirbyteValueToAvroRecord {
                 airbyteSchema.properties.forEach { (name, airbyteField) ->
                     val nameMangled = Transformations.toAvroSafeName(name)
                     schema.getField(nameMangled)?.let { avroField ->
-                        println("nesting into $nameMangled: $airbyteField")
                         val value = (airbyteValue as ObjectValue).values[name]
                         record.put(
                             nameMangled,
@@ -145,7 +144,6 @@ class AirbyteValueToAvroRecord {
             is UnionType -> {
                 for (optionType in airbyteSchema.options) {
                     try {
-                        println("Trying to convert $airbyteValue to $optionType")
                         val optionSchema = matchingAvroType(optionType, schema)
                         return convert(airbyteValue, optionType, optionSchema)
                     } catch (e: Exception) {
@@ -160,7 +158,6 @@ class AirbyteValueToAvroRecord {
     }
 
     private fun matchingAvroType(airbyteSchema: AirbyteType, avroUnionSchema: Schema): Schema {
-        println("Matching $airbyteSchema to $avroUnionSchema")
         return when (airbyteSchema) {
             is ObjectType -> avroUnionSchema.types.find { it.type == Schema.Type.RECORD }
             is ArrayType -> avroUnionSchema.types.find { it.type == Schema.Type.ARRAY }

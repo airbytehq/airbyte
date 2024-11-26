@@ -108,7 +108,6 @@ class ObjectStorageDataDumper(
             }
             is AvroFormatConfiguration -> {
                 val finalSchema = avroMapperPipeline.finalSchema.withAirbyteMeta(wasFlattened)
-                println("Final schema: $finalSchema")
                 inputStream.toAvroReader(finalSchema.toAvroSchema(stream.descriptor)).use { reader
                     ->
                     reader

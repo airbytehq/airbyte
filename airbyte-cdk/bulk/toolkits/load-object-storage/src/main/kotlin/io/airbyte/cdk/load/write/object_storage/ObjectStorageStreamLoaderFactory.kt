@@ -98,11 +98,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach {
-                        // TODO: S3V2: Remove before release
-                        println("Writing record: $it")
-                        writer.accept(it)
-                    }
+                    records.forEach { writer.accept(it) }
                 }
             }
         log.info { "Finished writing records to $key, persisting state" }
