@@ -52,7 +52,7 @@ The following variables are relevant to both Docker and Kubernetes.
 2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 3. `SECRET_STORE_GCP_CREDENTIALS` - Defines the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
 4. `VAULT_ADDRESS` - Defines the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
-5. `VAULT_PREFIX` - Defines the vault path prefix. Empty by default. Alpha Support.
+5. `VAULT_PREFIX` - Defines the vault path prefix. Should follow the format `<engine>/<directory>/`, for example `kv/airbyte/` or `secret/airbyte/`. Empty by default. Alpha Support.
 6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
 7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
