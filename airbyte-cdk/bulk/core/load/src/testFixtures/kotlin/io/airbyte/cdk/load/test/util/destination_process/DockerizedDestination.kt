@@ -14,15 +14,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
-import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
-import kotlin.io.path.writeText
-import kotlin.test.assertFalse
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -119,7 +116,7 @@ class DockerizedDestination(
                     "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
                     // "-e",
                     // "USE_FILE_TRANSFER=true",
-                ) +
+                    ) +
                     featureFlags.flatMap { listOf("-e", it.envVarBindingDeclaration) } +
                     listOf(
                         // Yes, we hardcode the job ID to 0.

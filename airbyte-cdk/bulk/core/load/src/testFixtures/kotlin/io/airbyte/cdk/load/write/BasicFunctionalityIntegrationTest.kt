@@ -231,7 +231,10 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
-    @DisabledIfEnvironmentVariable(named = "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", matches = "docker")
+    @DisabledIfEnvironmentVariable(
+        named = "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER",
+        matches = "docker"
+    )
     open fun testBasicWriteFile() {
 
         val stream =
