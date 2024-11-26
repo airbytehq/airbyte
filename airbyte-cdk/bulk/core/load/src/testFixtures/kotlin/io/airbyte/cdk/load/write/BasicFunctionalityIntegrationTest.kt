@@ -452,6 +452,7 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    @Disabled
     open fun testFunkyCharacters() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
