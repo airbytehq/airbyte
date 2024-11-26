@@ -74,7 +74,7 @@ class UnionValueToDisjointRecord : AirbyteValueIdentityMapper() {
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithoutSchema,
             is ObjectTypeWithEmptySchema -> value is StringValue
-            is DateType -> value is IntValue // TODO: remove IntValue
+            is DateType,
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone,
             is TimestampTypeWithTimezone,

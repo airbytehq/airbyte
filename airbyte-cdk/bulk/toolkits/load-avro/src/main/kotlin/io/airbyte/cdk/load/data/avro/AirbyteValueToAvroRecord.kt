@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
@@ -125,7 +124,7 @@ class AirbyteValueToAvroRecord {
                 return array
             }
             BooleanType -> return (airbyteValue as BooleanValue).value
-            DateType -> return (airbyteValue as IntValue).value // TODO: Remove IntType!
+            DateType -> return (airbyteValue as IntegerValue).value.toInt()
             IntegerType -> return (airbyteValue as IntegerValue).value.toLong()
             NumberType -> return (airbyteValue as NumberValue).value.toDouble()
             StringType -> return (airbyteValue as StringValue).value
