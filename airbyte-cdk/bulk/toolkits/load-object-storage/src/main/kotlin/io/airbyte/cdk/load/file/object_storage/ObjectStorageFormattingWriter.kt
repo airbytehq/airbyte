@@ -146,14 +146,12 @@ class ParquetFormattingWriter(
 
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
-    private val avroSchema: Schema
-    private val writer: ParquetWriter
+    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val writer: ParquetWriter =
+        outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
 
     init {
-        log.info { "Preprocessed schema for avro conversion: $mappedSchema" }
-        avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
         log.info { "Generated avro schema: $avroSchema" }
-        writer = outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
     }
 
     override fun accept(record: DestinationRecord) {

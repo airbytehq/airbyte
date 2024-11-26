@@ -80,24 +80,22 @@ class ObjectStoragePathFactory(
         }
 
     private val stagingPrefix: String
-        get() {
+        get() =
             if (!pathConfig.usesStagingDirectory) {
                 throw UnsupportedOperationException(
                     "Staging is not supported by this configuration"
                 )
-            }
-            return stagingPrefixResolved
-        }
-
-    override val supportsStaging: Boolean
-        get() = pathConfig.usesStagingDirectory
-    override val prefix: String
-        get() =
-            if (pathConfig.prefix.endsWith('/')) {
-                pathConfig.prefix.take(pathConfig.prefix.length - 1)
             } else {
-                pathConfig.prefix
+                stagingPrefixResolved
             }
+
+    override val supportsStaging: Boolean = pathConfig.usesStagingDirectory
+    override val prefix: String =
+        if (pathConfig.prefix.endsWith('/')) {
+            pathConfig.prefix.take(pathConfig.prefix.length - 1)
+        } else {
+            pathConfig.prefix
+        }
 
     /**
      * Variable substitution is complex.

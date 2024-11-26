@@ -419,7 +419,6 @@ abstract class DestinationAcceptanceTest(
 
         val config = getConfig()
         val defaultSchema = getDefaultSchema(config)
-        println("run sync with configured catalog: $configuredCatalog")
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
         retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema)
     }
