@@ -18,7 +18,7 @@ class MapperPipelineTest {
 
     class TurnSchemalessObjectsIntoIntegers : AirbyteValueIdentityMapper() {
         override fun mapObjectWithoutSchema(
-            value: ObjectValue,
+            value: AirbyteValue,
             schema: ObjectTypeWithoutSchema,
             context: Context
         ): Pair<AirbyteValue, Context> {

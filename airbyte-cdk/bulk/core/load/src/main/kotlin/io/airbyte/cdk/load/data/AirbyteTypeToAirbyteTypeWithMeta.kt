@@ -63,7 +63,9 @@ class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
             } else if (schema is ObjectTypeWithEmptySchema) {
                 // Do nothing: no fields to add
             } else {
-                throw IllegalStateException("Cannot flatten without an object schema")
+                throw IllegalStateException(
+                    "Cannot flatten without an object schema (schema type: $schema)"
+                )
             }
         } else {
             properties[DestinationRecord.Meta.COLUMN_NAME_DATA] =

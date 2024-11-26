@@ -56,20 +56,18 @@ class AirbyteTypeToAvroSchema {
                 val itemsSchema = maybeMakeNullable(airbyteSchema.items, converted)
                 SchemaBuilder.array().items(itemsSchema)
             }
-            is ArrayTypeWithoutSchema ->
-                throw IllegalArgumentException("Array type without schema is not supported")
             is BooleanType -> SchemaBuilder.builder().booleanType()
+            is IntegerType -> SchemaBuilder.builder().longType()
+            is NumberType -> SchemaBuilder.builder().doubleType()
+            is StringType -> SchemaBuilder.builder().stringType()
+            is UnknownType,
+            is ObjectTypeWithEmptySchema,
+            is ObjectTypeWithoutSchema,
+            is ArrayTypeWithoutSchema -> SchemaBuilder.builder().stringType()
             is DateType -> {
                 val schema = SchemaBuilder.builder().intType()
                 LogicalTypes.date().addToSchema(schema)
             }
-            is IntegerType -> SchemaBuilder.builder().longType()
-            is NumberType -> SchemaBuilder.builder().doubleType()
-            is ObjectTypeWithEmptySchema ->
-                throw IllegalArgumentException("Object type with empty schema is not supported")
-            is ObjectTypeWithoutSchema ->
-                throw IllegalArgumentException("Object type without schema is not supported")
-            is StringType -> SchemaBuilder.builder().stringType()
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone -> {
                 val schema = SchemaBuilder.builder().longType()
@@ -81,7 +79,6 @@ class AirbyteTypeToAvroSchema {
                 LogicalTypes.timestampMicros().addToSchema(schema)
             }
             is UnionType -> Schema.createUnion(airbyteSchema.options.map { convert(it, path) })
-            is UnknownType -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
 

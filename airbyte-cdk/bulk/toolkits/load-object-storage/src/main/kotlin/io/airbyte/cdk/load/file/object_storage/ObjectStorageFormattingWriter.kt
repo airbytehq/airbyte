@@ -113,8 +113,8 @@ class AvroFormattingWriter(
     val log = KotlinLogging.logger {}
 
     private val pipeline = AvroMapperPipelineFactory().create(stream)
-    private val avroSchema =
-        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
+    private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
+    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
 
@@ -127,7 +127,7 @@ class AvroFormattingWriter(
             pipeline
                 .map(record.data, record.meta?.changes)
                 .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(avroSchema))
+        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
     }
 
     override fun close() {
@@ -144,8 +144,8 @@ class ParquetFormattingWriter(
     private val log = KotlinLogging.logger {}
 
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
-    private val avroSchema =
-        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
+    private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
+    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
 
@@ -158,7 +158,7 @@ class ParquetFormattingWriter(
             pipeline
                 .map(record.data, record.meta?.changes)
                 .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(avroSchema))
+        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
     }
 
     override fun close() {
