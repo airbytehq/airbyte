@@ -1,5 +1,11 @@
 # Navan
-Connector for hotel and flight data
+
+The Navan connector supports travel booking data such as hotels and flights. 
+
+## Prerequisites
+
+* Client ID and Client Secret - Credentials for accessing the Navan API that can be created by administrators. 
+  * Learn how to create these API credentials by following [documentation provided by Navan](https://app.navan.com/app/helpcenter/articles/travel/admin/other-integrations/booking-data-integration). Note that API credential details are only accessible once.
 
 ## Configuration
 
@@ -10,6 +16,7 @@ Connector for hotel and flight data
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | bookings | uuid | DefaultPaginator | ✅ |  ✅  |
