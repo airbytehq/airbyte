@@ -88,7 +88,7 @@ data:
               - "campaign_groups"
               - "conversions"
       5.0.0:
-        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-02.
+        message: We would like to inform you that the Primary Key (PK) for ad_campaign_analytics and Custom Ad Analytics Reports streams has been changed from [string_of_pivot_values, end_date] to [string_of_pivot_values, end_date, sponsoredCampaign] and Primary Key (PK) for account_users stream has been changed from [account] to [account, user]. This update is intended to improve data integrity and ensure optimal performance. Upgrade LinkedIn Ads to apply these changes immediately. Otherwise, LinkedIn Ads will be upgraded automatically on 2024-12-10.
         upgradeDeadline: "2024-12-10"
         deadlineAction: "auto_upgrade"
   suggestedStreams:
