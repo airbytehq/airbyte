@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.0-rc.1 | 2024-11-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v6+ |
 | 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |
 | 4.4.0-rc.1 | 2024-11-18 | [48472](https://github.com/airbytehq/airbyte/pull/48472) | Adds support to maintain use of legacy fields for `Contacts`, `Deals`, and `DealsArchived` streams: `hs_lifecyclestage_{stage_id}_date`, `hs_date_entered_{stage_id}`, `hs_date_exited_{stage_id}`, `hs_time_in_{stage_id}`. |
 | 4.3.0  | 2024-11-15 | [44481](https://github.com/airbytehq/airbyte/pull/44481) | Add `Leads` stream |
