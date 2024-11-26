@@ -1,0 +1,6 @@
+#!/Users/baptiste/Documents/github/dev/airbyte/venv/bin/python
+import sys
+from pipelines.cli.airbyte_ci import airbyte_ci
+
+if __name__ == '__main__':
+    sys.exit(airbyte_ci())

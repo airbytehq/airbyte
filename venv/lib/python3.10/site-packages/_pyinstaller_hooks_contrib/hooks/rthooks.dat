@@ -1,0 +1,14 @@
+{
+    'enchant': ['pyi_rth_enchant.py'],
+    'ffpyplayer': ['pyi_rth_ffpyplayer.py'],
+    'osgeo': ['pyi_rth_osgeo.py'],
+    'traitlets': ['pyi_rth_traitlets.py'],
+    'usb': ['pyi_rth_usb.py'],
+    'nltk': ['pyi_rth_nltk.py'],
+    'pyproj': ['pyi_rth_pyproj.py'],
+    'pygraphviz': ['pyi_rth_pygraphviz.py'],
+    'pythoncom': ['pyi_rth_pythoncom.py'],
+    'pyqtgraph': ['pyi_rth_pyqtgraph_multiprocess.py'],
+    'pywintypes': ['pyi_rth_pywintypes.py'],
+    'tensorflow': ['pyi_rth_tensorflow.py'],
+}

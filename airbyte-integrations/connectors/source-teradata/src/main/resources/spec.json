@@ -41,6 +41,11 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "unwanted_tables": {
+        "title": "Omit Table list",
+        "description": "list of tables to omit tata,test,tsa,qqw",
+        "type": "string"
+      },
       "jdbc_url_params": {
         "title": "JDBC URL params",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)",

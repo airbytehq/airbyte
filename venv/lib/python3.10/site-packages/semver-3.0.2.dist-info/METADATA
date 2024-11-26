@@ -1,0 +1,138 @@
+Metadata-Version: 2.1
+Name: semver
+Version: 3.0.2
+Summary: Python helper for Semantic Versioning (https://semver.org)
+Home-page: https://github.com/python-semver/python-semver
+Author: Kostiantyn Rybnikov
+Author-email: k-bx@k-bx.com
+Maintainer: Sebastien Celles, Tom Schraitle
+Maintainer-email: s.celles@gmail.com
+License: BSD
+Project-URL: Changelog, https://python-semver.readthedocs.io/en/latest/changelog.html
+Project-URL: Documentation, https://python-semver.rtfd.io
+Project-URL: Releases, https://github.com/python-semver/python-semver/releases
+Project-URL: Bug Tracker, https://github.com/python-semver/python-semver/issues
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+License-File: LICENSE.txt
+
+Quickstart
+==========
+
+.. teaser-begin
+
+A Python module to simplify `semantic versioning`_.
+
+|GHAction| |python-support| |downloads| |license| |docs| |black|
+|openissues| |GHDiscussion|
+
+.. teaser-end
+
+The module follows the ``MAJOR.MINOR.PATCH`` style:
+
+* ``MAJOR`` version when you make incompatible API changes,
+* ``MINOR`` version when you add functionality in a backwards compatible manner, and
+* ``PATCH`` version when you make backwards compatible bug fixes.
+
+Additional labels for pre-release and build metadata are supported.
+
+To import this library, use:
+
+.. code-block:: python
+
+    >>> import semver
+
+Working with the library is quite straightforward. To turn a version string into the
+different parts, use the ``semver.Version.parse`` function:
+
+.. code-block:: python
+
+    >>> ver = semver.Version.parse('1.2.3-pre.2+build.4')
+    >>> ver.major
+    1
+    >>> ver.minor
+    2
+    >>> ver.patch
+    3
+    >>> ver.prerelease
+    'pre.2'
+    >>> ver.build
+    'build.4'
+
+To raise parts of a version, there are a couple of functions available for
+you. The function ``semver.Version.bump_major`` leaves the original object untouched, but
+returns a new ``semver.Version`` instance with the raised major part:
+
+.. code-block:: python
+
+    >>> ver = semver.Version.parse("3.4.5")
+    >>> ver.bump_major()
+    Version(major=4, minor=0, patch=0, prerelease=None, build=None)
+
+It is allowed to concatenate different "bump functions":
+
+.. code-block:: python
+
+    >>> ver.bump_major().bump_minor()
+    Version(major=4, minor=1, patch=0, prerelease=None, build=None)
+
+To compare two versions, semver provides the ``semver.compare`` function.
+The return value indicates the relationship between the first and second
+version:
+
+.. code-block:: python
+
+    >>> semver.compare("1.0.0", "2.0.0")
+    -1
+    >>> semver.compare("2.0.0", "1.0.0")
+    1
+    >>> semver.compare("2.0.0", "2.0.0")
+    0
+
+
+There are other functions to discover. Read on!
+
+
+.. |latest-version| image:: https://img.shields.io/pypi/v/semver.svg
+   :alt: Latest version on PyPI
+   :target: https://pypi.org/project/semver
+.. |python-support| image:: https://img.shields.io/pypi/pyversions/semver.svg
+   :target: https://pypi.org/project/semver
+   :alt: Python versions
+.. |downloads| image:: https://img.shields.io/pypi/dm/semver.svg
+   :alt: Monthly downloads from PyPI
+   :target: https://pypi.org/project/semver
+.. |license| image:: https://img.shields.io/pypi/l/semver.svg
+   :alt: Software license
+   :target: https://github.com/python-semver/python-semver/blob/master/LICENSE.txt
+.. |docs| image:: https://readthedocs.org/projects/python-semver/badge/?version=latest
+   :target: http://python-semver.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+.. _semantic versioning: https://semver.org/
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Black Formatter
+.. |Gitter| image:: https://badges.gitter.im/python-semver/community.svg
+    :target: https://gitter.im/python-semver/community
+    :alt: Gitter
+.. |openissues| image:: http://isitmaintained.com/badge/open/python-semver/python-semver.svg
+    :target: http://isitmaintained.com/project/python-semver/python-semver
+    :alt: Percentage of open issues
+.. |GHAction| image:: https://github.com/python-semver/python-semver/workflows/Python/badge.svg
+    :alt: Python
+.. |GHDiscussion| image:: https://shields.io/badge/GitHub-%20Discussions-green?logo=github
+    :target: https://github.com/python-semver/python-semver/discussions
+    :alt: GitHub Discussion

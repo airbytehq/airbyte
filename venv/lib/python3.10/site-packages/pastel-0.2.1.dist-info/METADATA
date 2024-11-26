@@ -1,0 +1,66 @@
+Metadata-Version: 2.1
+Name: pastel
+Version: 0.2.1
+Summary: Bring colors to your terminal.
+Home-page: https://github.com/sdispater/pastel
+License: MIT
+Author: Sébastien Eustace
+Author-email: sebastien@eustace.io
+Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Project-URL: Repository, https://github.com/sdispater/pastel
+Description-Content-Type: text/x-rst
+
+Pastel: Bring colors to your terminal
+#####################################
+
+Pastel is a simple library to help you colorize strings in your terminal.
+
+It comes bundled with predefined styles:
+
+* ``info``: green
+* ``comment``: yellow
+* ``question``: black on cyan
+* ``error``: white on red
+
+.. image:: https://raw.githubusercontent.com/sdispater/pastel/master/assets/screenshot.png
+
+
+Features
+========
+
+* Use predefined styles or add you own.
+* Disable colors all together by calling ``with_colors(False)``.
+* Automatically disables colors if the output is not a TTY.
+* Used in `cleo <https://github.com/sdispater/cleo>`_.
+* Supports Python **2.7+**, **3.5+** and **PyPy**.
+
+
+Usage
+=====
+
+.. code-block:: python
+
+    >>> import pastel
+    >>> print(pastel.colorize('<info>Information</info>'))
+    'Information'  # Green string by default
+    >>> print(pastel.colorize('<fg=red;options=bold>This is bold red</>'))
+    'This is bold red'
+
+
+Installation
+============
+
+.. code-block::
+
+    pip install pastel
+

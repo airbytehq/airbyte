@@ -124,6 +124,30 @@ public class DataSourceFactory {
   }
 
   /**
+   * Constructs a new {@link DataSource} using the provided configuration.
+   *
+   * @param username The username of the database user.
+   * @param password The password of the database user.
+   * @param driverClassName The fully qualified name of the JDBC driver class.
+   * @param jdbcConnectionString The JDBC connection string.
+   * @param connectionProperties Additional configuration properties for the underlying driver.
+   * @return The configured {@link DataSource}.
+   */
+  public static DataSource create(final String username,
+                                  final String password,
+                                  final String driverClassName,
+                                  final String jdbcConnectionString,
+                                  final Map<String, String> connectionProperties,
+                                  final Duration connectionTimeout,
+                                  final String connectionTestQuery) {
+    return new DataSourceBuilder(username, password, driverClassName, jdbcConnectionString)
+        .withConnectionProperties(connectionProperties)
+        .withConnectionTimeout(connectionTimeout)
+        .withConnectionTestQuery(connectionTestQuery)
+        .build();
+  }
+
+  /**
    * Utility method that attempts to close the provided {@link DataSource} if it implements
    * {@link Closeable}.
    *
@@ -155,6 +179,7 @@ public class DataSourceFactory {
     private int port = 5432;
     private String username;
     private String connectionInitSql;
+    private String connectionTestQuery;
 
     private DataSourceBuilder(final String username,
                               final String password,
@@ -254,10 +279,16 @@ public class DataSourceFactory {
       return this;
     }
 
+    public DataSourceBuilder withConnectionTestQuery(final String sql) {
+      this.connectionTestQuery = sql;
+      return this;
+    }
+
     public DataSource build() {
       final DatabaseDriver databaseDriver = DatabaseDriver.findByDriverClassName(driverClassName);
 
       Preconditions.checkNotNull(databaseDriver, "Unknown or blank driver class name: '" + driverClassName + "'.");
+      
 
       final HikariConfig config = new HikariConfig();
 
@@ -271,14 +302,19 @@ public class DataSourceFactory {
       config.setPassword(password);
       config.setUsername(username);
 
+      
+      
       /*
-       * Disable to prevent failing on startup. Applications may start prior to the database container
-       * being available. To avoid failing to create the connection pool, disable the fail check. This
-       * will preserve existing behavior that tests for the connection on first use, not on creation.
-       */
+      * Disable to prevent failing on startup. Applications may start prior to the database container
+      * being available. To avoid failing to create the connection pool, disable the fail check. This
+      * will preserve existing behavior that tests for the connection on first use, not on creation.
+      */
       config.setInitializationFailTimeout(Integer.MIN_VALUE);
-
+      
       config.setConnectionInitSql(connectionInitSql);
+
+      // Added for legacy drivers where isValid is not supported
+      config.setConnectionTestQuery(connectionTestQuery);
 
       connectionProperties.forEach(config::addDataSourceProperty);
 

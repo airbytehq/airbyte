@@ -148,6 +148,30 @@
             }
           }
         ]
+      },
+      "start_table_name": {
+        "title": "Start Table Name",
+        "description": "",
+        "type": "string",
+        "order": 9
+      },
+      "end_table_name": {
+        "title": "End Table name",
+        "description": "",
+        "type": "string",
+        "order": 10
+      },
+      "char_index_to_check": {
+        "title": "Index a which to check if between start and end",
+        "description": "",
+        "type": "string",
+        "order": 11
+      },
+      "table_start_with": {
+        "title": "Check only tables starting with",
+        "description": "",
+        "type": "string",
+        "order": 12
       }
     }
   }

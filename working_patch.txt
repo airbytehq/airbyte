@@ -1,0 +1,703 @@
+diff --git a/airbyte-integrations/connectors/source-teradata/src/main/java/io/airbyte/integrations/source/teradata/TeradataSource.java b/airbyte-integrations/connectors/source-teradata/src/main/java/io/airbyte/integrations/source/teradata/TeradataSource.java
+index d9410b75cd..538d01a35d 100644
+--- a/airbyte-integrations/connectors/source-teradata/src/main/java/io/airbyte/integrations/source/teradata/TeradataSource.java
++++ b/airbyte-integrations/connectors/source-teradata/src/main/java/io/airbyte/integrations/source/teradata/TeradataSource.java
+@@ -4,15 +4,36 @@
+ 
+ package io.airbyte.integrations.source.teradata;
+ 
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATABASE_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_DATA_TYPE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
++import static io.airbyte.cdk.db.jdbc.JdbcConstants.KEY_SEQ;
++
+ import com.fasterxml.jackson.databind.JsonNode;
+ import com.google.common.collect.ImmutableMap;
+ import io.airbyte.cdk.db.factory.DataSourceFactory;
++import io.airbyte.cdk.db.factory.DatabaseDriver;
+ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+ import io.airbyte.cdk.db.jdbc.JdbcUtils;
+ import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
+ import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+ import io.airbyte.cdk.integrations.base.IntegrationRunner;
+ import io.airbyte.cdk.integrations.base.Source;
++import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+ import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+ import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
+ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+@@ -23,7 +44,10 @@ import java.io.IOException;
+ import java.io.PrintWriter;
+ import java.io.UncheckedIOException;
+ import java.nio.charset.StandardCharsets;
++import java.sql.Connection;
+ import java.sql.JDBCType;
++import java.sql.ResultSet;
++import java.sql.ResultSetMetaData;
+ import java.sql.SQLException;
+ import java.util.HashMap;
+ import java.util.List;
+@@ -33,14 +57,27 @@ import javax.sql.DataSource;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
++import java.util.HashSet;
++import java.util.stream.Collectors;
++import org.apache.commons.lang3.tuple.ImmutablePair;
++import io.airbyte.protocol.models.JsonSchemaType;
++import io.airbyte.cdk.db.SqlDatabase;
++import java.sql.DatabaseMetaData;
++import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
++import java.sql.SQLType;
++import java.util.ArrayList;
++
++
++
+ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Source {
+ 
+   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSource.class);
+ 
+   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+ 
+-  static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
++  public static final String DRIVER_CLASS = DatabaseDriver.TERADATA.getDriverClassName();
+ 
++  public static final String PARAM_DBS_PORT = "dbs_port";
+   public static final String PARAM_MODE = "mode";
+   public static final String PARAM_SSL = "ssl";
+   public static final String PARAM_SSL_MODE = "ssl_mode";
+@@ -50,12 +87,16 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
+ 
+   private static final String CA_CERTIFICATE = "ca.pem";
+ 
++  public static Source sshWrappedSource(TeradataSource source) {
++    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
++  }
++
+   public TeradataSource() {
+     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new TeradataSourceOperations());
+   }
+ 
+   public static void main(final String[] args) throws Exception {
+-    final Source source = new TeradataSource();
++    final Source source = TeradataSource.sshWrappedSource(new TeradataSource());
+     LOGGER.info("starting source: {}", TeradataSource.class);
+     new IntegrationRunner(source).run(args);
+     LOGGER.info("completed source: {}", TeradataSource.class);
+@@ -64,17 +105,18 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
+   @Override
+   public JsonNode toDatabaseConfig(final JsonNode config) {
+     final String schema = config.get(JdbcUtils.DATABASE_KEY).asText();
+-
+-    final String host = config.has(JdbcUtils.PORT_KEY) ? config.get(JdbcUtils.HOST_KEY).asText() + ":" + config.get(JdbcUtils.PORT_KEY).asInt()
+-        : config.get(JdbcUtils.HOST_KEY).asText();
+-
+-    final String jdbcUrl = String.format("jdbc:teradata://%s/", host);
++    final String host = config.get(JdbcUtils.HOST_KEY).asText();
++    final String jdbcUrl = String.format(DatabaseDriver.TERADATA.getUrlFormatString(), host);
+ 
+     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+         .put(JdbcUtils.SCHEMA_KEY, schema);
+ 
++    if (config.has(JdbcUtils.PORT_KEY)) {
++      configBuilder.put(JdbcUtils.PORT_KEY, config.get(JdbcUtils.PORT_KEY).asText());
++    }
++
+     if (config.has(JdbcUtils.PASSWORD_KEY)) {
+       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+     }
+@@ -99,18 +141,392 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
+ 
+   @Override
+   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+-    return discoverInternal(database,
+-        database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
++    LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
++    LOGGER.info("V5");
++    LOGGER.info("Looking in database: {}", database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);  
++
++
++    // var test = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT  * FROM  DBC.TablesV WHERE   TableKind = 'V' and     DatabaseName = 'BBM_SEMANTIC_VIEWS' ORDER BY    TableName;"),
++    //     resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
++    // LOGGER.info("Data {}", test);
++
++    return discoverInternal(database, database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
++
++    // return discoverInternal(database,
++    //   //  database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null
++    //     null
++    //   );
++  }
++
++  // @Override
++  // private String getCatalog(final SqlDatabase database) {
++    //   return null;
++    // }
++    
++  // @Override
++  // private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
++  //   final var fieldMap = ImmutableMap.<String, Object>builder()
++  //       // we always want a namespace, if we cannot get a schema, use db name.
++  //       .put(INTERNAL_SCHEMA_NAME,
++  //           resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
++  //               : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
++  //       .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
++  //       .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
++  //       .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
++  //       .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
++  //       .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
++  //       .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE));
++  //   if (resultSet.getString(JDBC_DECIMAL_DIGITS) != null) {
++  //     fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString(JDBC_DECIMAL_DIGITS));
++  //   }
++  //   return Jsons.jsonNode(fieldMap.build());
++  // }
++
++  private void getDatabaseMetadata(final ResultSet resultSet) throws SQLException {
++    LOGGER.info("New DatabaseMetaData: {}", resultSet);
++    return;
++  }
++  
++
++  @Override
++  protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
++    final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
++    LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
++    final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
++    final List<JsonNode> columnsInfo = new ArrayList<JsonNode>();
++
++    var query = "SELECT DataBaseName, TableName FROM DBC.TablesV WHERE DatabaseName = '"+getCatalog(database).toUpperCase()+"' ORDER BY TableName;";
++    LOGGER.info("Query {}", query);
++    
++    var tableRows = database.bufferedResultSetQuery(
++      conn -> conn.createStatement().executeQuery(
++        query
++        ),
++        resultSet -> {
++          // LOGGER.info("Table {}", JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet)); 
++          return JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet);
++        });
++    for (final JsonNode tableRow : tableRows) {
++      try {
++        var DataBaseName = tableRow.get("DataBaseName").asText();
++        var TableName = tableRow.get("TableName").asText();
++        columnsInfo.addAll(database.bufferedResultSetQuery(
++          // retrieve column metadata from the database
++          connection -> connection.getMetaData().getColumns(getCatalog(database), DataBaseName, TableName, null),
++          // store essential column metadata to a Json object from the result set about each column
++          this::getColumnMetadata));
++      } catch (final Exception e) {
++        LOGGER.info(e.toString());
++        continue;
++      }
++    }
++        
++    return columnsInfo.stream()
++        .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
++        // group by schema and table name to handle the case where a table with the same name exists in
++        // multiple schemas.
++        .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
++        .values()
++        .stream()
++        .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
++            .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
++            .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
++            .fields(fields.stream()
++                // read the column metadata Json object, and determine its type
++                .map(f -> {
++                  final JDBCType datatype = sourceOperations.getDatabaseFieldType(f);
++                  final JsonSchemaType jsonType = getAirbyteType(datatype);
++                  LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
++                      fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
++                      f.get(INTERNAL_COLUMN_NAME).asText(),
++                      f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
++                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
++                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
++                      jsonType);
++                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
++                })
++                .collect(Collectors.toList()))
++            .cursorFields(extractCursorFields(fields))
++            .build())
++        .collect(Collectors.toList());
++  }
++
++  // @Override
++  // protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
++  //   final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
++  //   LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
++  //   final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
++  //   LOGGER.info("User Privileges: {}", tablesWithSelectGrantPrivilege);
++  //   // LOGGER.info("Starting bufferedResultSetQuery 1");
++
++  //   final List<JsonNode> columnsInfo = new ArrayList<JsonNode>();
++
++  //   // https://docs.teradata.com/r/Teradata-VantageCloud-Lake/Database-Reference/Database-Administration/Working-with-Tables-and-Views-Application-DBAs/Working-with-Views/Getting-View-Column-Information
++    
++  //   // var query = "SELECT * FROM DBC.TablesV WHERE TableKind = 'V' and DatabaseName = '"+getCatalog(database).toUpperCase()+"' ORDER BY TableName;";
++  //   var query = "SELECT * FROM DBC.TablesV WHERE DatabaseName = '"+getCatalog(database).toUpperCase()+"' ORDER BY TableName;";
++  //   LOGGER.info("Query {}", query);
++    
++  //   var tableRows = database.bufferedResultSetQuery(
++  //     conn -> conn.createStatement().executeQuery(
++  //       query
++  //       ),
++  //       resultSet -> {LOGGER.info("Table {}", JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet)); return JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet);});
++  //   for (final JsonNode tableRow : tableRows) {
++  //     // LOGGER.info("MySQL Table Structure {}", tableRow.toString());
++  //     var DataBaseName = tableRow.get("DataBaseName").asText();
++  //     var TableName = tableRow.get("TableName").asText();
++
++  //     var columnssleResult = database.bufferedResultSetQuery(
++  //     conn -> {
++  //       // LOGGER.info("Calling query: {}", "select * from "+DataBaseName+"."+TableName+" sample 1"); 
++  //       try {
++  //         return conn.createStatement().executeQuery(
++  //         "select * from "+DataBaseName+"."+TableName+" sample 1"
++  //         );
++  //       } catch (final SQLException e) {
++  //         // LOGGER.info("ERROR Calling query: {}", "select * from "+DataBaseName+"."+TableName+" sample 1"); 
++  //         // Todo returning empty
++  //         return conn.createStatement().executeQuery(
++  //         "SELECT  * FROM  DBC.TablesV sample 0"
++  //         );
++  //       }
++        
++  //       },
++  //       resultSet -> {
++  //         // LOGGER.info("Calling metadata"); 
++  //         ResultSetMetaData rsmd=resultSet.getMetaData();
++          
++  //         // LOGGER.info("mdColumn: {}", mdColumn); 
++
++  //         final int columnCount = rsmd.getColumnCount();
++  //         // final List<JsonNode> rsmdColumnsInfo = new ArrayList<JsonNode>();
++
++  //         for (int i = 1; i <= columnCount; i++) {
++  //           // convert to java types that will convert into reasonable json.
++  //           columnsInfo.add(getColumnMetadataSchema(rsmd, i, DataBaseName, TableName));
++
++  //         }
++
++  //         return resultSet;
++  //       });
++
++      
++  //     // var helpQuery = "HELP VIEW "+DataBaseName+"."+TableName;
++  //     // var columnsHelpResult = database.bufferedResultSetQuery(
++  //     // conn -> {
++  //     //   LOGGER.info("Calling query: {}", helpQuery); 
++  //     //   return conn.createStatement().executeQuery(
++  //     //     helpQuery
++  //     //     );
++  //     //   },
++  //     //   resultSet -> {
++  //     //     LOGGER.info("Calling getColumnMetadataSchema"); 
++  //     //     var mdColumn =  getColumnMetadataSchema(resultSet, DataBaseName, TableName);
++  //     //     // LOGGER.info("mdColumn: {}", mdColumn); 
++  //     //     return mdColumn;
++  //     //   });
++      
++
++      
++  //     // LOGGER.info("DataBaseName: {}, TableName: {}", DataBaseName,TableName);
++
++  //     // var bufRs = database.bufferedResultSetQuery(
++  //     //   // retrieve column metadata from the database
++  //     //   connection -> connection.getMetaData().getColumns("BBM_SEMANTIC_VIEWS", "BBM_SEMANTIC_VIEWS", null, null),
++  //     //   // store essential column metadata to a Json object from the result set about each column
++  //     //   rs -> {LOGGER.info("Test, {}", rs); return getColumnMetadata(rs);});
++
++  //     // LOGGER.info("bufRs done {}", bufRs);
++      
++  //     // LOGGER.info("Call bufRs_schema: {}, {}", DataBaseName, TableName);
++  //     // var bufRs_schema = database.bufferedResultSetQuery(
++  //     //   // retrieve column metadata from the database
++  //     //   //          Call bufferedResultSetQuery with DataBaseName: "BBM_SEMANTIC_VIEWS", TableName: "aaai_process_control_log"
++
++  //     //   connection -> {
++  //     //     LOGGER.info("Call bufferedResultSetQuery with DataBaseName: {}, TableName: {}", DataBaseName,TableName); 
++  //     //     return connection.getMetaData().getColumns(null, DataBaseName, TableName, null);
++  //     //   },
++  //     //   // store essential column metadata to a Json object from the result set about each column
++  //     //   rs -> {LOGGER.info("Test, {}", rs);return getColumnMetadata(rs);});
++  //     // LOGGER.info("bufRs_schema done {}", bufRs_schema);
++
++  //     // columnsInfo.addAll(columnssleResult);
++
++  //     // break;
++  //   }
++  //   LOGGER.info("columnsInfo: {}", columnsInfo);
++
++  //   return columnsInfo.stream()
++  //   // .map(f -> {LOGGER.info("New stream {}", f); return f;})
++  //   // .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
++  //   // group by schema and table name to handle the case where a table with the same name exists in
++  //   // multiple schemas.
++  //   .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
++  //   .values()
++  //   .stream()
++  //   .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
++  //       .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
++  //       .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
++  //       .fields(fields.stream()
++  //           // read the column metadata Json object, and determine its type
++  //           .map(f -> {
++  //             final JDBCType JDBCType = sourceOperations.getDatabaseFieldType(f);
++  //             final JsonSchemaType jsonType = getAirbyteType(JDBCType);
++  //             LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
++  //                 fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
++  //                 f.get(INTERNAL_COLUMN_NAME).asText(),
++  //                 f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
++  //                 f.get(INTERNAL_COLUMN_SIZE).asInt(),
++  //                 f.get(INTERNAL_IS_NULLABLE).asBoolean(),
++  //                 jsonType);
++  //             return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), JDBCType) {};
++  //           })
++  //           .collect(Collectors.toList()))
++  //       .cursorFields(extractCursorFields(fields))
++  //       .build())
++  //   .collect(Collectors.toList());
++        
++        
++        
++    // final ResultSet columns = database.getMetaData().getColumns(null, getCatalog(database).toUpperCase(), null, null);
++    // LOGGER.info("Column call: {}", columns);
++    
++    
++    // LOGGER.info("Starting bufferedResultSetQuery 2");
++    // return database.bufferedResultSetQuery(
++    //     // retrieve column metadata from the database
++    //     connection -> connection.getMetaData().getColumns(null, getCatalog(database).toUpperCase(), schema, null),
++    //     // store essential column metadata to a Json object from the result set about each column
++    //     rs ->{LOGGER.info("New rs: {}", rs); return getColumnMetadata(rs);})
++    //     .stream()
++    //     .map(f -> {LOGGER.info("New stream {}", f); return f;})
++    //     // .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
++    //     // group by schema and table name to handle the case where a table with the same name exists in
++    //     // multiple schemas.
++    //     .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
++    //     .values()
++    //     .stream()
++    //     .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
++    //         .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
++    //         .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
++    //         .fields(fields.stream()
++    //             // read the column metadata Json object, and determine its type
++    //             .map(f -> {
++    //               final JDBCType JDBCType = sourceOperations.getDatabaseFieldType(f);
++    //               final JsonSchemaType jsonType = getAirbyteType(JDBCType);
++    //               LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
++    //                   fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
++    //                   f.get(INTERNAL_COLUMN_NAME).asText(),
++    //                   f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
++    //                   f.get(INTERNAL_COLUMN_SIZE).asInt(),
++    //                   f.get(INTERNAL_IS_NULLABLE).asBoolean(),
++    //                   jsonType);
++    //               return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), JDBCType) {};
++    //             })
++    //             .collect(Collectors.toList()))
++    //         .cursorFields(extractCursorFields(fields))
++    //         .build())
++    //     .collect(Collectors.toList());
++    // }
++
++  // private JsonNode getColumnMetadataSchema(final ResultSetMetaData rsmd, int column_number, String schema, String table) throws SQLException {
++  //   // LOGGER.info("New getColumnMetadata: {}", JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
++    
++  //   LOGGER.info("============================================");
++  //   LOGGER.info("Column Schema: {}", schema);
++  //   LOGGER.info("Column Table: {}", table);
++  //   LOGGER.info("Column getColumnName: {}", rsmd.getColumnName(column_number));
++  //   LOGGER.info("Column type: {}", rsmd.getColumnType(column_number));
++  //   LOGGER.info("Column typeName: {}", "Unknown");
++  //   LOGGER.info("Column size: {}", rsmd.getColumnDisplaySize(column_number));
++  //   // LOGGER.info("Column label: {}", rsmd.getColumnLabel(column_number));
++  //   LOGGER.info("Column nullable?: {}", rsmd.isNullable(column_number));
++  //   LOGGER.info("Column getPrecision: {}", rsmd.getPrecision(column_number));
++  //   LOGGER.info("============================================");
++  //   // we always want a namespace, if we cannot get a schema, use db name.
++  //   final var fieldMap = ImmutableMap.<String, Object>builder()
++  //   .put(INTERNAL_SCHEMA_NAME, schema)
++  //   .put(INTERNAL_TABLE_NAME, table)
++  //   .put(INTERNAL_COLUMN_NAME, rsmd.getColumnName(column_number))
++  //   .put(INTERNAL_COLUMN_TYPE, rsmd.getColumnType(column_number))
++  //   .put(INTERNAL_COLUMN_TYPE_NAME, "Unknown")
++  //   .put(INTERNAL_COLUMN_SIZE, rsmd.getColumnDisplaySize(column_number))
++  //   .put(INTERNAL_IS_NULLABLE, rsmd.isNullable(column_number))
++  //   .put(INTERNAL_DECIMAL_DIGITS, rsmd.getPrecision(column_number));
++  //   var Column_info = Jsons.jsonNode(fieldMap.build());
++  //   LOGGER.info("New Column_info: {}", Column_info);
++  //   return Column_info;
++  // }
++
++  // private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
++  //   LOGGER.info("New getColumnMetadata: {}", resultSet);
++  //   final var fieldMap = ImmutableMap.<String, Object>builder()
++  //   // we always want a namespace, if we cannot get a schema, use db name.
++  //   .put(INTERNAL_SCHEMA_NAME,
++  //   resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
++  //   : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
++  //   .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
++  //   .put(INTERNAL_COLUMN_NAME, resultSet.getString("Column SQL Name"))
++  //   .put(INTERNAL_COLUMN_TYPE, resultSet.getString("Format"))
++  //   .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString("Type"))
++  //   .put(INTERNAL_COLUMN_SIZE, resultSet.getInt("Max Length"))
++  //   .put(INTERNAL_IS_NULLABLE, resultSet.getString("Nullable"));
++  //   if (resultSet.getString("Decimal Fractional Digits") != null) {
++  //     fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString("Decimal Fractional Digits"));
++  //   }
++  //   var Column_info = Jsons.jsonNode(fieldMap.build());
++  //   LOGGER.info("New Column_info: {}", Column_info);
++  //   return Column_info;
++  // }
++
++  private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
++    final var fieldMap = ImmutableMap.<String, Object>builder()
++        // we always want a namespace, if we cannot get a schema, use db name.
++        .put(INTERNAL_SCHEMA_NAME,
++            resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
++                : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
++        .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
++        .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
++        .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
++        .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
++        .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
++        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE));
++    if (resultSet.getString(JDBC_DECIMAL_DIGITS) != null) {
++      fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString(JDBC_DECIMAL_DIGITS));
++    }
++    return Jsons.jsonNode(fieldMap.build());
++  }
++
++  private String getCatalog(final SqlDatabase database) {
++    var return_data = (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
++    return return_data;
+   }
+ 
++  private List<String> extractCursorFields(final List<JsonNode> fields) {
++    return fields.stream()
++        .filter(field -> isCursorType(sourceOperations.getDatabaseFieldType(field)))
++        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
++        .collect(Collectors.toList());
++  }
++
++
++
++
++
++
++
+   @Override
+   public JdbcDatabase createDatabase(JsonNode sourceConfig) throws SQLException {
+     final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(sourceConfig, JdbcUtils.JDBC_URL_PARAMS_KEY);
+     final Map<String, String> sslConnectionProperties = getSslConnectionProperties(sourceConfig);
++    final Map<String, String> portProperty = getPortProperty(sourceConfig);
+     JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(customProperties, sslConnectionProperties);
+ 
+     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+-    final Map<String, String> connectionProperties = MoreMaps.merge(customProperties, sslConnectionProperties);
++    final Map<String, String> connectionProperties = MoreMaps.merge(customProperties, sslConnectionProperties, portProperty);
++
+     // Create the data source
+     final DataSource dataSource = DataSourceFactory.create(
+         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+@@ -133,6 +549,17 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
+     return database;
+   }
+ 
++  private Map<String, String> getPortProperty(JsonNode config) {
++    final Map<String, String> additionalParameters = new HashMap<>();
++
++    if (config.has(JdbcUtils.PORT_KEY)) {
++      LOGGER.debug("Using custom port");
++      additionalParameters.put(TeradataSource.PARAM_DBS_PORT, config.get(JdbcUtils.PORT_KEY).asText());
++    }
++
++    return additionalParameters;
++  }
++
+   private Map<String, String> getSslConnectionProperties(JsonNode config) {
+     final Map<String, String> additionalParameters = new HashMap<>();
+     if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
+diff --git a/airbyte-integrations/connectors/source-teradata/src/test-integration/resources/expected_spec.json b/airbyte-integrations/connectors/source-teradata/src/test-integration/resources/expected_spec.json
+index fa89553125..93edaae0cc 100644
+--- a/airbyte-integrations/connectors/source-teradata/src/test-integration/resources/expected_spec.json
++++ b/airbyte-integrations/connectors/source-teradata/src/test-integration/resources/expected_spec.json
+@@ -163,6 +163,121 @@
+             }
+           }
+         ]
++      },
++      "tunnel_method": {
++        "type": "object",
++        "title": "SSH Tunnel Method",
++        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
++        "group": "security",
++        "oneOf": [
++          {
++            "title": "No Tunnel",
++            "required": ["tunnel_method"],
++            "properties": {
++              "tunnel_method": {
++                "description": "No ssh tunnel needed to connect to database",
++                "type": "string",
++                "const": "NO_TUNNEL",
++                "order": 0
++              }
++            }
++          },
++          {
++            "title": "SSH Key Authentication",
++            "required": [
++              "tunnel_method",
++              "tunnel_host",
++              "tunnel_port",
++              "tunnel_user",
++              "ssh_key"
++            ],
++            "properties": {
++              "tunnel_method": {
++                "description": "Connect through a jump server tunnel host using username and ssh key",
++                "type": "string",
++                "const": "SSH_KEY_AUTH",
++                "order": 0
++              },
++              "tunnel_host": {
++                "title": "SSH Tunnel Jump Server Host",
++                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
++                "type": "string",
++                "order": 1
++              },
++              "tunnel_port": {
++                "title": "SSH Connection Port",
++                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
++                "type": "integer",
++                "minimum": 0,
++                "maximum": 65536,
++                "default": 22,
++                "examples": ["22"],
++                "order": 2
++              },
++              "tunnel_user": {
++                "title": "SSH Login Username",
++                "description": "OS-level username for logging into the jump server host.",
++                "type": "string",
++                "order": 3
++              },
++              "ssh_key": {
++                "title": "SSH Private Key",
++                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
++                "type": "string",
++                "airbyte_secret": true,
++                "multiline": true,
++                "order": 4
++              }
++            }
++          },
++          {
++            "title": "Password Authentication",
++            "required": [
++              "tunnel_method",
++              "tunnel_host",
++              "tunnel_port",
++              "tunnel_user",
++              "tunnel_user_password"
++            ],
++            "properties": {
++              "tunnel_method": {
++                "description": "Connect through a jump server tunnel host using username and password authentication",
++                "type": "string",
++                "const": "SSH_PASSWORD_AUTH",
++                "order": 0
++              },
++              "tunnel_host": {
++                "title": "SSH Tunnel Jump Server Host",
++                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
++                "type": "string",
++                "order": 1
++              },
++              "tunnel_port": {
++                "title": "SSH Connection Port",
++                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
++                "type": "integer",
++                "minimum": 0,
++                "maximum": 65536,
++                "default": 22,
++                "examples": ["22"],
++                "order": 2
++              },
++              "tunnel_user": {
++                "title": "SSH Login Username",
++                "description": "OS-level username for logging into the jump server host",
++                "type": "string",
++                "order": 3
++              },
++              "tunnel_user_password": {
++                "title": "Password",
++                "description": "OS-level password for logging into the jump server host",
++                "type": "string",
++                "airbyte_secret": true,
++                "order": 4
++              }
++            }
++          }
++        ]
+       }
+     }
+   },
+diff --git a/build.gradle b/build.gradle
+index 80da7caf07..986baf8eaa 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -444,7 +444,7 @@ subprojects {
+     // Build connector image as part of 'assemble' task.
+     // This is required for local 'integrationTest' execution.
+     def buildConnectorImage = airbyteCIConnectorsTask(
+-            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
++            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar', '--architecture', 'linux/amd64')
+     buildConnectorImage.configure {
+         // Images for java projects always rely on the distribution tarball.
+         dependsOn tasks.matching { it.name == 'distTar' }
+diff --git a/tools/bin/build_image.sh b/tools/bin/build_image.sh
+index e197a5a058..f40df71995 100755
+--- a/tools/bin/build_image.sh
++++ b/tools/bin/build_image.sh
+@@ -7,7 +7,8 @@ PROJECT_DIR="$2"
+ DOCKERFILE="$3"
+ TAGGED_IMAGE="$4"
+ ID_FILE="$5"
+-DOCKER_BUILD_ARCH="${DOCKER_BUILD_ARCH:-amd64}"
++DOCKER_BUILD_ARCH="linux/amd64"
++DOCKER_BUILD_PLATFORM="linux/amd64"
+ # https://docs.docker.com/develop/develop-images/build_enhancements/
+ export DOCKER_BUILDKIT=1
+ 
+diff --git a/tools/integrations/manage.sh b/tools/integrations/manage.sh
+index c7814a5e12..38f0244dc7 100755
+--- a/tools/integrations/manage.sh
++++ b/tools/integrations/manage.sh
+@@ -150,7 +150,7 @@ cmd_publish() {
+   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile "$pre_release")
+   local versioned_image=$image_name:$image_version
+   local latest_image="$image_name" # don't include ":latest", that's assumed here
+-  local build_arch="linux/amd64,linux/arm64"
++  local build_arch="linux/amd64"
+ 
+   # learn about this version of Docker
+   echo "--- docker info ---"

@@ -49,6 +49,12 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   private static final String ORACLE_JDBC_PARAMETER_DELIMITER = ";";
 
+  private char start_table_name = 'a';
+  private char end_table_name = 'z';
+  private int char_index_to_check = 0;
+  private String table_start_with = "";
+  
+
   enum Protocol {
     TCP,
     TCPS
@@ -116,6 +122,19 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       additionalParameters.addAll(List.of(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
     }
 
+    if (config.get("start_table_name") != null && !config.get("start_table_name").asText().isEmpty()) {
+      start_table_name = config.get("start_table_name").asText().charAt(0);
+    }
+    if (config.get("end_table_name") != null && !config.get("end_table_name").asText().isEmpty()) {
+      end_table_name = config.get("end_table_name").asText().charAt(0);
+    }
+    if (config.get("char_index_to_check") != null && !config.get("char_index_to_check").asText().isEmpty()) {
+      char_index_to_check = config.get("char_index_to_check").asInt();
+    }
+    if (config.get("table_start_with") != null && !config.get("table_start_with").asText().isEmpty()) {
+      table_start_with = config.get("table_start_with").asText().toLowerCase();
+    }
+
     if (!additionalParameters.isEmpty()) {
       final String connectionParams = String.join(ORACLE_JDBC_PARAMETER_DELIMITER, additionalParameters);
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
@@ -164,7 +183,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
-    final Process pr = run.exec(cmd);
+    final Process pr = run.exec(cmd.split(" "));
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
@@ -176,7 +195,14 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
     for (final String schema : schemas) {
       LOGGER.debug("Discovering schema: {}", schema);
-      internals.addAll(super.discoverInternal(database, schema));
+      for (TableInfo<CommonField<JDBCType>> tableInfo : super.discoverInternal(database, schema)) {
+        LOGGER.debug("Found table: {}.{}", tableInfo.getNameSpace(), tableInfo.getName());
+        if (tableInfo.getName().toLowerCase().startsWith(table_start_with)) {
+          if (tableInfo.getName().toLowerCase().charAt(char_index_to_check) >= start_table_name && tableInfo.getName().toLowerCase().charAt(char_index_to_check) <= end_table_name ) {
+            internals.add(tableInfo);
+          }
+        }
+      }
     }
 
     for (final TableInfo<CommonField<JDBCType>> info : internals) {

@@ -1,0 +1,7 @@
+[console_scripts]
+pyi-archive_viewer = PyInstaller.utils.cliutils.archive_viewer:run
+pyi-bindepend = PyInstaller.utils.cliutils.bindepend:run
+pyi-grab_version = PyInstaller.utils.cliutils.grab_version:run
+pyi-makespec = PyInstaller.utils.cliutils.makespec:run
+pyi-set_version = PyInstaller.utils.cliutils.set_version:run
+pyinstaller = PyInstaller.__main__:_console_script_run

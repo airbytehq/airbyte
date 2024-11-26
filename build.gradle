@@ -444,7 +444,7 @@ subprojects {
     // Build connector image as part of 'assemble' task.
     // This is required for local 'integrationTest' execution.
     def buildConnectorImage = airbyteCIConnectorsTask(
-            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar', '--architecture', 'linux/amd64')
     buildConnectorImage.configure {
         // Images for java projects always rely on the distribution tarball.
         dependsOn tasks.matching { it.name == 'distTar' }

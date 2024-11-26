@@ -1,0 +1,40 @@
+Metadata-Version: 2.1
+Name: segment-analytics-python
+Version: 2.2.3
+Summary: The hassle-free way to integrate analytics into any python application.
+Home-page: https://github.com/segmentio/analytics-python
+Author: Segment
+Author-email: friends@segment.com
+Maintainer: Segment
+Maintainer-email: friends@segment.com
+License: MIT License
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.6.0
+License-File: LICENSE
+Requires-Dist: requests (~=2.7)
+Requires-Dist: monotonic (~=1.5)
+Requires-Dist: backoff (~=2.1)
+Requires-Dist: python-dateutil (~=2.2)
+Provides-Extra: test
+Requires-Dist: mock (==2.0.0) ; extra == 'test'
+Requires-Dist: pylint (==2.8.0) ; extra == 'test'
+Requires-Dist: flake8 (==3.7.9) ; extra == 'test'
+
+
+Segment is the simplest way to integrate analytics into your application.
+One API allows you to turn on any other analytics service. No more learning
+new APIs, repeated code, and wasted development time.
+
+This is the official python client that wraps the Segment REST API (https://segment.com).
+
+Documentation and more details at https://github.com/segmentio/analytics-python

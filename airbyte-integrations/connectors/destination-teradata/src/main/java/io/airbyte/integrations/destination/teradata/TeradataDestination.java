@@ -6,9 +6,11 @@ package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
@@ -27,10 +29,11 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
   /**
    * Teradata JDBC driver
    */
-  public static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.TERADATA.getDriverClassName();
   /**
    * Default schema name
    */
+  protected static final String PARAM_DBS_PORT = "dbs_port";
   protected static final String DEFAULT_SCHEMA_NAME = "def_airbyte_db";
   protected static final String PARAM_MODE = "mode";
   protected static final String PARAM_SSL = "ssl";
@@ -49,13 +52,23 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
   protected static final String CA_CERT_KEY = "ssl_ca_certificate";
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new TeradataDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new TeradataDestination()).run(args);
+    final Destination destination = TeradataDestination.sshWrappedDestination();
+    LOGGER.info("starting destination: {}", TeradataDestination.class);
+    LOGGER.info("Config destination: {}, {}", JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+
+    new IntegrationRunner(destination).run(args);
+    LOGGER.info("completed destination: {}", TeradataDestination.class);
   }
 
   public TeradataDestination() {
-    super(DRIVER_CLASS, new StandardNameTransformer(), new TeradataSqlOperations());
+    super(DRIVER_CLASS, new TeradataNameTransformer(), new TeradataSqlOperations());
   }
+
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
@@ -68,6 +81,10 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
       } else {
         additionalParameters.put(PARAM_SSLMODE, REQUIRE);
       }
+    }
+    if (config.has(JdbcUtils.PORT_KEY)) {
+      LOGGER.debug("Using custom port");
+      additionalParameters.put(TeradataDestination.PARAM_DBS_PORT, config.get(JdbcUtils.PORT_KEY).asText());
     }
     return additionalParameters;
   }
@@ -102,10 +119,13 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
+    LOGGER.info("toJdbcConfig");
+    
     final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse(DEFAULT_SCHEMA_NAME);
+    final String host = config.get(JdbcUtils.HOST_KEY).asText();
 
-    final String jdbcUrl = String.format("jdbc:teradata://%s/",
-        config.get(JdbcUtils.HOST_KEY).asText());
+    final String jdbcUrl = String.format(DatabaseDriver.TERADATA.getUrlFormatString(), host);
+
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -119,6 +139,11 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
+
+    if (config.has(JdbcUtils.PORT_KEY)) {
+      configBuilder.put(JdbcUtils.PORT_KEY, config.get(JdbcUtils.PORT_KEY).asText());
+    }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 

@@ -16,6 +16,7 @@ import backoff
 import numpy as np
 import pandas as pd
 import paramiko
+from ftplib import FTP
 from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds
@@ -53,6 +54,10 @@ class SFTPClient:
         if self._connection is not None:
             return
 
+        print("ftp")
+        self._connection = FTP(host=self.host, user=self.username, passwd=self.password).login()
+        
+        return
         try:
             self.transport = paramiko.Transport((self.host, self.port))
             self.transport.use_compression(True)

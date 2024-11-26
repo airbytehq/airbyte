@@ -23,7 +23,8 @@ public enum DatabaseDriver {
   SNOWFLAKE("net.snowflake.client.jdbc.SnowflakeDriver", "jdbc:snowflake://%s/"),
   YUGABYTEDB("com.yugabyte.Driver", "jdbc:yugabytedb://%s:%d/%s"),
   EXASOL("com.exasol.jdbc.EXADriver", "jdbc:exa:%s:%d"),
-  TERADATA("com.teradata.jdbc.TeraDriver", "jdbc:teradata://%s/");
+  TERADATA("com.teradata.jdbc.TeraDriver", "jdbc:teradata://%s/"),
+  PERVASIVE("com.pervasive.jdbc.v2.Driver", "jdbc:pervasive://%s:%d/%s");
 
   private final String driverClassName;
   private final String urlFormatString;

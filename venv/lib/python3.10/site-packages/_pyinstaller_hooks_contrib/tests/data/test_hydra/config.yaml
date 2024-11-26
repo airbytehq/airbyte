@@ -1,0 +1,3 @@
+test_group:
+  secret_string: secret
+  secret_number: 123

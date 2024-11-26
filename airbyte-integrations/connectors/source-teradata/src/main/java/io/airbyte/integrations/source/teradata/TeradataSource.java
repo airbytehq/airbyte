@@ -39,6 +39,18 @@ import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.stream.Stream;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import java.sql.PreparedStatement;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
+import java.util.Optional;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.protocol.models.CommonField;
@@ -50,6 +62,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,6 +131,10 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
+    if (config.has("unwanted_tables")) {
+      configBuilder.put("unwanted_tables", config.get("unwanted_tables").asText());
+    }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
@@ -144,24 +161,32 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     List<JsonNode> columnsInfo;
+    var catalog = getCatalog(database);
     
     try {
       columnsInfo = database.bufferedResultSetQuery(
-        connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        connection -> connection.getMetaData().getColumns(catalog, catalog.toUpperCase(), null, null),
         this::getColumnMetadata);
     } catch (final Exception getColumnsError) {
       LOGGER.info("EXCEPTION: unable to run getColumns on all tables in schema: '{}'", schema);
-      var query = "SELECT DataBaseName, TableName FROM DBC.TablesV WHERE DatabaseName = '" + getCatalog(database).toUpperCase() + "' ORDER BY TableName;";
+      var query = "SELECT DataBaseName, TableName FROM DBC.TablesV WHERE DatabaseName = '" + catalog.toUpperCase() + "' ORDER BY TableName;";
       columnsInfo = new ArrayList<JsonNode>();
+      LOGGER.info("Getting all tables with: '{}'", query);
       var tableRows = database.bufferedResultSetQuery(
         conn -> conn.createStatement().executeQuery(query),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       for (final JsonNode tableRow : tableRows) {
         var DataBaseName = tableRow.get("DataBaseName").asText();
-        var TableName = tableRow.get("TableName").asText();
+        String TableName = tableRow.get("TableName").asText();
+        LOGGER.info("Looking in table: '{}'", TableName);
+        if (database.getDatabaseConfig().has("unwanted_tables")) {
+          if (Arrays.stream(database.getDatabaseConfig().get("unwanted_tables").asText().split(",")).anyMatch(tableRow.get("TableName").asText()::equals)){
+            continue;
+          }
+        }
         try {
           columnsInfo.addAll(database.bufferedResultSetQuery(
-            connection -> connection.getMetaData().getColumns(getCatalog(database), DataBaseName, TableName, null),
+            connection -> connection.getMetaData().getColumns(catalog, DataBaseName, TableName, null),
             this::getColumnMetadata));
         } catch (final Exception e) {
           LOGGER.info("FAILING ON schema: '{}' and table: '{}'", DataBaseName, TableName);
@@ -169,37 +194,97 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
       }
     }
 
+    // return columnsInfo.stream()
+    //     .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
+    //     // group by schema and table name to handle the case where a table with the same name exists in
+    //     // multiple schemas.
+    //     .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
+    //     .values()
+    //     .stream()
+    //     .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
+    //         .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
+    //         .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
+    //         .fields(fields.stream()
+    //             // read the column metadata Json object, and determine its type
+    //             .map(f -> {
+    //               final JDBCType datatype = sourceOperations.getDatabaseFieldType(f);
+    //               final JsonSchemaType jsonType = getAirbyteType(datatype);
+    //               LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
+    //                   fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
+    //                   f.get(INTERNAL_COLUMN_NAME).asText(),
+    //                   f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+    //                   f.get(INTERNAL_COLUMN_SIZE).asInt(),
+    //                   f.get(INTERNAL_IS_NULLABLE).asBoolean(),
+    //                   jsonType);
+    //               return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
+    //             })
+    //             .collect(Collectors.toList()))
+    //         .cursorFields(extractCursorFields(fields))
+    //         .build())
+    //     .collect(Collectors.toList());
+
     return columnsInfo.stream()
-        .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
-        // group by schema and table name to handle the case where a table with the same name exists in
-        // multiple schemas.
-        .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
-        .values()
-        .stream()
-        .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
-            .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
-            .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
-            .fields(fields.stream()
-                // read the column metadata Json object, and determine its type
-                .map(f -> {
-                  final JDBCType datatype = sourceOperations.getDatabaseFieldType(f);
-                  final JsonSchemaType jsonType = getAirbyteType(datatype);
-                  LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
-                      fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
-                      f.get(INTERNAL_COLUMN_NAME).asText(),
-                      f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
-                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
-                      jsonType);
-                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
-                })
-                .collect(Collectors.toList()))
+      .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
+      .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
+      .values()
+      .stream()
+      .flatMap(fields -> {
+        String schemaName = fields.get(0).get(INTERNAL_SCHEMA_NAME).asText();
+        String tableName = fields.get(0).get(INTERNAL_TABLE_NAME).asText();
+        String duplicatedTableName = tableName + "_COPY"; // or prefix/suffix of your choice
+
+        List<CommonField<JDBCType>> commonFields = fields.stream()
+            .map(f -> {
+              final JDBCType datatype = sourceOperations.getDatabaseFieldType(f);
+              final JsonSchemaType jsonType = getAirbyteType(datatype);
+              LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
+                  tableName,
+                  f.get(INTERNAL_COLUMN_NAME).asText(),
+                  f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
+                  f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                  f.get(INTERNAL_IS_NULLABLE).asBoolean(),
+                  jsonType);
+              return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
+            })
+            .collect(Collectors.toList());
+
+        TableInfo<CommonField<JDBCType>> original = TableInfo.<CommonField<JDBCType>>builder()
+            .nameSpace(schemaName)
+            .name(tableName)
+            .fields(commonFields)
             .cursorFields(extractCursorFields(fields))
-            .build())
-        .collect(Collectors.toList());
+            .build();
+
+        
+        boolean hasActiveFlag = fields.stream()
+          .anyMatch(f -> f.get(INTERNAL_COLUMN_NAME).asText().equalsIgnoreCase("active_flag"));
+
+          if (hasActiveFlag) {
+            TableInfo<CommonField<JDBCType>> active = TableInfo.<CommonField<JDBCType>>builder()
+            .nameSpace(schemaName)
+            .name(tableName + "_active")
+            .fields(commonFields)
+            .cursorFields(extractCursorFields(fields))
+            .build();
+        
+          TableInfo<CommonField<JDBCType>> inactive = TableInfo.<CommonField<JDBCType>>builder()
+            .nameSpace(schemaName)
+            .name(tableName + "_inactive")
+            .fields(commonFields)
+            .cursorFields(extractCursorFields(fields))
+            .build();
+
+            return Stream.of(original, active, inactive);
+          } else {
+            return Stream.of(original);
+          }
+      })
+      .collect(Collectors.toList());
   }
 
   private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
+    LOGGER.info("Looking in table to get columns: '{}'", resultSet.getString(JDBC_COLUMN_TABLE_NAME));
+
     final var fieldMap = ImmutableMap.<String, Object>builder()
         // we always want a namespace, if we cannot get a schema, use db name.
         .put(INTERNAL_SCHEMA_NAME,
@@ -309,6 +394,101 @@ public class TeradataSource extends AbstractJdbcSource<JDBCType> implements Sour
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
+  }
+
+
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
+    LOGGER.info("CUSTOM Queueing queryTableFullRefresh query for table: {}", tableName);
+    if (tableName.endsWith("_inactive")  || tableName.endsWith("_active")) {
+      var stripTableName = tableName.endsWith("_inactive") ? tableName.substring(0, tableName.length() - 9): tableName.substring(0, tableName.length() - 7);
+      LOGGER.info("CUSTOM Queueing queryTableFullRefresh active/inactive: {}", stripTableName);
+      if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      return queryTable(database, String.format("SELECT %s FROM %s WHERE active_flag='%s' ORDER BY %s ASC",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, stripTableName, getQuoteString()), tableName.endsWith("_active") ? "Y": "N", quotedCursorField),
+          tableName, schemaName);
+    } else {
+      return queryTable(database, String.format("SELECT %s FROM %s WHERE active_flag='%s' ",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, stripTableName, getQuoteString()), tableName.endsWith("_active") ? "Y": "N"), tableName, schemaName);
+    }
+
+    } else {
+      return super.queryTableFullRefresh(database,columnNames,schemaName,tableName,syncMode,cursorField);
+    }
+  }
+
+  @Override
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final CursorInfo cursorInfo,
+                                                               final JDBCType cursorFieldType) {
+    LOGGER.info("CUSTOM Queueing queryTableIncremental query for table: {}", tableName);
+
+    if (tableName.endsWith("_inactive")  || tableName.endsWith("_active")) {
+      var stripTableName = tableName.endsWith("_inactive") ? tableName.substring(0, tableName.length() - 9): tableName.substring(0, tableName.length() - 7);
+
+      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+          AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
+      return AutoCloseableIterators.lazyIterator(() -> {
+        try {
+          final Stream<JsonNode> stream = database.unsafeQuery(
+              connection -> {
+                LOGGER.info("Preparing query for table: {}", stripTableName);
+                final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, stripTableName, getQuoteString());
+                final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
+  
+                final String operator;
+                if (cursorInfo.getCursorRecordCount() <= 0L) {
+                  operator = ">";
+                } else {
+                  final long actualRecordCount = getActualCursorRecordCount(
+                      connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+                  LOGGER.info("Table {} cursor count: expected {}, actual {}", stripTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+                  if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+                    operator = ">";
+                  } else {
+                    operator = ">=";
+                  }
+                }
+  
+                final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, stripTableName);
+                final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE active_flag='%s' and %s %s ?",
+                    wrappedColumnNames,
+                    fullTableName,
+                    tableName.endsWith("_active") ? "Y": "N",
+                    quotedCursorField,
+                    operator));
+                // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+                // field
+                if (getStateEmissionFrequency() > 0) {
+                  sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+                }
+  
+                final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+                LOGGER.info("Executing query for table {}: {}", stripTableName, preparedStatement);
+                sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+                return preparedStatement;
+              },
+              sourceOperations::rowToJson);
+          return AutoCloseableIterators.fromStream(stream, airbyteStream);
+        } catch (final SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }, airbyteStream);
+    } else {
+      return super.queryTableIncremental(database,columnNames,schemaName,tableName,cursorInfo,cursorFieldType);
+    }
+
   }
 
 }

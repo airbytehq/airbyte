@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 370f52b1-350f-4e4f-a9f6-484316198dc0
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pervasive
+  githubIssueLabel: source-pervasive
+  icon: pervasive.svg
+  license: MIT
+  name: Pervasive
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pervasive
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

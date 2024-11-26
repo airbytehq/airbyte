@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Vendor: Actian Corporation
+Implementation-Title: PSQL JDBC Driver
+Implementation-Version: 2.5
+Specification-Vendor: Sun
+Name: com/pervasive/jdbc/v2
+Created-By: 1.6.0_45 (Sun Microsystems Inc.)
+Specification-Title: JDBC
+Specification-Version: 2.0
+

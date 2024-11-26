@@ -1,0 +1,6 @@
+[console_scripts]
+poe=poethepoet:main
+
+[poetry.application.plugin]
+poethepoet=poethepoet.plugin:PoetryPlugin
+

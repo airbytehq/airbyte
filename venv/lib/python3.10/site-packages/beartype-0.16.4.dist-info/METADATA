@@ -1,0 +1,717 @@
+Metadata-Version: 2.1
+Name: beartype
+Version: 0.16.4
+Summary: Unbearably fast runtime type checking in pure Python.
+Home-page: https://beartype.readthedocs.io
+Download-URL: https://github.com/beartype/beartype/archive/0.16.4.tar.gz
+Author: Cecil Curry, et al.
+Author-email: leycec@gmail.com
+Maintainer: Cecil Curry, et al.
+Maintainer-email: leycec@gmail.com
+License: MIT
+Project-URL: Documentation, https://beartype.readthedocs.io
+Project-URL: Source, https://github.com/beartype/beartype
+Project-URL: Issues, https://github.com/beartype/beartype/issues
+Project-URL: Forums, https://github.com/beartype/beartype/discussions
+Project-URL: Releases, https://github.com/beartype/beartype/releases
+Keywords: type checking,type hints,PEP 483,PEP 484,PEP 544,PEP 563,PEP 585,PEP 586,PEP 589,PEP 593,PEP 604,PEP 3141
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: Software Development :: Code Generators
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Quality Assurance
+Classifier: Typing :: Typed
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Requires-Python: >=3.8.0
+Description-Content-Type: text/x-rst; charset=UTF-8
+License-File: LICENSE
+Provides-Extra: all
+Requires-Dist: typing-extensions >=3.10.0.0 ; extra == 'all'
+Provides-Extra: dev
+Requires-Dist: coverage >=5.5 ; extra == 'dev'
+Requires-Dist: pandera ; extra == 'dev'
+Requires-Dist: typing-extensions >=3.10.0.0 ; extra == 'dev'
+Requires-Dist: pytest >=4.0.0 ; extra == 'dev'
+Requires-Dist: tox >=3.20.1 ; extra == 'dev'
+Requires-Dist: sphinx <6.0.0,>=4.2.0 ; extra == 'dev'
+Requires-Dist: pydata-sphinx-theme <=0.7.2 ; extra == 'dev'
+Requires-Dist: autoapi >=0.9.0 ; extra == 'dev'
+Requires-Dist: sphinxext-opengraph >=0.7.5 ; extra == 'dev'
+Requires-Dist: mypy >=0.800 ; (platform_python_implementation != "PyPy") and extra == 'dev'
+Requires-Dist: sphinx ; (python_version >= "3.8.0") and extra == 'dev'
+Requires-Dist: numpy ; (sys_platform != "darwin" and platform_python_implementation != "PyPy") and extra == 'dev'
+Provides-Extra: doc-rtd
+Requires-Dist: sphinx <6.0.0,>=4.2.0 ; extra == 'doc-rtd'
+Requires-Dist: pydata-sphinx-theme <=0.7.2 ; extra == 'doc-rtd'
+Requires-Dist: autoapi >=0.9.0 ; extra == 'doc-rtd'
+Requires-Dist: sphinxext-opengraph >=0.7.5 ; extra == 'doc-rtd'
+Provides-Extra: test-tox
+Requires-Dist: pandera ; extra == 'test-tox'
+Requires-Dist: typing-extensions >=3.10.0.0 ; extra == 'test-tox'
+Requires-Dist: pytest >=4.0.0 ; extra == 'test-tox'
+Provides-Extra: test-tox-coverage
+Requires-Dist: coverage >=5.5 ; extra == 'test-tox-coverage'
+Requires-Dist: mypy >=0.800 ; (platform_python_implementation != "PyPy") and extra == 'test-tox'
+Requires-Dist: sphinx ; (python_version >= "3.8.0") and extra == 'test-tox'
+Requires-Dist: numpy ; (sys_platform != "darwin" and platform_python_implementation != "PyPy") and extra == 'test-tox'
+
+.. # ------------------( LICENSE                             )------------------
+.. # Copyright (c) 2014-2023 Beartype authors.
+.. # See "LICENSE" for further details.
+.. #
+.. # ------------------( SEO                                 )------------------
+.. # Metadata converted into HTML-specific meta tags parsed by search engines.
+.. # Note that:
+.. # * The "description" should be no more than 300 characters and ideally no
+.. #   more than 150 characters, as search engines may silently truncate this
+.. #   description to 150 characters in edge cases.
+
+.. meta::
+   :description lang=en:
+     Beartype is an open-source pure-Python PEP-compliant constant-time runtime
+     type checker emphasizing efficiency and portability.
+
+.. # ------------------( SYNOPSIS                            )------------------
+
+=================
+|beartype-banner|
+=================
+
+|rtd-badge| |ci-badge| |codecov-badge|
+
+    ⚠
+
+    `Beartype documentation lives at ReadTheDocs (RTD) <beartype RTD_>`__. It's
+    readable, structured, and soothing to the deep folds of your big galactic
+    brain. Open your mind to an ocean of mundane knowledge that will exhaust
+    you at work. Enter... **the Bearpedia:**
+
+        https://beartype.readthedocs.io
+
+    The document you are now reading was once a monolithic ~316Kb file known to
+    induce migraines in 22% of the whole devops population. For your safety,
+    that document no longer exists. This is how much beartype cares.
+
+**Beartype** is an `open-source <beartype license_>`__ `pure-Python <beartype
+pure_>`__ `PEP-compliant <beartype PEPs_>`__ `near-real-time <beartype FAQ_>`__
+`hybrid runtime-static <beartype hybrid_>`__ `third-generation <beartype
+third_>`__ `type checker <beartype ELI5_>`__ emphasizing efficiency,
+usability, unsubstantiated jargon we just made up, and thrilling puns.
+
+.. #FIXME: Once we actually receive a sponsor at this tier, please remove this
+.. #placeholder as well as the icon links below. kthx
+.. #The `Bear Team <beartype organization_>`__ gratefully thanks `our family of
+.. #breathtaking GitHub Sponsors <beartype sponsorship_>`__:
+.. #
+.. #* **Your iconic URL here.** `Let us bestow you with eyeballs <beartype
+.. #  sponsorship_>`__.
+.. #FIXME: Once we actually receive a sponsor at this tier, please remove this
+.. #placeholder as well as the icon links below. kthx
+.. #    |icon-for-glorious-sponsor|
+
+.. code-block:: bash
+
+   # Install beartype.
+   $ pip3 install beartype
+   # Edit the "{your_package}.__init__" submodule with your favourite IDE.
+   $ vim {your_package}/__init__.py      # <-- so, i see that you too vim
+
+.. code-block:: python
+
+   from beartype.claw import beartype_this_package       # <-- hype comes
+   beartype_this_package()                               # <-- hype goes
+
+Beartype now implicitly type-checks *all* annotated classes, callables, and
+variable assignments across *all* submodules of ``{your_package}``. Congrats.
+This day all bugs die. :superscript:`...server slowly crashes`
+
+Beartype also publishes a `plethora of APIs for fine-grained control over
+type-checking <beartype APIs>`. For those who are about to QA, beartype salutes
+you. Would you like to know more?
+
+   # So let's do this.
+   $ python3
+
+.. code-block:: python
+
+   # ....................{ RAISE THE PAW                   }....................
+   # Manually enforce type hints across individual classes and callables.
+   # Do this only if you want a(nother) repetitive stress injury.
+
+   # Import the @beartype decorator.
+   >>> from beartype import beartype      # <-- eponymous import; it's eponymous
+
+   # Annotate @beartype-decorated classes and callables with type hints.
+   >>> @beartype                          # <-- you too will believe in magic
+   ... def quote_wiggum(lines: list[str]) -> None:
+   ...     print('“{}”\n\t— Police Chief Wiggum'.format("\n ".join(lines)))
+
+   # Call those callables with valid parameters.
+   >>> quote_wiggum(["Okay, folks. Show's over!", " Nothing to see here. Show's…",])
+   “Okay, folks. Show's over!
+    Nothing to see here. Show's…”
+      — Police Chief Wiggum
+
+   # Call those callables with invalid parameters.
+   >>> quote_wiggum([b"Oh, my God! A horrible plane crash!", b"Hey, everybody! Get a load of this flaming wreckage!",])
+   Traceback (most recent call last):
+     File "<stdin>", line 1, in <module>
+     File "<string>", line 30, in quote_wiggum
+     File "/home/springfield/beartype/lib/python3.9/site-packages/beartype/_decor/_code/_pep/_error/errormain.py", line 220, in get_beartype_violation
+       raise exception_cls(
+   beartype.roar.BeartypeCallHintParamViolation: @beartyped
+   quote_wiggum() parameter lines=[b'Oh, my God! A horrible plane
+   crash!', b'Hey, everybody! Get a load of thi...'] violates type hint
+   list[str], as list item 0 value b'Oh, my God! A horrible plane crash!'
+   not str.
+
+   # ....................{ MAKE IT SO                      }....................
+   # Squash bugs by refining type hints with @beartype validators.
+   >>> from beartype.vale import Is  # <---- validator factory
+   >>> from typing import Annotated  # <---------------- if Python ≥ 3.9.0
+   # >>> from typing_extensions import Annotated   # <-- if Python < 3.9.0
+
+   # Validators are type hints constrained by lambda functions.
+   >>> ListOfStrings = Annotated[  # <----- type hint matching non-empty list of strings
+   ...     list[str],  # <----------------- type hint matching possibly empty list of strings
+   ...     Is[lambda lst: bool(lst)]  # <-- lambda matching non-empty object
+   ... ]
+
+   # Annotate @beartype-decorated callables with validators.
+   >>> @beartype
+   ... def quote_wiggum_safer(lines: ListOfStrings) -> None:
+   ...     print('“{}”\n\t— Police Chief Wiggum'.format("\n ".join(lines)))
+
+   # Call those callables with invalid parameters.
+   >>> quote_wiggum_safer([])
+   beartype.roar.BeartypeCallHintParamViolation: @beartyped
+   quote_wiggum_safer() parameter lines=[] violates type hint
+   typing.Annotated[list[str], Is[lambda lst: bool(lst)]], as value []
+   violates validator Is[lambda lst: bool(lst)].
+
+   # ....................{ AT ANY TIME                     }....................
+   # Type-check anything against any type hint – anywhere at anytime.
+   >>> from beartype.door import (
+   ...     is_bearable,  # <-------- like "isinstance(...)"
+   ...     die_if_unbearable,  # <-- like "assert isinstance(...)"
+   ... )
+   >>> is_bearable(['The', 'goggles', 'do', 'nothing.'], list[str])
+   True
+   >>> die_if_unbearable([0xCAFEBEEF, 0x8BADF00D], ListOfStrings)
+   beartype.roar.BeartypeDoorHintViolation: Object [3405692655, 2343432205]
+   violates type hint typing.Annotated[list[str], Is[lambda lst: bool(lst)]],
+   as list index 0 item 3405692655 not instance of str.
+
+   # ....................{ GO TO PLAID                     }....................
+   # Type-check anything in around 1µs (one millionth of a second) – including
+   # this list of one million 2-tuples of NumPy arrays.
+   >>> from beartype.door import is_bearable
+   >>> from numpy import array, ndarray
+   >>> data = [(array(i), array(i)) for i in range(1000000)]
+   >>> %time is_bearable(data, list[tuple[ndarray, ndarray]])
+       CPU times: user 31 µs, sys: 2 µs, total: 33 µs
+       Wall time: 36.7 µs
+   True
+
+Beartype brings Rust_- and `C++`_-inspired `zero-cost abstractions <zero-cost
+abstraction_>`__ into the lawless world of `dynamically-typed`_ Python by
+`enforcing type safety at the granular level of functions and methods <beartype
+ELI5_>`__ against `type hints standardized by the Python community <beartype
+PEPs_>`__ in `O(1) non-amortized worst-case time with negligible constant
+factors <beartype math_>`__. If the prior sentence was unreadable jargon, `see
+our friendly and approachable FAQ for a human-readable synopsis <beartype
+FAQ_>`__.
+
+Beartype is `portably implemented <beartype codebase_>`__ in `Python 3
+<Python_>`__, `continuously stress-tested <beartype tests_>`__ via `GitHub
+Actions`_ **×** tox_ **×** pytest_ **×** Codecov_, and `permissively
+distributed <beartype license_>`__ under the `MIT license`_. Beartype has *no*
+runtime dependencies, `only one test-time dependency <pytest_>`__, and `only
+one documentation-time dependency <Sphinx_>`__. Beartype supports `all actively
+developed Python versions <Python status_>`__, `all Python package managers
+<beartype install_>`__, and `multiple platform-specific package managers
+<beartype install_>`__.
+
+.. # FIXME: Gah! Libraries.io has fallen down and cannot get back up... *AGAIN.*
+.. #     Beartype `powers quality assurance across the Python ecosystem <beartype
+.. #     dependents_>`__.
+
+.. # FIXME: Remove *ALL* of the following URLs except those specifically
+.. # required above -- which should be most of them, frankly.
+
+.. # ------------------( IMAGES                              )------------------
+.. |beartype-banner| image:: https://raw.githubusercontent.com/beartype/beartype-assets/main/banner/logo.png
+   :target: https://beartype.readthedocs.io
+   :alt: beartype —[ the bare-metal type checker ]—
+.. |beartype-contributors| image:: https://contrib.rocks/image?repo=beartype/beartype
+   :target: https://github.com/beartype/beartype/graphs/contributors
+   :alt: Beartype contributors
+.. |beartype-stars| image:: https://star-history.com/#beartype/beartype&Date
+   :target: https://github.com/beartype/beartype/stargazers
+   :alt: Beartype stargazers
+
+.. # ------------------( IMAGES ~ badge                      )------------------
+.. |bear-ified| image:: https://raw.githubusercontent.com/beartype/beartype-assets/main/badge/bear-ified.svg
+   :align: top
+   :target: https://beartype.readthedocs.io
+   :alt: bear-ified
+.. |ci-badge| image:: https://github.com/beartype/beartype/workflows/test/badge.svg
+   :target: https://github.com/beartype/beartype/actions?workflow=test
+   :alt: beartype continuous integration (CI) status
+.. |codecov-badge| image:: https://codecov.io/gh/beartype/beartype/branch/main/graph/badge.svg?token=E6F4YSY9ZQ
+   :target: https://codecov.io/gh/beartype/beartype
+   :alt: beartype test coverage status
+.. |rtd-badge| image:: https://readthedocs.org/projects/beartype/badge/?version=latest
+   :target: https://beartype.readthedocs.io/en/latest/?badge=latest
+   :alt: beartype Read The Docs (RTD) status
+
+.. # ------------------( IMAGES ~ downstream                 )------------------
+.. # Insert links to GitHub Sponsors funding at the icon level here, please!
+
+.. # ------------------( LINKS ~ beartype : funding          )------------------
+.. _BETSE:
+   https://github.com/betsee/betse
+.. _BETSEE:
+   https://github.com/betsee/betsee
+.. _GitHub Sponsors:
+   https://github.com/sponsors/leycec
+.. _Paul Allen:
+   https://en.wikipedia.org/wiki/Paul_Allen
+.. _Paul Allen Discovery Center:
+   http://www.alleninstitute.org/what-we-do/frontiers-group/discovery-centers/allen-discovery-center-tufts-university
+.. _Paul Allen Discovery Center award:
+   https://www.alleninstitute.org/what-we-do/frontiers-group/news-press/press-resources/press-releases/paul-g-allen-frontiers-group-announces-allen-discovery-center-tufts-university
+.. _Paul G. Allen Frontiers Group:
+   https://www.alleninstitute.org/what-we-do/frontiers-group
+.. _Tufts University:
+   https://www.tufts.edu
+.. _beartype sponsorship:
+   https://github.com/sponsors/leycec
+
+.. # ------------------( LINKS ~ beartype : local            )------------------
+.. _beartype license:
+   LICENSE
+
+.. # ------------------( LINKS ~ beartype : local : module   )------------------
+.. _beartype errormain:
+   beartype/_decor/_code/_pep/_error/errormain.py
+.. _beartype pephint:
+   beartype/_decor/_code/_pep/_pephint.py
+.. _beartype test data pep:
+   beartype_test/unit/data/hint/pep/proposal/
+.. _beartype test data pep 484:
+   beartype_test/unit/data/hint/pep/proposal/data_hintpep484.py
+.. _@callable_cached:
+   beartype/_util/cache/utilcachecall.py
+.. _beartype util data pep:
+   beartype/_util/hint/data/pep/proposal/
+.. _beartype util data pep parent:
+   beartype/_util/hint/data/pep/utilhintdatapep.py
+.. _beartype util pep:
+   beartype/_util/hint/pep/proposal
+
+.. # ------------------( LINKS ~ beartype : package          )------------------
+.. _beartype Anaconda:
+   https://anaconda.org/conda-forge/beartype
+.. _beartype Gentoo:
+   https://github.com/leycec/raiagent
+.. _beartype Homebrew:
+   https://github.com/beartype/homebrew-beartype
+.. _beartype MacPorts:
+   https://ports.macports.org/port/py-beartype
+.. _beartype PyPI:
+   https://pypi.org/project/beartype
+
+.. # ------------------( LINKS ~ beartype : package : meta   )------------------
+.. _Libraries.io:
+   https://libraries.io
+.. _beartype dependents:
+   https://libraries.io/pypi/beartype/dependents
+
+.. # ------------------( LINKS ~ beartype : github           )------------------
+.. _beartype:
+   https://github.com/beartype/beartype
+.. _beartype issues:
+   https://github.com/beartype/beartype/issues
+.. _beartype 1.0.0:
+   https://github.com/beartype/beartype/issues/7
+.. _beartype codebase:
+   https://github.com/beartype/beartype/tree/main/beartype
+.. _beartype organization:
+   https://github.com/beartype
+.. _beartype profiler:
+   https://github.com/beartype/beartype/blob/main/bin/profile.bash
+.. _beartype pulls:
+   https://github.com/beartype/beartype/pulls
+.. _beartype tests:
+   https://github.com/beartype/beartype/actions?workflow=tests
+
+.. # ------------------( LINKS ~ beartype : github : user    )------------------
+.. _patrick-kidger:
+   https://github.com/patrick-kidger
+.. _harens:
+   https://github.com/harens
+.. _leycec:
+   https://github.com/leycec
+
+.. # ------------------( LINKS ~ beartype : rtd              )------------------
+.. _beartype APIs:
+   https://beartype.readthedocs.io/en/latest/api
+.. _beartype RTD:
+   https://beartype.readthedocs.io
+.. _beartype ELI5:
+   https://beartype.readthedocs.io/en/latest/eli5
+.. _beartype FAQ:
+   https://beartype.readthedocs.io/en/latest/faq
+.. _beartype PEPs:
+   https://beartype.readthedocs.io/en/latest/pep
+.. _beartype hybrid:
+   https://beartype.readthedocs.io/en/latest/faq/#faq-hybrid
+.. _beartype install:
+   https://beartype.readthedocs.io/en/latest/install
+.. _beartype math:
+   https://beartype.readthedocs.io/en/latest/math
+.. _beartype pure:
+   https://beartype.readthedocs.io/en/latest/faq/#faq-pure
+.. _beartype third:
+   https://beartype.readthedocs.io/en/latest/faq/#faq-third
+
+.. # ------------------( LINKS ~ github                      )------------------
+.. _GitHub Actions:
+   https://github.com/features/actions
+.. _GitHub account signin:
+   https://github.com/login
+.. _GitHub account signup:
+   https://github.com/join
+.. _gitter:
+   https://gitter.im
+
+.. # ------------------( LINKS ~ idea                        )------------------
+.. _Denial-of-Service:
+   https://en.wikipedia.org/wiki/Denial-of-service_attack
+.. _DRY:
+   https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
+.. _IDE:
+   https://en.wikipedia.org/wiki/Integrated_development_environment
+.. _JIT:
+   https://en.wikipedia.org/wiki/Just-in-time_compilation
+.. _SQA:
+   https://en.wikipedia.org/wiki/Software_quality_assurance
+.. _amortized analysis:
+   https://en.wikipedia.org/wiki/Amortized_analysis
+.. _computer vision:
+   https://en.wikipedia.org/wiki/Computer_vision
+.. _continuous integration:
+   https://en.wikipedia.org/wiki/Continuous_integration
+.. _duck typing:
+   https://en.wikipedia.org/wiki/Duck_typing
+.. _gratis versus libre:
+   https://en.wikipedia.org/wiki/Gratis_versus_libre
+.. _memory safety:
+   https://en.wikipedia.org/wiki/Memory_safety
+.. _multiple dispatch:
+   https://en.wikipedia.org/wiki/Multiple_dispatch
+.. _near-real-time:
+   https://en.wikipedia.org/wiki/Real-time_computing#Near_real-time
+.. _random walk:
+   https://en.wikipedia.org/wiki/Random_walk
+.. _real-time:
+   https://en.wikipedia.org/wiki/Real-time_computing
+.. _set theory:
+   https://en.wikipedia.org/wiki/Set_theory
+.. _shield wall:
+   https://en.wikipedia.org/wiki/Shield_wall
+.. _dynamic typing:
+.. _dynamically-typed:
+.. _static typing:
+.. _statically-typed:
+   https://en.wikipedia.org/wiki/Type_system
+.. _topological sort:
+   https://en.wikipedia.org/wiki/Topological_sorting
+.. _type inference:
+   https://en.wikipedia.org/wiki/Type_inference
+.. _zero-cost abstraction:
+   https://boats.gitlab.io/blog/post/zero-cost-abstractions
+
+.. # ------------------( LINKS ~ kipling                     )------------------
+.. _The Jungle Book:
+   https://www.gutenberg.org/files/236/236-h/236-h.htm
+.. _Shere Khan:
+   https://en.wikipedia.org/wiki/Shere_Khan
+
+.. # ------------------( LINKS ~ math                        )------------------
+.. _Euler–Mascheroni constant:
+   https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant
+.. _coupon collector's problem:
+   https://en.wikipedia.org/wiki/Coupon_collector%27s_problem
+.. _Big O:
+   https://en.wikipedia.org/wiki/Big_O_notation
+
+.. # ------------------( LINKS ~ math : set                  )------------------
+.. _conjunction:
+   https://en.wikipedia.org/wiki/Logical_conjunction
+.. _disjunction:
+   https://en.wikipedia.org/wiki/Logical_disjunction
+.. _intersection:
+   https://en.wikipedia.org/wiki/Intersection_(set_theory)
+.. _relative set complement:
+   https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement
+
+.. # ------------------( LINKS ~ math : type                 )------------------
+.. _covariance:
+   https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)
+
+.. # ------------------( LINKS ~ meme                        )------------------
+.. _RNGesus:
+   https://knowyourmeme.com/memes/rngesus
+.. _goes up to eleven:
+   https://www.youtube.com/watch?v=uMSV4OteqBE
+.. _greased lightning:
+   https://www.youtube.com/watch?v=H-kL8A4RNQ8
+.. _ludicrous speed:
+   https://www.youtube.com/watch?v=6tTvklMXeFE
+.. _the gripping hand:
+   http://catb.org/jargon/html/O/on-the-gripping-hand.html
+
+.. # ------------------( LINKS ~ os : linux                  )------------------
+.. _Gentoo:
+   https://www.gentoo.org
+
+.. # ------------------( LINKS ~ os : macos                  )------------------
+.. _macOS:
+   https://en.wikipedia.org/wiki/MacOS
+.. _HomeBrew:
+   https://brew.sh
+.. _MacPorts:
+   https://www.macports.org
+
+.. # ------------------( LINKS ~ other                       )------------------
+.. _heliotrope:
+   https://en.wikipedia.org/wiki/Heliotropium
+
+.. # ------------------( LINKS ~ py                          )------------------
+.. _Python:
+   https://www.python.org
+.. _Python status:
+   https://devguide.python.org/#status-of-python-branches
+.. _pip:
+   https://pip.pypa.io
+
+.. # ------------------( LINKS ~ py : cli                    )------------------
+.. _-O:
+   https://docs.python.org/3/using/cmdline.html#cmdoption-o
+.. _PYTHONOPTIMIZE:
+   https://docs.python.org/3/using/cmdline.html#envvar-PYTHONOPTIMIZE
+
+.. # ------------------( LINKS ~ py : interpreter            )------------------
+.. _Brython:
+   https://brython.info
+.. _CPython:
+   https://github.com/python/cpython
+.. _Nuitka:
+   https://nuitka.net
+.. _Numba:
+   https://numba.pydata.org
+.. _PyPy:
+   https://www.pypy.org
+
+.. # ------------------( LINKS ~ py : interpreter : cpython  )------------------
+.. _CPython bug tracker:
+   https://github.com/python/cpython/issues
+
+.. # ------------------( LINKS ~ py : lang                   )------------------
+.. _generic alias parameters:
+   https://docs.python.org/3/library/stdtypes.html#genericalias.__parameters__
+.. _isinstancecheck:
+   https://docs.python.org/3/reference/datamodel.html#customizing-instance-and-subclass-checks
+.. _mro:
+   https://docs.python.org/3/library/stdtypes.html#class.__mro__
+.. _object:
+   https://docs.python.org/3/reference/datamodel.html#basic-customization
+.. _operator precedence:
+   https://docs.python.org/3/reference/expressions.html#operator-precedence
+
+.. # ------------------( LINKS ~ py : misc                   )------------------
+.. _Guido van Rossum:
+   https://en.wikipedia.org/wiki/Guido_van_Rossum
+.. _RealPython:
+   https://realpython.com/python-type-checking
+
+.. # ------------------( LINKS ~ py : package                )------------------
+.. _Django:
+   https://www.djangoproject.com
+.. _NetworkX:
+   https://networkx.org
+.. _Pandas:
+   https://pandas.pydata.org
+.. _PyTorch:
+   https://pytorch.org
+.. _SymPy:
+   https://www.sympy.org
+.. _numerary:
+   https://github.com/posita/numerary
+.. _pyenv:
+   https://operatingops.org/2020/10/24/tox-testing-multiple-python-versions-with-pyenv
+.. _typing_extensions:
+   https://pypi.org/project/typing-extensions
+
+.. # ------------------( LINKS ~ py : package : boto3        )------------------
+.. _Boto3:
+   https://aws.amazon.com/sdk-for-python
+.. _bearboto3:
+   https://github.com/beartype/bearboto3
+.. _mypy-boto3:
+   https://mypy-boto3.readthedocs.io
+
+.. # ------------------( LINKS ~ py : package : jax          )------------------
+.. _jax.numpy:
+   https://jax.readthedocs.io/en/latest/notebooks/thinking_in_jax.html
+
+.. # ------------------( LINKS ~ py : package : numpy        )------------------
+.. _NumPy:
+   https://numpy.org
+.. _numpy.dtype:
+   https://numpy.org/doc/stable/reference/arrays.dtypes.html
+.. _numpy.empty_like:
+   https://numpy.org/doc/stable/reference/generated/numpy.empty_like.html
+.. _numpy.floating:
+   https://numpy.org/doc/stable/reference/arrays.scalars.html?highlight=numpy%20generic#numpy.floating
+.. _numpy.generic:
+   https://numpy.org/doc/stable/reference/arrays.scalars.html?highlight=numpy%20generic#numpy.generic
+.. _numpy.integer:
+   https://numpy.org/doc/stable/reference/arrays.scalars.html?highlight=numpy%20generic#numpy.integer
+.. _numpy.typing:
+   https://numpy.org/devdocs/reference/typing.html
+.. _numpy.typing.NDArray:
+   https://numpy.org/devdocs/reference/typing.html#ndarray
+
+.. # ------------------( LINKS ~ py : package : sphinx       )------------------
+.. _Sphinx:
+   https://www.sphinx-doc.org
+.. _sphinx.ext.autodoc:
+   https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
+
+.. # ------------------( LINKS ~ py : package : test         )------------------
+.. _Codecov:
+   https://about.codecov.io
+.. _pytest:
+   https://docs.pytest.org
+.. _tox:
+   https://tox.readthedocs.io
+
+.. # ------------------( LINKS ~ py : service                )------------------
+.. _Anaconda:
+   https://docs.conda.io/en/latest/miniconda.html
+.. _PyPI:
+   https://pypi.org
+
+.. # ------------------( LINKS ~ py : type : runtime         )------------------
+.. _enforce:
+   https://github.com/RussBaz/enforce
+.. _enforce_typing:
+   https://github.com/matchawine/python-enforce-typing
+.. _pydantic:
+   https://pydantic-docs.helpmanual.io
+.. _pytypes:
+   https://github.com/Stewori/pytypes
+.. _typeen:
+   https://github.com/k2bd/typen
+.. _typical:
+   https://github.com/seandstewart/typical
+
+.. # ------------------( LINKS ~ py : type : runtime : typeg )------------------
+.. _typeguard:
+   https://github.com/agronholm/typeguard
+.. _typeguard.check_type:
+   https://typeguard.readthedocs.io/en/latest/userguide.html#checking-types-directly
+
+.. # ------------------( LINKS ~ py : type : runtime : data  )------------------
+.. _PyContracts:
+   https://github.com/AlexandruBurlacu/pycontracts
+.. _contracts:
+   https://pypi.org/project/contracts
+.. _covenant:
+   https://github.com/kisielk/covenant
+.. _dpcontracts:
+   https://pypi.org/project/dpcontracts
+.. _icontract:
+   https://github.com/Parquery/icontract
+.. _pyadbc:
+   https://pypi.org/project/pyadbc
+.. _pcd:
+   https://pypi.org/project/pcd
+
+.. # ------------------( LINKS ~ py : type : static          )------------------
+.. _Pyre:
+   https://pyre-check.org
+.. _pytype:
+   https://github.com/google/pytype
+
+.. # ------------------( LINKS ~ py : type : static : pyright)------------------
+.. _pyright:
+   https://github.com/Microsoft/pyright
+.. _pyright plugins:
+   https://github.com/microsoft/pyright/issues/607#issuecomment-873467941
+.. _pyright PEP violation #1:
+   https://github.com/beartype/beartype/issues/126
+.. _pyright PEP violation #2:
+   https://github.com/beartype/beartype/issues/127
+
+.. # ------------------( LINKS ~ py : type : static : mypy   )------------------
+.. _mypy:
+   http://mypy-lang.org
+.. _mypy install:
+   https://mypy.readthedocs.io/en/stable/getting_started.html
+.. _mypy plugin:
+   https://mypy.readthedocs.io/en/stable/extending_mypy.html
+.. _type narrowing:
+   https://mypy.readthedocs.io/en/stable/type_narrowing.html
+
+.. # ------------------( LINKS ~ py : type : tensor          )------------------
+.. _jaxtyping:
+   https://github.com/google/jaxtyping
+.. _nptyping:
+   https://github.com/ramonhagenaars/nptyping
+.. _TorchTyping:
+   https://github.com/patrick-kidger/torchtyping
+
+.. # ------------------( LINKS ~ soft : ide                  )------------------
+.. _PyCharm:
+   https://en.wikipedia.org/wiki/PyCharm
+.. _Vim:
+   https://www.vim.org
+
+.. # ------------------( LINKS ~ soft : ide : vscode         )------------------
+.. _Pylance:
+   https://github.com/microsoft/pylance-release
+.. _VSCode:
+   https://code.visualstudio.com
+.. _VSCode Mypy extension:
+   https://marketplace.visualstudio.com/items?itemName=matangover.mypy
+
+.. # ------------------( LINKS ~ soft : lang                 )------------------
+.. _C:
+   https://en.wikipedia.org/wiki/C_(programming_language)
+.. _C++:
+   https://en.wikipedia.org/wiki/C%2B%2B
+.. _Ruby:
+   https://www.ruby-lang.org
+.. _Rust:
+   https://www.rust-lang.org
+
+.. # ------------------( LINKS ~ soft : license              )------------------
+.. _MIT license:
+   https://opensource.org/licenses/MIT
+
+.. # ------------------( LINKS ~ soft : web                  )------------------
+.. _React:
+   https://reactjs.org

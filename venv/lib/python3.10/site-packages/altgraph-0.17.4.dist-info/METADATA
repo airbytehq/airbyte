@@ -1,0 +1,293 @@
+Metadata-Version: 2.1
+Name: altgraph
+Version: 0.17.4
+Summary: Python graph (network) package
+Home-page: https://altgraph.readthedocs.io
+Download-URL: http://pypi.python.org/pypi/altgraph
+Author: Ronald Oussoren
+Author-email: ronaldoussoren@mac.com
+Maintainer: Ronald Oussoren
+Maintainer-email: ronaldoussoren@mac.com
+License: MIT
+Keywords: graph
+Platform: any
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Topic :: Scientific/Engineering :: Visualization
+Description-Content-Type: text/x-rst; charset=UTF-8
+License-File: LICENSE
+Project-URL: Documentation, https://altgraph.readthedocs.io/en/latest/
+Project-URL: Issue tracker, https://github.com/ronaldoussoren/altgraph/issues
+Project-URL: Repository, https://github.com/ronaldoussoren/altgraph
+
+altgraph is a fork of graphlib: a graph (network) package for constructing
+graphs, BFS and DFS traversals, topological sort, shortest paths, etc. with
+graphviz output.
+
+altgraph includes some additional usage of Python 2.6+ features and
+enhancements related to modulegraph and macholib.
+
+Project links
+-------------
+
+* `Documentation <https://altgraph.readthedocs.io/en/latest/>`_
+
+* `Issue Tracker <https://github.com/ronaldoussoren/altgraph/issues>`_
+
+* `Repository <https://github.com/ronaldoussoren/altgraph/>`_
+
+
+Release history
+===============
+
+0.17.3
+------
+
+* Update classifiers for Python 3.11
+
+0.17.2
+------
+
+* Change in setup.py to fix the sidebar links on PyPI
+
+0.17.1
+------
+
+* Explicitly mark Python 3.10 as supported in wheel metadata.
+
+0.17
+----
+
+* Explicitly mark Python 3.8 as supported in wheel metadata.
+
+* Migrate from Bitbucket to GitHub
+
+* Run black on the entire repository
+
+0.16.1
+------
+
+* Explicitly mark Python 3.7 as supported in wheel metadata.
+
+0.16
+----
+
+* Add LICENSE file
+
+0.15
+----
+
+* ``ObjectGraph.get_edges``, ``ObjectGraph.getEdgeData`` and ``ObjectGraph.updateEdgeData``
+  accept *None* as the node to get and treat this as an alias for *self* (as other
+  methods already did).
+
+0.14
+----
+
+- Issue #7: Remove use of ``iteritems`` in altgraph.GraphAlgo code
+
+0.13
+----
+
+- Issue #4: Graph._bfs_subgraph and back_bfs_subgraph return subgraphs with reversed edges
+
+  Fix by "pombredanne" on bitbucket.
+
+
+0.12
+----
+
+- Added ``ObjectGraph.edgeData`` to retrieve the edge data
+  from a specific edge.
+
+- Added ``AltGraph.update_edge_data`` and ``ObjectGraph.updateEdgeData``
+  to update the data associated with a graph edge.
+
+0.11
+----
+
+- Stabilize the order of elements in dot file exports,
+  patch from bitbucket user 'pombredanne'.
+
+- Tweak setup.py file to remove dependency on distribute (but
+  keep the dependency on setuptools)
+
+
+0.10.2
+------
+
+- There where no classifiers in the package metadata due to a bug
+  in setup.py
+
+0.10.1
+------
+
+This is a bugfix release
+
+Bug fixes:
+
+- Issue #3: The source archive contains a README.txt
+  while the setup file refers to ReadMe.txt.
+
+  This is caused by a misfeature in distutils, as a
+  workaround I've renamed ReadMe.txt to README.txt
+  in the source tree and setup file.
+
+
+0.10
+-----
+
+This is a minor feature release
+
+Features:
+
+- Do not use "2to3" to support Python 3.
+
+  As a side effect of this altgraph now supports
+  Python 2.6 and later, and no longer supports
+  earlier releases of Python.
+
+- The order of attributes in the Dot output
+  is now always alphabetical.
+
+  With this change the output will be consistent
+  between runs and Python versions.
+
+0.9
+---
+
+This is a minor bugfix release
+
+Features:
+
+- Added ``altgraph.ObjectGraph.ObjectGraph.nodes``, a method
+  yielding all nodes in an object graph.
+
+Bugfixes:
+
+- The 0.8 release didn't work with py2app when using
+  python 3.x.
+
+
+0.8
+-----
+
+This is a minor feature release. The major new feature
+is a extensive set of unittests, which explains almost
+all other changes in this release.
+
+Bugfixes:
+
+- Installing failed with Python 2.5 due to using a distutils
+  class that isn't available in that version of Python
+  (issue #1 on the issue tracker)
+
+- ``altgraph.GraphStat.degree_dist`` now actually works
+
+- ``altgraph.Graph.add_edge(a, b, create_nodes=False)`` will
+  no longer create the edge when one of the nodes doesn't
+  exist.
+
+- ``altgraph.Graph.forw_topo_sort`` failed for some sparse graphs.
+
+- ``altgraph.Graph.back_topo_sort`` was completely broken in
+  previous releases.
+
+- ``altgraph.Graph.forw_bfs_subgraph`` now actually works.
+
+- ``altgraph.Graph.back_bfs_subgraph`` now actually works.
+
+- ``altgraph.Graph.iterdfs`` now returns the correct result
+  when the ``forward`` argument is ``False``.
+
+- ``altgraph.Graph.iterdata`` now returns the correct result
+  when the ``forward`` argument is ``False``.
+
+
+Features:
+
+- The ``altgraph.Graph`` constructor now accepts an argument
+  that contains 2- and 3-tuples instead of requireing that
+  all items have the same size. The (optional) argument can now
+  also be any iterator.
+
+- ``altgraph.Graph.Graph.add_node`` has no effect when you
+  add a hidden node.
+
+- The private method ``altgraph.Graph._bfs`` is no longer
+  present.
+
+- The private method ``altgraph.Graph._dfs`` is no longer
+  present.
+
+- ``altgraph.ObjectGraph`` now has a ``__contains__`` methods,
+  which means you can use the ``in`` operator to check if a
+  node is part of a graph.
+
+- ``altgraph.GraphUtil.generate_random_graph`` will raise
+  ``GraphError`` instead of looping forever when it is
+  impossible to create the requested graph.
+
+- ``altgraph.Dot.edge_style`` raises ``GraphError`` when
+  one of the nodes is not present in the graph. The method
+  silently added the tail in the past, but without ensuring
+  a consistent graph state.
+
+- ``altgraph.Dot.save_img`` now works when the mode is
+  ``"neato"``.
+
+0.7.2
+-----
+
+This is a minor bugfix release
+
+Bugfixes:
+
+- distutils didn't include the documentation subtree
+
+0.7.1
+-----
+
+This is a minor feature release
+
+Features:
+
+- Documentation is now generated using `sphinx <http://pypi.python.org/pypi/sphinx>`_
+  and can be viewed at <http://packages.python.org/altgraph>.
+
+- The repository has moved to bitbucket
+
+- ``altgraph.GraphStat.avg_hops`` is no longer present, the function had no
+  implementation and no specified behaviour.
+
+- the module ``altgraph.compat`` is gone, which means altgraph will no
+  longer work with Python 2.3.
+
+
+0.7.0
+-----
+
+This is a minor feature release.
+
+Features:
+
+- Support for Python 3
+
+- It is now possible to run tests using 'python setup.py test'
+
+  (The actual testsuite is still very minimal though)

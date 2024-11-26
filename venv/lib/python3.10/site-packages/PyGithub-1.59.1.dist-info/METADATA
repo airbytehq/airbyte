@@ -1,0 +1,63 @@
+Metadata-Version: 2.1
+Name: PyGithub
+Version: 1.59.1
+Summary: Use the full Github API v3
+Home-page: https://github.com/pygithub/pygithub
+Author: Vincent Jacques
+Author-email: vincent@vincent-jacques.net
+Project-URL: Documentation, http://pygithub.readthedocs.io/en/stable/
+Project-URL: Source, https://github.com/pygithub/pygithub
+Project-URL: Tracker, https://github.com/pygithub/pygithub/issues
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development
+Requires-Python: >=3.7
+License-File: COPYING
+License-File: COPYING.LESSER
+Requires-Dist: deprecated
+Requires-Dist: pyjwt[crypto] (>=2.4.0)
+Requires-Dist: pynacl (>=1.4.0)
+Requires-Dist: requests (>=2.14.0)
+Provides-Extra: integrations
+
+(Very short) Tutorial
+=====================
+
+First create a Github instance::
+
+    from github import Github
+
+    # Authentication is defined via github.Auth
+    from github import Auth
+
+    # using an access token
+    auth = Auth.Token("access_token")
+
+    # Public Web Github
+    g = Github(auth=auth)
+
+    # Github Enterprise with custom hostname
+    g = Github(auth=auth, base_url="https://{hostname}/api/v3")
+
+Then play with your Github objects::
+
+    for repo in g.get_user().get_repos():
+        print(repo.name)
+        repo.edit(has_wiki=False)
+        # to see all the available attributes and methods
+        print(dir(repo))
+
+Reference documentation
+=======================
+
+See http://pygithub.readthedocs.io/en/stable/
