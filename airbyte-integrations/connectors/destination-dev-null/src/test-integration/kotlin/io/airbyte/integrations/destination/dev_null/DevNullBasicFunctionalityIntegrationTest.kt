@@ -38,7 +38,7 @@ class DevNullBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
+    @Disabled("File transfer is not supported")
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }
