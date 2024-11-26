@@ -17,6 +17,9 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
+    fun resetFeedStates()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -55,6 +58,10 @@ class StateManager(
             nonGlobal.values.map { it.feed }
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
+
+    override fun resetFeedStates() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+    }
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =

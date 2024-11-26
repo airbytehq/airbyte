@@ -25,11 +25,11 @@ open class MockPathFactory : PathFactory {
         return "/${stream.descriptor.namespace}/${stream.descriptor.name}"
     }
 
-    override fun getStagingDirectory(stream: DestinationStream): Path {
+    override fun getStagingDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
         return Path.of("$prefix/staging/${fromStream(stream)}")
     }
 
-    override fun getFinalDirectory(stream: DestinationStream): Path {
+    override fun getFinalDirectory(stream: DestinationStream, streamConstant: Boolean): Path {
         return Path.of("$prefix/${fromStream(stream)}")
     }
 
@@ -41,6 +41,17 @@ open class MockPathFactory : PathFactory {
     ): Path {
         val prefix = if (isStaging) getStagingDirectory(stream) else getFinalDirectory(stream)
         return prefix.resolve("file")
+    }
+
+    override fun getLongestStreamConstantPrefix(
+        stream: DestinationStream,
+        isStaging: Boolean
+    ): String {
+        if (isStaging) {
+            return getStagingDirectory(stream).toString()
+        } else {
+            return getFinalDirectory(stream).toString()
+        }
     }
 
     override fun getPathMatcher(stream: DestinationStream): PathMatcher {

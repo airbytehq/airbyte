@@ -804,7 +804,7 @@ files = [
 
 [[package]]
 name = "connection-retriever"
-version = "0.7.2"
+version = "0.7.4"
 description = "A tool to retrieve connection information from our Airbyte Cloud config api database"
 optional = false
 python-versions = "^3.10"
@@ -830,7 +830,7 @@ tqdm = "^4.66.2"
 type = "git"
 url = "git@github.com:airbytehq/airbyte-platform-internal"
 reference = "HEAD"
-resolved_reference = "9025e1a46e6c2b366826f30dbcaa3b7d360fd702"
+resolved_reference = "0f898a84169625700a77c39e9ead1382c5b070e3"
 subdirectory = "tools/connection-retriever"
 
 [[package]]

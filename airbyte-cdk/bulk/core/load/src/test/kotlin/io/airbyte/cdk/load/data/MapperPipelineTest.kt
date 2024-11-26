@@ -38,7 +38,7 @@ class MapperPipelineTest {
             value: IntegerValue,
             context: Context
         ): Pair<AirbyteValue, Context> {
-            if (value.value == 2L) {
+            if (value.value.toLong() == 2L) {
                 throw IllegalStateException("Arbitrarily reject 2")
             }
             return StringValue(value.value.toString()) to context

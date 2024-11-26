@@ -22,7 +22,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -228,8 +228,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
     @Test
     fun testHandleNonstandardFields() {
         val inputSchema =
-            Jsons.readTree(
-                """
+            """
                     {
                       "type": [
                         "string",
@@ -238,8 +237,9 @@ class JsonSchemaToAirbyteSchemaTypeTest {
                       "description": "foo",
                       "some_random_other_property": "lol, lmao, isn't jsonschema great"
                     }
-                """.trimIndent()
-            ) as ObjectNode
+                """
+                .trimIndent()
+                .deserializeToNode() as ObjectNode
         val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
         Assertions.assertEquals(UnionType.of(StringType, IntegerType), airbyteType)
     }
