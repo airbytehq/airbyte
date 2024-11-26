@@ -48,7 +48,6 @@ abstract class S3V2WriteTest(
         super.testFunkyCharacters()
     }
 
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413?")
     @Test
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
@@ -102,7 +101,12 @@ class S3V2WriteTestJsonUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -111,7 +115,12 @@ class S3V2WriteTestJsonRootLevelFlattening :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+}
 
 class S3V2WriteTestJsonStaging :
     S3V2WriteTest(
@@ -120,7 +129,24 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+        commitDataIncrementally = false
+    ) {
+
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+}
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
