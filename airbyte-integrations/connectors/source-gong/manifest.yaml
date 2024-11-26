@@ -1,4 +1,4 @@
-version: 5.17.0
+version: 6.5.2
 
 type: DeclarativeSource
 
@@ -25,7 +25,7 @@ definitions:
           path: /users
           http_method: GET
           request_parameters:
-            fromDateTime: "{{ config['start_time'] }}"
+            fromDateTime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -93,7 +93,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or '2020-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -124,7 +124,7 @@ definitions:
           http_method: POST
           request_body_json:
             filter:
-              fromDateTime: "{{ config['start_time'] }}"
+              fromDateTime: "{{ config.get('start_date') or '2020-01-01T00:00:00Z' }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -224,7 +224,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config.get(\"start_date\") or '2020-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -254,7 +254,7 @@ definitions:
           path: /stats/activity/scorecards
           http_method: POST
           request_body_json:
-            filter: "{\"callFromDate\": \"{{ config[\"start_date\"] }}\"}"
+            filter: "{\"callFromDate\": \"{{ config.get(\"start_date\") or '2020-01-01T00:00:00Z' }}\"}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
