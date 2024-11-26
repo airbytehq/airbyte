@@ -92,7 +92,12 @@ class ObjectStoragePathFactory(
     override val supportsStaging: Boolean
         get() = pathConfig.usesStagingDirectory
     override val prefix: String
-        get() = pathConfig.prefix
+        get() =
+            if (pathConfig.prefix.endsWith('/')) {
+                pathConfig.prefix.take(pathConfig.prefix.length - 1)
+            } else {
+                pathConfig.prefix
+            }
 
     /**
      * Variable substitution is complex.

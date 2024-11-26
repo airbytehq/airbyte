@@ -210,7 +210,7 @@ class ObjectStorageDestinationStateTest {
         ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}/"
+                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),
@@ -245,12 +245,12 @@ class ObjectStorageDestinationStateTest {
                                 }
                                 .sortedByDescending {
                                     // Brittle hack to get the order to line up
-                                    it.key.contains("key2") || it.key.contains("key3")
+                                    it.key.contains("key2") || it.key.contains("key4")
                                 }
                                 .toMutableList()
                         )
                     },
-                state.generations.toList(),
+                state.generations.toList().sortedBy { it.generationId },
                 "state should be recovered from metadata"
             )
         }
