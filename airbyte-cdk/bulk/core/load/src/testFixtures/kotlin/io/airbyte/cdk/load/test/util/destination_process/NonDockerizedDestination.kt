@@ -8,15 +8,13 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.micronaut.context.annotation.Requires
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
 import java.util.concurrent.Executors
-import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -65,7 +63,8 @@ class NonDockerizedDestination(
                     } catch (e: ConnectorUncleanExitException) {
                         throw DestinationUncleanExitException.of(
                             e.exitCode,
-                            destination.results.traces()
+                            destination.results.traces(),
+                            destination.results.states(),
                         )
                     }
                     destinationComplete.complete(Unit)
@@ -75,7 +74,11 @@ class NonDockerizedDestination(
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdinPipe.println(Jsons.serialize(message))
+        destinationStdinPipe.println(message.serializeToString())
+    }
+
+    override fun sendMessage(string: String) {
+        destinationStdinPipe.println(string)
     }
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
@@ -93,11 +96,6 @@ class NonDockerizedDestination(
     }
 }
 
-// Notably, not actually a Micronaut factory. We want to inject the actual
-// factory into our tests, not a pre-instantiated destination, because we want
-// to run multiple destination processes per test.
-@Singleton
-@Requires(notEnv = [DOCKERIZED_TEST_ENV])
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
 class AirbyteValueWithMetaToOutputRecord {
     fun convert(value: ObjectValue): OutputRecord {
@@ -28,15 +29,17 @@ class AirbyteValueWithMetaToOutputRecord {
                     (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT]
                             as IntegerValue)
                         .value
+                        .toLong()
                 ),
             loadedAt = null,
             data = value.values[DestinationRecord.Meta.COLUMN_NAME_DATA] as ObjectValue,
             generationId =
                 (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue)
-                    .value,
+                    .value
+                    .toLong(),
             airbyteMeta =
                 OutputRecord.Meta(
-                    syncId = (meta.values["sync_id"] as IntegerValue).value,
+                    syncId = (meta.values["sync_id"] as IntegerValue).value.toLong(),
                     changes =
                         (meta.values["changes"] as ArrayValue)
                             .values
@@ -58,6 +61,19 @@ class AirbyteValueWithMetaToOutputRecord {
                 )
         )
     }
+}
+
+fun AirbyteValue.maybeUnflatten(wasFlattened: Boolean): ObjectValue {
+    this as ObjectValue
+    if (!wasFlattened) {
+        return this
+    }
+    val (meta, data) =
+        this.values.toList().partition { DestinationRecord.Meta.COLUMN_NAMES.contains(it.first) }
+    val properties = LinkedHashMap(meta.toMap())
+    val dataObject = ObjectValue(LinkedHashMap(data.toMap()))
+    properties[DestinationRecord.Meta.COLUMN_NAME_DATA] = dataObject
+    return ObjectValue(properties)
 }
 
 fun AirbyteValue.toOutputRecord(): OutputRecord {

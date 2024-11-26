@@ -8,6 +8,12 @@ Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resou
 
 Airbyte Cloud plans start at just $10 per month, with additional charges based on usage.
 
+:::note
+If you signed up for Airbyte Cloud on or after October 31st, 2024, you are automatically enrolled in our $10/month subscription plan.
+
+For those who signed up prior, we will reach out to you over the coming weeks to migrate you to the new plans, and you can continue to use Airbyte as usual in the interim.
+:::
+
 ## What are credits?
 
 Airbyte uses credits to unify pricing across multiple types of sources. You can refer to the below table to understand how pricing differs across each source.
@@ -60,24 +66,10 @@ To change your existing notification thresholds, submit the form again.
 
 To unenroll, [email us](mailto:billing@airbyte.io) with your request.
 
-## Automatic reload of credits
+## Purchasing Credits
 
-You can enroll in automatic top-ups of your credit balance. 
+:::note
+Credits can no longer be pre-purchased. As of November 2024, Airbyte Cloud has moved to in-arrears billing invoiced monthly.
+:::
 
-To enroll, [email us](mailto:billing@airbyte.io) with:
-
-1. A link to your workspace or organization that you'd like to enable this feature for.
-2. **Recharge threshold** The number under what credit balance you would like the automatic top up to occur.
-3. **Recharge balance** The amount of credits you would like to refill to.
-
-As an example, if the recharge threshold is 10 credits and recharge balance is 30 credits, anytime your credit balance dips below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits.
-
-To take a real example, if:
-
-1. The credit balance reached 3 credits.
-2. 27 credits are automatically charged to the card on file and added to the balance.
-3. The ending credit balance is 30 credits.
-
-Note that the difference between the recharge credit amount and recharge threshold must be at least 20 as our minimum purchase is 20 credits.
-
-If you are enrolled and want to change your limits or cancel your enrollment, [email us](mailto:billing@airbyte.io).
+Purchased credits expire after 1 year, or 12 months after purchase. Purchased credits are used before accuring an invoice.
