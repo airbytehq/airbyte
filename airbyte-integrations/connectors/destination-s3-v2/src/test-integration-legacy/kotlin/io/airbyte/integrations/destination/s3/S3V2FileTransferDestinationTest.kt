@@ -29,10 +29,12 @@ import kotlin.io.path.writeText
 import kotlin.random.Random
 import kotlin.test.*
 import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
 
+@Disabled("Pending FILE TRANSFER S3V2")
 class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
     override val imageName: String = "airbyte/destination-s3-v2:dev"
     override val supportsFileTransfer = true
