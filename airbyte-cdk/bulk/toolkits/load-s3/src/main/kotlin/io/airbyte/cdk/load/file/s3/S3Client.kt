@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
@@ -174,6 +175,29 @@ class S3Client(
             )
         upload.runUsing(block)
         return S3Object(key, bucketConfig)
+    }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<S3Object> {
+        val request = CreateMultipartUploadRequest {
+            this.bucket = bucketConfig.s3BucketName
+            this.key = key
+            this.metadata = metadata
+        }
+        val response = client.createMultipartUpload(request)
+        if (uploadPermits != null) {
+            log.info {
+                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
+            }
+            uploadPermits.acquire()
+            log.info {
+                "Acquired upload permit for $key (${uploadPermits.availablePermits} available)"
+            }
+            return S3StreamingUpload(client, bucketConfig, response, uploadPermits)
+        }
+        return S3StreamingUpload(client, bucketConfig, response, null)
     }
 }
 
