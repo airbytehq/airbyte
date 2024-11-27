@@ -31,7 +31,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.23 | 2024-11-25 | [48636](https://github.com/airbytehq/airbyte/pull/48636) | Update dependencies |
+| 0.1.23 | 2024-11-25 | [48636](https://github.com/airbytehq/airbyte/pull/48636) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.22 | 2024-11-04 | [48221](https://github.com/airbytehq/airbyte/pull/48221) | Update dependencies |
 | 0.1.21 | 2024-10-28 | [47056](https://github.com/airbytehq/airbyte/pull/47056) | Update dependencies |
 | 0.1.20 | 2024-10-12 | [46776](https://github.com/airbytehq/airbyte/pull/46776) | Update dependencies |

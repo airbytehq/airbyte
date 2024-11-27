@@ -84,7 +84,6 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
             if self.cursor_field in record:
                 yield record
                 continue  # Skip the rest of the loop iteration
-
             # fetch legacy_cursor_field from record; default to current timestamp for initial syncs without an any cursor.
             current_cursor_value = record.get(self.legacy_cursor_field, pendulum.now().int_timestamp)
 
@@ -738,7 +737,10 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent=parent,
             sub_items_attr=sub_items_attr,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(
-                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                response_filter=response_filter,
+                slice_data_retriever=kwargs.get("slice_data_retriever"),
             ),
             **kwargs,
         )

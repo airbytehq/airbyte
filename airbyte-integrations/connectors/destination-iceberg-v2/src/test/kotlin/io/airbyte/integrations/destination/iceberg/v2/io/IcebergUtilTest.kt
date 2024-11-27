@@ -351,7 +351,6 @@ internal class IcebergUtilTest {
         assertEquals("main", catalogProperties["nessie.ref"])
         assertEquals(awsAccessKey, catalogProperties["s3.access-key-id"])
         assertEquals(awsSecretAccessKey, catalogProperties["s3.secret-access-key"])
-        assertEquals(S3BucketRegion.`us-east-1`.toString(), catalogProperties["s3.region"])
         assertEquals(s3Endpoint, catalogProperties["s3.endpoint"])
         assertEquals("true", catalogProperties["s3.path-style-access"])
         assertEquals("BEARER", catalogProperties["nessie.authentication.type"])

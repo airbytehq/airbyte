@@ -53,7 +53,7 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.3.8 | 2024-11-25 | [48637](https://github.com/airbytehq/airbyte/pull/48637) | Update dependencies |
+| 0.3.8 | 2024-11-25 | [48637](https://github.com/airbytehq/airbyte/pull/48637) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.7 | 2024-11-04 | [43726](https://github.com/airbytehq/airbyte/pull/43726) | Update dependencies |
 | 0.3.6 | 2024-06-29 | [40011](https://github.com/airbytehq/airbyte/pull/40011) | Update dependencies |
 | 0.3.5 | 2024-04-19 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Updating to 0.80.0 CDK |
