@@ -14,6 +14,7 @@ import io.airbyte.commons.resources.MoreResources.readResource
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.CatalogHelpers
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
@@ -69,5 +70,11 @@ class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceT
                 .toList()
 
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+    }
+
+    @Test
+    @Disabled("Pending FILE TRANSFER S3V2")
+    override fun testFakeFileTransfer() {
+        super.testFakeFileTransfer()
     }
 }
