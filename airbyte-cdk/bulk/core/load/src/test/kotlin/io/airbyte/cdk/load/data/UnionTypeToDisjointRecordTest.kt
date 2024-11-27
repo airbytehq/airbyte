@@ -33,7 +33,8 @@ class UnionTypeToDisjointRecordTest {
     fun testUnionOfTypesWithSameNameThrows() {
         val (inputSchema, _) =
             SchemaRecordBuilder<Root>()
-                .with(UnionType.of(ObjectType(linkedMapOf()), ObjectTypeWithoutSchema))
+                // Both `StringType` and `ObjectWithoutSchema` are mapped to `string`
+                .with(UnionType.of(StringType, ObjectTypeWithoutSchema))
                 .build()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             UnionTypeToDisjointRecord().map(inputSchema)

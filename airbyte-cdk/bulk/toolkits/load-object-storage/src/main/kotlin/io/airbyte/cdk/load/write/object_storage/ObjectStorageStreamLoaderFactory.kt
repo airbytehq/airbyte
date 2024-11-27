@@ -83,9 +83,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     ): Batch {
         val partNumber = partNumber.getAndIncrement()
         val key =
-            pathFactory
-                .getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
-                .toString()
+            pathFactory.getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
 
         log.info { "Writing records to $key" }
         val state = destinationStateManager.getState(stream)
@@ -163,9 +161,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             state.getStagedObjectsToFinalize(stream.minimumGenerationId).forEach {
                 (generationId, objectAndPart) ->
                 val newKey =
-                    pathFactory
-                        .getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
-                        .toString()
+                    pathFactory.getPathToFile(stream, objectAndPart.partNumber, isStaging = false)
                 log.info {
                     "Moving staged object of generation $generationId: ${objectAndPart.key} to $newKey"
                 }

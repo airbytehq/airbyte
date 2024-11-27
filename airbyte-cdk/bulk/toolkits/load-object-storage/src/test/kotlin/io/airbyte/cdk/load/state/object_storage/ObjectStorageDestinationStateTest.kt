@@ -15,6 +15,7 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Singleton
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -110,9 +111,10 @@ class ObjectStorageDestinationStateTest {
         @Test
         fun testLoadingExistingState(d: Dependencies) = runTest {
             val key =
-                d.pathFactory
-                    .getStagingDirectory(stream1)
-                    .resolve(ObjectStorageStagingPersister.STATE_FILENAME)
+                Paths.get(
+                        d.pathFactory.getStagingDirectory(stream1),
+                        ObjectStorageStagingPersister.STATE_FILENAME
+                    )
                     .toString()
             d.mockClient.put(key, PERSISTED.toByteArray())
             val state = d.stateManager.getState(stream1)
@@ -208,7 +210,7 @@ class ObjectStorageDestinationStateTest {
         ): List<Triple<Int, String, Long>> {
             val genIdKey = ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY
             val prefix =
-                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}/"
+                "${d.pathFactory.prefix}/${stream.descriptor.namespace}/${stream.descriptor.name}"
             val generations =
                 listOf(
                     Triple(0, "$prefix/key1-0", 0L),
@@ -243,12 +245,12 @@ class ObjectStorageDestinationStateTest {
                                 }
                                 .sortedByDescending {
                                     // Brittle hack to get the order to line up
-                                    it.key.contains("key2") || it.key.contains("key3")
+                                    it.key.contains("key2") || it.key.contains("key4")
                                 }
                                 .toMutableList()
                         )
                     },
-                state.generations.toList(),
+                state.generations.toList().sortedBy { it.generationId },
                 "state should be recovered from metadata"
             )
         }
