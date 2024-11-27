@@ -124,7 +124,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    val isStaging: Boolean = false,
 ) : IntegrationTest(dataDumper, destinationCleaner, recordMangler, nameMapper, nullEqualsUnset) {
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
 
@@ -232,9 +231,6 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
-        if (isStaging) {
-            return
-        }
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),
