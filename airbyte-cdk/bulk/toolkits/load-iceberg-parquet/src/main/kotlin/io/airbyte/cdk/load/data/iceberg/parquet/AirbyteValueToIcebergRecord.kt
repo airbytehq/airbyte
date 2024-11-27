@@ -29,7 +29,9 @@ class AirbyteValueToIcebergRecord {
                     } else {
                         throw IllegalArgumentException("ObjectValue should be mapped to StructType")
                     }
-                return recordSchema
+
+                val record = GenericRecord.create(recordSchema)
+                recordSchema
                     .columns()
                     .filter { column -> airbyteValue.values.containsKey(column.name()) }
                     .associate { column ->
@@ -39,6 +41,8 @@ class AirbyteValueToIcebergRecord {
                                 column.type(),
                             )
                     }
+                    .forEach { (name, value) -> record.setField(name, value) }
+                return record
             }
             is ArrayValue -> {
                 val elementType =
@@ -70,13 +74,12 @@ class AirbyteValueToIcebergRecord {
 }
 
 fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-
-    val associate = schema.columns().associate { it.name() to it.type() }
     val create = GenericRecord.create(schema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    this.values.forEach { (name, value) ->
-        associate[name]?.let { field ->
-            create.setField(name, airbyteValueToIcebergRecord.convert(value, field))
+    schema.asStruct().fields().forEach { field ->
+        val value = this.values.get(field.name())
+        if (value != null) {
+            create.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
         }
     }
     return create
