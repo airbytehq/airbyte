@@ -59,7 +59,7 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
     return wrapper;
   }
 
-  public Record constructIdentifierRecord(Record row) {
+  private Record constructIdentifierRecord(Record row) {
     final GenericRecord recordWithIds = GenericRecord.create(deleteSchema);
 
     for (final Types.NestedField idField : deleteSchema.columns()) {
