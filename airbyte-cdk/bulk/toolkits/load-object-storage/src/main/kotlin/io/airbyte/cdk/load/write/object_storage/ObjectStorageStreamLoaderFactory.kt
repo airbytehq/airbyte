@@ -27,6 +27,8 @@ import java.io.File
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration
+import kotlin.time.measureTime
 
 @Singleton
 @Secondary
@@ -98,11 +100,18 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val upload = client.startStreamingUpload(key, metadata)
         bufferedWriterFactory.create(stream).use { writer ->
+            var totalRecordProcessingTime = Duration.ZERO
+            var nRecords = 0
             records.forEach {
-                writer.accept(it)
+                totalRecordProcessingTime += measureTime { writer.accept(it) }
+                nRecords++
+
                 if (writer.isDataSufficient()) {
                     upload.uploadPart(writer.takeBytes())
                 }
+            }
+            log.info {
+                "Processed $nRecords in $totalRecordProcessingTime (per record: ${totalRecordProcessingTime / nRecords}; changes: ${writer.numCapturedChanges.get()}"
             }
             writer.finish()?.let { upload.uploadPart(it) }
         }
