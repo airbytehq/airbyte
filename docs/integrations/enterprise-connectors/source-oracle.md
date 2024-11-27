@@ -23,7 +23,7 @@ The required minimum platform version is v0.58.0 for this connector.
 | Full Refresh Sync             | Yes       |                    |
 | Incremental Sync - Append     | Yes       |                    |
 | Replicate Incremental Deletes | Yes       |                    |
-| CDC (Change Data Capture)     | Yes       |                    |
+| Change Data Capture (CDC)     | Yes       |                    |
 | SSL Support                   | Yes       |                    |
 | SSH Tunnel Connection         | Yes       |                    |
 | Namespaces                    | Yes       | Enabled by default |
@@ -37,12 +37,12 @@ From the point of view of the Oracle database instance, the Enterprise Oracle so
 1. Oracle DB version 23ai, 21c or 19c.
 2. Dedicated read-only Airbyte user with access to all tables needed for replication.
 
-#### 1. Make sure your database is accessible from the machine running Airbyte.
+#### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect
 to your Oracle instance is by testing the connection in the UI.
 
-#### 2. If using CDC, make sure your database can run LogMiner and that supplemental logging is enabled for all relevant tables.
+#### 2. If using CDC, make sure your database can run LogMiner and that supplemental logging is enabled for all relevant tables
 
 Skip this step if you don't intend to perform CDC incremental syncs.
 
@@ -56,19 +56,19 @@ In the case of an Amazon RDS instance, the steps are as follows:
 3. Execute `exec rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD')` to enable supplemental logging on the database.
 
 In the case of any other Oracle instance, the steps are as follows:
-1. `CONNECT ... AS SYSDBA` using [sqlplus](https://en.wikipedia.org/wiki/SQL_Plus) or equivalent.
+1. `CONNECT ... AS SYSDBA` using [SQL Plus](https://en.wikipedia.org/wiki/SQL_Plus) or equivalent.
 2. Provision the redo log files with something along the lines of `ALTER SYSTEM SET db_recovery_file_dest_size = 10G` and `ALTER SYSTEM SET db_recovery_file_dest = '/opt/oracle/oradata/recovery_area' SCOPE=SPFILE` but replacing the `10G` and directory path arguments with suitable values. Note that the directory in the path needs to exist.
 3. Shut down and restart the instance with `SHUTDOWN IMMEDIATE` and `STARTUP MOUNT`.
 4. `ALTER DATABASE ARCHIVELOG`, `ALTER DATABASE ADD SUPPLEMENTAL LOG DATA` and `ALTER DATABASE OPEN` to restart the database with supplemental logging enabled.
 
-At this point, RDS instance or not, all that remains to prepare the database for CDC incremental syncs is to enable supplemental logging on each of the relevant interest:
+At this point, RDS instance or not, all that remains to prepare the database for CDC incremental syncs is to enable supplemental logging on each of the relevant tables:
 ```sql
 ALTER TABLE ... ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
 ```
 
-See the [Debezium instructions for preparing the database](https://debezium.io/documentation/reference/stable/connectors/oracle.html#_preparing_the_database) for more details.
+If you need more help preparing the database, see [Preparing the database](https://debezium.io/documentation/reference/stable/connectors/oracle.html#_preparing_the_database) in Debezium's docs.
 
-#### 3. Create a dedicated read-only user with access to the relevant tables.
+#### 3. Create a dedicated read-only user with access to the relevant tables
 
 This step is optional but highly recommended to allow for better permission control and auditing.
 This step is even more highly recommended when performing CDC incremental syncs, as the user will require a very specific set of database privileges.
@@ -95,7 +95,11 @@ GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 ```
 
 Your database user should now be ready for use with Airbyte, except for CDC incremental syncs.
-In that case, your user needs an additional set of permissions.
+
+#### 4. If using CDC incremental syncs, grant your user extra permissions
+
+Skip this step if you don't intend to perform CDC incremental syncs.
+
 These requirements are driven by the connector's use of [Debezium](https://debezium.io/documentation/reference/stable/connectors/oracle.html#creating-users-for-the-connector) which in turn uses [LogMiner](https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-logminer-utility.html).
 
 ```sql
@@ -119,7 +123,7 @@ GRANT SET CONTAINER TO airbyte CONTAINER=ALL;
 
 The exact set of permissions varies depending on the Oracle database instance version.
 
-#### 4. Include the schemas Airbyte should look at when configuring the Airbyte Oracle Source.
+#### 5. Include the schemas Airbyte should look at when configuring the Airbyte Oracle Source
 
 Case-sensitive.
 Defaults to the upper-cased user if empty.
@@ -207,7 +211,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 ## Change Data Capture (CDC) limitations
 
-The Enterprise Oracle source connector supports incremental syncs using Change Data Capture (CDC) with some limitations.
+The Enterprise Oracle source connector supports incremental syncs using CDC with some limitations.
 Some of these are readily apparent in the database and user setup steps described above:
 - CDC availability is subject to a log retention period,
 - CDC requires more user privileges,
