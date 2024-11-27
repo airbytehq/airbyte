@@ -60,8 +60,6 @@ class AvroRecordToAirbyteValue {
                 val values = (avroValue as GenericArray<*>).map { convert(it, items.type) }
                 return ArrayValue(values)
             }
-            is ArrayTypeWithoutSchema ->
-                throw UnsupportedOperationException("ArrayTypeWithoutSchema is not supported")
             is BooleanType -> return BooleanValue(avroValue as Boolean)
             is DateType ->
                 return DateValue(
@@ -74,10 +72,10 @@ class AvroRecordToAirbyteValue {
                 )
             is IntegerType -> return IntegerValue(avroValue as Long)
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
-            is ObjectTypeWithEmptySchema ->
-                throw UnsupportedOperationException("ObjectTypeWithEmptySchema is not supported")
-            is ObjectTypeWithoutSchema ->
-                throw UnsupportedOperationException("ObjectTypeWithoutSchema is not supported")
+            is UnknownType,
+            ArrayTypeWithoutSchema,
+            ObjectTypeWithEmptySchema,
+            ObjectTypeWithoutSchema,
             is StringType ->
                 return StringValue(
                     when (avroValue) {
@@ -112,7 +110,6 @@ class AvroRecordToAirbyteValue {
             is TimestampTypeWithTimezone ->
                 return TimestampValue(Instant.ofEpochMilli((avroValue as Long) / 1000).toString())
             is UnionType -> return tryConvertUnion(avroValue, schema)
-            is UnknownType -> throw UnsupportedOperationException("UnknownType is not supported")
             else -> throw IllegalArgumentException("Unsupported schema type: $schema")
         }
     }

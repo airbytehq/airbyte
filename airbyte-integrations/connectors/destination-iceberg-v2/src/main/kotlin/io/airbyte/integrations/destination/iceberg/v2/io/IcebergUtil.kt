@@ -29,11 +29,14 @@ import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.aws.s3.S3FileIO
+import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
+import org.apache.iceberg.exceptions.AlreadyExistsException
+import org.projectnessie.client.NessieConfigConstants
 
 private val logger = KotlinLogging.logger {}
 
@@ -106,11 +109,25 @@ class IcebergUtil {
         properties: Map<String, String>
     ): Table {
         val tableIdentifier = streamDescriptor.toIcebergTableIdentifier()
-        if (
-            catalog is SupportsNamespaces && !catalog.namespaceExists(tableIdentifier.namespace())
-        ) {
-            catalog.createNamespace(tableIdentifier.namespace())
-            logger.info { "Created namespace '${tableIdentifier.namespace()}'." }
+        synchronized(tableIdentifier.namespace()) {
+            if (
+                catalog is SupportsNamespaces &&
+                    !catalog.namespaceExists(tableIdentifier.namespace())
+            ) {
+                try {
+                    catalog.createNamespace(tableIdentifier.namespace())
+                    logger.info { "Created namespace '${tableIdentifier.namespace()}'." }
+                } catch (e: AlreadyExistsException) {
+                    // This exception occurs when multiple threads attempt to write to the same
+                    // namespace in parallel.
+                    // One thread may create the namespace successfully, causing the other threads
+                    // to encounter this exception
+                    // when they also try to create the namespace.
+                    logger.info {
+                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
+                    }
+                }
+            }
         }
 
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -162,27 +179,36 @@ class IcebergUtil {
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(icebergConfiguration: IcebergV2Configuration): Map<String, String> {
+        // Nessie does not allow explicitly setting the S3 bucket region.
+        // Instead, it relies on a static credentials provider, which retrieves the region
+        // from the system property. Therefore, we need to set the region this way.
+        System.setProperty(
+            "aws.region",
+            icebergConfiguration.s3BucketConfiguration.s3BucketRegion.region,
+        )
         return mutableMapOf(
                 // TODO make configurable?
                 ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
                 URI to icebergConfiguration.nessieServerConfiguration.serverUri,
-                "nessie.ref" to "main",
+                NessieConfigConstants.CONF_NESSIE_REF to
+                    icebergConfiguration.nessieServerConfiguration.mainBranchName,
                 WAREHOUSE_LOCATION to
                     icebergConfiguration.nessieServerConfiguration.warehouseLocation,
                 // Use Iceberg's S3FileIO for file operations
                 CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-                "s3.access-key-id" to icebergConfiguration.awsAccessKeyConfiguration.accessKeyId!!,
-                "s3.secret-access-key" to
+                S3FileIOProperties.ACCESS_KEY_ID to
+                    icebergConfiguration.awsAccessKeyConfiguration.accessKeyId!!,
+                S3FileIOProperties.SECRET_ACCESS_KEY to
                     icebergConfiguration.awsAccessKeyConfiguration.secretAccessKey!!,
-                "s3.region" to icebergConfiguration.s3BucketConfiguration.s3BucketRegion.toString(),
-                "s3.endpoint" to icebergConfiguration.s3BucketConfiguration.s3Endpoint!!,
-                "s3.path-style-access" to "true" // Required for MinIO
+                S3FileIOProperties.ENDPOINT to
+                    icebergConfiguration.s3BucketConfiguration.s3Endpoint!!,
+                S3FileIOProperties.PATH_STYLE_ACCESS to "true" // Required for MinIO
             )
             .apply {
                 if (icebergConfiguration.nessieServerConfiguration.accessToken != null) {
-                    put("nessie.authentication.type", "BEARER")
+                    put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "BEARER")
                     put(
-                        "nessie.authentication.token",
+                        NessieConfigConstants.CONF_NESSIE_AUTH_TOKEN,
                         icebergConfiguration.nessieServerConfiguration.accessToken!!
                     )
                 }

@@ -38,7 +38,7 @@ This page contains the setup guide and reference information for the Gridly sour
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
-| 0.1.23 | 2024-11-25 | [48675](https://github.com/airbytehq/airbyte/pull/48675) | Update dependencies |
+| 0.1.23 | 2024-11-25 | [48675](https://github.com/airbytehq/airbyte/pull/48675) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.22 | 2024-10-28 | [47075](https://github.com/airbytehq/airbyte/pull/47075) | Update dependencies |
 | 0.1.21 | 2024-10-12 | [46476](https://github.com/airbytehq/airbyte/pull/46476) | Update dependencies |
 | 0.1.20 | 2024-09-28 | [46122](https://github.com/airbytehq/airbyte/pull/46122) | Update dependencies |

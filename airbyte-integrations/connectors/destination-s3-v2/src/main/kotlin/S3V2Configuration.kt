@@ -52,7 +52,7 @@ data class S3V2Configuration<T : OutputStream>(
 class S3V2ConfigurationFactory(
     @Value("\${airbyte.destination.record-batch-size}") private val recordBatchSizeBytes: Long
 ) : DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
-    val log = KotlinLogging.logger {}
+    private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
         log.info { "Record batch size override: $recordBatchSizeBytes" }
