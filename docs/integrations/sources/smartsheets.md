@@ -117,7 +117,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
-| 1.1.26 | 2024-11-25 | [48646](https://github.com/airbytehq/airbyte/pull/48646) | Update dependencies |
+| 1.1.26 | 2024-11-25 | [48646](https://github.com/airbytehq/airbyte/pull/48646) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.1.25 | 2024-11-04 | [48185](https://github.com/airbytehq/airbyte/pull/48185) | Update dependencies |
 | 1.1.24 | 2024-10-28 | [47024](https://github.com/airbytehq/airbyte/pull/47024) | Update dependencies |
 | 1.1.23 | 2024-10-12 | [46783](https://github.com/airbytehq/airbyte/pull/46783) | Update dependencies |

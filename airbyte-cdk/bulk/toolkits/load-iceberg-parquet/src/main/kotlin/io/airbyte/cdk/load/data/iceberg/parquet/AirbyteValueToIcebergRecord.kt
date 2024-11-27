@@ -7,7 +7,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.IntValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -58,7 +57,6 @@ class AirbyteValueToIcebergRecord {
             is DateValue ->
                 throw IllegalArgumentException("String-based date types are not supported")
             is IntegerValue -> return airbyteValue.value.toLong()
-            is IntValue -> return airbyteValue.value
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value

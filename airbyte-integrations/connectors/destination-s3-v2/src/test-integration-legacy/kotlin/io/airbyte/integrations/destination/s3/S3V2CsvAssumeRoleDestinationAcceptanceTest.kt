@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.S3BaseCsvDestinationAcceptanceTest
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 @Disabled
 class S3V2CsvAssumeRoleDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanceTest() {
@@ -15,5 +16,11 @@ class S3V2CsvAssumeRoleDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanc
 
     override fun getConnectorEnv(): Map<String, String> {
         return S3V2DestinationTestUtils.assumeRoleInternalCredentials
+    }
+
+    @Test
+    @Disabled("Pending FILE TRANSFER S3V2")
+    override fun testFakeFileTransfer() {
+        super.testFakeFileTransfer()
     }
 }

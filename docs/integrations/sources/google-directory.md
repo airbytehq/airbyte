@@ -70,7 +70,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
-| 0.2.24 | 2024-11-25 | [48638](https://github.com/airbytehq/airbyte/pull/48638) | Update dependencies |
+| 0.2.24 | 2024-11-25 | [48638](https://github.com/airbytehq/airbyte/pull/48638) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.23 | 2024-10-29 | [47736](https://github.com/airbytehq/airbyte/pull/47736) | Update dependencies |
 | 0.2.22 | 2024-10-22 | [47071](https://github.com/airbytehq/airbyte/pull/47071) | Update dependencies |
 | 0.2.21 | 2024-10-12 | [46785](https://github.com/airbytehq/airbyte/pull/46785) | Update dependencies |
