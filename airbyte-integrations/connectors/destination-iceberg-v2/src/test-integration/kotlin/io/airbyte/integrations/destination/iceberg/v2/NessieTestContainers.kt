@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.load.util.setOnce
@@ -9,7 +13,7 @@ import org.testcontainers.containers.DockerComposeContainer
  * Shared test containers for all nessie tests, so that we don't launch redundant docker containers
  */
 object NessieTestContainers {
-    private val testcontainers: DockerComposeContainer<*> =
+    val testcontainers: DockerComposeContainer<*> =
         DockerComposeContainer(File("src/test-integration/resources/nessie/docker-compose.yml"))
             .withExposedService("nessie", 19120)
             .withExposedService("minio", 9000)

@@ -4,27 +4,18 @@
 
 package io.airbyte.integrations.destination.iceberg.v2
 
-import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
-import io.airbyte.integrations.destination.iceberg.v2.IcebergV2TestUtil.PATH
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import org.junit.ClassRule
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.DockerComposeContainer
-
 
 abstract class IcebergV2WriteTest(configContents: String) :
     BasicFunctionalityIntegrationTest(
         configContents,
         IcebergV2Specification::class.java,
-        FakeDataDumper,
+        IcebergV2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
         // TODO let's validate these - I'm making some assumptions about how iceberg works
@@ -35,29 +26,42 @@ abstract class IcebergV2WriteTest(configContents: String) :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = StronglyTyped(),
-) {
+    ) {
     companion object {
-      @JvmStatic
-      @BeforeAll
-      fun setup() {
-        NessieTestContainers.start()
-      }
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            NessieTestContainers.start()
+        }
     }
 }
 
-class IcebergNessieMinioWriteTest : IcebergV2WriteTest(config) {
+class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
     companion object {
-        // TODO we need to inject the service host/port into this config
-        //   i.e. testcontainers.getServiceHost / testcontainers.getServicePort
-        //   ... so this probably should be a function getConfig()
-        val config = """
+        fun getConfig(): String {
+            val minioEndpoint = NessieTestContainers.testcontainers.getServiceHost("minio", 9000)
+            val minioPort = NessieTestContainers.testcontainers.getServicePort("minio", 9000)
+
+            val nessieEndpoint = NessieTestContainers.testcontainers.getServiceHost("nessie", 19120)
+            val nessiePort = NessieTestContainers.testcontainers.getServicePort("nessie", 19120)
+
+            return """
             {
-              "s3_bucket_name": "test_bucket",
-              "s3_bucket_region": "us-east-1",
-              "server_uri": "localhost",
-              "warehouse_location": "foo",
-              "main_branch_name": "main"
+                "s3_bucket_name": "myminio/demobucket",
+                "s3_bucket_region": "us-east-1",
+                "access_key_id": "minioadmin",
+                "secret_access_key": "minioadmin",
+                "s3_endpoint": "http://$minioEndpoint:$minioPort",
+                "server_uri": "http://$nessieEndpoint:$nessiePort/api/v1",
+                "warehouse_location": "s3://demobucket/",
+                "main_branch_name": "main"
             }
-        """.trimIndent()
+            """.trimIndent()
+        }
     }
 }
