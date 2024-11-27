@@ -232,7 +232,6 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
-        Thread.sleep(15 * 1000)
         if (isStaging) {
             return
         }
