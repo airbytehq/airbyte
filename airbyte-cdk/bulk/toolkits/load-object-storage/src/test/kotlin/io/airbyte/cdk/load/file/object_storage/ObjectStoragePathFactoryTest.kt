@@ -68,6 +68,20 @@ class ObjectStoragePathFactoryTest {
     @Singleton
     @Primary
     @Requires(env = ["ObjectStoragePathFactoryTest"])
+    @Requires(property = "object-storage-path-factory-test.path-without-slash", value = "true")
+    class MockPathConfigProviderWithoutSlash : ObjectStoragePathConfigurationProvider {
+        override val objectStoragePathConfiguration: ObjectStoragePathConfiguration =
+            MockPathConfigProvider()
+                .objectStoragePathConfiguration
+                .copy(
+                    pathSuffixPattern =
+                        "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}_"
+                )
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["ObjectStoragePathFactoryTest"])
     @Requires(property = "object-storage-path-factory-test.use-staging", value = "false")
     class MockPathConfigProviderWithoutStaging : ObjectStoragePathConfigurationProvider {
         override val objectStoragePathConfiguration: ObjectStoragePathConfiguration =
@@ -233,6 +247,38 @@ class ObjectStoragePathFactoryTest {
             Assertions.assertThrows(UnsupportedOperationException::class.java) {
                 pathFactory.getPathToFile(stream1, 173, true)
             }
+        }
+    }
+
+    @Nested
+    @MicronautTest(
+        environments =
+            [
+                "ObjectStoragePathFactoryTest",
+                "MockDestinationCatalog",
+            ],
+    )
+    @Property(name = "object-storage-path-factory-test.path-without-slash", value = "true")
+    inner class ObjectStoragePathFactoryTestNoTrailingPathSlash {
+        @Test
+        fun testPathDoesNotHaveTrailingSlash(
+            pathFactory: ObjectStoragePathFactory,
+            timeProvider: TimeProvider
+        ) {
+            val syncTime = timeProvider.syncTimeMillis()
+            val wallTime = timeProvider.currentTimeMillis()
+            val stream1 = MockDestinationCatalogFactory.stream1
+            val (namespace, name) = stream1.descriptor
+            val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/${syncTime}_"
+            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
+            Assertions.assertEquals(
+                prefixOnly,
+                pathFactory.getFinalDirectory(stream1),
+            )
+            Assertions.assertEquals(
+                "$prefixOnly$fileName",
+                pathFactory.getPathToFile(stream1, 173, false),
+            )
         }
     }
 }
