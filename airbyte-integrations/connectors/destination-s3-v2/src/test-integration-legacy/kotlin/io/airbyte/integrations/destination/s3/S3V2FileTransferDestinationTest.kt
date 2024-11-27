@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
 
-@Disabled("Pending FILE TRANSFER S3V2")
 class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
     override val imageName: String = "airbyte/destination-s3-v2:dev"
     override val supportsFileTransfer = true
@@ -167,7 +166,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         } catch (e: TestHarnessException) {
             assertContains(
                 e.outputMessages!![0].trace.error.internalMessage,
-                S3ConsumerFactory.MISSING_FILE_FIELD_IN_FILE_TRANSFER_ERROR_MESSAGE
+                "Failed to deserialize AirbyteMessage"
             )
         }
     }
@@ -202,7 +201,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         assertEquals(generationId, 32L)
         assertFalse(file.exists(), "file should have been deleted by the connector")
         assertEquals(fileLength, objectInStore.size)
-        assertEquals("$testBucketPath/$streamName/${filePath.toString()}", objectInStore.key)
+        assertEquals("$testBucketPath/$streamName/staging/files/${filePath.toString()}", objectInStore.key)
         assertContentEquals(
             fileContent,
             s3Client!!
