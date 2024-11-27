@@ -1598,7 +1598,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 nestedFloat = BigDecimal("50000.0000000000000001")
                 topLevelFloat = BigDecimal("50000.0000000000000001")
                 bigInt = BigInteger("99999999999999999999999999999999")
-                bigIntChanges = emptyList<Change>()
+                bigIntChanges = emptyList()
                 badValuesData =
                     mapOf(
                         "id" to 5,

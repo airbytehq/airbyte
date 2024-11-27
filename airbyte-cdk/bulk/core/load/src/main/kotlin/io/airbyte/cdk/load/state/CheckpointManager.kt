@@ -158,6 +158,9 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 validateAndSendMessage(head.checkpointMessage, head.streamIndexes)
                 globalCheckpoints.poll() // don't remove until after we've successfully sent
             } else {
+                log.info {
+                    "Not flushing global checkpoint with stream indexes: ${head.streamIndexes}"
+                }
                 break
             }
         }
@@ -176,6 +179,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                     validateAndSendMessage(nextMessage, listOf(stream.descriptor to nextIndex))
                     streamCheckpoints.poll() // don't remove until after we've successfully sent
                 } else {
+                    log.info { "Not flushing next checkpoint for index $nextIndex" }
                     break
                 }
             }
