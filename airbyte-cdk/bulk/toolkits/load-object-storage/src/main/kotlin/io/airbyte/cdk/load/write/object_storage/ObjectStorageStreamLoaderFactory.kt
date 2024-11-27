@@ -8,10 +8,9 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
-import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
@@ -28,23 +27,27 @@ import java.io.File
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration
+import kotlin.time.measureTime
 
 @Singleton
 @Secondary
-class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>>(
+class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val client: ObjectStorageClient<T>,
-    private val compressionConfig: ObjectStorageCompressionConfigurationProvider<*>? = null,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
+    private val compressionConfigurationProvider:
+        ObjectStorageCompressionConfigurationProvider<U>? =
+        null,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
             stream,
             client,
-            compressionConfig?.objectStorageCompressionConfiguration?.compressor ?: NoopProcessor,
+            compressionConfigurationProvider?.objectStorageCompressionConfiguration?.compressor,
             pathFactory,
-            writerFactory,
+            bufferedWriterFactory,
             destinationStateManager
         )
     }
@@ -54,9 +57,9 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>>(
 class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     override val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
-    private val compressor: StreamProcessor<U>,
+    private val compressor: StreamProcessor<U>?,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
@@ -95,12 +98,25 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         )
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val obj =
-            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach { writer.accept(it) }
+        val upload = client.startStreamingUpload(key, metadata)
+        bufferedWriterFactory.create(stream).use { writer ->
+            var totalRecordProcessingTime = Duration.ZERO
+            var nRecords = 0
+            records.forEach {
+                totalRecordProcessingTime += measureTime { writer.accept(it) }
+                nRecords++
+                writer.accept(it)
+                if (writer.isDataSufficient()) {
+                    upload.uploadPart(writer.takeBytes())
                 }
             }
+            log.info {
+                "Processed $nRecords in $totalRecordProcessingTime (per record: ${totalRecordProcessingTime / nRecords}; changes: ${writer.numCapturedChanges.get()}"
+            }
+            writer.finish()?.let { upload.uploadPart(it) }
+        }
+        val obj = upload.complete()
+
         log.info { "Finished writing records to $key, persisting state" }
         destinationStateManager.persistState(stream)
         return RemoteObject(remoteObject = obj, partNumber = partNumber)

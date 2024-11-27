@@ -11,11 +11,14 @@ import aws.sdk.kotlin.services.s3.model.CreateMultipartUploadResponse
 import aws.sdk.kotlin.services.s3.model.UploadPartRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
+import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.measureTime
@@ -24,6 +27,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
 
 /**
  * An S3MultipartUpload that provides an [OutputStream] abstraction for writing data. This should
@@ -155,5 +159,50 @@ class S3MultipartUpload<T : OutputStream>(
             this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts }
         }
         client.completeMultipartUpload(request)
+    }
+}
+
+class S3StreamingUpload(
+    private val client: aws.sdk.kotlin.services.s3.S3Client,
+    private val bucketConfig: S3BucketConfiguration,
+    private val response: CreateMultipartUploadResponse,
+    private val uploadPermits: Semaphore?,
+) : StreamingUpload<S3Object> {
+    private val log = KotlinLogging.logger {}
+    private val uploadedParts = ConcurrentLinkedQueue<CompletedPart>()
+
+    override suspend fun uploadPart(part: ByteArray) {
+        val partNumber = uploadedParts.size + 1
+        val request = UploadPartRequest {
+            uploadId = response.uploadId
+            bucket = response.bucket
+            key = response.key
+            body = ByteStream.fromBytes(part)
+            this.partNumber = partNumber
+        }
+        val uploadResponse = client.uploadPart(request)
+        uploadedParts.add(
+            CompletedPart {
+                this.partNumber = partNumber
+                this.eTag = uploadResponse.eTag
+            }
+        )
+    }
+
+    override suspend fun complete(): S3Object {
+        val request = CompleteMultipartUploadRequest {
+            uploadId = response.uploadId
+            bucket = response.bucket
+            key = response.key
+            this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts.toList() }
+        }
+        client.completeMultipartUpload(request)
+        if (uploadPermits != null) {
+            log.info {
+                "Releasing upload permit for key ${response.key} (${uploadPermits.availablePermits} available)"
+            }
+            uploadPermits.release()
+        }
+        return S3Object(response.key!!, bucketConfig)
     }
 }
