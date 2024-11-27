@@ -10,9 +10,12 @@ import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.Untyped
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 
+@Timeout(5, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,

@@ -14,9 +14,12 @@ import io.airbyte.commons.resources.MoreResources.readResource
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.CatalogHelpers
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 
+@Timeout(5, unit = TimeUnit.MINUTES)
 class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
     override val imageName: String = "airbyte/destination-s3-v2:dev"
     override fun getProtocolVersion(): ProtocolVersion {
