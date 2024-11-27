@@ -28,21 +28,25 @@ class AirbyteValueToIcebergRecord {
                     if (type.isStructType) {
                         type.asStructType().asSchema()
                     } else {
-                        throw IllegalArgumentException("ObjectValue should be mapped to ObjectType")
+                        throw IllegalArgumentException("ObjectValue should be mapped to StructType")
                     }
-                val associate = recordSchema.columns().associate { it.name() to it.type() }
-                val record = GenericRecord.create(recordSchema)
-                airbyteValue.values.forEach { (name, value) ->
-                    associate[name]?.let { field -> record.setField(name, convert(value, field)) }
-                }
-                return record
+                return recordSchema
+                    .columns()
+                    .filter { column -> airbyteValue.values.containsKey(column.name()) }
+                    .associate { column ->
+                        column.name() to
+                            convert(
+                                airbyteValue.values[column.name()]!!,
+                                column.type(),
+                            )
+                    }
             }
             is ArrayValue -> {
                 val elementType =
                     if (type.isListType) {
                         type.asListType().elementType()
                     } else {
-                        throw IllegalArgumentException("ArrayValue should be mapped to ArrayType")
+                        throw IllegalArgumentException("ArrayValue should be mapped to ListType")
                     }
 
                 val array: MutableList<Any?> = mutableListOf()
