@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.protocol.models.Jsons
 import java.math.BigDecimal
 import org.apache.iceberg.Schema
+import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 import org.apache.iceberg.types.Types.StructType
@@ -42,9 +43,9 @@ class AirbyteValueToIcebergRecordTest {
         val objectValue =
             ObjectValue(linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe")))
 
-        val result = converter.convert(objectValue, schema.asStruct()) as LinkedHashMap<*, *>
-        assertEquals(42L, result["id"])
-        assertEquals("John Doe", result["name"])
+        val result = converter.convert(objectValue, schema.asStruct()) as GenericRecord
+        assertEquals(42L, result.getField("id"))
+        assertEquals("John Doe", result.getField("name"))
     }
 
     @Test
@@ -180,18 +181,16 @@ class AirbyteValueToIcebergRecordTest {
         val result = objectValue.toIcebergRecord(schema)
         assertEquals(123L, result.getField("id"))
         assertEquals("John Doe", result.getField("name"))
-        assertEquals(123L, (result.getField("meta") as Map<*, *>)["sync_id"] as Long)
-        assertEquals(
-            2,
-            ((result.getField("meta") as Map<*, *>)["changes"] as LinkedHashMap<*, *>).size
-        )
+        assertEquals(123L, (result.getField("meta") as GenericRecord).getField("sync_id") as Long)
         assertEquals(
             "insert",
-            ((result.getField("meta") as Map<*, *>)["changes"] as LinkedHashMap<*, *>)["change"]
+            ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
+                .getField("change")
         )
         assertEquals(
             "reason",
-            ((result.getField("meta") as Map<*, *>)["changes"] as LinkedHashMap<*, *>)["reason"]
+            ((result.getField("meta") as GenericRecord).getField("changes") as GenericRecord)
+                .getField("reason")
         )
     }
 
