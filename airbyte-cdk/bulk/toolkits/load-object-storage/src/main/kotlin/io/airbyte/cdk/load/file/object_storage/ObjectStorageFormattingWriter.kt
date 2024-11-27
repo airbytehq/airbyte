@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.ObjectType
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
+import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
@@ -29,6 +31,7 @@ import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
 import org.apache.avro.Schema
@@ -75,6 +78,7 @@ class JsonFormattingWriter(
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+
     override fun accept(record: DestinationRecord) {
         val data =
             record.dataWithAirbyteMeta(stream, rootLevelFlattening).toJson().serializeToString()
@@ -92,6 +96,7 @@ class CSVFormattingWriter(
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean
 ) : ObjectStorageFormattingWriter {
+
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     override fun accept(record: DestinationRecord) {
@@ -124,11 +129,9 @@ class AvroFormattingWriter(
     }
 
     override fun accept(record: DestinationRecord) {
-        val dataMapped =
-            pipeline
-                .map(record.data, record.meta?.changes)
-                .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
+        val dataMapped = pipeline.map(record.data, record.meta?.changes)
+        val withMeta = dataMapped.withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+        writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 
     override fun close() {
@@ -155,11 +158,60 @@ class ParquetFormattingWriter(
     }
 
     override fun accept(record: DestinationRecord) {
-        val dataMapped =
-            pipeline
-                .map(record.data, record.meta?.changes)
-                .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
+        val dataMapped = pipeline.map(record.data, record.meta?.changes)
+        val withMeta = dataMapped.withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+        writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
+    }
+
+    override fun close() {
+        writer.close()
+    }
+}
+
+@Singleton
+@Secondary
+class BufferedFormattingWriterFactory<T : OutputStream>(
+    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val compressionConfigurationProvider: ObjectStorageCompressionConfigurationProvider<T>,
+) {
+    fun create(stream: DestinationStream): BufferedFormattingWriter<T> {
+        val outputStream = ByteArrayOutputStream()
+        val processor =
+            compressionConfigurationProvider.objectStorageCompressionConfiguration.compressor
+        val wrappingBuffer = processor.wrapper.invoke(outputStream)
+        val writer = writerFactory.create(stream, wrappingBuffer)
+        return BufferedFormattingWriter(writer, outputStream, processor, wrappingBuffer)
+    }
+}
+
+class BufferedFormattingWriter<T : OutputStream>(
+    private val writer: ObjectStorageFormattingWriter,
+    private val buffer: ByteArrayOutputStream,
+    private val streamProcessor: StreamProcessor<T>,
+    private val wrappingBuffer: T
+) : ObjectStorageFormattingWriter {
+    val bufferSize: Int
+        get() = buffer.size()
+
+    override fun accept(record: DestinationRecord) {
+        writer.accept(record)
+    }
+
+    fun takeBytes(): ByteArray {
+        wrappingBuffer.flush()
+        val bytes = buffer.toByteArray()
+        buffer.reset()
+        return bytes
+    }
+
+    fun finish(): ByteArray? {
+        writer.close()
+        streamProcessor.partFinisher.invoke(wrappingBuffer)
+        return if (buffer.size() > 0) {
+            buffer.toByteArray()
+        } else {
+            null
+        }
     }
 
     override fun close() {

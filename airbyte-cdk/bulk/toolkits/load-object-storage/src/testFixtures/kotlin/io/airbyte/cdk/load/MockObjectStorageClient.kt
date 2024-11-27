@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
@@ -80,5 +81,12 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
 
     override suspend fun delete(remoteObject: MockRemoteObject) {
         objects.remove(remoteObject.key)
+    }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<MockRemoteObject> {
+        TODO("Not yet implemented")
     }
 }

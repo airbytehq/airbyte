@@ -13,7 +13,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 class S3V2Writer(
-    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<S3Object>,
+    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<S3Object, *>,
 ) : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return streamLoaderFactory.create(stream)

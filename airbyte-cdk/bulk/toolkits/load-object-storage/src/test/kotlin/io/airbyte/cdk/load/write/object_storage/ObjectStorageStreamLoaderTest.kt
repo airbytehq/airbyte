@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationFile
@@ -31,9 +31,11 @@ class ObjectStorageStreamLoaderTest {
     private val client: ObjectStorageClient<RemoteObject<Int>> = mockk(relaxed = true)
     private val compressor: StreamProcessor<ByteArrayOutputStream> = mockk(relaxed = true)
     private val pathFactory: ObjectStoragePathFactory = mockk(relaxed = true)
-    private val writerFactory: ObjectStorageFormattingWriterFactory = mockk(relaxed = true)
+    private val writerFactory: BufferedFormattingWriterFactory<ByteArrayOutputStream> =
+        mockk(relaxed = true)
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState> =
         mockk(relaxed = true)
+    private val partSize: Long = 1
 
     private val objectStorageStreamLoader =
         spyk(
@@ -43,7 +45,8 @@ class ObjectStorageStreamLoaderTest {
                 compressor,
                 pathFactory,
                 writerFactory,
-                destinationStateManager
+                destinationStateManager,
+                partSize
             )
         )
 

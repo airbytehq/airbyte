@@ -49,6 +49,8 @@ class ReservationManager(val totalCapacityBytes: Long) {
 
     val remainingCapacityBytes: Long
         get() = totalCapacityBytes - usedBytes.get()
+    val totalBytesReserved: Long
+        get() = usedBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
     suspend fun <T> reserve(bytes: Long, reservedFor: T): Reserved<T> {
