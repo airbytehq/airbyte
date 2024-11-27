@@ -84,7 +84,11 @@ class S3V2WriteTestJsonStaging :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
         commitDataIncrementally = false
-    )
+    ) {
+    @Test
+    @Disabled("Staging mode is not supported for file transfers")
+    override fun testBasicWriteFile() {}
+}
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
