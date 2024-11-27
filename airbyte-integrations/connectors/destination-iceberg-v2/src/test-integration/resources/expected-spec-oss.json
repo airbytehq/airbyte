@@ -69,5 +69,5 @@
   "supportsIncremental" : true,
   "supportsNormalization" : false,
   "supportsDBT" : false,
-  "supported_destination_sync_modes" : [ "overwrite", "append" ]
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
 }

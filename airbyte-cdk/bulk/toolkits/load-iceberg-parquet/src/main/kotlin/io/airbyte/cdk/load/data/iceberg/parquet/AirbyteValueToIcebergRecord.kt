@@ -74,13 +74,13 @@ class AirbyteValueToIcebergRecord {
 }
 
 fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-    val create = GenericRecord.create(schema)
+    val record = GenericRecord.create(schema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
     schema.asStruct().fields().forEach { field ->
-        val value = this.values.get(field.name())
+        val value = this.values[field.name()]
         if (value != null) {
-            create.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
+            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
         }
     }
-    return create
+    return record
 }
