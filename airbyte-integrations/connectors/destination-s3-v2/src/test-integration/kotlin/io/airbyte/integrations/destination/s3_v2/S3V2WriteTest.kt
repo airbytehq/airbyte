@@ -10,9 +10,12 @@ import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.Untyped
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 
+@Timeout(15, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -40,59 +43,10 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         isStaging = isStaging,
     ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
-    @Test
-    override fun testMidSyncCheckpointingStreamState() {
-        super.testMidSyncCheckpointingStreamState()
-    }
-
-    @Test
-    override fun testAppend() {
-        super.testAppend()
-    }
-
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
-
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
     }
 }
 
@@ -131,25 +85,8 @@ class S3V2WriteTestJsonStaging :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-        commitDataIncrementally = false,
-        isStaging = true,
-    ) {
-
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-
-    @Test
-    override fun resumeAfterCancelledTruncate() {
-        super.resumeAfterCancelledTruncate()
-    }
-
-    @Test
-    override fun testInterruptedTruncateWithoutPriorData() {
-        super.testInterruptedTruncateWithoutPriorData()
-    }
-}
+        commitDataIncrementally = false
+    )
 
 class S3V2WriteTestJsonGzip :
     S3V2WriteTest(
