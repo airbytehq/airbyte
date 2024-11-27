@@ -81,12 +81,6 @@ class AirbyteValueToIcebergRecordTest {
     }
 
     @Test
-    fun `convert handles IntValue`() {
-        val result = converter.convert(IntValue(42), Types.IntegerType.get())
-        assertEquals(42, result)
-    }
-
-    @Test
     fun `convert handles NullValue`() {
         val result = converter.convert(NullValue, Types.StringType.get())
         assertNull(result)

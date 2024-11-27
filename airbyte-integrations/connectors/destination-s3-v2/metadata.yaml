@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: d6116991-e809-4c7c-ae09-c64712df5b66
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/destination-s3-v2
   githubIssueLabel: destination-s3-v2
   icon: s3.svg
@@ -83,6 +83,21 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
           fileName: s3_dest_assume_role_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_MIN_REQUIRED_PERMISSIONS_CREDS
+          fileName: s3_dest_min_required_permissions_creds.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_POLICY_MANAGER_CREDENTIALS
+          fileName: s3_dest_policy_manager_credentials.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
