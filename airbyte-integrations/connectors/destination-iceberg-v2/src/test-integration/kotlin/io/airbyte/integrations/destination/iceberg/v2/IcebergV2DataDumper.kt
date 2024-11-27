@@ -110,6 +110,13 @@ object IcebergV2DataDumper : DestinationDataDumper {
         return outputRecords
     }
 
+    override fun dumpFile(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<String> {
+        TODO("Not yet implemented")
+    }
+
     private fun getNessieCatalog(config: IcebergV2Configuration): NessieCatalog {
         val catalogProperties = IcebergUtil().toCatalogProperties(config)
 
