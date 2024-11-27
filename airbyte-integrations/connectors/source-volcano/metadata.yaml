@@ -1,0 +1,29 @@
+data:
+  ab_internal:
+    ql: 0
+    sl: 0
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: b6935898-aadb-46ae-99ca-d697207994c1
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-volcano
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-sap-hana
+  githubIssueLabel: source-sap-hana
+  icon: icon.svg
+  license: Airbyte Enterprise
+  maxSecondsBetweenMessages: 7200
+  name: Volcano Source
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: certified
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

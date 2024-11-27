@@ -1,0 +1,6 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-sap-hana:dev
+custom_environment_variables:
+  USE_STREAM_CAPABLE_STATE: true
+acceptance_tests:
