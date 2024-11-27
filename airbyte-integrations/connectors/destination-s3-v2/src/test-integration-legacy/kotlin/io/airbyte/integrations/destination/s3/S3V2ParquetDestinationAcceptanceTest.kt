@@ -74,10 +74,4 @@ class S3V2ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceT
 
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
     }
-
-    @Test
-    @Disabled("Pending FILE TRANSFER S3V2")
-    override fun testFakeFileTransfer() {
-        super.testFakeFileTransfer()
-    }
 }

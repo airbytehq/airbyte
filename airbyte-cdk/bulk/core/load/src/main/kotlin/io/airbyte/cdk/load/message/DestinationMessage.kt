@@ -444,7 +444,7 @@ class DestinationMessageFactory(
                             if (fileTransferEnabled) {
                                 DestinationFileStreamComplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamComplete(
@@ -456,12 +456,12 @@ class DestinationMessageFactory(
                             if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamIncomplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
                         else -> Undefined

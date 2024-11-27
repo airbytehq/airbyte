@@ -17,10 +17,4 @@ class S3V2CsvDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanceTest() {
 
     override val baseConfigJson: JsonNode
         get() = S3V2DestinationTestUtils.baseConfigJsonFilePath
-
-    @Test
-    @Disabled("Pending FILE TRANSFER S3V2")
-    override fun testFakeFileTransfer() {
-        super.testFakeFileTransfer()
-    }
 }
