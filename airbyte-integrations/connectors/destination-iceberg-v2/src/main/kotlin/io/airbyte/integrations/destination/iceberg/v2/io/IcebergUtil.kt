@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.MapperPipeline
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
@@ -236,7 +237,8 @@ class IcebergUtil {
     ): Operation =
         if (
             record.data is ObjectValue &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null &&
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
