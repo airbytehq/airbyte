@@ -233,7 +233,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         for record in sorted_records:
             if record[self.cursor_field] >= self.state.get(self.cursor_field, self._start_date):
                 self._cursor_value = record[self.cursor_field]
-                yield record
+            yield record
 
 
 class TwilioNestedStream(TwilioStream):
