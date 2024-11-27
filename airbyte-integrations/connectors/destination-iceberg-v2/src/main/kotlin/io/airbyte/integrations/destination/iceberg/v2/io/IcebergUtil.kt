@@ -189,7 +189,7 @@ class IcebergUtil {
         )
         return mutableMapOf(
             // TODO make configurable?
-            ICEBERG_CATALOG_TYPE to ICEBERG_CA  TALOG_TYPE_NESSIE,
+            ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
             URI to icebergConfiguration.nessieServerConfiguration.serverUri,
             NessieConfigConstants.CONF_NESSIE_REF to
                 icebergConfiguration.nessieServerConfiguration.mainBranchName,
