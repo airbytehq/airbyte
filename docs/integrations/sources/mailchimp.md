@@ -126,7 +126,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
-| 2.0.20 | 2024-11-22 | [45282](https://github.com/airbytehq/airbyte/pull/45282) | Update dependencies |
+| 2.0.20 | 2024-11-22 | [45282](https://github.com/airbytehq/airbyte/pull/45282) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.0.19 | 2024-08-31 | [45031](https://github.com/airbytehq/airbyte/pull/45031) | Update dependencies |
 | 2.0.18 | 2024-08-24 | [44708](https://github.com/airbytehq/airbyte/pull/44708) | Update dependencies |
 | 2.0.17 | 2024-08-17 | [44323](https://github.com/airbytehq/airbyte/pull/44323) | Update dependencies |
