@@ -76,6 +76,7 @@ class S3V2WriteTestJsonRootLevelFlattening :
     }
 }
 
+@Disabled("Un-disable once staging is re-enabled")
 class S3V2WriteTestJsonStaging :
     S3V2WriteTest(
         S3V2TestUtils.JSON_STAGING_CONFIG_PATH,
