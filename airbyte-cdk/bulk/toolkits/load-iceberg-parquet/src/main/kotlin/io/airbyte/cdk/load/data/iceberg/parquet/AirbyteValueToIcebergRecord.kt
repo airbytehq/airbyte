@@ -35,7 +35,7 @@ class AirbyteValueToIcebergRecord {
                     .associate { column ->
                         column.name() to
                             convert(
-                                airbyteValue.values[column.name()]!!,
+                                airbyteValue.values.getOrDefault(column.name(), NullValue),
                                 column.type(),
                             )
                     }
