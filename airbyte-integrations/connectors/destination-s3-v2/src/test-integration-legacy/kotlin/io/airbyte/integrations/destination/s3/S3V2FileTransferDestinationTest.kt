@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.async.model.AirbyteRecordMessageFile
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3BaseDestinationAcceptanceTest
-import io.airbyte.cdk.integrations.destination.s3.S3ConsumerFactory
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
@@ -29,7 +28,6 @@ import kotlin.io.path.writeText
 import kotlin.random.Random
 import kotlin.test.*
 import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
@@ -201,7 +199,10 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         assertEquals(generationId, 32L)
         assertFalse(file.exists(), "file should have been deleted by the connector")
         assertEquals(fileLength, objectInStore.size)
-        assertEquals("$testBucketPath/$streamName/staging/files/${filePath.toString()}", objectInStore.key)
+        assertEquals(
+            "$testBucketPath/$streamName/staging/files/${filePath.toString()}",
+            objectInStore.key
+        )
         assertContentEquals(
             fileContent,
             s3Client!!

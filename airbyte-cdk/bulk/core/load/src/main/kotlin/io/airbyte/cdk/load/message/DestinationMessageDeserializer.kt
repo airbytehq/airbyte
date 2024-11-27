@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 interface Deserializer<T : Any> {

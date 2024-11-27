@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.S3BaseAvroDestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 
 class S3V2AvroDestinationAcceptanceTest : S3BaseAvroDestinationAcceptanceTest() {
     override val imageName: String = "airbyte/destination-s3-v2:dev"

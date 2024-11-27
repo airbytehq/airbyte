@@ -115,9 +115,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             log.error { "File does not exist: $fileUrl" }
             throw IllegalStateException("File does not exist: $fileUrl")
         }
-        val key =
-            Path.of(pathFactory.getFinalDirectory(stream), fileUrl)
-                .toString()
+        val key = Path.of(pathFactory.getFinalDirectory(stream), fileUrl).toString()
 
         val state = destinationStateManager.getState(stream)
         state.addObject(

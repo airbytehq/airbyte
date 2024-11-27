@@ -805,10 +805,7 @@ protected constructor(
                 )
             fail("sync should have failed. Instead got output $destinationOutput")
         } catch (e: TestHarnessException) {
-            assertContains(
-                e.outputMessages!![0].trace.error.internalMessage,
-                "File does not exist"
-            )
+            assertContains(e.outputMessages!![0].trace.error.internalMessage, "File does not exist")
         }
     }
 
