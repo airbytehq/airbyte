@@ -372,6 +372,46 @@
           "required": ["name", "format"]
         }
       },
+      "delivery_method": {
+        "title": "Delivery Method",
+        "default": "use_records_transfer",
+        "type": "object",
+        "order": 6,
+        "display_type": "radio",
+        "group": "advanced",
+        "oneOf": [
+          {
+            "title": "Replicate Records",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_records_transfer",
+                "const": "use_records_transfer",
+                "enum": ["use_records_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
+            "required": ["delivery_type"]
+          },
+          {
+            "title": "Copy Raw Files",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_file_transfer",
+                "const": "use_file_transfer",
+                "enum": ["use_file_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
+            "required": ["delivery_type"]
+          }
+        ]
+      },
       "bucket": {
         "title": "Bucket",
         "description": "Name of the S3 bucket where the file(s) exist.",

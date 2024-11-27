@@ -5,11 +5,13 @@
 
 from typing import Any
 
+from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
+from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import StepResult
 
 
@@ -21,6 +23,21 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
+    USER = AirbyteConnectorBaseImage.USER
+
+    async def _get_image_user(self, base_container: Container) -> str:
+        """If the base image in use has a user named 'airbyte', we will use it as the user for the connector image.
+
+        Args:
+            base_container (Container): The base container to use to build the connector.
+
+        Returns:
+            str: The user to use for the connector image.
+        """
+        users = (await base_container.with_exec(sh_dash_c(["cut -d: -f1 /etc/passwd | sort | uniq"])).stdout()).splitlines()
+        if self.USER in users:
+            return self.USER
+        return "root"
 
     async def _build_connector(self, platform: Platform, *args: Any) -> Container:
         if (
@@ -60,6 +77,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
+        user = await self._get_image_user(base)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
         main_file_name = build_customization.get_main_file_name(self.context.connector)
 
@@ -73,16 +91,18 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name))
+            .with_exec(["chown", "-R", f"{user}:{user}", "."])
+            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name), owner=user)
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
+                owner=user,
             )
         )
 
         connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
-        return customized_connector
+        return customized_connector.with_user(user)
 
     async def _build_from_dockerfile(self, platform: Platform) -> Container:
         """Build the connector container using its Dockerfile.

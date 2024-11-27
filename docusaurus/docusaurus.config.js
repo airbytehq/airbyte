@@ -14,6 +14,7 @@ const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHead
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
+const docMetaTags = require("./src/remark/docMetaTags");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -113,6 +114,7 @@ const config = {
             docsHeaderDecoration,
             enterpriseDocsHeaderInformation,
             productInformation,
+            docMetaTags,
           ],
         },
         blog: false,

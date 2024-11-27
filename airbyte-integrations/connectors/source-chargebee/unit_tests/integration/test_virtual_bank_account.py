@@ -197,7 +197,7 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=cursor_value)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=str(cursor_value))
 
     @HttpMocker()
     def test_given_initial_state_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
@@ -212,4 +212,4 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=record_cursor_value)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=str(record_cursor_value))

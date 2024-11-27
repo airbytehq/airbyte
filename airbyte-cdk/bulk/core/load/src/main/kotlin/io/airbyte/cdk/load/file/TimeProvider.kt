@@ -8,6 +8,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 interface TimeProvider {
+    fun syncTimeMillis(): Long
     fun currentTimeMillis(): Long
     suspend fun delay(ms: Long)
 }
@@ -15,6 +16,10 @@ interface TimeProvider {
 @Singleton
 @Secondary
 class DefaultTimeProvider : TimeProvider {
+    private val creationTime = System.currentTimeMillis()
+
+    override fun syncTimeMillis(): Long = creationTime
+
     override fun currentTimeMillis(): Long {
         return System.currentTimeMillis()
     }

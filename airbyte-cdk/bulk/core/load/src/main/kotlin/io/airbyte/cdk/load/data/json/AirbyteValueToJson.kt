@@ -16,7 +16,6 @@ class AirbyteValueToJson {
             is BooleanValue -> JsonNodeFactory.instance.booleanNode(value.value)
             is DateValue -> JsonNodeFactory.instance.textNode(value.value)
             is IntegerValue -> JsonNodeFactory.instance.numberNode(value.value)
-            is IntValue -> JsonNodeFactory.instance.numberNode(value.value)
             is NullValue -> JsonNodeFactory.instance.nullNode()
             is NumberValue -> JsonNodeFactory.instance.numberNode(value.value)
             is ObjectValue -> {
@@ -27,7 +26,7 @@ class AirbyteValueToJson {
             is StringValue -> JsonNodeFactory.instance.textNode(value.value)
             is TimeValue -> JsonNodeFactory.instance.textNode(value.value)
             is TimestampValue -> JsonNodeFactory.instance.textNode(value.value)
-            is UnknownValue -> throw IllegalArgumentException("Unknown value: $value")
+            is UnknownValue -> value.value
         }
     }
 }

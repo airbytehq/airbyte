@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8ac29756-9a9d-4472-a20b-df29ac29764a
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-luma
   githubIssueLabel: source-luma
   icon: icon.svg
