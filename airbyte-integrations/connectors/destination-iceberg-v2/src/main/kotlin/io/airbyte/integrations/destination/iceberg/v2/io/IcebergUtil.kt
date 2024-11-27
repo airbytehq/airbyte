@@ -113,7 +113,7 @@ class IcebergUtil {
         synchronized(tableIdentifier.namespace()) {
             if (
                 catalog is SupportsNamespaces &&
-                    !catalog.namespaceExists(tableIdentifier.namespace())
+                !catalog.namespaceExists(tableIdentifier.namespace())
             ) {
                 try {
                     catalog.createNamespace(tableIdentifier.namespace())
@@ -188,23 +188,23 @@ class IcebergUtil {
             icebergConfiguration.s3BucketConfiguration.s3BucketRegion.region,
         )
         return mutableMapOf(
-            // TODO make configurable?
-            ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
-            URI to icebergConfiguration.nessieServerConfiguration.serverUri,
-            NessieConfigConstants.CONF_NESSIE_REF to
-                icebergConfiguration.nessieServerConfiguration.mainBranchName,
-            WAREHOUSE_LOCATION to
-                icebergConfiguration.nessieServerConfiguration.warehouseLocation,
-            // Use Iceberg's S3FileIO for file operations
-            CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-            S3FileIOProperties.ACCESS_KEY_ID to
-                icebergConfiguration.awsAccessKeyConfiguration.accessKeyId!!,
-            S3FileIOProperties.SECRET_ACCESS_KEY to
-                icebergConfiguration.awsAccessKeyConfiguration.secretAccessKey!!,
-            S3FileIOProperties.ENDPOINT to
-                icebergConfiguration.s3BucketConfiguration.s3Endpoint!!,
-            S3FileIOProperties.PATH_STYLE_ACCESS to "true" // Required for MinIO
-        )
+                // TODO make configurable?
+                ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
+                URI to icebergConfiguration.nessieServerConfiguration.serverUri,
+                NessieConfigConstants.CONF_NESSIE_REF to
+                    icebergConfiguration.nessieServerConfiguration.mainBranchName,
+                WAREHOUSE_LOCATION to
+                    icebergConfiguration.nessieServerConfiguration.warehouseLocation,
+                // Use Iceberg's S3FileIO for file operations
+                CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
+                S3FileIOProperties.ACCESS_KEY_ID to
+                    icebergConfiguration.awsAccessKeyConfiguration.accessKeyId!!,
+                S3FileIOProperties.SECRET_ACCESS_KEY to
+                    icebergConfiguration.awsAccessKeyConfiguration.secretAccessKey!!,
+                S3FileIOProperties.ENDPOINT to
+                    icebergConfiguration.s3BucketConfiguration.s3Endpoint!!,
+                S3FileIOProperties.PATH_STYLE_ACCESS to "true" // Required for MinIO
+            )
             .apply {
                 if (icebergConfiguration.nessieServerConfiguration.accessToken != null) {
                     put(NessieConfigConstants.CONF_NESSIE_AUTH_TYPE, "BEARER")
