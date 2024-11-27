@@ -17,14 +17,14 @@ application {
 //            Uncomment to run locally:
 //          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
 //            Uncomment to enable remote profiling:
-//            '-XX:NativeMemoryTracking=detail',
-//            '-Djava.rmi.server.hostname=localhost',
-//            '-Dcom.sun.management.jmxremote=true',
-//            '-Dcom.sun.management.jmxremote.port=6000',
-//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
-//            '-Dcom.sun.management.jmxremote.local.only=false',
-//            '-Dcom.sun.management.jmxremote.authenticate=false',
-//            '-Dcom.sun.management.jmxremote.ssl=false'
+            '-XX:NativeMemoryTracking=detail',
+            '-Djava.rmi.server.hostname=localhost',
+            '-Dcom.sun.management.jmxremote=true',
+            '-Dcom.sun.management.jmxremote.port=6000',
+            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+            '-Dcom.sun.management.jmxremote.local.only=false',
+            '-Dcom.sun.management.jmxremote.authenticate=false',
+            '-Dcom.sun.management.jmxremote.ssl=false'
     ]
 }
 
