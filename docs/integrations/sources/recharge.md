@@ -57,6 +57,7 @@ Several output streams are available from this source:
 - [Addresses](https://developer.rechargepayments.com/v1-shopify?python#list-addresses) \(Incremental sync\)
 - [Charges](https://developer.rechargepayments.com/v1-shopify?python#list-charges) \(Incremental sync\)
 - [Collections](https://developer.rechargepayments.com/v1-shopify)
+- [Events](https://developer.rechargepayments.com/2021-11/events/events_list)
 - [Customers](https://developer.rechargepayments.com/v1-shopify?python#list-customers) \(Incremental sync\)
 - [Discounts](https://developer.rechargepayments.com/v1-shopify?python#list-discounts) \(Incremental sync\)
 - [Metafields](https://developer.rechargepayments.com/v1-shopify?python#list-metafields)
@@ -79,6 +80,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.0 | 2024-11-26 | [48382](https://github.com/airbytehq/airbyte/pull/48382) | Add new stream `events` |
 | 2.4.15 | 2024-11-04 | [48242](https://github.com/airbytehq/airbyte/pull/48242) | Update dependencies |
 | 2.4.14 | 2024-10-29 | [47890](https://github.com/airbytehq/airbyte/pull/47890) | Update dependencies |
 | 2.4.13 | 2024-10-28 | [47037](https://github.com/airbytehq/airbyte/pull/47037) | Update dependencies |

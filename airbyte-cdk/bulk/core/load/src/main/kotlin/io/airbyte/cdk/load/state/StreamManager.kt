@@ -173,6 +173,10 @@ class DefaultStreamManager(
     private fun isProcessingCompleteForState(index: Long, state: Batch.State): Boolean {
         val completeRanges = rangesState[state]!!
 
+        if (index == 0L && recordCount.get() == 0L) {
+            return true
+        }
+
         return completeRanges.encloses(Range.closedOpen(0L, index))
     }
 
@@ -180,6 +184,11 @@ class DefaultStreamManager(
         /* If the stream hasn't been fully read, it can't be done. */
         if (!markedEndOfStream.get()) {
             return false
+        }
+
+        /* A closed empty stream is always complete. */
+        if (recordCount.get() == 0L) {
+            return true
         }
 
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
