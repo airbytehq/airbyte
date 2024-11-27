@@ -223,6 +223,9 @@ class ObjectStoragePathFactory(
                 FileVariable("date", """\d{4}_\d{2}_\d{2}""") {
                     DATE_FORMATTER.format(it.syncTime)
                 },
+                FileVariable("date:yyyy_MM", """\d{4}_\d{2}""") {
+                    DATE_FORMATTER.format(it.syncTime).substring(0, 7)
+                },
                 FileVariable("timestamp", """\d+""") {
                     // NOTE: We use a constant time for the path but wall time for the files
                     it.currentTimeProvider.currentTimeMillis().toString()
@@ -381,7 +384,7 @@ class ObjectStoragePathFactory(
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
-                """\{(\w+)}""",
+                """\{([\w\:]+)}""",
                 pathVariableToPattern,
                 variableToIndex
             )
