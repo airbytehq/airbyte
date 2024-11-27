@@ -17,7 +17,7 @@ include = "source_klaviyo"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte_cdk = "6.7.1rc4"
+airbyte_cdk = "v6.6.8rc12"
 ddtrace = "2.16.4"
 
 [tool.poetry.scripts]
