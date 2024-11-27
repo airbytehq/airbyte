@@ -36,7 +36,8 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
     // Internal configuration
-    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration,
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
+        ObjectStorageUploadConfiguration(),
     override val recordBatchSizeBytes: Long,
 ) :
     DestinationConfiguration(),
@@ -63,13 +64,6 @@ class S3V2ConfigurationFactory(
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            objectStorageUploadConfiguration =
-                ObjectStorageUploadConfiguration(
-                    pojo.uploadPartSize
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
-                    pojo.maxConcurrentUploads
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
-                ),
             recordBatchSizeBytes = recordBatchSizeBytes
         )
     }
