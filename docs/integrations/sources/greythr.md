@@ -5,9 +5,10 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `gthost` | `string` | Host URL. Your GreytHR Host URL |  |
-| `password` | `string` | Password.  |  |
+| `base_url` | `string` | Base URL. https://api.greythr.com |  |
+| `domain` | `string` | Host URL. Your GreytHR Host URL |  |
 | `username` | `string` | Username.  |  |
+| `password` | `string` | Password.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -31,6 +32,6 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-11-26 | | Initial release by [@bhushan-dhwaniris](https://github.com/bhushan-dhwaniris) via Connector Builder |
+| 0.0.1 | 2024-11-27 | | Initial release by [@bhushan-dhwaniris](https://github.com/bhushan-dhwaniris) via Connector Builder |
 
 </details>
