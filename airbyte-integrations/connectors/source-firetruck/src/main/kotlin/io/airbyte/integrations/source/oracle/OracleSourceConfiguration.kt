@@ -2,12 +2,15 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.CdcSourceConfiguration
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.FileOutputStream
@@ -34,13 +37,45 @@ data class OracleSourceConfiguration(
     override val jdbcProperties: Map<String, String>,
     val defaultSchema: String,
     override val namespaces: Set<String>,
-    val cursorConfiguration: CursorConfiguration,
+    val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
-) : JdbcSourceConfiguration {
-    override val global = cursorConfiguration is CdcCursor
+    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    override val global = incremental is CdcIncrementalConfiguration
+    override val maxSnapshotReadDuration: Duration? =
+        when (incremental) {
+            UserDefinedCursorIncrementalConfiguration -> null
+            is CdcIncrementalConfiguration -> incremental.initialLoadTimeout
+        }
+
+    /** Required to inject [OracleSourceConfiguration] directly. */
+    @Factory
+    private class MicronautFactory {
+        @Singleton
+        fun oracleSourceConfig(
+            factory:
+                SourceConfigurationFactory<
+                    OracleSourceConfigurationSpecification, OracleSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<OracleSourceConfigurationSpecification>,
+        ): OracleSourceConfiguration = factory.make(supplier.get())
+    }
+}
+
+sealed interface IncrementalConfiguration
+
+data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val initialLoadTimeout: Duration,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
+) : IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
 }
 
 @Singleton
@@ -129,6 +164,25 @@ class OracleSourceConfigurationFactory :
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+        val incrementalConfiguration: IncrementalConfiguration =
+            when (val inc = pojo.getIncrementalConfigurationSpecificationValue()) {
+                UserDefinedCursorConfigurationSpecification ->
+                    UserDefinedCursorIncrementalConfiguration
+                is CdcCursorConfigurationSpecification ->
+                    CdcIncrementalConfiguration(
+                        initialLoadTimeout =
+                            Duration.ofHours(inc.initialLoadTimeoutHours!!.toLong()),
+                        invalidCdcCursorPositionBehavior =
+                            when (inc.invalidCdcCursorPositionBehavior) {
+                                "Fail sync" -> InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                                "Re-sync data" -> InvalidCdcCursorPositionBehavior.RESET_SYNC
+                                else ->
+                                    throw ConfigErrorException(
+                                        "Unknown value ${inc.invalidCdcCursorPositionBehavior}"
+                                    )
+                            },
+                    )
+            }
         return OracleSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -138,7 +192,7 @@ class OracleSourceConfigurationFactory :
             jdbcProperties = jdbcProperties,
             defaultSchema = defaultSchema,
             namespaces = pojo.schemas?.toSet() ?: setOf(defaultSchema),
-            cursorConfiguration = pojo.getCursorConfigurationValue(),
+            incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,

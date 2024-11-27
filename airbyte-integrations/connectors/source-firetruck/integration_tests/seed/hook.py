@@ -22,13 +22,17 @@ SECRETS_DIR = f"{ROOT}/secrets"
 
 FULL_REFRESH_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/full-refresh-configured-catalog-template.json"
 INCREMENTAL_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/incremental-configured-catalog-template.json"
+INCREMENTAL_CDC_CONFIGURED_CATALOG_TEMPLATE = f"{CAT_ROOT}/incremental-cdc-configured-catalog-template.json"
 ABNORMAL_STATE_TEMPLATE = f"{CAT_ROOT}/abnormal-state-template.json"
 SECRET_ADMIN_CONFIG = f"{SECRETS_DIR}/config.json"
+SECRET_ADMIN_CDC_CONFIG = f"{SECRETS_DIR}/config-cdc.json"
 
 FULL_REFRESH_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/full-refresh-configured-catalog.json"
 INCREMENTAL_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/incremental-configured-catalog.json"
+INCREMENTAL_CDC_CONFIGURED_CATALOG = f"{CAT_GEN_ROOT}/incremental-cdc-configured-catalog.json"
 ABNORMAL_STATE = f"{CAT_GEN_ROOT}/abnormal-state.json"
 SECRET_CONFIG = f"{CAT_GEN_ROOT}/temp-user-config.json"
+SECRET_CDC_CONFIG = f"{CAT_GEN_ROOT}/temp-user-cdc-config.json"
 
 LA_TZ = pytz.timezone('America/Los_Angeles')
 
@@ -37,7 +41,7 @@ JDBC_DRIVER_PATH = "./ojdbc11.jar"
 
 
 @contextmanager
-def db_txn(config_path: str = SECRET_ADMIN_CONFIG) -> Generator[jaydebeapi.Connection, None, None]:
+def db_txn(config_path: str) -> Generator[jaydebeapi.Connection, None, None]:
     """
     Opens a connection to the database using the credentials inside the file referenced by config_path.
     The connection is used for a single transaction, which is either committed or rolled back.
@@ -89,24 +93,38 @@ def schema_password(schema_name: str) -> str:
     md5_hash.update(schema_name.encode('utf-8'))
     return md5_hash.hexdigest()[:12]
 
+CDC_PRIVILEGES = [
+    'FLASHBACK ANY TABLE',
+    'SELECT ANY TABLE',
+    'SELECT_CATALOG_ROLE',
+    'EXECUTE_CATALOG_ROLE',
+    'SELECT ANY TRANSACTION',
+    'LOGMINING',
+    'CREATE TABLE',
+    'LOCK ANY TABLE',
+    'CREATE SEQUENCE',
+]
 
 def create_schema(conn: jaydebeapi.Connection, schema_name: str) -> None:
     create_sql = f"CREATE USER {schema_name} IDENTIFIED BY \"{schema_password(schema_name)}\""
     grant_sql = f"GRANT CONNECT, RESOURCE, CREATE SESSION TO {schema_name}"
     tablespace_sql = f"ALTER USER {schema_name} DEFAULT TABLESPACE users"
     quota_sql = f"ALTER USER {schema_name} QUOTA 50M ON USERS"
+    grant_cdc_sql = f"GRANT {', '.join(CDC_PRIVILEGES)} TO {schema_name}"
+
     with conn.cursor() as cursor:
         try:
             cursor.execute(create_sql)
             cursor.execute(grant_sql)
             cursor.execute(tablespace_sql)
             cursor.execute(quota_sql)
+            cursor.execute(grant_cdc_sql)
             print(f"Schema '{schema_name}' created successfully")
         except Exception as error:
             print(f"Error creating schema: {error}")
 
 
-def write_supporting_file(schema_name: str) -> None:
+def write_supporting_file(schema_name: str, admin_config_path: str, user_config_path: str) -> None:
     print(f"writing schema name to files: {schema_name}")
     Path(CAT_GEN_ROOT).mkdir(parents=False, exist_ok=True)
 
@@ -116,16 +134,19 @@ def write_supporting_file(schema_name: str) -> None:
     with open(INCREMENTAL_CONFIGURED_CATALOG, "w") as file:
         with open(INCREMENTAL_CONFIGURED_CATALOG_TEMPLATE, 'r') as source_file:
             file.write(source_file.read() % schema_name)
+    with open(INCREMENTAL_CDC_CONFIGURED_CATALOG, "w") as file:
+        with open(INCREMENTAL_CDC_CONFIGURED_CATALOG_TEMPLATE, 'r') as source_file:
+            file.write(source_file.read() % schema_name)
     with open(ABNORMAL_STATE, "w") as file:
         with open(ABNORMAL_STATE_TEMPLATE, 'r') as source_file:
             file.write(source_file.read() % schema_name)
 
-    with open(SECRET_ADMIN_CONFIG) as base_config:
+    with open(admin_config_path) as base_config:
         secret = json.load(base_config)
         secret["username"] = schema_name
         secret["schemas"] = [schema_name]
         secret["password"] = schema_password(schema_name)
-        with open(SECRET_CONFIG, 'w') as f:
+        with open(user_config_path, 'w') as f:
             json.dump(secret, f)
 
 
@@ -164,20 +185,20 @@ def prepare() -> None:
         f.write(schema_name)
 
 
-def insert():
+def insert(config_path: str) -> None:
     schema_name = load_schema_name_from_catalog()
     new_records = [
         ('4', 'four'),
         ('5', 'five')
     ]
     table_name = 'id_and_name_cat'
-    with db_txn() as conn:
+    with db_txn(config_path) as conn:
         insert_records(conn, schema_name, table_name, new_records)
 
 
-def setup():
+def setup(admin_config_path: str, user_config_path: str) -> None:
     schema_name = load_schema_name_from_catalog()
-    write_supporting_file(schema_name)
+    write_supporting_file(schema_name, admin_config_path, user_config_path)
     table_name = "id_and_name_cat"
 
     # Define the records to be inserted
@@ -188,11 +209,11 @@ def setup():
     ]
 
     # Connect to the database as admin
-    with db_txn() as conn:
+    with db_txn(admin_config_path) as conn:
         create_schema(conn, schema_name)
 
     # Connect to the database as non-admin
-    with db_txn(config_path=SECRET_CONFIG) as conn:
+    with db_txn(user_config_path) as conn:
         create_table(conn, schema_name, table_name)
         insert_records(conn, schema_name, table_name, records)
 
@@ -232,9 +253,9 @@ def delete_schemas_with_prefix(conn, date_prefix):
             sys.exit(1)
 
 
-def teardown() -> None:
+def teardown(admin_config_path: str) -> None:
     schema_name = load_schema_name_from_catalog()
-    with db_txn() as conn:
+    with db_txn(admin_config_path) as conn:
         delete_schemas_with_prefix(conn, schema_name)
 
 
@@ -242,22 +263,29 @@ def final_teardown() -> None:
     today = datetime.datetime.now(LA_TZ)
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('U%Y%m%d')
-    with db_txn() as conn:
+    with db_txn(SECRET_ADMIN_CONFIG) as conn:
         delete_schemas_with_prefix(conn, formatted_yesterday)
-
+    with db_txn(SECRET_ADMIN_CDC_CONFIG) as conn:
+        delete_schemas_with_prefix(conn, formatted_yesterday)
 
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
-        setup()
+        setup(SECRET_ADMIN_CONFIG, SECRET_CONFIG)
+    elif command == "setup_cdc":
+        setup(SECRET_ADMIN_CDC_CONFIG, SECRET_CDC_CONFIG)
     elif command == "teardown":
-        teardown()
+        teardown(SECRET_ADMIN_CONFIG)
+    elif command == "teardown_cdc":
+        teardown(SECRET_ADMIN_CDC_CONFIG)
     elif command == "final_teardown":
         final_teardown()
     elif command == "prepare":
         prepare()
     elif command == "insert":
-        insert()
+        insert(SECRET_ADMIN_CONFIG)
+    elif command == "insert_cdc":
+        insert(SECRET_ADMIN_CDC_CONFIG)
     else:
         print(f"Unrecognized command {command}.")
         exit(1)

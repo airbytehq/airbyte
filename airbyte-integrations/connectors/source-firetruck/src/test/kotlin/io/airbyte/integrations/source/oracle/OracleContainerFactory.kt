@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.testcontainers.containers.Container
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.OracleContainer
 import org.testcontainers.utility.DockerImageName
@@ -13,11 +14,6 @@ object OracleContainerFactory {
 
     init {
         TestContainerFactory.register(COMPATIBLE_NAME, ::OracleContainer)
-        val osArch: String? = System.getProperty("os.arch")
-        val osName: String? = System.getProperty("os.name")
-        if (osArch == "aarch64" && osName?.contains("Mac") == true) {
-            log.warn { "USE COLIMA WHEN RUNNING ON APPLE SILICON, or Oracle container will die." }
-        }
     }
 
     sealed interface OracleContainerModifier :
@@ -26,6 +22,62 @@ object OracleContainerFactory {
     data object WithNetwork : OracleContainerModifier {
         override fun modify(container: OracleContainer) {
             container.withNetwork(Network.newNetwork())
+        }
+    }
+
+    data object WithCdc : OracleContainerModifier {
+        override fun modify(container: OracleContainer) {
+            container.start()
+            log.info { "Creating $RECOVERY_DIR in the container..." }
+            container.exec("mkdir -p $RECOVERY_DIR")
+            log.info { "Creating $SCRIPT in the container..." }
+            for (line in CDC_SQL.lines()) {
+                val trimmed: String = line.trim().takeIf { it.isNotBlank() } ?: continue
+                container.exec("echo \"$trimmed\" >> $SCRIPT")
+            }
+            log.info { "Piping $SCRIPT to sqlplus in the container..." }
+            container.exec("sqlplus /nolog < $SCRIPT")
+            log.info { "Setting the container default user to $CDC_USER..." }
+            container.withUsername(CDC_USER)
+            log.info { "Done preparing the container for CDC." }
+        }
+
+        const val RECOVERY_DIR = "/opt/oracle/oradata/recovery_area"
+        const val SCRIPT = "/tmp/cdc.sql"
+        const val CDC_USER = "test_cdc"
+        const val PDB_NAME = "FREEPDB1"
+        const val CDC_PASSWORD = "test"
+        const val CDC_SQL =
+            """
+            CONNECT sys/test AS SYSDBA
+            ALTER SYSTEM SET db_recovery_file_dest_size = 1G;
+            ALTER SYSTEM SET db_recovery_file_dest = '$RECOVERY_DIR' scope=spfile;
+            SHUTDOWN IMMEDIATE
+            STARTUP MOUNT
+            ALTER DATABASE ARCHIVELOG;
+            ALTER DATABASE OPEN;
+            ALTER DATABASE ADD SUPPLEMENTAL LOG DATA;
+            CREATE USER $CDC_USER IDENTIFIED BY $CDC_PASSWORD;
+            GRANT CREATE SESSION, DBA TO $CDC_USER;
+            ALTER USER $CDC_USER DEFAULT TABLESPACE users QUOTA UNLIMITED ON users;
+            ALTER SESSION SET CONTAINER = $PDB_NAME;
+            GRANT CREATE SESSION, DBA TO $CDC_USER;
+            ALTER USER $CDC_USER DEFAULT TABLESPACE users QUOTA UNLIMITED ON users;
+            EXIT;
+        """
+
+        fun Container<*>.exec(cmd: String) {
+            val result: Container.ExecResult = execInContainer("sh", "-c", cmd)
+            log.info { "EXEC: $cmd" }
+            for (line in (result.stdout ?: "").lines()) {
+                log.info { "STDOUT: $line" }
+            }
+            for (line in (result.stderr ?: "").lines()) {
+                log.info { "STDOUT: $line" }
+            }
+            if (result.exitCode != 0) {
+                throw RuntimeException("exit code ${result.exitCode} for $cmd")
+            }
         }
     }
 
@@ -48,7 +100,9 @@ object OracleContainerFactory {
     }
 
     @JvmStatic
-    fun config(oracleContainer: OracleContainer): OracleSourceConfigurationSpecification =
+    fun configSpecification(
+        oracleContainer: OracleContainer
+    ): OracleSourceConfigurationSpecification =
         OracleSourceConfigurationSpecification().apply {
             host = oracleContainer.host
             port = oracleContainer.oraclePort

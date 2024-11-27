@@ -1,9 +1,17 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.oracle
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
+import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.UserDefinedArray
 import io.airbyte.cdk.discover.UserDefinedType
@@ -17,7 +25,6 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
-import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -50,17 +57,21 @@ import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
+import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class OracleSourceOperations :
+    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
             is SystemType -> leafType(c.type.typeName, type.scale != 0)
@@ -123,7 +134,7 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             "CLOB" -> ClobFieldType
             "NCLOB" -> NClobFieldType
             "BFILE" -> BinaryStreamFieldType
-            "DATE" -> LocalDateFieldType
+            "DATE" -> LocalDateTimeFieldType
             "INTERVALDS",
             "INTERVAL DAY TO SECOND",
             "INTERVALYM",
@@ -233,4 +244,32 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
+
+    override val globalCursor: MetaField = OracleSourceCdcScn
+
+    override val globalMetaFields: Set<MetaField> =
+        setOf(OracleSourceCdcScn, CommonMetaField.CDC_UPDATED_AT, CommonMetaField.CDC_DELETED_AT)
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {
+        recordData.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
+        )
+        if (globalStateValue == null) {
+            return
+        }
+        val debeziumState: DebeziumState =
+            OracleSourceDebeziumOperations.deserializeDebeziumState(globalStateValue)
+        val position: OracleSourcePosition =
+            OracleSourceDebeziumOperations.position(debeziumState.offset)
+        recordData.set<JsonNode>(
+            OracleSourceCdcScn.id,
+            CdcIntegerMetaFieldType.jsonEncoder.encode(position.scn)
+        )
+    }
 }

@@ -34,10 +34,7 @@
                 "enum": ["service_name"],
                 "default": "service_name"
               },
-              "service_name": {
-                "type": "string",
-                "title": "Service name"
-              }
+              "service_name": { "type": "string", "title": "Service name" }
             },
             "required": ["connection_type", "service_name"]
           },
@@ -52,10 +49,7 @@
                 "enum": ["sid"],
                 "default": "sid"
               },
-              "sid": {
-                "type": "string",
-                "title": "System ID (SID)"
-              }
+              "sid": { "type": "string", "title": "System ID (SID)" }
             },
             "required": ["connection_type", "sid"]
           }
@@ -81,9 +75,7 @@
       },
       "schemas": {
         "type": "array",
-        "items": {
-          "type": "string"
-        },
+        "items": { "type": "string" },
         "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
         "title": "Schemas",
         "order": 6,
@@ -291,6 +283,39 @@
                 "type": "string",
                 "enum": ["user_defined"],
                 "default": "user_defined"
+              }
+            },
+            "required": ["cursor_method"]
+          },
+          {
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Oracle's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "properties": {
+              "cursor_method": {
+                "type": "string",
+                "enum": ["cdc"],
+                "default": "cdc"
+              },
+              "invalid_cdc_cursor_position_behavior": {
+                "type": "string",
+                "default": "Fail sync",
+                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+                "title": "Invalid CDC Position Behavior (Advanced)",
+                "order": 1,
+                "enum": ["Fail sync", "Re-sync data"],
+                "always_show": true
+              },
+              "initial_load_timeout_hours": {
+                "type": "integer",
+                "default": 8,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC events.",
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "order": 2,
+                "min": 4,
+                "max": 24,
+                "always_show": true
               }
             },
             "required": ["cursor_method"]

@@ -1,0 +1,47 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ID_AND_NAME_CAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "NAME": {
+              "type": "string"
+            },
+            "ID": {
+              "type": "string"
+            },
+            "_ab_cdc_scn": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "_ab_cdc_updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "_ab_cdc_deleted_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["_ab_cdc_scn"],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["ID"]],
+        "namespace": "%s",
+        "is_resumable": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["_ab_cdc_scn"],
+      "primary_key": [["ID"]],
+      "minimum_generation_id": 1,
+      "generation_id": 1,
+      "sync_id": 1
+    }
+  ]
+}

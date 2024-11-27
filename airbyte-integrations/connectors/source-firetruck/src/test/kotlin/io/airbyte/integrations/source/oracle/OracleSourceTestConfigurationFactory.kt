@@ -18,5 +18,9 @@ class OracleSourceTestConfigurationFactory :
     ): OracleSourceConfiguration =
         OracleSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
-            .copy(maxConcurrency = 1, checkpointTargetInterval = Duration.ofSeconds(3))
+            .copy(
+                maxConcurrency = 1,
+                checkpointTargetInterval = Duration.ofSeconds(3),
+                debeziumHeartbeatInterval = Duration.ofMillis(100),
+            )
 }

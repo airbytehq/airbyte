@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
-  dockerImageTag: 0.0.24
+  dockerImageTag: 0.0.25
   dockerRepository: airbyte/source-firetruck
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle
   githubIssueLabel: source-firetruck
@@ -32,6 +32,11 @@ data:
       testSecrets:
         - name: SECRET_ENTERPRISE_SOURCE_ORACLE_TEST_CREDS
           fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_ENTERPRISE_SOURCE_ORACLE_CDC_TEST_CREDS
+          fileName: config-cdc.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
