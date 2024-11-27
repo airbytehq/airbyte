@@ -6,15 +6,25 @@ package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.StronglyTyped
+import io.airbyte.cdk.load.write.Untyped
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 
+@Timeout(15, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
     promoteUnionToObject: Boolean,
     preserveUndeclaredFields: Boolean,
+    /** This is false for staging mode, and true for non-staging mode. */
+    commitDataIncrementally: Boolean = true,
+    allTypesBehavior: AllTypesBehavior,
+    nullEqualsUnset: Boolean = false,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -27,46 +37,14 @@ abstract class S3V2WriteTest(
         stringifySchemalessObjects = stringifySchemalessObjects,
         promoteUnionToObject = promoteUnionToObject,
         preserveUndeclaredFields = preserveUndeclaredFields,
+        commitDataIncrementally = commitDataIncrementally,
+        allTypesBehavior = allTypesBehavior,
+        nullEqualsUnset = nullEqualsUnset,
     ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
-    @Disabled
-    @Test
-    override fun testMidSyncCheckpointingStreamState() {
-        super.testMidSyncCheckpointingStreamState()
-    }
-
-    @Test
-    override fun testAppend() {
-        super.testAppend()
-    }
-
-    @Disabled("append mode doesn't yet work")
+    @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
-
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
     }
 }
 
@@ -76,7 +54,27 @@ class S3V2WriteTestJsonUncompressed :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
-    )
+        allTypesBehavior = Untyped,
+    ) {
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+}
+
+class S3V2WriteTestJsonRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.JSON_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    ) {
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+}
 
 class S3V2WriteTestJsonStaging :
     S3V2WriteTest(
@@ -84,6 +82,8 @@ class S3V2WriteTestJsonStaging :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+        commitDataIncrementally = false
     )
 
 class S3V2WriteTestJsonGzip :
@@ -92,6 +92,7 @@ class S3V2WriteTestJsonGzip :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestCsvUncompressed :
@@ -100,6 +101,18 @@ class S3V2WriteTestCsvUncompressed :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
+    )
+
+class S3V2WriteTestCsvRootLevelFlattening :
+    S3V2WriteTest(
+        S3V2TestUtils.CSV_ROOT_LEVEL_FLATTENING_CONFIG_PATH,
+        stringifySchemalessObjects = false,
+        promoteUnionToObject = false,
+        preserveUndeclaredFields = false,
+        allTypesBehavior = Untyped,
+        nullEqualsUnset =
+            true, // Technically true of unflattened as well, but no top-level fields are nullable
     )
 
 class S3V2WriteTestCsvGzip :
@@ -108,6 +121,7 @@ class S3V2WriteTestCsvGzip :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        allTypesBehavior = Untyped,
     )
 
 class S3V2WriteTestAvroUncompressed :
@@ -116,19 +130,9 @@ class S3V2WriteTestAvroUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestAvroBzip2 :
     S3V2WriteTest(
@@ -136,19 +140,9 @@ class S3V2WriteTestAvroBzip2 :
         stringifySchemalessObjects = true,
         promoteUnionToObject = false,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestParquetUncompressed :
     S3V2WriteTest(
@@ -156,19 +150,9 @@ class S3V2WriteTestParquetUncompressed :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )
 
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
@@ -176,16 +160,6 @@ class S3V2WriteTestParquetSnappy :
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
-    ) {
-    @Disabled("Not yet working")
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Disabled("Not yet working")
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+    )

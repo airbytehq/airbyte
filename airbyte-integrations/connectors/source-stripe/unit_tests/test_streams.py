@@ -802,6 +802,7 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "created": 1699603175,
             "quantity": 1,
             "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+            "subscription_updated": 1699603174, #1699603175
         },
         {
             "id": "si_OynPdzMZykmCWm",
@@ -809,6 +810,7 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "created": 1699603884,
             "quantity": 2,
             "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+            "subscription_updated": 1699603174,
         },
     ]
     assert len(requests_mock.request_history) == 2

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 interface FlushStrategy {
     suspend fun shouldFlush(
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         rangeRead: Range<Long>,
         bytesProcessed: Long
     ): Boolean
@@ -40,7 +40,7 @@ class DefaultFlushStrategy(
     private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
     override suspend fun shouldFlush(
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         rangeRead: Range<Long>,
         bytesProcessed: Long
     ): Boolean {
@@ -49,12 +49,11 @@ class DefaultFlushStrategy(
         }
 
         // Listen to the event stream for a new force flush index
-        val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream.descriptor)
+        val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream)
 
         // Always update the index if the new one is not null
         return when (
-            val testIndex =
-                forceFlushIndexes.compute(stream.descriptor) { _, v -> nextFlushIndex ?: v }
+            val testIndex = forceFlushIndexes.compute(stream) { _, v -> nextFlushIndex ?: v }
         ) {
             null -> false
             else -> rangeRead.contains(testIndex)

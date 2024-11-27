@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "6.1.0"
+version = "6.5.2"
 name = "source-declarative-manifest"
 description = "Base source implementation for low-code sources."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -17,7 +17,7 @@ include = "source_declarative_manifest"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "6.1.0"
+airbyte-cdk = "6.5.2"
 
 [tool.poetry.scripts]
 source-declarative-manifest = "source_declarative_manifest.run:run"

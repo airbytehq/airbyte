@@ -13,9 +13,11 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.RecordDiffer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 object MockDestinationBackend {
-    private val files: MutableMap<String, MutableList<OutputRecord>> = ConcurrentHashMap()
+    private val files: ConcurrentHashMap<String, ConcurrentLinkedQueue<OutputRecord>> =
+        ConcurrentHashMap()
 
     fun insert(filename: String, vararg records: OutputRecord) {
         getFile(filename).addAll(records)
@@ -78,8 +80,25 @@ object MockDestinationBackend {
         }
     }
 
+    fun commitFrom(srcFilename: String, dstFilename: String) {
+        val src = getFile(srcFilename)
+        insert(dstFilename, *src.toTypedArray())
+        src.clear()
+    }
+
+    fun commitAndDedupeFrom(
+        srcFilename: String,
+        dstFilename: String,
+        primaryKey: List<List<String>>,
+        cursor: List<String>,
+    ) {
+        val src = getFile(srcFilename)
+        upsert(dstFilename, primaryKey, cursor, *src.toTypedArray())
+        src.clear()
+    }
+
     fun readFile(filename: String): List<OutputRecord> {
-        return getFile(filename)
+        return getFile(filename).toList()
     }
 
     fun deleteOldRecords(filename: String, minGenerationId: Long) {
@@ -88,8 +107,8 @@ object MockDestinationBackend {
         }
     }
 
-    private fun getFile(filename: String): MutableList<OutputRecord> {
-        return files.getOrPut(filename) { mutableListOf() }
+    private fun getFile(filename: String): ConcurrentLinkedQueue<OutputRecord> {
+        return files.getOrPut(filename) { ConcurrentLinkedQueue() }
     }
 }
 
