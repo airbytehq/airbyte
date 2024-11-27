@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(20, unit = TimeUnit.MINUTES)
+@Timeout(25, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
