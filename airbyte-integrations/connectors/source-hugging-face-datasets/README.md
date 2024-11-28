@@ -1,7 +1,7 @@
 # Hugging Face - Datasets
 This directory contains the manifest-only connector for `source-hugging-face-datasets`.
 
-Allows importing any datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
+Imports any datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
 
 ## Usage
 There are multiple ways to use this connector:
