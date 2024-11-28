@@ -115,7 +115,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             log.error { "File does not exist: $fileUrl" }
             throw IllegalStateException("File does not exist: $fileUrl")
         }
-        val key = Path.of(pathFactory.getFinalDirectory(stream), fileUrl).toString()
+        val key = Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}").toString()
 
         val state = destinationStateManager.getState(stream)
         state.addObject(
@@ -125,13 +125,12 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             isStaging = false
         )
 
-        val localFile = createFile(fileUrl)
-
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
                 File(fileUrl).inputStream().use { it.copyTo(outputStream) }
             }
+        val localFile = createFile(fileUrl)
         localFile.delete()
         return RemoteObject(remoteObject = obj, partNumber = 0)
     }
