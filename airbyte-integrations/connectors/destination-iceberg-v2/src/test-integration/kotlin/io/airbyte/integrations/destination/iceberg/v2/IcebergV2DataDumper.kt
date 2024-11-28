@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.LinkedHashMap
@@ -65,8 +66,21 @@ object IcebergV2DataDumper : DestinationDataDumper {
     }
 
     private fun getMetaData(record: Record): OutputRecord.Meta {
-        val rawMeta = record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META)
-        return OutputRecord.Meta()
+        val airbyteMeta = record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META) as? Record
+            ?: throw IllegalStateException("Received no metadata in the record.")
+
+        val syncId = airbyteMeta.getField("sync_id") as? Long
+        val inputChanges = airbyteMeta.getField("changes") as? List<Record>
+            ?: throw IllegalStateException("Received no changes in the metadata.")
+
+        val metaChanges = inputChanges.map { change ->
+            val field = change.getField("field") as String
+            val changeValue = AirbyteRecordMessageMetaChange.Change.fromValue(change.getField("change") as String)
+            val reason = AirbyteRecordMessageMetaChange.Reason.fromValue(change.getField("reason") as String)
+            DestinationRecord.Change(field, changeValue, reason)
+        }
+
+        return OutputRecord.Meta(syncId = syncId, changes = metaChanges)
     }
 
     override fun dumpRecords(
@@ -84,27 +98,27 @@ object IcebergV2DataDumper : DestinationDataDumper {
                 TableIdentifier.of(stream.descriptor.namespace, stream.descriptor.name)
             )
 
-        val result = IcebergGenerics.read(table).build()
         val outputRecords = mutableListOf<OutputRecord>()
-        result.forEach { r ->
-            val airbyteMeta = r.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META)
-            outputRecords.add(
-                OutputRecord(
-                    rawId =
-                        UUID.fromString(
-                            r.getField(DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID).toString()
-                        ),
-                    extractedAt =
-                        Instant.ofEpochMilli(
-                            r.getField(DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long
-                        ),
-                    loadedAt = null,
-                    generationId =
-                        r.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
-                    data = getCastedData(schema, r),
-                    airbyteMeta = getMetaData(r)
+        IcebergGenerics.read(table).build().use { records ->
+            for (record in records) {
+                outputRecords.add(
+                    OutputRecord(
+                        rawId =
+                            UUID.fromString(
+                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID).toString()
+                            ),
+                        extractedAt =
+                            Instant.ofEpochMilli(
+                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long
+                            ),
+                        loadedAt = null,
+                        generationId =
+                            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
+                        data = getCastedData(schema, record),
+                        airbyteMeta = getMetaData(record)
+                    )
                 )
-            )
+            }
         }
 
         return outputRecords
