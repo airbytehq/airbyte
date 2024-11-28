@@ -66,19 +66,28 @@ object IcebergV2DataDumper : DestinationDataDumper {
     }
 
     private fun getMetaData(record: Record): OutputRecord.Meta {
-        val airbyteMeta = record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META) as? Record
-            ?: throw IllegalStateException("Received no metadata in the record.")
+        val airbyteMeta =
+            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_META) as? Record
+                ?: throw IllegalStateException("Received no metadata in the record.")
 
         val syncId = airbyteMeta.getField("sync_id") as? Long
-        val inputChanges = airbyteMeta.getField("changes") as? List<Record>
-            ?: throw IllegalStateException("Received no changes in the metadata.")
+        val inputChanges =
+            airbyteMeta.getField("changes") as? List<Record>
+                ?: throw IllegalStateException("Received no changes in the metadata.")
 
-        val metaChanges = inputChanges.map { change ->
-            val field = change.getField("field") as String
-            val changeValue = AirbyteRecordMessageMetaChange.Change.fromValue(change.getField("change") as String)
-            val reason = AirbyteRecordMessageMetaChange.Reason.fromValue(change.getField("reason") as String)
-            DestinationRecord.Change(field, changeValue, reason)
-        }
+        val metaChanges =
+            inputChanges.map { change ->
+                val field = change.getField("field") as String
+                val changeValue =
+                    AirbyteRecordMessageMetaChange.Change.fromValue(
+                        change.getField("change") as String
+                    )
+                val reason =
+                    AirbyteRecordMessageMetaChange.Reason.fromValue(
+                        change.getField("reason") as String
+                    )
+                DestinationRecord.Change(field, changeValue, reason)
+            }
 
         return OutputRecord.Meta(syncId = syncId, changes = metaChanges)
     }
@@ -105,15 +114,19 @@ object IcebergV2DataDumper : DestinationDataDumper {
                     OutputRecord(
                         rawId =
                             UUID.fromString(
-                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID).toString()
+                                record
+                                    .getField(DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID)
+                                    .toString()
                             ),
                         extractedAt =
                             Instant.ofEpochMilli(
-                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long
+                                record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+                                    as Long
                             ),
                         loadedAt = null,
                         generationId =
-                            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
+                            record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID)
+                                as Long,
                         data = getCastedData(schema, record),
                         airbyteMeta = getMetaData(record)
                     )
