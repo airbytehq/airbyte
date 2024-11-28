@@ -1,5 +1,5 @@
 # Hugging Face - Datasets
-Allows importing any datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
+Imports datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
 
 ## Configuration
 
