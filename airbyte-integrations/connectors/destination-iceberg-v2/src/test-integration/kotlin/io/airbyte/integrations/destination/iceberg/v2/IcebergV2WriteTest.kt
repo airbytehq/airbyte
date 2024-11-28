@@ -45,19 +45,19 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     companion object {
         fun getConfig(): String {
             val minioEndpoint = NessieTestContainers.testcontainers.getServiceHost("minio", 9000)
-            val minioPort = NessieTestContainers.testcontainers.getServicePort("minio", 9000)
+//            val minioPort = NessieTestContainers.testcontainers.getServicePort("minio", 9000)
 
             val nessieEndpoint = NessieTestContainers.testcontainers.getServiceHost("nessie", 19120)
-            val nessiePort = NessieTestContainers.testcontainers.getServicePort("nessie", 19120)
+//            val nessiePort = NessieTestContainers.testcontainers.getServicePort("nessie", 19120)
 
             return """
             {
-                "s3_bucket_name": "myminio/demobucket",
+                "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
                 "access_key_id": "minioadmin",
                 "secret_access_key": "minioadmin",
-                "s3_endpoint": "http://$minioEndpoint:$minioPort",
-                "server_uri": "http://$nessieEndpoint:$nessiePort/api/v1",
+                "s3_endpoint": "http://$minioEndpoint:9002",
+                "server_uri": "http://$nessieEndpoint:19120/api/v1",
                 "warehouse_location": "s3://demobucket/",
                 "main_branch_name": "main"
             }
