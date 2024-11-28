@@ -199,10 +199,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         assertEquals(generationId, 32L)
         assertFalse(file.exists(), "file should have been deleted by the connector")
         assertEquals(fileLength, objectInStore.size)
-        assertEquals(
-            "$testBucketPath/$streamName/${filePath.toString()}",
-            objectInStore.key
-        )
+        assertEquals("$testBucketPath/$streamName/${filePath.toString()}", objectInStore.key)
         assertContentEquals(
             fileContent,
             s3Client!!
