@@ -60,7 +60,8 @@ class ObjectStoragePathFactoryTest {
                 stagingPrefix = "staging/prefix",
                 pathSuffixPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${MINUTE}/\${SECOND}/\${MILLISECOND}/\${EPOCH}/",
-                fileNamePattern = "{date}-{timestamp}-{part_number}-{sync_id}{format_extension}",
+                fileNamePattern =
+                    "{date}-{date:yyyy_MM}-{timestamp}-{part_number}-{sync_id}{format_extension}",
                 usesStagingDirectory = true
             )
     }
@@ -125,7 +126,7 @@ class ObjectStoragePathFactoryTest {
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
-            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
+            val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 "staging/$prefixOnly",
                 pathFactory.getStagingDirectory(stream1).toString(),
@@ -153,7 +154,7 @@ class ObjectStoragePathFactoryTest {
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
             val expectedToMatch =
-                "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/2020_01_02-1577934245678-173-42.jsonl.gz"
+                "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/2020_01_02-2020_01-1577934245678-173-42.jsonl.gz"
             val match = pathFactory.getPathMatcher(stream1).match(expectedToMatch)
             Assertions.assertTrue(match != null)
             Assertions.assertTrue(match?.partNumber == 173L)
@@ -170,7 +171,7 @@ class ObjectStoragePathFactoryTest {
             val emptyNamespaceStream =
                 stream1.copy(descriptor = stream1.descriptor.copy(namespace = null))
             val expectedToMatch =
-                "prefix/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-1577934245678-173-42.jsonl.gz"
+                "prefix/$name/2020/01/02/03/04/05/0678/$epochMilli/2020_01_02-2020_01-1577934245678-173-42.jsonl.gz"
             val match = pathFactory.getPathMatcher(emptyNamespaceStream).match(expectedToMatch)
             Assertions.assertTrue(match != null)
             Assertions.assertTrue(match?.partNumber == 173L)
@@ -231,7 +232,7 @@ class ObjectStoragePathFactoryTest {
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/$syncTime/"
-            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
+            val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
                 pathFactory.getFinalDirectory(stream1),
@@ -270,7 +271,7 @@ class ObjectStoragePathFactoryTest {
             val stream1 = MockDestinationCatalogFactory.stream1
             val (namespace, name) = stream1.descriptor
             val prefixOnly = "prefix/$namespace/$name/2020/01/02/03/04/05/0678/${syncTime}_"
-            val fileName = "2020_01_02-$wallTime-173-42.jsonl.gz"
+            val fileName = "2020_01_02-2020_01-$wallTime-173-42.jsonl.gz"
             Assertions.assertEquals(
                 prefixOnly,
                 pathFactory.getFinalDirectory(stream1),
