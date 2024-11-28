@@ -2,8 +2,10 @@ version: 5.7.5
 
 type: DeclarativeSource
 
-description: |
-  Update pagination on all streams to make be follow on the documentations
+description: |-
+  Website: https://www.brevo.com/
+  Auth page: https://app.brevo.com/settings/keys/api
+  API Docs: https://developers.brevo.com/reference/getting-started-1
 
 check:
   type: CheckStream
@@ -65,7 +67,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -272,7 +274,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -341,7 +343,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -752,7 +754,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -824,7 +826,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -916,7 +918,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -999,9 +1001,9 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/organization_invited_users"
-    email_campaigns:
+    emailCampaigns:
       type: DeclarativeStream
-      name: email_campaigns
+      name: emailCampaigns
       primary_key:
         - id
       retriever:
@@ -1052,7 +1054,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -1069,10 +1071,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/email_campaigns"
-    sms_campaigns:
+          $ref: "#/schemas/emailCampaigns"
+    smsCampaigns:
       type: DeclarativeStream
-      name: sms_campaigns
+      name: smsCampaigns
       primary_key:
         - id
       retriever:
@@ -1123,7 +1125,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -1140,13 +1142,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/sms_campaigns"
+          $ref: "#/schemas/smsCampaigns"
   base_requester:
     type: HttpRequester
     url_base: https://api.brevo.com/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["start_date"] }}'
       inject_into:
         type: RequestOption
         field_name: api-key
@@ -1174,8 +1176,8 @@ streams:
   - $ref: "#/definitions/streams/webhooks"
   - $ref: "#/definitions/streams/account"
   - $ref: "#/definitions/streams/organization_invited_users"
-  - $ref: "#/definitions/streams/email_campaigns"
-  - $ref: "#/definitions/streams/sms_campaigns"
+  - $ref: "#/definitions/streams/emailCampaigns"
+  - $ref: "#/definitions/streams/smsCampaigns"
 
 spec:
   type: Spec
@@ -1222,8 +1224,8 @@ metadata:
     webhooks: true
     account: true
     organization_invited_users: true
-    email_campaigns: true
-    sms_campaigns: true
+    emailCampaigns: true
+    smsCampaigns: true
   testedStreams:
     contacts:
       hasRecords: true
@@ -1372,14 +1374,14 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    email_campaigns:
+    emailCampaigns:
       streamHash: 5704b61fe13b8381724f6e1f6fe29b0789de8971
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    sms_campaigns:
+    smsCampaigns:
       streamHash: 19c8c3ef5b871bbd17cf9d6102ba9f207eb66cce
       hasResponse: true
       responsesAreSuccessful: true
@@ -2491,7 +2493,7 @@ schemas:
           - "null"
     required:
       - email
-  email_campaigns:
+  emailCampaigns:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -2829,7 +2831,7 @@ schemas:
     required:
       - id
       - modifiedAt
-  sms_campaigns:
+  smsCampaigns:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
