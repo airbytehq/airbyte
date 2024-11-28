@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "api.brevo.com"
+      - "*"
   registryOverrides:
     oss:
       enabled: true
@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2276f19-1c19-4d4e-ae6c-7df3c9c4ad49
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-brevo
   githubIssueLabel: source-brevo
   icon: icon.svg
   license: MIT
   name: Brevo
-  releaseDate: 2024-09-11
+  releaseDate: 2024-11-28
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/brevo
