@@ -68,6 +68,7 @@ Table "customer_balance_transactions" {
     "livemode" boolean
     "metadata" object
     "type" string
+    "updated" integer
 }
 
 Table "events" {
@@ -186,6 +187,7 @@ Table "accounts" {
     "company" object
     "country" string
     "created" integer
+    "updated" integer
     "default_currency" string
     "details_submitted" boolean
     "email" string
