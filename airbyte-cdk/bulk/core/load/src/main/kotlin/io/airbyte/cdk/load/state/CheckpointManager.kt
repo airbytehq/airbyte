@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -32,6 +33,7 @@ interface CheckpointManager<K, T> {
     suspend fun flushReadyCheckpointMessages()
     suspend fun getLastSuccessfulFlushTimeMs(): Long
     suspend fun getNextCheckpointIndexes(): Map<K, Long>
+    suspend fun awaitAllCheckpointsFlushed()
 }
 
 /**
@@ -153,9 +155,12 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                 }
             if (allStreamsPersisted) {
                 log.info { "Flushing global checkpoint with stream indexes: ${head.streamIndexes}" }
-                globalCheckpoints.poll()
                 validateAndSendMessage(head.checkpointMessage, head.streamIndexes)
+                globalCheckpoints.poll() // don't remove until after we've successfully sent
             } else {
+                log.info {
+                    "Not flushing global checkpoint with stream indexes: ${head.streamIndexes}"
+                }
                 break
             }
         }
@@ -168,12 +173,13 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             while (true) {
                 val (nextIndex, nextMessage) = streamCheckpoints.peek() ?: break
                 if (manager.areRecordsPersistedUntil(nextIndex)) {
-                    streamCheckpoints.poll()
                     log.info {
                         "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextIndex"
                     }
                     validateAndSendMessage(nextMessage, listOf(stream.descriptor to nextIndex))
+                    streamCheckpoints.poll() // don't remove until after we've successfully sent
                 } else {
+                    log.info { "Not flushing next checkpoint for index $nextIndex" }
                     break
                 }
             }
@@ -219,6 +225,24 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
                         .mapValues { it.value!! }
                 }
             }
+        }
+    }
+
+    override suspend fun awaitAllCheckpointsFlushed() {
+        while (true) {
+            val allCheckpointsFlushed =
+                flushLock.withLock {
+                    globalCheckpoints.isEmpty() && streamCheckpoints.all { it.value.isEmpty() }
+                }
+            if (allCheckpointsFlushed) {
+                log.info { "All checkpoints flushed" }
+                break
+            }
+            log.info { "Waiting for all checkpoints to flush" }
+            // Not usually a fan of busywaiting, but it's extremely unlikely we
+            // get here without more than a handful of stragglers
+            delay(1000L)
+            flushReadyCheckpointMessages()
         }
     }
 }

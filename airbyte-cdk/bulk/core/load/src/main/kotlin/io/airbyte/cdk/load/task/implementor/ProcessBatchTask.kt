@@ -8,33 +8,33 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorTask
-import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessBatchTask : StreamTask, ImplementorTask
+interface ProcessBatchTask : StreamLevel, ImplementorScope
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
 class DefaultProcessBatchTask(
     private val syncManager: SyncManager,
     private val batchEnvelope: BatchEnvelope<*>,
-    override val stream: DestinationStream,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         val nextBatch = streamLoader.processBatch(batchEnvelope.batch)
         val nextWrapped = batchEnvelope.withBatch(nextBatch)
-        taskLauncher.handleNewBatch(stream, nextWrapped)
+        taskLauncher.handleNewBatch(streamDescriptor, nextWrapped)
     }
 }
 
 interface ProcessBatchTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask
 }
@@ -45,7 +45,7 @@ class DefaultProcessBatchTaskFactory(private val syncManager: SyncManager) :
     ProcessBatchTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask {
         return DefaultProcessBatchTask(syncManager, batchEnvelope, stream, taskLauncher)

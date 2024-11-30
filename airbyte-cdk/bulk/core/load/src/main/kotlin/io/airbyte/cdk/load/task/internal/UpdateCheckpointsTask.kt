@@ -13,12 +13,13 @@ import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.SyncLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface UpdateCheckpointsTask : SyncTask
+interface UpdateCheckpointsTask : SyncLevel, InternalScope
 
 @Singleton
 @Secondary
@@ -35,10 +36,12 @@ class DefaultUpdateCheckpointsTask(
             when (it.value) {
                 is StreamCheckpointWrapped -> {
                     val (_, stream, index, message) = it.value
+                    log.info { "Updating checkpoint for stream $stream with index $index" }
                     checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
                 }
                 is GlobalCheckpointWrapped -> {
                     val (_, streamIndexes, message) = it.value
+                    log.info { "Updating global checkpoint for streams $streamIndexes" }
                     checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
                 }
             }

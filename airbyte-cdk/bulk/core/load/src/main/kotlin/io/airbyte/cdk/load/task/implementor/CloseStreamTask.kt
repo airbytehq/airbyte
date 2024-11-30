@@ -7,13 +7,13 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorTask
-import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : StreamTask, ImplementorTask
+interface CloseStreamTask : StreamLevel, ImplementorScope
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the
@@ -21,20 +21,23 @@ interface CloseStreamTask : StreamTask, ImplementorTask
  */
 class DefaultCloseStreamTask(
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : CloseStreamTask {
 
     override suspend fun execute() {
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         streamLoader.close()
-        syncManager.getStreamManager(stream.descriptor).markSucceeded()
-        taskLauncher.handleStreamClosed(streamLoader.stream)
+        syncManager.getStreamManager(streamDescriptor).markSucceeded()
+        taskLauncher.handleStreamClosed(streamLoader.stream.descriptor)
     }
 }
 
 interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): CloseStreamTask
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream.Descriptor
+    ): CloseStreamTask
 }
 
 @Singleton
@@ -42,7 +45,7 @@ interface CloseStreamTaskFactory {
 class DefaultCloseStreamTaskFactory(private val syncManager: SyncManager) : CloseStreamTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        stream: DestinationStream.Descriptor
     ): CloseStreamTask {
         return DefaultCloseStreamTask(syncManager, stream, taskLauncher)
     }

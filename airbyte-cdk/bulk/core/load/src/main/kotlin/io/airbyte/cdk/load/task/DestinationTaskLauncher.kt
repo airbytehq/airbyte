@@ -9,36 +9,51 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
+import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
-import io.airbyte.cdk.load.task.internal.InputConsumerTask
+import io.airbyte.cdk.load.task.internal.FlushTickTask
+import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
+import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
+import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
-    suspend fun handleStreamStarted(stream: DestinationStream)
+    suspend fun handleStreamStarted(stream: DestinationStream.Descriptor)
     suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+        stream: DestinationStream.Descriptor,
+        file: SpilledRawMessagesLocalFile
     )
-    suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
-    suspend fun handleStreamClosed(stream: DestinationStream)
+    suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
+    suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
+    suspend fun handleFile(stream: DestinationStream.Descriptor, file: DestinationFile, index: Long)
 }
 
 /**
@@ -78,41 +93,63 @@ interface DestinationTaskLauncher : TaskLauncher {
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
 class DefaultDestinationTaskLauncher(
-    private val taskScopeProvider: TaskScopeProvider<ScopedTask>,
+    private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>>,
     private val catalog: DestinationCatalog,
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTask: InputConsumerTask,
+    private val inputConsumerTaskFactory: InputConsumerTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
+    private val flushTickTask: FlushTickTask,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
+    private val processFileTaskFactory: ProcessFileTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
-    private val timedFlushTask: TimedForcedCheckpointFlushTask,
+    private val timedCheckpointFlushTask: TimedForcedCheckpointFlushTask,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
-    private val exceptionHandler: TaskExceptionHandler<LeveledTask, ScopedTask>
+    private val exceptionHandler: TaskExceptionHandler<LeveledTask, WrappedTask<ScopedTask>>,
+    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+
+    // Input Comsumer requirements
+    private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+    private val recordQueueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
+    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
     private val batchUpdateLock = Mutex()
+    private val succeeded = Channel<Boolean>(Channel.UNLIMITED)
+
+    private val teardownIsEnqueued = AtomicBoolean(false)
 
     private suspend fun enqueue(task: LeveledTask) {
         taskScopeProvider.launch(exceptionHandler.withExceptionHandling(task))
     }
 
-    override suspend fun start() {
+    override suspend fun run() {
+        exceptionHandler.setCallback { succeeded.send(false) }
+
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
+        val inputConsumerTask =
+            inputConsumerTaskFactory.make(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                this,
+            )
         enqueue(inputConsumerTask)
 
         // Launch the client interface setup task
@@ -120,18 +157,32 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
-        // Start a spill-to-disk task for each record stream
-        catalog.streams.forEach { stream ->
-            log.info { "Starting spill-to-disk task for $stream" }
-            val spillTask = spillToDiskTaskFactory.make(this, stream)
-            enqueue(spillTask)
+        if (!fileTransferEnabled) {
+            // Start a spill-to-disk task for each record stream
+            catalog.streams.forEach { stream ->
+                log.info { "Starting spill-to-disk task for $stream" }
+                val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
+                enqueue(spillTask)
+            }
         }
 
-        log.info { "Starting timed flush task" }
-        enqueue(timedFlushTask)
+        // Start flush task
+        log.info { "Starting timed file aggregate flush task " }
+        enqueue(flushTickTask)
+
+        // Start the checkpoint management tasks
+        log.info { "Starting timed checkpoint flush task" }
+        enqueue(timedCheckpointFlushTask)
 
         log.info { "Starting checkpoint update task" }
         enqueue(updateCheckpointsTask)
+
+        // Await completion
+        if (succeeded.receive()) {
+            taskScopeProvider.close()
+        } else {
+            taskScopeProvider.kill()
+        }
     }
 
     /** Called when the initial destination setup completes. */
@@ -144,21 +195,26 @@ class DefaultDestinationTaskLauncher(
     }
 
     /** Called when a stream is ready for loading. */
-    override suspend fun handleStreamStarted(stream: DestinationStream) {
+    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         // Nothing to do because the SpillToDiskTask will trigger the next calls
-        log.info { "Stream ${stream.descriptor} successfully opened for writing." }
+        log.info { "Stream $stream successfully opened for writing." }
     }
 
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+        stream: DestinationStream.Descriptor,
+        file: SpilledRawMessagesLocalFile
     ) {
-        log.info { "Starting process records task for ${stream.descriptor}, file ${wrapped.batch}" }
-        val task = processRecordsTaskFactory.make(this, stream, wrapped)
-        enqueue(task)
-        if (!endOfStream) {
+        if (file.totalSizeBytes > 0L) {
+            log.info { "Starting process records task for ${stream}, file $file" }
+            val task = processRecordsTaskFactory.make(this, stream, file)
+            enqueue(task)
+        } else {
+            log.info { "No records to process in $file, skipping process records" }
+            // TODO: Make this `maybeCloseStream` or something
+            handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
+        }
+        if (!file.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
             enqueue(spillTask)
@@ -169,9 +225,12 @@ class DefaultDestinationTaskLauncher(
      * Called for each new batch. Enqueues processing for any incomplete batch, and enqueues closing
      * the stream if all batches are complete.
      */
-    override suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>) {
+    override suspend fun handleNewBatch(
+        stream: DestinationStream.Descriptor,
+        wrapped: BatchEnvelope<*>
+    ) {
         batchUpdateLock.withLock {
-            val streamManager = syncManager.getStreamManager(stream.descriptor)
+            val streamManager = syncManager.getStreamManager(stream)
             streamManager.updateBatchState(wrapped)
 
             if (wrapped.batch.isPersisted()) {
@@ -180,14 +239,14 @@ class DefaultDestinationTaskLauncher(
 
             if (wrapped.batch.state != Batch.State.COMPLETE) {
                 log.info {
-                    "Batch not complete: Starting process batch task for ${stream.descriptor}, batch $wrapped"
+                    "Batch not complete: Starting process batch task for ${stream}, batch $wrapped"
                 }
 
                 val task = processBatchTaskFactory.make(this, stream, wrapped)
                 enqueue(task)
             } else if (streamManager.isBatchProcessingComplete()) {
                 log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for ${stream.descriptor}"
+                    "Batch $wrapped complete and batch processing complete: Starting close stream task for ${stream}"
                 }
 
                 val task = closeStreamTaskFactory.make(this, stream)
@@ -201,12 +260,24 @@ class DefaultDestinationTaskLauncher(
     }
 
     /** Called when a stream is closed. */
-    override suspend fun handleStreamClosed(stream: DestinationStream) {
-        enqueue(teardownTaskFactory.make(this))
+    override suspend fun handleStreamClosed(stream: DestinationStream.Descriptor) {
+        if (teardownIsEnqueued.setOnce()) {
+            enqueue(teardownTaskFactory.make(this))
+        } else {
+            log.info { "Teardown task already enqueued, not enqueuing another one" }
+        }
     }
 
     /** Called exactly once when all streams are closed. */
     override suspend fun handleTeardownComplete() {
-        taskScopeProvider.close()
+        succeeded.send(true)
+    }
+
+    override suspend fun handleFile(
+        stream: DestinationStream.Descriptor,
+        file: DestinationFile,
+        index: Long
+    ) {
+        enqueue(processFileTaskFactory.make(this, stream, file, index))
     }
 }

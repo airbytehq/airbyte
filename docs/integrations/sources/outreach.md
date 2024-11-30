@@ -56,6 +56,8 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.22 | 2024-10-28 | [47055](https://github.com/airbytehq/airbyte/pull/47055) | Update dependencies |
+| 1.0.21 | 2024-10-12 | [46764](https://github.com/airbytehq/airbyte/pull/46764) | Update dependencies |
 | 1.0.20 | 2024-10-05 | [46405](https://github.com/airbytehq/airbyte/pull/46405) | Update dependencies |
 | 1.0.19 | 2024-09-28 | [46118](https://github.com/airbytehq/airbyte/pull/46118) | Update dependencies |
 | 1.0.18 | 2024-09-21 | [45749](https://github.com/airbytehq/airbyte/pull/45749) | Update dependencies |

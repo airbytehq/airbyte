@@ -4,35 +4,30 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
-import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordWrapped
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
-import io.airbyte.cdk.load.message.GlobalCheckpoint
+import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
-import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamCompleteWrapped
-import io.airbyte.cdk.load.message.StreamRecordWrapped
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamRecordEvent
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils
+import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.airbyte.cdk.load.util.takeUntilInclusive
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.mockk
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.FlowCollector
@@ -54,21 +49,22 @@ import org.junit.jupiter.api.Test
 )
 class InputConsumerTaskTest {
     @Inject lateinit var config: DestinationConfiguration
-    @Inject lateinit var task: InputConsumerTask
+    @Inject lateinit var taskFactory: InputConsumerTaskFactory
     @Inject
     lateinit var recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
     @Inject lateinit var checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
     @Inject lateinit var syncManager: SyncManager
     @Inject lateinit var mockInputFlow: MockInputFlow
+    @Inject lateinit var mockCatalogFactory: MockDestinationCatalogFactory
 
     @Singleton
     @Primary
     @Requires(env = ["InputConsumerTaskTest"])
-    class MockInputFlow(val memoryManager: MemoryManager) :
+    class MockInputFlow(@Named("memoryManager") val memoryManager: ReservationManager) :
         SizedInputFlow<Reserved<DestinationMessage>> {
         private val messages = Channel<Pair<Long, Reserved<DestinationMessage>>>(Channel.UNLIMITED)
-        val initialMemory = memoryManager.remainingMemoryBytes
+        val initialMemory = memoryManager.remainingCapacityBytes
 
         override suspend fun collect(
             collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
@@ -79,50 +75,12 @@ class InputConsumerTaskTest {
         }
 
         suspend fun addMessage(message: DestinationMessage, size: Long = 0L) {
-            messages.send(Pair(size, memoryManager.reserveBlocking(1, message)))
+            messages.send(Pair(size, memoryManager.reserve(1, message)))
         }
 
-        suspend fun stop() {
+        fun stop() {
             messages.close()
         }
-    }
-
-    private fun makeRecord(stream: DestinationStream, record: String): DestinationRecord {
-        return DestinationRecord(
-            stream = stream.descriptor,
-            data = NullValue,
-            emittedAtMs = 0,
-            meta = null,
-            serialized = record
-        )
-    }
-
-    private fun makeStreamComplete(stream: DestinationStream): DestinationStreamComplete {
-        return DestinationStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
-    }
-
-    private fun makeStreamIncomplete(stream: DestinationStream): DestinationStreamIncomplete {
-        return DestinationStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
-    }
-
-    private fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
-        return StreamCheckpoint(
-            checkpoint =
-                CheckpointMessage.Checkpoint(
-                    stream.descriptor,
-                    JsonNodeFactory.instance.objectNode()
-                ),
-            sourceStats = CheckpointMessage.Stats(recordCount),
-            additionalProperties = emptyMap()
-        )
-    }
-
-    private fun makeGlobalState(recordCount: Long): CheckpointMessage {
-        return GlobalCheckpoint(
-            state = JsonNodeFactory.instance.objectNode(),
-            sourceStats = CheckpointMessage.Stats(recordCount),
-            checkpoints = emptyList()
-        )
     }
 
     @Test
@@ -137,38 +95,61 @@ class InputConsumerTaskTest {
 
         (0 until 10).forEach {
             mockInputFlow.addMessage(
-                makeRecord(MockDestinationCatalogFactory.stream1, "test${it}"),
+                StubDestinationMessageFactory.makeRecord(
+                    MockDestinationCatalogFactory.stream1,
+                    "test${it}"
+                ),
                 it * 2L
             )
         }
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
+
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(),
+            )
         launch { task.execute() }
 
         val messages1 =
             queue1
                 .consume()
-                .takeUntilInclusive {
-                    (it.value as StreamRecordWrapped).record.serialized == "test9"
-                }
+                .takeUntilInclusive { (it.value as StreamRecordEvent).record.serialized == "test9" }
                 .toList()
 
         Assertions.assertEquals(10, messages1.size)
         val expectedRecords =
             (0 until 10).map {
-                StreamRecordWrapped(
+                StreamRecordEvent(
                     it.toLong(),
                     it * 2L,
-                    makeRecord(MockDestinationCatalogFactory.stream1, "test${it}")
+                    StubDestinationMessageFactory.makeRecord(
+                        MockDestinationCatalogFactory.stream1,
+                        "test${it}"
+                    )
                 )
             }
+        val streamComplete1: Reserved<DestinationStreamEvent> =
+            queue1.consume().take(1).toList().first()
+        val streamComplete2: Reserved<DestinationStreamEvent> =
+            queue2.consume().take(1).toList().first()
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
+        Assertions.assertEquals(StreamCompleteEvent(10), streamComplete1.value)
+        Assertions.assertEquals(1, streamComplete1.bytesReserved)
         Assertions.assertEquals(10L, manager1.recordCount())
-        queue1.close()
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue1.consume().toList())
-
-        queue2.close()
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), queue2.consume().toList())
+        Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue1.consume().toList())
+        Assertions.assertEquals(StreamCompleteEvent(0), streamComplete2.value)
+        Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue2.consume().toList())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
     }
@@ -185,39 +166,64 @@ class InputConsumerTaskTest {
 
         (0 until 10).forEach { _ ->
             mockInputFlow.addMessage(
-                makeRecord(MockDestinationCatalogFactory.stream1, "whatever"),
+                StubDestinationMessageFactory.makeRecord(
+                    MockDestinationCatalogFactory.stream1,
+                    "whatever"
+                ),
                 0L
             )
         }
 
-        mockInputFlow.addMessage(makeRecord(MockDestinationCatalogFactory.stream2, "test"), 1L)
-        mockInputFlow.addMessage(makeStreamComplete(MockDestinationCatalogFactory.stream1), 0L)
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream2, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1),
+            0L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2),
+            0L
+        )
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(),
+            )
         val job = launch { task.execute() }
         mockInputFlow.stop()
         job.join()
         queue2.close()
         Assertions.assertEquals(
             listOf(
-                StreamRecordWrapped(
+                StreamRecordEvent(
                     0,
                     1L,
-                    makeRecord(MockDestinationCatalogFactory.stream2, "test")
-                )
+                    StubDestinationMessageFactory.makeRecord(
+                        MockDestinationCatalogFactory.stream2,
+                        "test"
+                    )
+                ),
+                StreamCompleteEvent(1)
             ),
             queue2.consume().toList().map { it.value }
         )
         Assertions.assertEquals(1L, manager2.recordCount())
 
-        Assertions.assertEquals(manager2.endOfStreamRead(), false)
+        Assertions.assertEquals(manager2.endOfStreamRead(), true)
         Assertions.assertEquals(manager1.endOfStreamRead(), true)
 
         queue1.close()
         val messages1 = queue1.consume().toList()
         Assertions.assertEquals(11, messages1.size)
-        Assertions.assertEquals(messages1[10].value, StreamCompleteWrapped(10))
+        Assertions.assertEquals(messages1[10].value, StreamCompleteEvent(10))
         Assertions.assertEquals(
             mockInputFlow.initialMemory - 11,
-            mockInputFlow.memoryManager.remainingMemoryBytes,
+            mockInputFlow.memoryManager.remainingCapacityBytes,
             "1 byte per message should have been reserved, but the end-of-stream should have been released"
         )
     }
@@ -238,15 +244,37 @@ class InputConsumerTaskTest {
                 TestEvent(MockDestinationCatalogFactory.stream1, 3, 18),
             )
 
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(),
+            )
         launch { task.execute() }
         batches.forEach { (stream, count, expectedCount) ->
-            repeat(count) { mockInputFlow.addMessage(makeRecord(stream, "test"), 1L) }
-            mockInputFlow.addMessage(makeStreamState(stream, count.toLong()), 0L)
+            repeat(count) {
+                mockInputFlow.addMessage(
+                    StubDestinationMessageFactory.makeRecord(stream, "test"),
+                    1L
+                )
+            }
+            mockInputFlow.addMessage(
+                StubDestinationMessageFactory.makeStreamState(stream, count.toLong()),
+                0L
+            )
             val state =
                 checkpointQueue.consume().take(1).toList().first().value as StreamCheckpointWrapped
             Assertions.assertEquals(expectedCount, state.index)
             Assertions.assertEquals(count.toLong(), state.checkpoint.destinationStats?.recordCount)
         }
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
         mockInputFlow.stop()
     }
 
@@ -272,16 +300,30 @@ class InputConsumerTaskTest {
                 SendState(14, 8, 0),
             )
 
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(),
+            )
         launch { task.execute() }
         batches.forEach { event ->
             when (event) {
                 is AddRecords -> {
                     repeat(event.count) {
-                        mockInputFlow.addMessage(makeRecord(event.stream, "test"), 1L)
+                        mockInputFlow.addMessage(
+                            StubDestinationMessageFactory.makeRecord(event.stream, "test"),
+                            1L
+                        )
                     }
                 }
                 is SendState -> {
-                    mockInputFlow.addMessage(makeGlobalState(event.expectedStream1Count), 0L)
+                    mockInputFlow.addMessage(
+                        StubDestinationMessageFactory.makeGlobalState(event.expectedStream1Count),
+                        0L
+                    )
                     val state =
                         checkpointQueue.consume().take(1).toList().first().value
                             as GlobalCheckpointWrapped
@@ -302,13 +344,59 @@ class InputConsumerTaskTest {
                 }
             }
         }
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream1)
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
+        )
         mockInputFlow.stop()
     }
 
     @Test
     fun testStreamIncompleteThrows() = runTest {
-        mockInputFlow.addMessage(makeRecord(MockDestinationCatalogFactory.stream1, "test"), 1L)
-        mockInputFlow.addMessage(makeStreamIncomplete(MockDestinationCatalogFactory.stream1), 0L)
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeStreamIncomplete(
+                MockDestinationCatalogFactory.stream1
+            ),
+            0L
+        )
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(),
+            )
+        CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
+        mockInputFlow.stop()
+    }
+
+    @Test
+    fun testFileStreamIncompleteThrows() = runTest {
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeFile(MockDestinationCatalogFactory.stream1, "test"),
+            1L
+        )
+        mockInputFlow.addMessage(
+            StubDestinationMessageFactory.makeFileStreamIncomplete(
+                MockDestinationCatalogFactory.stream1
+            ),
+            0L
+        )
+        val task =
+            taskFactory.make(
+                mockCatalogFactory.make(),
+                mockInputFlow,
+                recordQueueSupplier,
+                checkpointQueue,
+                mockk(relaxed = true),
+            )
         CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
         mockInputFlow.stop()
     }
