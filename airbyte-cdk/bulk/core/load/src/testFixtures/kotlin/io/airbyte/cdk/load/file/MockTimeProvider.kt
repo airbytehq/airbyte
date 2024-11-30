@@ -13,17 +13,26 @@ import java.util.concurrent.atomic.AtomicLong
 @Primary
 @Requires(env = ["MockTimeProvider"])
 open class MockTimeProvider : TimeProvider {
+    private var syncTime = AtomicLong(0)
     private var currentTime = AtomicLong(0)
-
-    override fun currentTimeMillis(): Long {
-        return currentTime.get()
-    }
 
     fun setCurrentTime(currentTime: Long) {
         this.currentTime.set(currentTime)
     }
 
+    fun setSyncTime(currentTime: Long) {
+        this.syncTime.set(currentTime)
+    }
+
+    override fun currentTimeMillis(): Long {
+        return currentTime.get()
+    }
+
     override suspend fun delay(ms: Long) {
         currentTime.addAndGet(ms)
+    }
+
+    override fun syncTimeMillis(): Long {
+        return syncTime.get()
     }
 }

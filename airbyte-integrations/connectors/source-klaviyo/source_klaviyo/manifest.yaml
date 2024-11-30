@@ -18,7 +18,8 @@ definitions:
     authenticator: "#/definitions/authenticator"
     http_method: GET
     error_handler:
-      type: DefaultErrorHandler
+      type: CustomErrorHandler
+      class_name: source_klaviyo.components.klaviyo_error_handler.KlaviyoErrorHandler
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: "Retry-After"
@@ -169,7 +170,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%d %H:%M:%S%z"
-      step: P1M
+      step: P7D
       cursor_granularity: PT1S
     retriever:
       $ref: "#/definitions/base_retriever"
@@ -991,6 +992,18 @@ spec:
           be improved by not fetching this field. WARNING: Enabling this setting will stop the 
           "predictive_analytics" column from being populated in your downstream destination.
         order: 2
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 50
+        default: 10
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Chargebee plan.
+          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
+        order: 3
     required: ["api_key"]
 
 metadata:
@@ -1044,3 +1057,29 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+
+# Klaviyo's rate limiting is different by endpoints:
+# - XS: 1/s burst; 15/m steady
+# - S: 3/s burst; 60/m steady
+# - M: 10/s burst; 150/m steady
+# - L: 75/s burst; 700/m steady
+# - XL: 350/s burst; 3500/m steady
+
+# As of 2024-11-11, we have the following streams:
+# | Stream            | Endpoint                                                             | Klaviyo Rate Limit Size | Source Concurrency Between Streams | Source Concurrency Within Stream                  | Source Max Number of Threads Sharing Rate Limits                 |                                                                                 |
+#|-------------------|----------------------------------------------------------------------|-------------------------|------------------------------------|---------------------------------------------------|------------------------------------------------------------------|---------------------------------------------------------------------------------|
+#| profiles          | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with global_exclusions | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (global_exclusions), not within stream as `step` not defined |
+#| global_exclusions | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with profiles          | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (profiles), not within stream as `step` not defined          |
+#| events            | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events_detailed   | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events_detailed) and within stream as sliced on `datetime`  |
+#| events_detailed   | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events            | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events) and within stream as sliced on `datetime`           |
+#| email_templates   | https://developers.klaviyo.com/en/reference/get_templates            | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
+#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists), not within stream as `step` not defined             |
+# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+
+# Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 50

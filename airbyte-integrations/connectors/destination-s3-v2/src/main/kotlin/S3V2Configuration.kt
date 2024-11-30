@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
+import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
@@ -18,24 +20,29 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
+    override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
     // Internal configuration
-    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration,
-    override val recordBatchSizeBytes: Long = 200L * 1024 * 1024,
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
+        ObjectStorageUploadConfiguration(),
+    override val recordBatchSizeBytes: Long,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
+    AWSArnRoleConfigurationProvider,
     S3BucketConfigurationProvider,
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
@@ -43,22 +50,21 @@ data class S3V2Configuration<T : OutputStream>(
     ObjectStorageCompressionConfigurationProvider<T>
 
 @Singleton
-class S3V2ConfigurationFactory :
-    DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
+class S3V2ConfigurationFactory(
+    @Value("\${airbyte.destination.record-batch-size}") private val recordBatchSizeBytes: Long
+) : DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
+    private val log = KotlinLogging.logger {}
+
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
+        log.info { "Record batch size override: $recordBatchSizeBytes" }
         return S3V2Configuration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
+            awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            objectStorageUploadConfiguration =
-                ObjectStorageUploadConfiguration(
-                    pojo.uploadPartSize
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
-                    pojo.maxConcurrentUploads
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
-                )
+            recordBatchSizeBytes = recordBatchSizeBytes
         )
     }
 }
