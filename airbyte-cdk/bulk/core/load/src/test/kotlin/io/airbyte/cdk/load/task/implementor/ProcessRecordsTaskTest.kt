@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DefaultDestinationTaskLauncher
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
+import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -36,6 +37,7 @@ class ProcessRecordsTaskTest {
     private lateinit var diskManager: ReservationManager
     private lateinit var deserializer: Deserializer<DestinationMessage>
     private lateinit var streamLoader: StreamLoader
+    private lateinit var batchAccumulator: BatchAccumulator
     private lateinit var inputQueue: MessageQueue<FileAggregateMessage>
     private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
     private lateinit var launcher: DefaultDestinationTaskLauncher
@@ -49,7 +51,9 @@ class ProcessRecordsTaskTest {
         outputQueue = mockk(relaxed = true)
         syncManager = mockk(relaxed = true)
         streamLoader = mockk(relaxed = true)
+        batchAccumulator = mockk(relaxed = true)
         coEvery { syncManager.getOrAwaitStreamLoader(any()) } returns streamLoader
+        coEvery { streamLoader.createBatchAccumulator() } returns batchAccumulator
         launcher = mockk(relaxed = true)
         deserializer = mockk(relaxed = true)
         coEvery { deserializer.deserialize(any()) } answers
@@ -106,7 +110,7 @@ class ProcessRecordsTaskTest {
             files.map { FileAggregateMessage(descriptor, it) }.asFlow()
 
         // Process records returns batches in 3 states.
-        coEvery { streamLoader.processRecords(any(), any()) } answers
+        coEvery { batchAccumulator.processRecords(any(), any()) } answers
             {
                 MockBatch(
                     groupId = null,
@@ -131,8 +135,6 @@ class ProcessRecordsTaskTest {
                 taskLauncher = launcher,
             )
 
-        // Producer should be registered on initialization
-        coVerify { outputQueue.registerProducer() }
         task.execute()
 
         fun batchMatcher(groupId: String?, state: Batch.State): (BatchEnvelope<*>) -> Boolean = {

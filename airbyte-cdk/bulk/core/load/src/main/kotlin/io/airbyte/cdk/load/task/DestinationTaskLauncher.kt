@@ -189,7 +189,12 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
+        // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
+            // TODO: Close the task queues as part of shutdown
+            // so that it is not necessary to initialize
+            // every task before enqueueing.
+
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
                 log.info { "Starting spill-to-disk task for $stream" }
