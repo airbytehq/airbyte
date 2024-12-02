@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -66,6 +67,7 @@ class DestinationTaskLauncherUTest {
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory = mockk(relaxed = true)
     private val timedFlushTask: TimedForcedCheckpointFlushTask = mockk(relaxed = true)
     private val updateCheckpointsTask: UpdateCheckpointsTask = mockk(relaxed = true)
+    private val config: DestinationConfiguration = mockk(relaxed = true)
 
     // Exception tasks
     private val failStreamTaskFactory: FailStreamTaskFactory = mockk(relaxed = true)
@@ -84,6 +86,7 @@ class DestinationTaskLauncherUTest {
         return DefaultDestinationTaskLauncher(
             taskScopeProvider,
             catalog,
+            config,
             syncManager,
             inputConsumerTaskFactory,
             spillToDiskTaskFactory,

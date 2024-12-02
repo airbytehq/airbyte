@@ -31,7 +31,6 @@ import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -39,8 +38,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
@@ -54,8 +51,6 @@ class S3Client(
     val bucketConfig: S3BucketConfiguration,
     private val uploadConfig: ObjectStorageUploadConfiguration?,
 ) : ObjectStorageClient<S3Object> {
-    private val log = KotlinLogging.logger {}
-    private val uploadPermits = uploadConfig?.maxNumConcurrentUploads?.let { Semaphore(it) }
 
     override suspend fun list(prefix: String) = flow {
         var request = ListObjectsRequest {
@@ -142,16 +137,7 @@ class S3Client(
         streamProcessor: StreamProcessor<U>?,
         block: suspend (OutputStream) -> Unit
     ): S3Object {
-        if (uploadPermits != null) {
-            uploadPermits.withPermit {
-                log.info {
-                    "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-                }
-                return streamingUploadInner(key, metadata, streamProcessor, block)
-            }
-        } else {
-            return streamingUploadInner(key, metadata, streamProcessor, block)
-        }
+        return streamingUploadInner(key, metadata, streamProcessor, block)
     }
 
     private suspend fun <U : OutputStream> streamingUploadInner(
