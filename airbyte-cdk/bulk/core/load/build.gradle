@@ -41,9 +41,14 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
     maxParallelForks = project.test.maxParallelForks
     maxHeapSize = project.test.maxHeapSize
 }
+
 // These tests are lightweight enough to run on every PR.
 tasks.named('check').configure {
     dependsOn integrationTest
+}
+
+test {
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
 }
 
 configurations {

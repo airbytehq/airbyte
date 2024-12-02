@@ -22,7 +22,7 @@ class TimeStringToIntegerTest {
             )
             .forEach {
                 Assertions.assertEquals(
-                    IntValue(it.second),
+                    IntegerValue(it.second.toLong()),
                     mapper.mapDate(DateValue(it.first), AirbyteValueIdentityMapper.Context()).first,
                     "Failed for ${it.first} to ${it.second}"
                 )

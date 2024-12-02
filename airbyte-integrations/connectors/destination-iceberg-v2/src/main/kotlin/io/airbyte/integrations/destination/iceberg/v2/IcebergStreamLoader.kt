@@ -6,99 +6,106 @@ package io.airbyte.integrations.destination.iceberg.v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.file.iceberg.parquet.IcebergParquetWriter
-import io.airbyte.cdk.load.file.iceberg.parquet.IcebergWriter
+import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.state.DestinationStateManager
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
+import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoader
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableCleaner
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
+import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicLong
-import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Table
-import org.apache.iceberg.data.GenericRecord
-import org.apache.iceberg.data.parquet.GenericParquetWriter
-import org.apache.iceberg.parquet.Parquet
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class IcebergStreamLoader(
     override val stream: DestinationStream,
     private val table: Table,
-    private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    private val icebergTableWriterFactory: IcebergTableWriterFactory,
+    private val icebergUtil: IcebergUtil,
+    private val pipeline: MapperPipeline,
     private val stagingBranchName: String,
     private val mainBranchName: String
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
-    private val partNumber = AtomicLong(0L)
-
-    override suspend fun start() {
-        val state = destinationStateManager.getState(stream)
-        val maxPartNumber =
-            state.generations
-                .filter { it.generationId >= stream.minimumGenerationId }
-                .mapNotNull { it.objects.maxOfOrNull { obj -> obj.partNumber } }
-                .maxOrNull()
-        log.info { "Got max part number from destination state: $maxPartNumber" }
-        maxPartNumber?.let { partNumber.set(it + 1L) }
-    }
-
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
         totalSizeBytes: Long
     ): Batch {
-        val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val partNumber = partNumber.getAndIncrement()
-        val state = destinationStateManager.getState(stream)
+        icebergTableWriterFactory
+            .create(
+                table = table,
+                generationId = icebergUtil.constructGenerationIdSuffix(stream),
+                importType = stream.importType
+            )
+            .use { writer ->
+                log.info { "Writing records to branch $stagingBranchName" }
+                records.forEach { record ->
+                    val icebergRecord =
+                        icebergUtil.toRecord(
+                            record = record,
+                            stream = stream,
+                            tableSchema = table.schema(),
+                            pipeline = pipeline,
+                        )
+                    writer.write(icebergRecord)
+                }
+                val writeResult = writer.complete()
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
+                log.info { "Finished writing records to $stagingBranchName" }
+            }
 
-        val location =
-            table.locationProvider().newDataLocation(UUID.randomUUID().toString() + ".parquet")
-        val outputFile = table.io().newOutputFile(location)
-        val builder =
-            Parquet.writeData(outputFile)
-                .schema(table.schema())
-                .createWriterFunc(GenericParquetWriter::buildWriter)
-                .overwrite()
-                .withSpec(PartitionSpec.unpartitioned())
-        metadata.forEach { (k, v) -> builder.meta(k, v) }
-        val dataWriter = builder.build<GenericRecord>()
-
-        val icebergParquetWriter =
-            IcebergWriter(stream, true, IcebergParquetWriter(dataWriter), table.schema())
-
-        log.info { "Writing records to branch $stagingBranchName" }
-        state.addObject(stream.generationId, stagingBranchName, partNumber)
-        records.forEach { icebergParquetWriter.accept(it) }
-        log.info { "Finished writing records to $stagingBranchName" }
-        icebergParquetWriter.close()
-
-        table.newAppend().toBranch(stagingBranchName).appendFile(dataWriter.toDataFile()).commit()
-
-        return ObjectStorageStreamLoader.StagedObject(
-            remoteObject = stagingBranchName,
-            partNumber = partNumber
-        )
+        return SimpleBatch(Batch.State.COMPLETE)
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
         throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
     }
 
-    override suspend fun processBatch(batch: Batch): Batch {
-        val stagedObject = batch as ObjectStorageStreamLoader.StagedObject<*>
-        log.info { "Moving staged object from $stagingBranchName to $mainBranchName" }
-        table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
-
-        val state = destinationStateManager.getState(stream)
-        state.removeObject(stream.generationId, stagingBranchName)
-        state.addObject(stream.generationId, mainBranchName, stagedObject.partNumber)
-
-        val finalizedObject =
-            ObjectStorageStreamLoader.FinalizedObject(remoteObject = mainBranchName)
-        return finalizedObject
+    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+        if (streamFailure == null) {
+            // Doing it first to make sure that data coming in the current batch is written to the
+            // main branch
+            log.info {
+                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+            }
+            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            if (stream.minimumGenerationId > 0) {
+                log.info {
+                    "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
+                }
+                val generationIdsToDelete =
+                    (0 until stream.minimumGenerationId).map(
+                        icebergUtil::constructGenerationIdSuffix
+                    )
+                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
+                icebergTableCleaner.deleteGenerationId(
+                    table,
+                    stagingBranchName,
+                    generationIdsToDelete
+                )
+                //  Doing it again to push the deletes from the staging to main branch
+                log.info {
+                    "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
+                        "Pushing these updates to the '$mainBranchName' branch."
+                }
+                table
+                    .manageSnapshots()
+                    .fastForwardBranch(mainBranchName, stagingBranchName)
+                    .commit()
+            }
+        }
     }
 }

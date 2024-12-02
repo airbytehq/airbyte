@@ -92,18 +92,28 @@ class AirbyteTypeToIcebergSchema {
     }
 }
 
-fun ObjectType.toIcebergSchema(): Schema {
-    val mutableListOf = mutableListOf<NestedField>()
+fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
+    val fields = mutableListOf<NestedField>()
+    val identifierFields = mutableSetOf<Int>()
+    val identifierFieldNames = primaryKeys.flatten().toSet()
     val icebergTypeConverter = AirbyteTypeToIcebergSchema()
     this.properties.entries.forEach { (name, field) ->
-        mutableListOf.add(
+        val id = generatedSchemaFieldId()
+        val isPrimaryKey = identifierFieldNames.contains(name)
+        val isOptional = !isPrimaryKey && field.nullable
+        fields.add(
             NestedField.of(
-                UUID.randomUUID().hashCode(),
-                field.nullable,
+                id,
+                isOptional,
                 name,
                 icebergTypeConverter.convert(field.type),
             ),
         )
+        if (isPrimaryKey) {
+            identifierFields.add(id)
+        }
     }
-    return Schema(mutableListOf)
+    return Schema(fields, identifierFields)
 }
+
+private fun generatedSchemaFieldId() = UUID.randomUUID().hashCode()

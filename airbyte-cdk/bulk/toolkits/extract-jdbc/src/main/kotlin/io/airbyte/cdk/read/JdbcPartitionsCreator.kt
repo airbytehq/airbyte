@@ -29,6 +29,20 @@ sealed class JdbcPartitionsCreator<
 
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
+    // A reader that only checkpoints the complete state of a partition
+    // used for empty tables
+    inner class CheckpointOnlyPartitionReader() : PartitionReader {
+        override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
+            PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
+
+        override suspend fun run() {}
+
+        override fun checkpoint(): PartitionReadCheckpoint =
+            PartitionReadCheckpoint(partition.completeState, 0)
+
+        override fun releaseResources() {}
+    }
+
     /** Calling [close] releases the resources acquired for the [JdbcPartitionsCreator]. */
     fun interface AcquiredResources : AutoCloseable
 
@@ -128,7 +142,7 @@ class JdbcSequentialPartitionsCreator<
             ensureCursorUpperBound()
             if (streamState.cursorUpperBound?.isNull == true) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
-                return listOf()
+                return listOf(CheckpointOnlyPartitionReader())
             }
         }
         if (streamState.fetchSize == null) {
@@ -140,7 +154,9 @@ class JdbcSequentialPartitionsCreator<
                 log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
                 if (rowByteSizeSample.kind == Sample.Kind.EMPTY) {
                     log.info { "Sampling query found that the table was empty." }
-                    return listOf()
+                    // An empty table will checkpoint once in order to emit its complete state
+                    // Otherwise on each sync we would try to read this partition
+                    return listOf(CheckpointOnlyPartitionReader())
                 }
                 streamState.fetchSize =
                     sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
@@ -178,7 +194,7 @@ class JdbcConcurrentPartitionsCreator<
             ensureCursorUpperBound()
             if (streamState.cursorUpperBound?.isNull == true) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
-                return listOf()
+                return listOf(CheckpointOnlyPartitionReader())
             }
         }
         // Handle edge case where the table can't be sampled.
@@ -198,7 +214,7 @@ class JdbcConcurrentPartitionsCreator<
         }
         if (sample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
-            return listOf()
+            return listOf(CheckpointOnlyPartitionReader())
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
