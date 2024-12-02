@@ -5,11 +5,17 @@
 package io.airbyte.cdk.load.task.internal
 
 import com.google.common.collect.Range
+import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.SpillFileProvider
+import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationStreamEvent
+import io.airbyte.cdk.load.message.LimitedMessageQueue
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
+import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCompleteEvent
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
@@ -20,7 +26,7 @@ import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
 import io.airbyte.cdk.load.task.StreamLevel
-import io.airbyte.cdk.load.util.takeUntilInclusive
+import io.airbyte.cdk.load.task.implementor.FileQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
@@ -28,11 +34,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.OutputStream
 import java.nio.file.Path
 import java.time.Clock
 import kotlin.io.path.outputStream
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.fold
 
 interface SpillToDiskTask : StreamLevel, InternalScope
 
@@ -47,26 +53,29 @@ class DefaultSpillToDiskTask(
     private val queue: QueueReader<Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     override val streamDescriptor: DestinationStream.Descriptor,
-    private val launcher: DestinationTaskLauncher,
     private val diskManager: ReservationManager,
     private val timeWindow: TimeWindowTrigger,
+    private val spillFileQueue: LimitedMessageQueue<FileQueueMessage>,
+    private val taskLauncher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
     data class ReadResult(
+        val spillFile: Path,
+        val spillFileOutputStream: OutputStream,
         val range: Range<Long>? = null,
         val sizeBytes: Long = 0,
-        val hasReadEndOfStream: Boolean = false,
-        val forceFlush: Boolean = false,
     )
 
     override suspend fun execute() {
-        val tmpFile = spillFileProvider.createTempFile()
-        val result =
-            tmpFile.outputStream().use { outputStream ->
-                queue
-                    .consume()
-                    .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
+        val initialResult =  spillFileProvider.createTempFile().let {
+            ReadResult(it, it.outputStream())
+        }
+        spillFileQueue.take().use {
+            queue.consume().fold(initialResult) {
+                (spillFile, outputStream, range, sizeBytes),
+                reserved ->
+                    try {
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordEvent -> {
@@ -87,48 +96,89 @@ class DefaultSpillToDiskTask(
                                             bytesProcessed
                                         )
 
-                                    // write and return output
                                     outputStream.write(wrapped.record.serialized)
                                     outputStream.write("\n")
-                                    ReadResult(
-                                        rangeProcessed,
-                                        bytesProcessed,
-                                        forceFlush = forceFlush
-                                    )
+
+                                    if (forceFlush) {
+                                        val file =
+                                            SpilledRawMessagesLocalFile(
+                                                spillFile,
+                                                bytesProcessed,
+                                                rangeProcessed
+                                            )
+                                        publishFile(file)
+                                        val nextTmpFile = spillFileProvider.createTempFile()
+                                        outputStream.close()
+                                        ReadResult(nextTmpFile, nextTmpFile.outputStream())
+                                    } else {
+                                        ReadResult(
+                                            spillFile,
+                                            outputStream,
+                                            rangeProcessed,
+                                            bytesProcessed
+                                        )
+                                    }
                                 }
+
                                 is StreamCompleteEvent -> {
                                     val nextRange = range.withNextAdjacentValue(wrapped.index)
-                                    ReadResult(nextRange, sizeBytes, hasReadEndOfStream = true)
+                                    val file =
+                                        SpilledRawMessagesLocalFile(
+                                            spillFile,
+                                            sizeBytes,
+                                            nextRange,
+                                            endOfStream = true
+                                        )
+                                    publishFile(file)
+                                    ReadResult(
+                                        spillFile,
+                                        outputStream,
+                                        range,
+                                        sizeBytes
+                                    ) // this will be the last message
                                 }
+
                                 is StreamFlushEvent -> {
                                     val forceFlush = timeWindow.isComplete()
                                     if (forceFlush) {
                                         log.info {
-                                            "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $tmpFile of (${sizeBytes}b)"
+                                            "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $spillFile of (${sizeBytes}b)"
                                         }
                                     }
-                                    ReadResult(range, sizeBytes, forceFlush = forceFlush)
+
+                                    if (range != null && sizeBytes > 0L) {
+                                        val file =
+                                            SpilledRawMessagesLocalFile(
+                                                spillFile,
+                                                sizeBytes,
+                                                range,
+                                                endOfStream = false
+                                            )
+                                        publishFile(file)
+                                        val nextTmpFile = spillFileProvider.createTempFile()
+                                        outputStream.close()
+                                        ReadResult(nextTmpFile, nextTmpFile.outputStream())
+                                    }
+                                    ReadResult(spillFile, outputStream, range, sizeBytes)
                                 }
                             }
                         }
+                    } finally {
+                        outputStream.close()
                     }
-                    .takeUntilInclusive { it.hasReadEndOfStream || it.forceFlush }
-                    .last()
+                }
             }
+    }
 
-        /** Handle the result */
-        val (range, sizeBytes, endOfStream) = result
-
-        log.info { "Finished writing $range records (${sizeBytes}b) to $tmpFile" }
-
-        // This could happen if the chunk only contained end-of-stream
-        if (range == null) {
-            // We read 0 records, do nothing
+    private suspend fun publishFile(file: SpilledRawMessagesLocalFile) {
+        if (file.totalSizeBytes == 0L) {
+            log.info { "Skipping empty file $file" }
+            val dummy = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), TreeRangeSet.create())
+            taskLauncher.handleNewBatch(streamDescriptor, dummy)
             return
         }
-
-        val file = SpilledRawMessagesLocalFile(tmpFile, sizeBytes, range, endOfStream)
-        launcher.handleNewSpilledFile(streamDescriptor, file)
+        log.info { "Publishing file $file" }
+        spillFileQueue.publish(FileQueueMessage(streamDescriptor, file))
     }
 }
 
@@ -148,6 +198,7 @@ class DefaultSpillToDiskTaskFactory(
     @Named("diskManager") private val diskManager: ReservationManager,
     private val clock: Clock,
     @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
+    @Named("spillFileQueue") private val spillFileQueue: LimitedMessageQueue<FileQueueMessage>,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
@@ -160,9 +211,10 @@ class DefaultSpillToDiskTaskFactory(
             queueSupplier.get(stream),
             flushStrategy,
             stream,
-            taskLauncher,
             diskManager,
             timeWindow,
+            spillFileQueue,
+            taskLauncher
         )
     }
 }

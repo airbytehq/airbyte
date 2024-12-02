@@ -41,6 +41,8 @@ data class S3V2Configuration<T : OutputStream>(
     override val recordBatchSizeBytes: Long,
     override val maxMessageQueueMemoryUsageRatio: Double = 0.2,
     override val estimatedRecordMemoryOverheadRatio: Double = 1.1,
+
+    override val numProcessRecordsWorkers: Int
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -66,8 +68,11 @@ class S3V2ConfigurationFactory(
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            recordBatchSizeBytes = recordBatchSizeBytes
-        )
+            recordBatchSizeBytes = recordBatchSizeBytes,
+            objectStorageUploadConfiguration = ObjectStorageUploadConfiguration(streamingUploadPartSize = pojo.partSizeBytes
+                ?: (10 * 1024 * 1024)),
+            numProcessRecordsWorkers = pojo.numConcurrentUploads ?: 2
+            )
     }
 }
 

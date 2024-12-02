@@ -60,6 +60,11 @@ class S3V2WriteTestJsonUncompressed :
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
+
+    @Test
+    override fun testNamespaces() {
+        super.testNamespaces()
+    }
 }
 
 class S3V2WriteTestJsonRootLevelFlattening :
