@@ -19,12 +19,12 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.streams.http.error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -465,11 +465,13 @@ class Stream(HttpStream, ABC):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         self.update_request_properties(request_params, properties)
-        url=self.url_base + self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties)
-        headers=dict(request_headers, **self._authenticator.get_auth_header())
-        params=request_params
-        json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        url = self.url_base + self.path(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties
+        )
+        headers = dict(request_headers, **self._authenticator.get_auth_header())
+        params = request_params
+        json = self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        data = self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -490,14 +492,14 @@ class Stream(HttpStream, ABC):
                 )
         else:
             _, response = self._http_client.send_request(
-                    http_method=self.http_method,
-                    url=url,
-                    request_kwargs=request_kwargs,
-                    headers=headers,
-                    params=params,
-                    json=json,
-                    data=data,
-                )
+                http_method=self.http_method,
+                url=url,
+                request_kwargs=request_kwargs,
+                headers=headers,
+                params=params,
+                json=json,
+                data=data,
+            )
 
         return response
 
@@ -885,8 +887,7 @@ class Stream(HttpStream, ABC):
 
 
 class HubspotErrorHandler(HttpStatusErrorHandler):
-
-    def interpret_response(self, response_or_exception = None):
+    def interpret_response(self, response_or_exception=None):
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code == HTTPStatus.UNAUTHORIZED:
                 message = response_or_exception.json().get("message")
@@ -895,7 +896,6 @@ class HubspotErrorHandler(HttpStatusErrorHandler):
 
 
 class HubspotBackoffStrategy(DefaultBackoffStrategy):
-
     def backoff_time(self, response_or_exception, **kwargs):
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code == 429:
