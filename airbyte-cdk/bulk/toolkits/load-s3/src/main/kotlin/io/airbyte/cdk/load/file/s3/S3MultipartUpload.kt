@@ -70,7 +70,7 @@ class S3MultipartUpload<T : OutputStream>(
         log.info {
             "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
         }
-        launch {
+        // launch {
             log.info {
                 "Launching multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
             }
@@ -86,7 +86,7 @@ class S3MultipartUpload<T : OutputStream>(
                 uploadedParts.add(part)
             }
             complete(uploadedParts)
-        }
+        // }
         UploadStream().use { block(it) }
         log.info {
             "Completed multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
