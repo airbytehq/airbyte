@@ -19,6 +19,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -136,7 +137,7 @@ class ObjectStorageStagingPersister(
     }
 
     private fun keyFor(stream: DestinationStream): String =
-        pathFactory.getStagingDirectory(stream).resolve(STATE_FILENAME).toString()
+        Paths.get(pathFactory.getStagingDirectory(stream), STATE_FILENAME).toString()
 
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val key = keyFor(stream)
@@ -161,10 +162,14 @@ class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
+    private val log = KotlinLogging.logger {}
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
         val matcher = pathFactory.getPathMatcher(stream)
         val longestUnambiguous =
             pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        log.info {
+            "Searching path $longestUnambiguous (matching ${matcher.regex}) for destination state metadata"
+        }
         client
             .list(longestUnambiguous)
             .mapNotNull { matcher.match(it.key) }
@@ -180,6 +185,10 @@ class ObjectStorageFallbackPersister(
             }
             .toMutableMap()
             .let {
+                val generationSizes = it.map { gen -> gen.key to gen.value.size }
+                log.info {
+                    "Inferred state for generations with size: $generationSizes (minimum=${stream.minimumGenerationId}; current=${stream.generationId})"
+                }
                 return ObjectStorageDestinationState(
                     mutableMapOf(ObjectStorageDestinationState.State.FINALIZED to it)
                 )

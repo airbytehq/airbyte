@@ -121,4 +121,12 @@ object MockDestinationDataDumper : DestinationDataDumper {
             MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
     }
+
+    override fun dumpFile(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<String> {
+        // Not needed since the test is disabled for file transfer
+        throw NotImplementedError()
+    }
 }

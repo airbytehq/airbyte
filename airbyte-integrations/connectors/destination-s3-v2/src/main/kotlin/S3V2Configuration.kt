@@ -36,7 +36,8 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
     // Internal configuration
-    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration,
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
+        ObjectStorageUploadConfiguration(),
     override val recordBatchSizeBytes: Long,
 ) :
     DestinationConfiguration(),
@@ -52,7 +53,7 @@ data class S3V2Configuration<T : OutputStream>(
 class S3V2ConfigurationFactory(
     @Value("\${airbyte.destination.record-batch-size}") private val recordBatchSizeBytes: Long
 ) : DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
-    val log = KotlinLogging.logger {}
+    private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
         log.info { "Record batch size override: $recordBatchSizeBytes" }
@@ -63,13 +64,6 @@ class S3V2ConfigurationFactory(
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            objectStorageUploadConfiguration =
-                ObjectStorageUploadConfiguration(
-                    pojo.uploadPartSize
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
-                    pojo.maxConcurrentUploads
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
-                ),
             recordBatchSizeBytes = recordBatchSizeBytes
         )
     }

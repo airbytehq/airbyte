@@ -25,7 +25,28 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
             val airbyteMessage = serialized.deserializeToClass(AirbyteMessage::class.java)
             return messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
         } catch (t: Throwable) {
-            throw RuntimeException("Failed to deserialize AirbyteMessage")
+            /**
+             * We don't want to expose client data, but we'd like to get as much info as we can
+             * about these malformed messages.
+             */
+            val type =
+                if (serialized.contains("RECORD")) {
+                    "record"
+                } else if (serialized.contains("STATE")) {
+                    "state"
+                } else if (serialized.contains("TRACE")) {
+                    if (serialized.contains("STATUS", ignoreCase = true)) {
+                        "status"
+                    } else {
+                        "trace"
+                    }
+                } else {
+                    "unknown"
+                }
+
+            throw RuntimeException(
+                "Failed to deserialize airbyte message (type=$type; length=${serialized.length}; reason=${t.javaClass})"
+            )
         }
     }
 }
