@@ -169,7 +169,7 @@ class S3Client(
             S3MultipartUpload(
                 client,
                 response,
-                ByteArrayOutputStream(1024 * 1024 * 50),
+                ByteArrayOutputStream(),
                 streamProcessor ?: NoopProcessor,
                 uploadConfig
             )
