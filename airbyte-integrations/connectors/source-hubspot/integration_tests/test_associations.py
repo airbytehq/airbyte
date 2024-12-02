@@ -4,8 +4,9 @@
 
 import logging
 
+import orjson
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, Type
 from source_hubspot.source import SourceHubspot
 
 
@@ -38,7 +39,12 @@ def configured_catalog(config, source):
 
 
 def test_incremental_read_fetches_associations(config, configured_catalog, source, associations):
-    messages = source.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.model_validate(configured_catalog), {})
+    configured_airbyte_catalog = ConfiguredAirbyteCatalogSerializer.load(configured_catalog)
+    print('\n\n=========\n\n')
+    print(configured_catalog)
+    print(type(configured_airbyte_catalog))
+    print('\n\n=========\n\n')
+    messages = source.read(logging.getLogger("airbyte"), config, configured_airbyte_catalog, {})
 
     association_found = False
     for message in messages:

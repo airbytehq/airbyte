@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 import mock
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode, Type
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
@@ -185,21 +185,19 @@ def test_stream_forbidden(requests_mock, config, caplog):
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.model_validate(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "workflows",
-                        "json_schema": {},
-                        "supported_sync_modes": ["full_refresh"],
-                    },
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
-    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load({
+        "streams": [
+            {
+                "stream": {
+                    "name": "workflows",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    })
     with pytest.raises(AirbyteTracedException):
         records = list(SourceHubspot().read(logger, config, catalog, {}))
         records = [r for r in records if r.type == Type.RECORD]
@@ -226,7 +224,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
     requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.model_validate(
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
         {
             "streams": [
                 {
