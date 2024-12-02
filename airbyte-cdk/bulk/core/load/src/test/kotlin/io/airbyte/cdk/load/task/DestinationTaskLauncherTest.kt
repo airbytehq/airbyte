@@ -24,8 +24,6 @@ import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultCloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultOpenStreamTaskFactory
-import io.airbyte.cdk.load.task.implementor.DefaultProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.DefaultProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultSetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultTeardownTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
@@ -34,9 +32,7 @@ import io.airbyte.cdk.load.task.implementor.FailSyncTask
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessBatchTask
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessRecordsTask
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTask
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
@@ -91,7 +87,7 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
     @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
     @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
-    @Inject lateinit var processBatchTaskFactory: MockProcessBatchTaskFactory
+    @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
@@ -114,6 +110,11 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     fun processRecordsTaskFactory(): ProcessRecordsTaskFactory = mockk(relaxed = true)
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    fun processBatchTaskFactory(): ProcessBatchTaskFactory = mockk(relaxed = true)
 
     @Singleton
     @Primary
@@ -228,42 +229,6 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             return object : OpenStreamTask {
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
-                }
-            }
-        }
-    }
-
-    @Singleton
-    @Replaces(DefaultProcessRecordsTaskFactory::class)
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockProcessRecordsTaskFactory : ProcessRecordsTaskFactory {
-        val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-        ): ProcessRecordsTask {
-            return object : ProcessRecordsTask {
-                override suspend fun execute() {
-                    hasRun.send(Unit)
-                }
-            }
-        }
-    }
-
-    @Singleton
-    @Replaces(DefaultProcessBatchTaskFactory::class)
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockProcessBatchTaskFactory : ProcessBatchTaskFactory {
-        val hasRun: Channel<BatchEnvelope<*>> = Channel(Channel.UNLIMITED)
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream.Descriptor,
-            batchEnvelope: BatchEnvelope<*>
-        ): ProcessBatchTask {
-            return object : ProcessBatchTask {
-                override suspend fun execute() {
-                    hasRun.send(batchEnvelope)
                 }
             }
         }
@@ -394,6 +359,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             processRecordsTaskFactory.make(any())
         }
 
+        coVerify(exactly = config.numProcessBatchWorkers) { processBatchTaskFactory.make(any()) }
+
         // Verify that we kicked off the timed force flush w/o a specific delay
         Assertions.assertTrue(mockForceFlushTask.didRun.receive())
 
@@ -415,26 +382,25 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Test
     fun testHandleNewBatch() = runTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
-        val streamManager =
-            syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
+        val stream1 = MockDestinationCatalogFactory.stream1
+        val streamManager = syncManager.getStreamManager(stream1.descriptor)
         repeat(100) { streamManager.countRecordIn() }
 
         streamManager.markEndOfStream(true)
 
         // Verify incomplete batch triggers process batch
-        val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range)
+        val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             incompleteBatch
         )
         Assertions.assertFalse(streamManager.areRecordsPersistedUntil(100L))
 
-        val batchReceived = processBatchTaskFactory.hasRun.receive()
-        Assertions.assertEquals(incompleteBatch, batchReceived)
         delay(500)
         Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.tryReceive().isFailure)
 
-        val persistedBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)
+        val persistedBatch =
+            BatchEnvelope(MockBatch(Batch.State.PERSISTED), range, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             persistedBatch
@@ -444,7 +410,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         // Verify complete batch w/o batch processing complete does nothing
         val halfRange = TreeRangeSet.create(listOf(Range.closed(0L, 50L)))
-        val completeBatchHalf = BatchEnvelope(MockBatch(Batch.State.COMPLETE), halfRange)
+        val completeBatchHalf =
+            BatchEnvelope(MockBatch(Batch.State.COMPLETE), halfRange, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             completeBatchHalf
@@ -454,7 +421,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         // Verify complete batch w/ batch processing complete triggers close stream
         val secondHalf = TreeRangeSet.create(listOf(Range.closed(51L, 100L)))
-        val completingBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), secondHalf)
+        val completingBatch =
+            BatchEnvelope(MockBatch(Batch.State.COMPLETE), secondHalf, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             completingBatch
@@ -466,11 +434,11 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Test
     fun handleEmptyBatch() = runTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 0L)))
-        val streamManager =
-            syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
+        val stream1 = MockDestinationCatalogFactory.stream1
+        val streamManager = syncManager.getStreamManager(stream1.descriptor)
         streamManager.markEndOfStream(true)
 
-        val emptyBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), range)
+        val emptyBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), range, stream1.descriptor)
         taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1.descriptor, emptyBatch)
         closeStreamTaskFactory.hasRun.receive()
     }
