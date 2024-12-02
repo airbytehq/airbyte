@@ -189,6 +189,7 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
+        // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
@@ -264,16 +265,12 @@ class DefaultDestinationTaskLauncher(
             }
 
             if (streamManager.isBatchProcessingComplete()) {
-                log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
-                }
+                log.info { "Batch processing complete: Starting close stream task for $stream" }
 
                 val task = closeStreamTaskFactory.make(this, stream)
                 enqueue(task)
             } else {
-                log.info {
-                    "Batch $wrapped complete, but batch processing not complete: nothing else to do."
-                }
+                log.info { "Batch processing not complete: nothing else to do." }
             }
         }
     }
