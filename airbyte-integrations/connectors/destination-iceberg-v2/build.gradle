@@ -56,6 +56,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
 
+    integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
