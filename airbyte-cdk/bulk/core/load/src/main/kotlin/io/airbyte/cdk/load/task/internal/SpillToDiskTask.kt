@@ -57,11 +57,11 @@ class DefaultSpillToDiskTask(
     private val taskLauncher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
+    private val registration = outputQueue.registerProducer()
 
     override suspend fun execute() {
         val initialAccumulator = fileAccFactory.make()
 
-        val registration = outputQueue.registerProducer()
         registration.use {
             inputQueue.consume().fold(initialAccumulator) { acc, reserved ->
                 reserved.use {
@@ -135,6 +135,7 @@ class DefaultSpillToDiskTask(
                 BatchEnvelope(
                     SimpleBatch(Batch.State.COMPLETE),
                     TreeRangeSet.create(),
+                    streamDescriptor
                 )
             taskLauncher.handleNewBatch(streamDescriptor, empty)
         } else {

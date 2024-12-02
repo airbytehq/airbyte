@@ -446,7 +446,12 @@ class CheckpointManagerTest {
                     it.persistedRanges.forEach { (stream, ranges) ->
                         val mockBatch = SimpleBatch(state = Batch.State.PERSISTED)
                         val rangeSet = TreeRangeSet.create(ranges)
-                        val mockBatchEnvelope = BatchEnvelope(batch = mockBatch, ranges = rangeSet)
+                        val mockBatchEnvelope =
+                            BatchEnvelope(
+                                batch = mockBatch,
+                                ranges = rangeSet,
+                                streamDescriptor = stream.descriptor
+                            )
                         syncManager
                             .getStreamManager(stream.descriptor)
                             .updateBatchState(mockBatchEnvelope)

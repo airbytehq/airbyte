@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -201,6 +200,12 @@ class DefaultDestinationTaskLauncher(
             enqueue(task)
         }
 
+        repeat(config.numProcessBatchWorkers) {
+            log.info { "Launching process batch task $it" }
+            val task = processBatchTaskFactory.make(this)
+            enqueue(task)
+        }
+
         // Start flush task
         log.info { "Starting timed file aggregate flush task " }
         enqueue(flushTickTask)
@@ -251,14 +256,7 @@ class DefaultDestinationTaskLauncher(
                 enqueue(flushCheckpointsTaskFactory.make())
             }
 
-            if (wrapped.batch.state != Batch.State.COMPLETE) {
-                log.info {
-                    "Batch not complete: Starting process batch task for ${stream}, batch $wrapped"
-                }
-
-                val task = processBatchTaskFactory.make(this, stream, wrapped)
-                enqueue(task)
-            } else if (streamManager.isBatchProcessingComplete()) {
+            if (streamManager.isBatchProcessingComplete()) {
                 log.info {
                     "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
                 }

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -80,14 +81,20 @@ data class SimpleBatch(
  */
 data class BatchEnvelope<B : Batch>(
     val batch: B,
-    val ranges: RangeSet<Long> = TreeRangeSet.create()
+    val ranges: RangeSet<Long> = TreeRangeSet.create(),
+    val streamDescriptor: DestinationStream.Descriptor
 ) {
     constructor(
         batch: B,
-        range: Range<Long>
-    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
+        range: Range<Long>,
+        streamDescriptor: DestinationStream.Descriptor
+    ) : this(
+        batch = batch,
+        ranges = TreeRangeSet.create(listOf(range)),
+        streamDescriptor = streamDescriptor
+    )
 
     fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
-        return BatchEnvelope(newBatch, ranges)
+        return BatchEnvelope(newBatch, ranges, streamDescriptor)
     }
 }

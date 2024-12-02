@@ -52,6 +52,11 @@ abstract class S3V2WriteTest(
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }
+
+    @Test
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
 }
 
 class S3V2WriteTestJsonUncompressed :
