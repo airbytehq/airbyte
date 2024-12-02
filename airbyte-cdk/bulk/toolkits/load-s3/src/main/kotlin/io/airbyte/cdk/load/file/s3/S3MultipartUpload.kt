@@ -20,8 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -70,7 +72,7 @@ class S3MultipartUpload<T : OutputStream>(
         log.info {
             "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
         }
-        // launch {
+        run {
             log.info {
                 "Launching multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
             }
@@ -86,7 +88,7 @@ class S3MultipartUpload<T : OutputStream>(
                 uploadedParts.add(part)
             }
             complete(uploadedParts)
-        // }
+        }
         UploadStream().use { block(it) }
         log.info {
             "Completed multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
