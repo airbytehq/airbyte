@@ -67,6 +67,9 @@ class S3MultipartUpload<T : OutputStream>(
             "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
         }
         launch {
+            log.info {
+                "Launching multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
+            }
             val uploadedParts = mutableListOf<CompletedPart>()
             for (bytes in partQueue) {
                 val part = uploadPart(bytes, uploadedParts)
