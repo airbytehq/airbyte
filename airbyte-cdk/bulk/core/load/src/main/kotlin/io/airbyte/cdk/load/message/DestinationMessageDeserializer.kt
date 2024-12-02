@@ -21,9 +21,8 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
     Deserializer<DestinationMessage> {
 
     override fun deserialize(serialized: String): DestinationMessage {
-        try {
-            val airbyteMessage = serialized.deserializeToClass(AirbyteMessage::class.java)
-            return messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
+        val airbyteMessage = try {
+            serialized.deserializeToClass(AirbyteMessage::class.java)
         } catch (t: Throwable) {
             /**
              * We don't want to expose client data, but we'd like to get as much info as we can
@@ -48,5 +47,13 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
                 "Failed to deserialize airbyte message (type=$type; length=${serialized.length}; reason=${t.javaClass})"
             )
         }
+
+        val internalDestinationMessage = try {
+            messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
+        } catch (t: Throwable) {
+            throw RuntimeException("Failed to convert AirbyteMessage to DestinationMessage", t)
+        }
+
+        return internalDestinationMessage
     }
 }
