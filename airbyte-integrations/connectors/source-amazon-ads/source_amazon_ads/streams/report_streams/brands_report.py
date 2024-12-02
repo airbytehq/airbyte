@@ -86,7 +86,7 @@ METRICS_MAP_V3 = {
         "targetingType",
         "topOfSearchImpressionShare",
         "unitsSold",
-    ]
+    ],
 }
 
 METRICS_TYPE_TO_ID_MAP_V3 = {
