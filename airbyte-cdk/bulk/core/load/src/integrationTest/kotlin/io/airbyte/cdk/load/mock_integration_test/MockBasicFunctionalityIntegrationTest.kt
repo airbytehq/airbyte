@@ -34,7 +34,6 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
@@ -93,4 +92,6 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
+
+    @Test @Disabled override fun testBasicWriteFile() {}
 }

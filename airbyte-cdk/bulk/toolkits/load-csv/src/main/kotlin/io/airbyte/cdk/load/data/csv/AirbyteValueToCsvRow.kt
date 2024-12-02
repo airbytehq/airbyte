@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.data.csv
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.IntValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -33,7 +32,6 @@ fun ObjectValue.toCsvRecord(schema: ObjectType): List<Any> {
                 is TimestampValue -> it.value
                 is BooleanValue -> it.value
                 is DateValue -> it.value
-                is IntValue -> it.value
                 is TimeValue -> it.value
                 is UnknownValue -> ""
             }

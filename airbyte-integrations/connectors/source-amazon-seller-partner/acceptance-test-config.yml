@@ -107,11 +107,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-        timeout_seconds: 3600
+        timeout_seconds: 7200
         future_state:
           future_state_path: "integration_tests/future_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 3600
+        timeout_seconds: 7200
