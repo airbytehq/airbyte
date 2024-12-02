@@ -10,6 +10,7 @@ out
 .project
 .settings
 .vscode
+.kotlin
 **/gmon.out
 static_checker_reports/
 
@@ -27,12 +28,16 @@ updated_configurations
 # Connector debug configs
 airbyte-integrations/connectors/**/src/test/resources/debug_resources
 
+# Connector CAT test related files
+airbyte-integrations/connectors/**/integration_tests/temp
+
 # Python
 *.egg-info
 __pycache__
 .eggs
 .venv
 .mypy_cache
+.ruff_cache
 .ipynb_checkpoints
 .pytest_
 
@@ -103,3 +108,7 @@ scan-journal.log
 
 # mvn
 target/
+
+# CDK load artifacts
+airbyte-cdk/bulk/core/load/airbyte-cdk-load/
+airbyte-integrations/connectors/**/airbyte-cdk-load/

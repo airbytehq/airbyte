@@ -106,7 +106,7 @@ class TestIncrementalAnalyticsStream:
     def test_get_updated_state(self, report_init_kwargs, current_stream_state, latest_record, expected_date):
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     @pytest.mark.parametrize(
         ("start_date", "end_date", "stream_state", "fixed_period_in_days", "expected_slices"),
@@ -141,6 +141,7 @@ class TestIncrementalAnalyticsStream:
     def test_stream_slices(self, report_init_kwargs, start_date, end_date, stream_state, fixed_period_in_days, expected_slices):
         report_init_kwargs["replication_start_date"] = start_date
         report_init_kwargs["replication_end_date"] = end_date
+        report_init_kwargs["period_in_days"] = 365
         stream = SomeIncrementalAnalyticsStream(**report_init_kwargs)
         stream.fixed_period_in_days = fixed_period_in_days
         with patch("pendulum.now", return_value=pendulum.parse("2023-09-09T00:00:00Z")):

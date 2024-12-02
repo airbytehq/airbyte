@@ -17,7 +17,7 @@
         "name": "companies"
       },
       "stream_state": {
-        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
       }
     }
   },
@@ -39,18 +39,7 @@
         "name": "contacts"
       },
       "stream_state": {
-        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_descriptor": {
-        "name": "contacts_merged_audit"
-      },
-      "stream_state": {
-        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
       }
     }
   },
@@ -68,14 +57,21 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_descriptor": { "name": "deals" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_descriptor": { "name": "deal_splits" },
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "archivedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "deals" },
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "archivedAt": "2200-01-01T00:00:00.000000Z" },
       "stream_descriptor": { "name": "deals_archived" }
     }
   },
@@ -94,17 +90,6 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "goals"
-      },
-      "stream_state": {
-        "updatedAt": "5023-05-12T01:32:26.602000+00:00"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_descriptor": {
         "name": "engagements"
       },
       "stream_state": {
@@ -116,7 +101,7 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "engagements_calls" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
@@ -124,7 +109,7 @@
     "stream": {
       "stream_descriptor": { "name": "engagements_emails" },
       "stream_state": {
-        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
       }
     }
   },
@@ -134,49 +119,67 @@
       "stream_descriptor": {
         "name": "engagements_meetings"
       },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "engagements_notes" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "engagements_tasks" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "forms" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
-      "stream_descriptor": { "name": "line_items" }
+      "stream_descriptor": { "name": "goals" },
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "leads"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "line_items" },
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "owners" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "products" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
@@ -190,7 +193,7 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "tickets" },
-      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+      "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }
   },
   {
@@ -204,37 +207,21 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "contacts_property_history" },
-      "stream_state": { "updatedAt": 7945393076000 }
+      "stream_state": { "timestamp": 7945393076000 }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "companies_property_history" },
-      "stream_state": { "updatedAt": 7945393076000 }
+      "stream_state": { "timestamp": "7945393076000" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "deals_property_history" },
-      "stream_state": { "updatedAt": 7945393076000 }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_descriptor": { "name": "contacts_web_analytics" },
-      "stream_state": {
-        "151": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "251": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "401": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "601": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "651": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "2501": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "2551": { "occurredAt": "2050-01-01T00:00:00Z" },
-        "2601": { "occurredAt": "2050-01-01T00:00:00Z" }
-      }
+      "stream_state": { "timestamp": "7945393076000" }
     }
   }
 ]

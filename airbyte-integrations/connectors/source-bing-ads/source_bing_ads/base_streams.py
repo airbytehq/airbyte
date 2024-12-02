@@ -248,7 +248,7 @@ class Campaigns(BingAdsCampaignManagementStream):
         "TargetSetting",
         "VerifiedTrackingSetting",
     ]
-    campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
+    campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping", "PerformanceMax"]
 
     parent_key_to_foreign_key_map = {
         "AccountId": "account_id",

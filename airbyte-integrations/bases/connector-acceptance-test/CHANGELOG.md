@@ -1,5 +1,71 @@
 # Changelog
 
+## 3.9.8
+
+Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
+
+## 3.9.7
+
+Mount connection objects to readable paths in the container for rootless images.
+ 
+## 3.9.6
+
+Write connector output to a writtable directory to avoid permission issues on rootless images.
+
+## 3.9.5
+
+Fix parsing of inlined manifest specs in `test_match_expected`
+
+## 3.9.4
+
+Upgrade to Dagger 0.13
+
+## 3.9.3
+
+Undo failure trace message test case changes from 3.9.1
+
+## 3.9.2
+
+Relax test_oneof_usage criteria for constant value definitions.
+
+## 3.9.1
+
+Bug fixes for dagger execution caching and for failure trace message test case.
+
+## 3.9.0
+
+Add support for using `manifest.yaml` as a spec input.
+
+## 3.8.6
+
+Allow a final teardown command to be run after all tests.
+
+## 3.8.5
+
+Update CAT tests for discover to deduplicate on namespace and stream name pair.
+
+## 3.8.4
+
+Only export /integration-tests directory back to host (for use by DB sources).
+
+## 3.8.3
+
+Add handling for global state messages (for use by DB sources).
+
+## 3.8.2
+
+Allow tests to access the setup/teardown container.
+
+## 3.8.1
+
+Provide the ability for users to perform setup/teardown by building and running a container before each test.
+
+## 3.8.0
+
+Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object` in discovered catalog.
+Add `validate_primary_keys_data_type` to `TestBasicRead.test_read`, which validates that primary keys are not of type `array` or `object` in records
+and ensures that at least one primary key is non-null when there is a composite primary key.
+
 ## 3.7.0
 
 Add `validate_state_messages` to TestBasicRead.test_read:: Validate that all states contain neither legacy state emissions nor missing source stats in the state message.
@@ -34,7 +100,7 @@ Add `test_certified_connector_has_allowed_hosts` and `test_certified_connector_h
 
 ## 3.2.0
 
-Add TestBasicRead.test_all_supported_file_types_present, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
+Add `TestBasicRead.test_all_supported_file_types_present`, which validates that all supported file types are present in the sandbox account for certified file-based connectors.
 
 ## 3.1.0
 

@@ -48,13 +48,32 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| 0.2.5   | 2024-05-21 | [38139](https://github.com/airbytehq/airbyte/pull/38139)  | Make connector compatable with builder                 `                                    |
-| 0.2.4   | 2024-04-19 | [37138](https://github.com/airbytehq/airbyte/pull/37138)  | Updating to 0.80.0 CDK                                                                      |
-| 0.2.3   | 2024-04-18 | [37138](https://github.com/airbytehq/airbyte/pull/37138)  | Manage dependencies with Poetry.                                                            |
-| 0.2.2   | 2024-04-15 | [37138](https://github.com/airbytehq/airbyte/pull/37138)  | Base image migration: remove Dockerfile and use the python-connector-base image             |
-| 0.2.1   | 2024-04-12 | [37138](https://github.com/airbytehq/airbyte/pull/37138)  | schema descriptions                                                                         |
+| 0.3.2 | 2024-10-29 | [47739](https://github.com/airbytehq/airbyte/pull/47739) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-15 | [44164](https://github.com/airbytehq/airbyte/pull/44164) | Refactor connector to manifest-only format |
+| 0.2.16 | 2024-08-10 | [43507](https://github.com/airbytehq/airbyte/pull/43507) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43091](https://github.com/airbytehq/airbyte/pull/43091) | Update dependencies |
+| 0.2.14 | 2024-07-27 | [42599](https://github.com/airbytehq/airbyte/pull/42599) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42238](https://github.com/airbytehq/airbyte/pull/42238) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41763](https://github.com/airbytehq/airbyte/pull/41763) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41488](https://github.com/airbytehq/airbyte/pull/41488) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41206](https://github.com/airbytehq/airbyte/pull/41206) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40976](https://github.com/airbytehq/airbyte/pull/40976) | Update dependencies |
+| 0.2.8 | 2024-06-26 | [40315](https://github.com/airbytehq/airbyte/pull/40315) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40062](https://github.com/airbytehq/airbyte/pull/40062) | Update dependencies |
+| 0.2.6 | 2024-06-06 | [39257](https://github.com/airbytehq/airbyte/pull/39257) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.5 | 2024-05-21 | [38139](https://github.com/airbytehq/airbyte/pull/38139) | Make connector compatable with builder                 ` |
+| 0.2.4 | 2024-04-19 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | schema descriptions |
 | 0.2.0   | 2024-02-05 | [#34826](https://github.com/airbytehq/airbyte/pull/34826) | Fix catalog types for fields `bid_price` and `bid_size` in stream `quotes_historical_data`. |
 | 0.1.1   | 2022-12-19 | [#20600](https://github.com/airbytehq/airbyte/pull/20600) | Add quotes historical data stream                                                           |
 | 0.1.0   | 2022-10-21 | [#18302](https://github.com/airbytehq/airbyte/pull/18302) | New source                                                                                  |
+
+</details>

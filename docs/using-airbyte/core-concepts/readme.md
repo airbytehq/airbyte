@@ -10,7 +10,7 @@ This page describes the concepts you need to know to use Airbyte.
 
 ## Source
 
-A source is an API, file, database, or data warehouse that you want to ingest data from.
+A source is an API, file, database, or data warehouse that you want to ingest data from. The configured source is what you set up when you provide the variables needed for the connector to access records. The exact fields of the configuration depend on the connector, but in most cases, it provides authentication information (username and password, API key) and information about which data to extract, for example, the start date to sync records from, a search query records have to match.
 
 ## Destination
 
@@ -18,11 +18,11 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 
 ## Connector
 
-An Airbyte component which pulls data from a source or pushes data to a destination.
+An Airbyte component which pulls data from a source or pushes data to a destination. A connector can be either a source or a destination. Usually, if you’re building a connection, you’re working with a source. The connector defines what’s required to access an API or a database such as protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses.
 
 ## Connection
 
-A connection is an automated data pipeline that replicates data from a source to a destination. Setting up a connection enables configuration of the following parameters:
+A connection is an automated data pipeline that replicates data from a source to a destination. It links a configured source (based on a source connector) to a configured destination (based on a destination connector) to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate. Setting up a connection enables configuration of the following parameters:
 
 | Concept                                                                                                                  | Description                                                        |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
@@ -30,7 +30,7 @@ A connection is an automated data pipeline that replicates data from a source to
 | [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
 | [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
 | [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
-| [Schema Propagation](using-airbyte/schema-change-management.md)                                             | How should Airbyte handle schema drift in sources?                 |
+| [Schema Propagation](using-airbyte/schema-change-management.md)                                                          | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
 
@@ -81,28 +81,17 @@ For more details, see our [Namespace documentation](namespaces.md).
 
 ## Sync Mode
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the dstination.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.
 
 Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 
+## Resumability
+
+[Resumability](/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
+
 ## Typing and Deduping
 
-Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns and only contains unique records. Typing and deduping is only relevant for the following relational database & warehouse destinations:
-
-- Snowflake
-- BigQuery
-
-:::info
-Typing and Deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. We are retaining documentation about normalization to support legacy destinations.
-:::
-
-For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
-
-## Basic Normalization
-
-Basic Normalization transforms data after a sync to denest columns into their own tables. Note that normalization is only available for relational database & warehouse destinations that have not yet migrated to Destinations V2, and will eventually be fully deprecated.
-
-For more details, see our [Basic Normalization documentation](/using-airbyte/core-concepts/basic-normalization.md).
+Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
 
 ## Custom Transformations
 

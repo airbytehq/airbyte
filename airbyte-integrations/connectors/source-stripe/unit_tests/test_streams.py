@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
+from source_stripe.streams import SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -188,6 +188,45 @@ refunds_api_objects = [
         "created": 1679568588,
         "currency": "eur",
     },
+    # Incremental `Events` endpoint response
+    {
+        "id": "evt_3NRL2GEcXtiJtvvh0kjreLyk",
+        "object": "event",
+        "api_version": "2020-08-27",
+        "created": 1666518588,
+        "data": {
+            "object": {
+                "id": "re_3NRL2GEcXtiJtvvh0ahgD9V8",
+                "object": "refund",
+                "amount": 15,
+                "balance_transaction": "txn_3NRL2GEcXtiJtvvh0uhS7L1l",
+                "charge": "ch_3NRL2GEcXtiJtvvh0XOSc8NL",
+                "created": 1666518588,
+                "currency": "usd",
+                "destination_details": {
+                    "card": {
+                        "reference": "7901352802291512",
+                        "reference_status": "available",
+                        "reference_type": "acquirer_reference_number",
+                        "type": "refund",
+                    },
+                    "type": "card",
+                },
+                "metadata": {},
+                "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
+                "reason": None,
+                "receipt_number": None,
+                "source_transfer_reversal": None,
+                "status": "succeeded",
+                "transfer_reversal": None,
+            },
+            "previous_attributes": {"destination_details": {"card": {"reference": None, "reference_status": "pending"}}},
+        },
+        "livemode": False,
+        "pending_webhooks": 0,
+        "request": {"id": None, "idempotency_key": None},
+        "type": "charge.refund.updated",
+    },
 ]
 
 
@@ -268,7 +307,7 @@ refunds_api_objects = [
                     },
                     {
                         "json": {
-                            "data": [refunds_api_objects[-1]],
+                            "data": [refunds_api_objects[1]],
                             "has_more": False,
                         }
                     },
@@ -282,6 +321,7 @@ refunds_api_objects = [
                     "charge": "ch_3NYB8LAHLf1oYfwN3P6BxdKj",
                     "created": 1653299388,
                     "currency": "usd",
+                    "updated": 1653299388,
                 },
                 {
                     "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
@@ -290,19 +330,20 @@ refunds_api_objects = [
                     "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
                     "created": 1679568588,
                     "currency": "eur",
+                    "updated": 1679568588,
                 },
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [{"created[gte]": 1632409215, "created[lte]": 1663945215}, {"created[gte]": 1663945216, "created[lte]": 1692802815}],
             "refunds",
             "full_refresh",
             {},
         ),
         (
             {
-                "/v1/refunds": [
+                "/v1/events": [
                     {
                         "json": {
-                            "data": [refunds_api_objects[-1]],
+                            "data": [refunds_api_objects[2]],
                             "has_more": False,
                         }
                     },
@@ -310,15 +351,33 @@ refunds_api_objects = [
             },
             [
                 {
-                    "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
+                    "id": "re_3NRL2GEcXtiJtvvh0ahgD9V8",
                     "object": "refund",
                     "amount": 15,
-                    "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
-                    "created": 1679568588,
-                    "currency": "eur",
+                    "balance_transaction": "txn_3NRL2GEcXtiJtvvh0uhS7L1l",
+                    "charge": "ch_3NRL2GEcXtiJtvvh0XOSc8NL",
+                    "created": 1666518588,
+                    "currency": "usd",
+                    "destination_details": {
+                        "card": {
+                            "reference": "7901352802291512",
+                            "reference_status": "available",
+                            "reference_type": "acquirer_reference_number",
+                            "type": "refund",
+                        },
+                        "type": "card",
+                    },
+                    "metadata": {},
+                    "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
+                    "reason": None,
+                    "receipt_number": None,
+                    "source_transfer_reversal": None,
+                    "status": "succeeded",
+                    "transfer_reversal": None,
+                    "updated": 1666518588,
                 }
             ],
-            [{"created[gte]": 1665308989, "created[lte]": 1692802815}],
+            [{}],
             "refunds",
             "incremental",
             {"created": 1666518588},
@@ -333,7 +392,6 @@ def test_created_cursor_incremental_stream(
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
-
     slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
     assert slices == expected_slices
     records = read_from_stream(stream, sync_mode, state)
@@ -465,26 +523,6 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by
     ]
     assert records == [{"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1691629292}]
 
-
-def test_customer_balance_transactions_stream_slices(requests_mock, stream_args):
-    stream_args["start_date"] = pendulum.now().subtract(days=1).int_timestamp
-    requests_mock.get(
-        "/v1/customers",
-        json={
-            "data": [
-                {"id": 1, "next_invoice_sequence": 1, "balance": 0, "created": 1653341716},
-                {"id": 2, "created": 1653341000},
-                {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334},
-            ]
-        },
-    )
-    stream = CustomerBalanceTransactions(**stream_args)
-    assert list(stream.stream_slices("full_refresh")) == [
-        {"id": 2, "created": 1653341000, "updated": 1653341000},
-        {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334, "updated": 1651716334},
-    ]
-
-
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_setup_attempts(requests_mock, incremental_stream_args):
     requests_mock.get(
@@ -544,7 +582,13 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
 
 def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
@@ -573,7 +617,13 @@ def test_persons_w_state(requests_mock, stream_args):
             "has_more": False,
         },
     )
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [
@@ -752,6 +802,7 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "created": 1699603175,
             "quantity": 1,
             "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+            "subscription_updated": 1699603174, #1699603175
         },
         {
             "id": "si_OynPdzMZykmCWm",
@@ -759,6 +810,7 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "created": 1699603884,
             "quantity": 2,
             "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+            "subscription_updated": 1699603174,
         },
     ]
     assert len(requests_mock.request_history) == 2

@@ -107,7 +107,7 @@ class TestOrders:
     def test_get_updated_state(self, orders_stream, current_stream_state, latest_record, expected_date):
         stream = orders_stream()
         expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
 
 class TestOrderItems:

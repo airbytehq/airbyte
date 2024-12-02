@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_snowflake_cortex
-!pyproject.toml
-!poetry.lock

@@ -79,7 +79,7 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
         log.info { "Skipping TypeAndDedupe final" }
     }
 
-    override fun commitFinalTables() {
+    override fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
         log.info { "Skipping commitFinalTables final" }
     }
 

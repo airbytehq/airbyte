@@ -17,7 +17,7 @@
         "states": [
           {
             "partition": { "id": "549761668032", "parent_slice": {} },
-            "cursor": { "date": "3021-06-09" }
+            "cursor": { "DATE": "3021-06-09" }
           }
         ]
       },
@@ -49,7 +49,7 @@
         "states": [
           {
             "partition": { "id": "549761668032", "parent_slice": {} },
-            "cursor": { "updated_time": 9628867244 }
+            "cursor": { "updated_time": 9628867244.0 }
           }
         ]
       },

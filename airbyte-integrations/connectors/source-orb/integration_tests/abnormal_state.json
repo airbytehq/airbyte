@@ -1,14 +1,46 @@
-{
-  "customers": {
-    "created_at": "2122-01-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created_at": "2122-01-01T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "customers"
+      }
+    }
   },
-  "plans": {
-    "created_at": "2122-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created_at": "2122-01-01T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "plans"
+      }
+    }
   },
-  "subscriptions": {
-    "created_at": "2122-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created_at": "2122-01-01T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "subscriptions"
+      }
+    }
   },
-  "invoices": {
-    "invoice_date": "2122-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "invoice_date": "2122-01-01T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "invoices"
+      }
+    }
   }
-}
+]

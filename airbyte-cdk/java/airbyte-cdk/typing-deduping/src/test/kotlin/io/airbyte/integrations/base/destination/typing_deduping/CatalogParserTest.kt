@@ -4,6 +4,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -12,6 +13,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -45,7 +47,14 @@ internal class CatalogParserTest {
             StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name)
         }
 
-        parser = CatalogParser(sqlGenerator)
+        parser = CatalogParser(sqlGenerator, "default_namespace")
+    }
+
+    @Test
+    fun throwOnEmptyCatalog() {
+        assertThrows(ConfigErrorException::class.java) {
+            parser.parseCatalog(ConfiguredAirbyteCatalog().withStreams(emptyList()))
+        }
     }
 
     /**
@@ -176,9 +185,22 @@ internal class CatalogParserTest {
         )
     }
 
+    @Test
+    fun testDefaultNamespace() {
+        val catalog =
+            parser.parseCatalog(
+                ConfiguredAirbyteCatalog()
+                    .withStreams(
+                        listOf(stream(null, "a", Jsons.deserialize("""{"type": "object"}""")))
+                    )
+            )
+
+        Assertions.assertEquals("default_namespace", catalog.streams[0].id.originalNamespace)
+    }
+
     companion object {
         private fun stream(
-            namespace: String,
+            namespace: String?,
             name: String,
             schema: JsonNode =
                 Jsons.deserialize(

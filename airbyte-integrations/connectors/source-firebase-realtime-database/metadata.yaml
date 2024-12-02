@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: acb5f973-a565-441e-992f-4946f3e65662
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/source-firebase-realtime-database
   githubIssueLabel: source-firebase-realtime-database
   license: MIT
@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-firebase-realtime-database
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -30,4 +30,6 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

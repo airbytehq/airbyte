@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "subscription" }
     }
   },
@@ -10,41 +10,48 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "subscription_with_scheduled_changes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "coupon" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "customer" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "invoice" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "credit_note" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "order" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "item" }
     }
   },
@@ -58,91 +65,91 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "hosted_page" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "item_price" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "payment_source" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created_at": 2147483647 },
+      "stream_state": { "created_at": "2147483647" },
       "stream_descriptor": { "name": "promotional_credit" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "gift" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "unbilled_charge" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "quote" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "transaction" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created_at": 2147483647 },
+      "stream_state": { "created_at": "2147483647" },
       "stream_descriptor": { "name": "comment" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "item_family" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 2147483647 },
+      "stream_state": { "updated_at": "2147483647" },
       "stream_descriptor": { "name": "differential_price" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "migrated_at": 2147483647 },
+      "stream_state": { "migrated_at": "2147483647" },
       "stream_descriptor": { "name": "site_migration_detail" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "occurred_at": 2147483647 },
+      "stream_state": { "occurred_at": "2147483647" },
       "stream_descriptor": { "name": "event" }
     }
   }

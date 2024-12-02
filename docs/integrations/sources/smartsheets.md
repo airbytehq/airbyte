@@ -112,18 +112,47 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
-| 1.1.2   | 2024-01-08 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | prepare for airbyte-lib                                   |
-| 1.1.1   | 2023-06-06 | [27096](https://github.com/airbytehq/airbyte/pull/27096) | Fix error when optional metadata fields are not set       |
-| 1.1.0   | 2023-06-02 | [22382](https://github.com/airbytehq/airbyte/pull/22382) | Add support for ingesting metadata fields                 |
-| 1.0.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                 |
-| 1.0.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies                               |
-| 1.0.0   | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh                                |
-| 0.1.14  | 2023-02-07 | [22419](https://github.com/airbytehq/airbyte/pull/22419) | OAuth2.0 support - enabled; add allowed hosts             |
-| 0.1.13  | 2022-12-02 | [20017](https://github.com/airbytehq/airbyte/pull/20017) | OAuth2.0 support - disabled                               |
-| 0.1.12  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                          |
-| 0.1.11  | 2022-04-27 | [12203](https://github.com/airbytehq/airbyte/pull/12203) | Doc improvements                                          |
-| 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
-| 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |
-| 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792)   | Added oauth support                                       |
+| 1.1.26 | 2024-11-25 | [48646](https://github.com/airbytehq/airbyte/pull/48646) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.1.25 | 2024-11-04 | [48185](https://github.com/airbytehq/airbyte/pull/48185) | Update dependencies |
+| 1.1.24 | 2024-10-28 | [47024](https://github.com/airbytehq/airbyte/pull/47024) | Update dependencies |
+| 1.1.23 | 2024-10-12 | [46783](https://github.com/airbytehq/airbyte/pull/46783) | Update dependencies |
+| 1.1.22 | 2024-10-05 | [46427](https://github.com/airbytehq/airbyte/pull/46427) | Update dependencies |
+| 1.1.21 | 2024-09-28 | [46154](https://github.com/airbytehq/airbyte/pull/46154) | Update dependencies |
+| 1.1.20 | 2024-09-21 | [45722](https://github.com/airbytehq/airbyte/pull/45722) | Update dependencies |
+| 1.1.19 | 2024-09-14 | [45575](https://github.com/airbytehq/airbyte/pull/45575) | Update dependencies |
+| 1.1.18 | 2024-09-07 | [45214](https://github.com/airbytehq/airbyte/pull/45214) | Update dependencies |
+| 1.1.17 | 2024-08-31 | [45012](https://github.com/airbytehq/airbyte/pull/45012) | Update dependencies |
+| 1.1.16 | 2024-08-24 | [44738](https://github.com/airbytehq/airbyte/pull/44738) | Update dependencies |
+| 1.1.15 | 2024-08-17 | [44244](https://github.com/airbytehq/airbyte/pull/44244) | Update dependencies |
+| 1.1.14 | 2024-08-10 | [43686](https://github.com/airbytehq/airbyte/pull/43686) | Update dependencies |
+| 1.1.13 | 2024-08-03 | [43108](https://github.com/airbytehq/airbyte/pull/43108) | Update dependencies |
+| 1.1.12 | 2024-07-27 | [42632](https://github.com/airbytehq/airbyte/pull/42632) | Update dependencies |
+| 1.1.11 | 2024-07-20 | [42359](https://github.com/airbytehq/airbyte/pull/42359) | Update dependencies |
+| 1.1.10 | 2024-07-13 | [41825](https://github.com/airbytehq/airbyte/pull/41825) | Update dependencies |
+| 1.1.9 | 2024-07-10 | [41410](https://github.com/airbytehq/airbyte/pull/41410) | Update dependencies |
+| 1.1.8 | 2024-07-09 | [41092](https://github.com/airbytehq/airbyte/pull/41092) | Update dependencies |
+| 1.1.7 | 2024-07-06 | [40844](https://github.com/airbytehq/airbyte/pull/40844) | Update dependencies |
+| 1.1.6 | 2024-06-25 | [40285](https://github.com/airbytehq/airbyte/pull/40285) | Update dependencies |
+| 1.1.5 | 2024-06-22 | [40003](https://github.com/airbytehq/airbyte/pull/40003) | Update dependencies |
+| 1.1.4 | 2024-06-06 | [39166](https://github.com/airbytehq/airbyte/pull/39166) | [autopull] Upgrade base image to v1.2.2 |
+| 1.1.3 | 2024-05-21 | [38505](https://github.com/airbytehq/airbyte/pull/38505) | [autopull] base image + poetry + up_to_date |
+| 1.1.2 | 2024-01-08 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
+| 1.1.1 | 2023-06-06 | [27096](https://github.com/airbytehq/airbyte/pull/27096) | Fix error when optional metadata fields are not set |
+| 1.1.0 | 2023-06-02 | [22382](https://github.com/airbytehq/airbyte/pull/22382) | Add support for ingesting metadata fields |
+| 1.0.2 | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict |
+| 1.0.1 | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies |
+| 1.0.0 | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh |
+| 0.1.14 | 2023-02-07 | [22419](https://github.com/airbytehq/airbyte/pull/22419) | OAuth2.0 support - enabled; add allowed hosts |
+| 0.1.13 | 2022-12-02 | [20017](https://github.com/airbytehq/airbyte/pull/20017) | OAuth2.0 support - disabled |
+| 0.1.12 | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy |
+| 0.1.11 | 2022-04-27 | [12203](https://github.com/airbytehq/airbyte/pull/12203) | Doc improvements |
+| 0.1.10 | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077) | Implement incremental read and improve code test coverage |
+| 0.1.9 | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns |
+| 0.1.8 | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792) | Added oauth support |
+
+</details>

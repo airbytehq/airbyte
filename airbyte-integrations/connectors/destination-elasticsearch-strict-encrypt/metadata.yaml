@@ -1,5 +1,5 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:

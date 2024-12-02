@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.destination.s3
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
@@ -59,10 +59,11 @@ abstract class S3BaseAvroDestinationAcceptanceTest protected constructor() :
                         S3DestinationAcceptanceTest.Companion.MAPPER.reader()
                     while (dataFileReader.hasNext()) {
                         val record = dataFileReader.next()
-                        val jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record)
+                        val jsonBytes =
+                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord)
-                        jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord))
+                        jsonRecords.add(jsonRecord)
                     }
                 }
         }

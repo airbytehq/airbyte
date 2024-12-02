@@ -1,5 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "connectionSpecification": {
     "title": "Config",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.",
@@ -31,9 +33,9 @@
             },
             "globs": {
               "title": "Globs",
+              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "default": ["**"],
               "order": 1,
-              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "type": "array",
               "items": {
                 "type": "string"
@@ -59,8 +61,8 @@
             "primary_key": {
               "title": "Primary Key",
               "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
-              "type": "string",
-              "airbyte_hidden": true
+              "airbyte_hidden": true,
+              "type": "string"
             },
             "days_to_sync_if_history_is_full": {
               "title": "Days To Sync If History Is Full",
@@ -285,7 +287,7 @@
                   "required": ["filetype"]
                 },
                 {
-                  "title": "Document File Type Format (Experimental)",
+                  "title": "Unstructured Document Format",
                   "type": "object",
                   "properties": {
                     "filetype": {
@@ -295,20 +297,20 @@
                       "type": "string"
                     },
                     "skip_unprocessable_files": {
-                      "type": "boolean",
-                      "default": true,
                       "title": "Skip Unprocessable Files",
                       "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
-                      "always_show": true
+                      "default": true,
+                      "always_show": true,
+                      "type": "boolean"
                     },
                     "strategy": {
-                      "type": "string",
+                      "title": "Parsing Strategy",
+                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
+                      "default": "auto",
                       "always_show": true,
                       "order": 0,
-                      "default": "auto",
-                      "title": "Parsing Strategy",
                       "enum": ["auto", "fast", "ocr_only", "hi_res"],
-                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf"
+                      "type": "string"
                     },
                     "processing": {
                       "title": "Processing",
@@ -338,6 +340,19 @@
                   },
                   "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                   "required": ["filetype"]
+                },
+                {
+                  "title": "Excel Format",
+                  "type": "object",
+                  "properties": {
+                    "filetype": {
+                      "title": "Filetype",
+                      "default": "excel",
+                      "const": "excel",
+                      "type": "string"
+                    }
+                  },
+                  "required": ["filetype"]
                 }
               ]
             },
@@ -346,10 +361,56 @@
               "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
               "default": false,
               "type": "boolean"
+            },
+            "recent_n_files_to_read_for_schema_discovery": {
+              "title": "Files To Read For Schema Discover",
+              "description": "The number of resent files which will be used to discover the schema for this stream.",
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name", "format"]
         }
+      },
+      "delivery_method": {
+        "title": "Delivery Method",
+        "default": "use_records_transfer",
+        "type": "object",
+        "order": 6,
+        "display_type": "radio",
+        "group": "advanced",
+        "oneOf": [
+          {
+            "title": "Replicate Records",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_records_transfer",
+                "const": "use_records_transfer",
+                "enum": ["use_records_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Recommended - Extract and load structured records into your destination of choice. This is the classic method of moving data in Airbyte. It allows for blocking and hashing individual fields or files from a structured schema. Data can be flattened, typed and deduped depending on the destination.",
+            "required": ["delivery_type"]
+          },
+          {
+            "title": "Copy Raw Files",
+            "type": "object",
+            "properties": {
+              "delivery_type": {
+                "title": "Delivery Type",
+                "default": "use_file_transfer",
+                "const": "use_file_transfer",
+                "enum": ["use_file_transfer"],
+                "type": "string"
+              }
+            },
+            "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
+            "required": ["delivery_type"]
+          }
+        ]
       },
       "bucket": {
         "title": "Bucket",
@@ -364,17 +425,17 @@
         "order": 2,
         "type": "string"
       },
+      "role_arn": {
+        "title": "AWS Role ARN",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
+        "order": 6,
+        "type": "string"
+      },
       "aws_secret_access_key": {
         "title": "AWS Secret Access Key",
         "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
         "airbyte_secret": true,
         "order": 3,
-        "type": "string"
-      },
-      "role_arn": {
-        "title": "AWS Role ARN",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
-        "order": 6,
         "type": "string"
       },
       "endpoint": {

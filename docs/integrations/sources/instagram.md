@@ -9,49 +9,64 @@ This page contains the setup guide and reference information for the [Instagram]
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte
+- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
+  Facebook page
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
+  use this to configure Instagram as a source in Airbyte
+
 <!-- env:oss -->
+
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
 - [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+
 <!-- /env:oss -->
 
-## Setup Guide
+## Setup guide
 
-### Set up the Instagram connector in Airbyte
+### Set up Instagram
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
-4. Enter a name for your source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Instagram from the Source type dropdown.
+4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
+   date will be replicated. If left blank, the start date will be set to 2 years before the present
+   date.
 8. Click **Set up source**.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Log in to your Airbyte Open Source account.
+1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. Enter **Access Token** generated using [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-api/getting-started) with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
+5. Enter **Access Token** generated
+   using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
+   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
+   with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
+   pages_read_engagement.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
+   date will be replicated. If left blank, the start date will be set to 2 years before the present
+   date.
 7. Click **Set up source**.
+
 <!-- /env:oss -->
 
 <HideInUI>
 
 ## Supported sync modes
 
-The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -60,31 +75,43 @@ The Instagram source connector supports the following [sync modes](https://docs.
 
 :::note
 
-Incremental sync modes are only available for the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) stream.
+Incremental sync modes are only available for
+the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+stream.
 
 :::
 
 ## Supported Streams
 
-The Instagram source connector supports the following streams. For more information, see the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+The Instagram source connector supports the following streams. For more information, see
+the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/)
+and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
 
 - [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
-  - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+    - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-  - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-  - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
 :::info
-The Instagram connector syncs data related to Users, Media, and Stories and their insights from the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data related to Instagram Ads, use the Facebook Marketing source.
+The Instagram connector syncs data related to Users, Media, and Stories and their insights from
+the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
+related to Instagram Ads, use the Facebook Marketing source.
 :::
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Data type map
 
-AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system. This means that all sources must produce schemas and records within these types and all destinations must handle records that conform to this type system.
+AirbyteRecords are required to conform to
+the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system.
+This means that all sources must produce schemas and records within these types and all destinations
+must handle records that conform to this type system.
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -101,18 +128,39 @@ Expand to see details about Instagram connector limitations and troubleshooting.
 
 #### Rate limiting
 
-Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+Instagram limits the number of requests that can be made at a time. See
+Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
+for more information.
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Instagram source connector on
+  our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+
+| :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
+| 3.1.0   | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams.                                                        |
+| 3.0.22 | 2024-07-27 | [42721](https://github.com/airbytehq/airbyte/pull/42721) | Update dependencies |
+| 3.0.21 | 2024-07-20 | [42346](https://github.com/airbytehq/airbyte/pull/42346) | Update dependencies |
+| 3.0.20 | 2024-07-13 | [41784](https://github.com/airbytehq/airbyte/pull/41784) | Update dependencies |
+| 3.0.19 | 2024-07-10 | [41586](https://github.com/airbytehq/airbyte/pull/41586) | Update dependencies |
+| 3.0.18 | 2024-07-09 | [41109](https://github.com/airbytehq/airbyte/pull/41109) | Update dependencies |
+| 3.0.17 | 2024-07-08 | [41046](https://github.com/airbytehq/airbyte/pull/41046) | Use latest `CDK` version possible |
+| 3.0.16 | 2024-07-06 | [40903](https://github.com/airbytehq/airbyte/pull/40903) | Update dependencies |
+| 3.0.15 | 2024-07-02 | [40569](https://github.com/airbytehq/airbyte/pull/40569) | Migrate MediaInsights and StoryInsights to low-code |
+| 3.0.14 | 2024-06-26 | [40524](https://github.com/airbytehq/airbyte/pull/40524) | Fix Api stream when the results contain not business accounts |
+| 3.0.13 | 2024-06-25 | [40456](https://github.com/airbytehq/airbyte/pull/40456) | Update dependencies |
+| 3.0.12 | 2024-06-24 | [39504](https://github.com/airbytehq/airbyte/pull/39504) | Migrate Media, Users, UserLifeTimeInsights and Stories to low-code |
+| 3.0.11 | 2024-06-22 | [40127](https://github.com/airbytehq/airbyte/pull/40127) | Update dependencies |
+| 3.0.10 | 2024-06-06 | [39303](https://github.com/airbytehq/airbyte/pull/39303) | [autopull] Upgrade base image to v1.2.2 |
 | 3.0.9 | 2024-05-21 | [38554](https://github.com/airbytehq/airbyte/pull/38554) | Upgrade to API v19.0 |
 | 3.0.8 | 2024-05-20 | [38268](https://github.com/airbytehq/airbyte/pull/38268) | Replace AirbyteLogger with logging.Logger |
 | 3.0.7 | 2024-04-19 | [36643](https://github.com/airbytehq/airbyte/pull/36643) | Updating to 0.80.0 CDK |
@@ -148,5 +196,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 | 0.1.8 | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354) | Added check for empty state and fixed tests |
 | 0.1.7 | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805) | Add support for previous `STATE` format |
 | 0.1.6 | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210) | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT |
+
+</details>
 
 </HideInUI>

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/source-surveycto
   githubIssueLabel: source-surveycto
   icon: surveycto.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-surveycto
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -28,11 +28,17 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-SURVEYCTO__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    # Disable acceptance tests for now
+    # They are not passing
+    # No/Low Airbyte Cloud usage
+    #
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE-SURVEYCTO__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

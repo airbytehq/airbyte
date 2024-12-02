@@ -1,0 +1,506 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - email_analytics
+    - raw_data
+    - reviews
+    - unsubscribers
+    - webhooks
+    - webhook_events
+
+definitions:
+  streams:
+    email_analytics:
+      type: DeclarativeStream
+      name: email_analytics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: analytics/v1/emails/{{ config['app_key'] }}/emails_sent
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - date_series_points
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_analytics"
+    raw_data:
+      type: DeclarativeStream
+      name: raw_data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: analytics/v1/emails/{{ config['app_key'] }}/export/raw_data
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/raw_data"
+    reviews:
+      type: DeclarativeStream
+      name: reviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/apps/{{ config['app_key'] }}/reviews
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reviews
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reviews"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps/{{ config['app_key'] }}/webhooks
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - webhooks
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    unsubscribers:
+      type: DeclarativeStream
+      name: unsubscribers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: apps/{{ config['app_key'] }}/unsubscribers
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - unsubscribers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: count
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/unsubscribers"
+    webhook_events:
+      type: DeclarativeStream
+      name: webhook_events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: webhook_events
+          http_method: GET
+          request_parameters:
+            utoken: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - response
+              - webhook_events
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_events"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.yotpo.com/
+
+streams:
+  - $ref: "#/definitions/streams/email_analytics"
+  - $ref: "#/definitions/streams/raw_data"
+  - $ref: "#/definitions/streams/reviews"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/unsubscribers"
+  - $ref: "#/definitions/streams/webhook_events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - app_key
+      - start_date
+      - email
+    properties:
+      access_token:
+        type: string
+        description: >-
+          Access token recieved as a result of API call to
+          https://api.yotpo.com/oauth/token (Ref-
+          https://apidocs.yotpo.com/reference/yotpo-authentication)
+        title: Access Token
+        airbyte_secret: true
+        order: 0
+      app_key:
+        type: string
+        description: >-
+          App key found at settings (Ref-
+          https://settings.yotpo.com/#/general_settings)
+        title: App Key
+        order: 1
+      start_date:
+        type: string
+        description: >-
+          Date time filter for incremental filter, Specify which date to extract
+          from.
+        title: Date-From Filter
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2022-03-01T00:00:00.000Z"
+        format: date-time
+        order: 2
+      email:
+        type: string
+        description: Email address registered with yotpo.
+        title: Registered email address
+        default: example@gmail.com
+        order: 3
+    additionalProperties: true
+
+schemas:
+  email_analytics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      since:
+        type:
+          - "null"
+          - string
+      until:
+        type:
+          - "null"
+          - string
+      values:
+        type:
+          - "null"
+          - object
+        properties:
+          done:
+            type:
+              - "null"
+              - boolean
+    title: Email Analytics
+  raw_data:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      arrived_early_timestamp:
+        type:
+          - "null"
+          - string
+      clicked_through_timestamp:
+        type:
+          - "null"
+          - string
+      content_creation_timestamp:
+        type:
+          - "null"
+          - string
+      coupon_code:
+        type:
+          - "null"
+          - number
+      email_address:
+        type:
+          - "null"
+          - string
+      email_sent_timestamp:
+        type:
+          - "null"
+          - string
+      email_type:
+        type:
+          - "null"
+          - string
+      failed_timestamp:
+        type:
+          - "null"
+          - string
+      invalid_address_timestamp:
+        type:
+          - "null"
+          - string
+      marked_spam_timestamp:
+        type:
+          - "null"
+          - string
+      opened_timestamp:
+        type:
+          - "null"
+          - string
+      order_id:
+        type:
+          - "null"
+          - string
+      order_timestamp:
+        type:
+          - "null"
+          - string
+      platform:
+        type:
+          - "null"
+          - string
+      product_id:
+        type:
+          - "null"
+          - string
+      reminder_num:
+        type:
+          - "null"
+          - number
+      review_type:
+        type:
+          - "null"
+          - string
+      sku:
+        type:
+          - "null"
+          - number
+      trr_bundle_id:
+        type:
+          - "null"
+          - string
+      trr_bundle_subject:
+        type:
+          - "null"
+          - string
+      unsubscribed_timestamp:
+        type:
+          - "null"
+          - string
+    title: Raw Data Schema
+  reviews:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - "null"
+          - boolean
+      content:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deleted:
+        type:
+          - "null"
+          - boolean
+      email:
+        type:
+          - "null"
+          - string
+      escalated:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - number
+      incentive_type:
+        type:
+          - "null"
+          - string
+      is_incentivized:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      reviewer_type:
+        type:
+          - "null"
+          - string
+      score:
+        type:
+          - "null"
+          - number
+      sentiment:
+        type:
+          - "null"
+          - number
+      sku:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      votes_down:
+        type:
+          - "null"
+          - number
+      votes_up:
+        type:
+          - "null"
+          - number
+    title: Reviews Schema
+  webhooks:
+    type:
+      - "null"
+      - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - "null"
+          - number
+      url:
+        type:
+          - "null"
+          - string
+      webhook_event_id:
+        type:
+          - "null"
+          - number
+      webhook_event_name:
+        type:
+          - "null"
+          - string
+    title: Webhooks Schema
+  unsubscribers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      email_type_id:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - "null"
+          - number
+      unsubscribed_by_name:
+        type:
+          - "null"
+          - string
+      user_email:
+        type:
+          - "null"
+          - string
+    title: Unsubscribers Schema
+  webhook_events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+    title: Webhook events Schema

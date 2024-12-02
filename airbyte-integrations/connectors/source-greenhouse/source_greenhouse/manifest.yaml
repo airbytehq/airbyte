@@ -203,6 +203,11 @@ definitions:
           id:
             description: Unique identifier for the application.
             type: integer
+          job_post_id:
+            decscription: The ID of the job post through which the candidate applied. This value is null if the application was created through other means, e.g. manually adding candidates or importing candidates through sourcing integrations
+            type:
+              - integer
+              - "null"
           current_stage:
             description: Current stage of the application process.
             type:
@@ -3560,4 +3565,25 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["applications"]
+  stream_names: ["users"]
+
+spec:
+  type: Spec
+  documentation_url: "https://docs.airbyte.com/integrations/sources/greenhouse"
+  connection_specification:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    title: Greenhouse Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        title: API Key
+        type: string
+        description: >-
+          Greenhouse API Key. See the <a
+          href="https://docs.airbyte.com/integrations/sources/greenhouse">docs</a>
+          for more information on how to generate this key.
+        airbyte_secret: true
+        order: 0

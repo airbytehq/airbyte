@@ -7,7 +7,7 @@ data:
   githubIssueLabel: destination-exasol
   license: MIT
   name: Exasol
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

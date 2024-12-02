@@ -19,8 +19,10 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
+        # Added missing types to the `Workflows` stream schema
+        # it's a neccessary change
         backward_compatibility_tests_config:
-          disable_for_version: 1.9.0
+          disable_for_version: "4.2.2"
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -61,9 +63,9 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
-        configured_catalog_path: sample_files/full_refresh_custom_objects.json
+        configured_catalog_path: integration_tests/full_refresh_custom_objects.json
       - config_path: secrets/config_oauth.json
-        configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
+        configured_catalog_path: integration_tests/full_refresh_oauth_catalog.json
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch
@@ -87,6 +89,11 @@ acceptance_tests:
             - name: properties_hs_v2_latest_time_*
               bypass_reason: Hubspot time depend on current time
           deals:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+          leads:
             - name: properties_hs_time_*
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
@@ -97,7 +104,7 @@ acceptance_tests:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
       - config_path: secrets/config_oauth_no_start_date.json
-        configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
+        configured_catalog_path: integration_tests/full_refresh_oauth_catalog.json
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch
@@ -125,22 +132,20 @@ acceptance_tests:
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+          leads:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           tickets:
             - name: properties_hs_time_*
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
   incremental:
-    # Waiting for CAT incremental fix: https://github.com/airbytehq/airbyte/pull/36814
-    bypass_reason: It takes incredible amount of time to complete
-    # tests:
-    #   - config_path: secrets/config_oauth.json
-    #     configured_catalog_path: sample_files/incremental_catalog.json
-    #     future_state:
-    #       future_state_path: integration_tests/abnormal_state.json
-    #     timeout_seconds: 7200
-    #   - config_path: secrets/config_oauth_no_start_date.json
-    #     configured_catalog_path: sample_files/incremental_catalog.json
-    #     future_state:
-    #       future_state_path: integration_tests/abnormal_state.json
-    #     timeout_seconds: 7200
+    tests:
+      - config_path: secrets/config_oauth.json
+        configured_catalog_path: integration_tests/incremental_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 7200

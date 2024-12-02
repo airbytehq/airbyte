@@ -157,12 +157,32 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-app-configuration?tabs=python#instantiate-the-msal-application) the confidential client application with a client secret and [calling](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-acquire-token?tabs=python) AcquireTokenForClient from [Microsoft Authentication Library \(MSAL\) for Python](https://github.com/AzureAD/microsoft-authentication-library-for-python)
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.1.0   | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code          |
-| 1.0.0   | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates                 |
-| 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
-| 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807)   | Implement OAuth support        |
-| 0.2.3   | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469)   | Migrate to the CDK             |
+| 1.2.3 | 2024-10-29 | [47758](https://github.com/airbytehq/airbyte/pull/47758) | Update dependencies |
+| 1.2.2 | 2024-10-28 | [47453](https://github.com/airbytehq/airbyte/pull/47453) | Update dependencies |
+| 1.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 1.2.0 | 2024-08-15 | [44116](https://github.com/airbytehq/airbyte/pull/44116) | Refactor connector to manifest-only format |
+| 1.1.11 | 2024-08-12 | [43772](https://github.com/airbytehq/airbyte/pull/43772) | Update dependencies |
+| 1.1.10 | 2024-08-10 | [43547](https://github.com/airbytehq/airbyte/pull/43547) | Update dependencies |
+| 1.1.9 | 2024-08-03 | [43251](https://github.com/airbytehq/airbyte/pull/43251) | Update dependencies |
+| 1.1.8 | 2024-07-27 | [42691](https://github.com/airbytehq/airbyte/pull/42691) | Update dependencies |
+| 1.1.7 | 2024-07-20 | [41853](https://github.com/airbytehq/airbyte/pull/41853) | Update dependencies |
+| 1.1.6 | 2024-07-10 | [41382](https://github.com/airbytehq/airbyte/pull/41382) | Update dependencies |
+| 1.1.5 | 2024-07-09 | [41318](https://github.com/airbytehq/airbyte/pull/41318) | Update dependencies |
+| 1.1.4 | 2024-07-06 | [40913](https://github.com/airbytehq/airbyte/pull/40913) | Update dependencies |
+| 1.1.3 | 2024-06-25 | [40366](https://github.com/airbytehq/airbyte/pull/40366) | Update dependencies |
+| 1.1.2 | 2024-06-22 | [40026](https://github.com/airbytehq/airbyte/pull/40026) | Update dependencies |
+| 1.1.1 | 2024-06-04 | [39046](https://github.com/airbytehq/airbyte/pull/39046) | [autopull] Upgrade base image to v1.2.1 |
+| 1.1.0 | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code |
+| 1.0.0 | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates |
+| 0.2.5 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.2.4 | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807) | Implement OAuth support |
+| 0.2.3 | 2021-12-06 | [8469](https://github.com/airbytehq/airbyte/pull/8469) | Migrate to the CDK |
+
+</details>

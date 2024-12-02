@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
@@ -24,6 +24,14 @@ class SecretStore(BaseModel):
 
     alias: Optional[str] = Field(None, description="The alias of the secret store which can map to its actual secret address")
     type: Optional[Literal["GSM"]] = Field(None, description="The type of the secret store")
+
+
+class TestConnections(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: str = Field(..., description="The connection name")
+    id: str = Field(..., description="The connection ID")
 
 
 class ReleaseStage(BaseModel):
@@ -88,6 +96,22 @@ class JobType(BaseModel):
     )
 
 
+class RolloutConfiguration(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
+    initialPercentage: Optional[conint(ge=0, le=100)] = Field(
+        0, description="The percentage of users that should receive the new version initially."
+    )
+    maxPercentage: Optional[conint(ge=0, le=100)] = Field(
+        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+    )
+    advanceDelayMinutes: Optional[conint(ge=10)] = Field(
+        10, description="The number of minutes to wait before advancing the rollout percentage."
+    )
+
+
 class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -100,8 +124,8 @@ class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
 
-    sl: Optional[Literal[100, 200, 300]] = None
-    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+    sl: Optional[Literal[0, 100, 200, 300]] = None
+    ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
 
 
 class PyPi(BaseModel):
@@ -177,14 +201,20 @@ class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
 
 
 class ConnectorTestSuiteOptions(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    suite: Literal["unitTests", "integrationTests", "acceptanceTests"] = Field(..., description="Name of the configured test suite")
+    suite: Literal["unitTests", "integrationTests", "acceptanceTests", "liveTests"] = Field(
+        ..., description="Name of the configured test suite"
+    )
     testSecrets: Optional[List[Secret]] = Field(None, description="List of secrets required to run the test suite")
+    testConnections: Optional[List[TestConnections]] = Field(
+        None, description="List of sandbox cloud connections that tests can be run against"
+    )
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -203,6 +233,7 @@ class VersionBreakingChange(BaseModel):
 
     upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
     message: str = Field(..., description="Descriptive message detailing the breaking change.")
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -238,11 +269,13 @@ class ConnectorBreakingChanges(BaseModel):
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        title="ConnectorBreakingChanges",
     )
 
 
-class Registry(BaseModel):
+class RegistryOverride(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -254,7 +287,8 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    breakingChanges: ConnectorBreakingChanges
+    rolloutConfiguration: Optional[RolloutConfiguration] = None
+    breakingChanges: Optional[ConnectorBreakingChanges] = None
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations",
@@ -283,13 +317,14 @@ class Data(BaseModel):
     )
     releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     connectorSubtype: Literal["api", "database", "datalake", "file", "custom", "message_queue", "unknown", "vectorstore"]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
         [], description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
-    registries: Optional[Registry] = None
+    registryOverrides: Optional[RegistryOverride] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
@@ -299,6 +334,7 @@ class Data(BaseModel):
     remoteRegistries: Optional[RemoteRegistries] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
+    supportsFileTransfer: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

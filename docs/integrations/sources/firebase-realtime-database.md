@@ -72,10 +72,40 @@ You should now have all the requirements needed to configure Firebase Realtime D
 
 Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
 
-## CHANGELOG
+## Changelog
 
-### source-firebase-realtime-database
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.27 | 2024-11-25 | [48653](https://github.com/airbytehq/airbyte/pull/48653) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.26 | 2024-11-04 | [47041](https://github.com/airbytehq/airbyte/pull/47041) | Update dependencies |
+| 0.1.25 | 2024-10-12 | [46799](https://github.com/airbytehq/airbyte/pull/46799) | Update dependencies |
+| 0.1.24 | 2024-10-05 | [46457](https://github.com/airbytehq/airbyte/pull/46457) | Update dependencies |
+| 0.1.23 | 2024-09-28 | [46135](https://github.com/airbytehq/airbyte/pull/46135) | Update dependencies |
+| 0.1.22 | 2024-09-21 | [45804](https://github.com/airbytehq/airbyte/pull/45804) | Update dependencies |
+| 0.1.21 | 2024-09-14 | [45505](https://github.com/airbytehq/airbyte/pull/45505) | Update dependencies |
+| 0.1.20 | 2024-09-07 | [45272](https://github.com/airbytehq/airbyte/pull/45272) | Update dependencies |
+| 0.1.19 | 2024-08-31 | [45055](https://github.com/airbytehq/airbyte/pull/45055) | Update dependencies |
+| 0.1.18 | 2024-08-24 | [44674](https://github.com/airbytehq/airbyte/pull/44674) | Update dependencies |
+| 0.1.17 | 2024-08-17 | [44299](https://github.com/airbytehq/airbyte/pull/44299) | Update dependencies |
+| 0.1.16 | 2024-08-12 | [43795](https://github.com/airbytehq/airbyte/pull/43795) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43600](https://github.com/airbytehq/airbyte/pull/43600) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43092](https://github.com/airbytehq/airbyte/pull/43092) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42609](https://github.com/airbytehq/airbyte/pull/42609) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42260](https://github.com/airbytehq/airbyte/pull/42260) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41900](https://github.com/airbytehq/airbyte/pull/41900) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41469](https://github.com/airbytehq/airbyte/pull/41469) | Update dependencies |
+| 0.1.9 | 2024-07-06 | [40816](https://github.com/airbytehq/airbyte/pull/40816) | Update dependencies |
+| 0.1.8 | 2024-06-29 | [40628](https://github.com/airbytehq/airbyte/pull/40628) | Update dependencies |
+| 0.1.7 | 2024-06-26 | [40538](https://github.com/airbytehq/airbyte/pull/40538) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40328](https://github.com/airbytehq/airbyte/pull/40328) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40181](https://github.com/airbytehq/airbyte/pull/40181) | Update dependencies |
+| 0.1.4 | 2024-06-06 | [39200](https://github.com/airbytehq/airbyte/pull/39200) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.3 | 2024-06-03 | [38910](https://github.com/airbytehq/airbyte/pull/38910) | Replace AirbyteLogger with logging.Logger |
+| 0.1.2 | 2024-06-03 | [38910](https://github.com/airbytehq/airbyte/pull/38910) | Replace AirbyteLogger with logging.Logger |
+| 0.1.1 | 2024-05-20 | [38416](https://github.com/airbytehq/airbyte/pull/38416) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2022-10-16 | [\#18029](https://github.com/airbytehq/airbyte/pull/18029) | 🎉 New Source: Firebase Realtime Database. |
+
+</details>

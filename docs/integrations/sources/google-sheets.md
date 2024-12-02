@@ -2,20 +2,20 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Google Sheets source connector.
+This page contains the setup guide and reference information for the [Google Sheets](https://developers.google.com/sheets) source connector.
 
 </HideInUI>
 
 :::info
-The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be replicated. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
+The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be synced. To sync multiple spreadsheets, use our Google Drive connector or set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
 :::
 
 ### Prerequisites
 
-- Spreadsheet Link - The link to the Google spreadsheet you want to sync.
+- **Spreadsheet Link** - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
-  <!-- /env:cloud -->
+<!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
 - A GCP project
@@ -26,6 +26,8 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 ## Setup guide
 
 The Google Sheets source connector supports authentication via either OAuth or Service Account Key Authentication.
+
+### Step 1: Set up Google Sheets
 
 <!-- env:cloud -->
 
@@ -72,15 +74,26 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 <!-- /env:oss -->
 
-### Set up the Google Sheets source connector in Airbyte
+### Set up the Google Sheets connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Sheets** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+<!-- env:cloud -->
+#### For Airbyte Cloud: 
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+4. Enter a name for the Google Sheets connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Sheets from the Source type dropdown.
+4. Enter a name for the Google Sheets connector.
+<!-- /env:oss -->
 5. Select your authentication method:
 <!-- env:cloud -->
-
 - **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
   <!-- /env:cloud -->
   <!-- env:oss -->
@@ -97,8 +110,10 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
-
+<FieldAnchor field="spreadsheet_id">
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
+</FieldAnchor>
+<FieldAnchor field="batch_size">
 7. For **Batch Size**, enter an integer which represents batch size when processing a Google Sheet. Default value is 200.
    Batch size is an integer representing row batch size for each sent request to Google Sheets API.
    Row batch size means how many rows are processed from the google sheet, for example default value 200
@@ -109,25 +124,31 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
    number of columns of the google sheet when deciding a batch_size value.
    Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
    consider increasing batch_size value.
+</FieldAnchor>
+<FieldAnchor field="names_conversion">
 8. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
 9. Click **Set up source** and wait for the tests to complete.
-
+</FieldAnchor>
 <HideInUI>
 
-### Output schema
+## Supported sync modes
+
+The Google Sheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+### Supported Streams
 
 Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
 
 Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
-## Supported sync modes
-
-The Google Sheets source connector supports the following sync modes:
-
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-
 ## Data type map
+
+Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
+
+Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
 | Integration Type | Airbyte Type | Notes |
 | :--------------- | :----------- | :---- |
@@ -159,10 +180,34 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 </details>
 
+</HideInUI>
+
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.7.4   | 2024-09-09 | [45108](https://github.com/airbytehq/airbyte/pull/45108) | Google Sheets API errors now cause syncs to fail                                  |
+| 0.7.3   | 2024-08-12 | [43921](https://github.com/airbytehq/airbyte/pull/43921) | Update dependencies                                                               |
+| 0.7.2   | 2024-08-10 | [43544](https://github.com/airbytehq/airbyte/pull/43544) | Update dependencies                                                               |
+| 0.7.1   | 2024-08-03 | [43290](https://github.com/airbytehq/airbyte/pull/43290) | Update dependencies                                                               |
+| 0.7.0   | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0                                                             |
+| 0.6.3   | 2024-07-27 | [42826](https://github.com/airbytehq/airbyte/pull/42826) | Update dependencies                                                               |
+| 0.6.2   | 2024-07-22 | [41993](https://github.com/airbytehq/airbyte/pull/41993) | Avoid syncs with rate limits being considered successful                          |
+| 0.6.1   | 2024-07-20 | [42376](https://github.com/airbytehq/airbyte/pull/42376) | Update dependencies                                                               |
+| 0.6.0   | 2024-07-17 | [42071](https://github.com/airbytehq/airbyte/pull/42071) | Migrate to CDK v3.9.0                                                             |
+| 0.5.11  | 2024-07-13 | [41527](https://github.com/airbytehq/airbyte/pull/41527) | Update dependencies                                                               |
+| 0.5.10  | 2024-07-09 | [41273](https://github.com/airbytehq/airbyte/pull/41273) | Update dependencies                                                               |
+| 0.5.9   | 2024-07-06 | [41005](https://github.com/airbytehq/airbyte/pull/41005) | Update dependencies                                                               |
+| 0.5.8   | 2024-06-28 | [40587](https://github.com/airbytehq/airbyte/pull/40587) | Replaced deprecated AirbyteLogger with logging.Logger                             |
+| 0.5.7   | 2024-06-25 | [40560](https://github.com/airbytehq/airbyte/pull/40560) | Catch an auth error during discover and raise a config error                      |
+| 0.5.6   | 2024-06-26 | [40533](https://github.com/airbytehq/airbyte/pull/40533) | Update dependencies                                                               |
+| 0.5.5   | 2024-06-25 | [40505](https://github.com/airbytehq/airbyte/pull/40505) | Update dependencies                                                               |
+| 0.5.4   | 2024-06-22 | [40129](https://github.com/airbytehq/airbyte/pull/40129) | Update dependencies                                                               |
+| 0.5.3   | 2024-06-06 | [39225](https://github.com/airbytehq/airbyte/pull/39225) | [autopull] Upgrade base image to v1.2.2                                           |
+| 0.5.2   | 2024-06-02 | [38851](https://github.com/airbytehq/airbyte/pull/38851) | Emit state message at least once per stream                                       |
 | 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records                 |
 | 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
@@ -219,4 +264,4 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 | 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438)   | Implement backoff                                                                 |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                           |
 
-</HideInUI>
+</details>

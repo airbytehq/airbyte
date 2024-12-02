@@ -3,11 +3,7 @@
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
 
 :::info
-Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
-:::
-
-:::note
-The low-code framework is in **beta**, which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+Developer updates will be announced via our [#help-connector-development Slack channel](https://airbytehq.slack.com/archives/C027KKE4BCZ). If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
 ## Why low-code?
@@ -65,7 +61,7 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 ## Prerequisites
 
 - An API key for the source you want to build a connector for
-- Python >= 3.9
+- Python >= 3.10
 - Docker
 
 ## Overview of the process
@@ -89,7 +85,7 @@ We recommend iterating on this YAML file is via the [connector builder UI](https
 
 ## Configuring the YAML file
 
-The low-code framework involves editing a boilerplate YAML file. The general structure of the YAML file is as follows:
+The low-code framework involves editing the Connector Manifest, which is a boilerplate YAML file. The general structure of the YAML file is as follows:
 
 ```
 version: "0.1.0"
@@ -133,7 +129,7 @@ For each stream, configure the following components:
 | Cursor field           |                  | Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.                                                                                                                          |
 | Transformations        |                  | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 
-For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 ## Tutorial
 
@@ -157,4 +153,4 @@ For examples of production-ready config-based connectors, refer to:
 
 ## Reference
 
-The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte-python-cdk/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

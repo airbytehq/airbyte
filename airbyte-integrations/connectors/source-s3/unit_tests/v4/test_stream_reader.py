@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -17,7 +17,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from moto import mock_sts
-from pydantic import AnyUrl
+from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
@@ -240,6 +240,35 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     assert smart_open_mock.call_args.args == ("s3://test/",)
     assert smart_open_mock.call_args.kwargs["mode"] == FileReadMode.READ.value
     assert smart_open_mock.call_args.kwargs["encoding"] == encoding
+
+
+@patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
+@patch("boto3.client")
+def test_get_file(mock_boto_client, s3_reader_file_size_mock):
+    s3_reader_file_size_mock.return_value = 100
+
+    mock_s3_client_instance = Mock()
+    mock_boto_client.return_value = mock_s3_client_instance
+    mock_s3_client_instance.download_file.return_value = None
+
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[], delivery_method= { "delivery_type": "use_file_transfer" })
+    try:
+        reader.config = Config(
+            bucket="test",
+            aws_access_key_id="test",
+            aws_secret_access_key="test",
+            streams=[],
+            endpoint=None,
+            delivery_method={"delivery_type": "use_file_transfer"}
+        )
+    except Exception as exc:
+        raise exc
+    test_file_path = "directory/file.txt"
+    result = reader.get_file(RemoteFile(uri="", last_modified=datetime.now()), test_file_path, logger)
+
+    assert result == {'bytes': 100, 'file_relative_path': ANY, 'file_url': ANY}
+    assert result["file_url"].endswith(test_file_path)
 
 
 def test_get_s3_client_without_config_raises_exception():

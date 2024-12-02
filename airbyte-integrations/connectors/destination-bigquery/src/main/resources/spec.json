@@ -86,8 +86,19 @@
         "order": 3,
         "oneOf": [
           {
+            "title": "Batched Standard Inserts",
+            "required": ["method"],
+            "description": "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard"
+              }
+            }
+          },
+          {
             "title": "GCS Staging",
-            "description": "<i>(recommended)</i> Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery. Provides best-in-class speed, reliability and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
+            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
             "required": [
               "method",
               "gcs_bucket_name",
@@ -97,8 +108,7 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "GCS Staging",
-                "order": 0
+                "const": "GCS Staging"
               },
               "credential": {
                 "title": "Credential",
@@ -165,17 +175,6 @@
                   "Keep all tmp files in GCS"
                 ],
                 "order": 4
-              }
-            }
-          },
-          {
-            "title": "Standard Inserts",
-            "required": ["method"],
-            "description": "<i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use GCS staging.",
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
               }
             }
           }

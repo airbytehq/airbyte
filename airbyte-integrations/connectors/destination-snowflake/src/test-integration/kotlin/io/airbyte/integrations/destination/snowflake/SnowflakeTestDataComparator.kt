@@ -49,17 +49,23 @@ class SnowflakeTestDataComparator : AdvancedTestDataComparator() {
         }
     }
 
-    override fun compareDateTimeValues(expectedValue: String, actualValue: String): Boolean {
-        val destinationDate = parseLocalDate(actualValue)
+    override fun compareDateTimeValues(
+        airbyteMessageValue: String,
+        destinationValue: String
+    ): Boolean {
+        val destinationDate = parseLocalDate(destinationValue)
         val expectedDate =
-            LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT))
+            LocalDate.parse(
+                airbyteMessageValue,
+                DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT)
+            )
         return expectedDate == destinationDate
     }
 
-    override fun compareDateValues(expectedValue: String, actualValue: String): Boolean {
-        val destinationDate = parseDate(actualValue)
+    override fun compareDateValues(airbyteMessageValue: String, destinationValue: String): Boolean {
+        val destinationDate = parseDate(destinationValue)
         val expectedDate =
-            LocalDate.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT))
+            LocalDate.parse(airbyteMessageValue, DateTimeFormatter.ofPattern(AIRBYTE_DATE_FORMAT))
         return expectedDate == destinationDate
     }
 

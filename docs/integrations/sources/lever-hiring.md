@@ -41,11 +41,20 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
-| 0.3.0   | 2024-05-08 | [36262](https://github.com/airbytehq/airbyte/pull/36262) | Migrate to Low Code               |
-| 0.2.0   | 2023-05-25 | [26564](https://github.com/airbytehq/airbyte/pull/26564) | Migrate to advancedAuth           |
-| 0.1.3   | 2022-10-14 | [17996](https://github.com/airbytehq/airbyte/pull/17996) | Add Basic Auth management         |
-| 0.1.2   | 2021-12-30 | [9214](https://github.com/airbytehq/airbyte/pull/9214)   | Update title and descriptions     |
-| 0.1.1   | 2021-12-16 | [7677](https://github.com/airbytehq/airbyte/pull/7677)   | OAuth Automated Authentication    |
-| 0.1.0   | 2021-09-22 | [6141](https://github.com/airbytehq/airbyte/pull/6141)   | Add Lever Hiring Source Connector |
+| 0.4.2 | 2024-10-28 | [43750](https://github.com/airbytehq/airbyte/pull/43750) | Update dependencies |
+| 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.4.0 | 2024-08-15 | [44133](https://github.com/airbytehq/airbyte/pull/44133) | Refactor connector to manifest-only format |
+| 0.3.1 | 2024-06-04 | [39082](https://github.com/airbytehq/airbyte/pull/39082) | [autopull] Upgrade base image to v1.2.1 |
+| 0.3.0 | 2024-05-08 | [36262](https://github.com/airbytehq/airbyte/pull/36262) | Migrate to Low Code |
+| 0.2.0 | 2023-05-25 | [26564](https://github.com/airbytehq/airbyte/pull/26564) | Migrate to advancedAuth |
+| 0.1.3 | 2022-10-14 | [17996](https://github.com/airbytehq/airbyte/pull/17996) | Add Basic Auth management |
+| 0.1.2 | 2021-12-30 | [9214](https://github.com/airbytehq/airbyte/pull/9214) | Update title and descriptions |
+| 0.1.1 | 2021-12-16 | [7677](https://github.com/airbytehq/airbyte/pull/7677) | OAuth Automated Authentication |
+| 0.1.0 | 2021-09-22 | [6141](https://github.com/airbytehq/airbyte/pull/6141) | Add Lever Hiring Source Connector |
+
+</details>

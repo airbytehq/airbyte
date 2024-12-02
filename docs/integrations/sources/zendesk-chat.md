@@ -78,8 +78,13 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2024-11-04 | [44898](https://github.com/airbytehq/airbyte/pull/44898) | Migrate to [new base url](https://developer.zendesk.com/api-reference/live-chat/introduction/)                   |
+| 0.3.1   | 2024-06-06 | [39260](https://github.com/airbytehq/airbyte/pull/39260) | [autopull] Upgrade base image to v1.2.2                                                                          |
 | 0.3.0   | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK                                                       |
 | 0.2.2   | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry.                                                                                 |
 | 0.2.1   | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0                                                        |
@@ -99,3 +104,5 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 | 0.1.2   | 2021-08-17 | [5476](https://github.com/airbytehq/airbyte/pull/5476)   | Correct field unread to boolean type                                                                             |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                  |
 | 0.1.0   | 2021-05-03 | [3088](https://github.com/airbytehq/airbyte/pull/3088)   | Initial release                                                                                                  |
+
+</details>

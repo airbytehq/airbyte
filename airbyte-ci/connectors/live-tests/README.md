@@ -16,110 +16,14 @@ This project contains utilities for running connector tests against live data.
 poetry install
 ```
 
-## Commands
-
-### `debug`
-
-```
-Usage: poetry run live-tests debug [OPTIONS] {check|discover|read|read-with-state|spec}
-
-  Run a specific command on one or multiple connectors and persists the
-  outputs to local storage.
-
-Options:
-  --connection-id TEXT
-  --config-path FILE
-  --catalog-path FILE
-  --state-path FILE
-  -c, --connector-image TEXT      Docker image name of the connector to debug
-                                  (e.g. `airbyte/source-faker:latest`,
-                                  `airbyte/source-faker:dev`)  [required]
-  -hc, --http-cache               Use the HTTP cache for the connector.
-  --help                          Show this message and exit.
-```
-
-This command is made to run any of the following connector commands against one or multiple connector images.
-
-**Available connector commands:**
-
-- `spec`
-- `check`
-- `discover`
-- `read` or `read_with_state` (requires a `--state-path` to be passed)
-
-It will write artifacts to an output directory:
-
-- `stdout.log`: The collected standard output following the command execution
-- `stderr.log`: The collected standard error following the c
-- `http_dump.txt`: An `mitmproxy` http stream log. Can be consumed with `mitmweb` (version `9.0.1`) for debugging.
-- `airbyte_messages.db`: A DuckDB database containing the messages produced by the connector.
-- `airbyte_messages`: A directory containing `.jsonl` files for each message type (logs, records, traces, controls, states etc.) produced by the connector.
-
-#### Example
-
-Let's run `debug` to check the output of `read` on two different versions of the same connector:
-
-```bash
-poetry run live-tests debug read \
---connection-id=d3bd39cd-6fec-4691-a661-d52c466d8554
---connector-image=airbyte/source-pokeapi:dev \
---connector-image=airbyte/source-pokeapi:latest \
---config-path=poke_config.json \
---catalog-path=configured_catalog.json
-```
-
-It will store the results in a `live_test_debug_reports` directory under the current working directory:
-
-```
-live_tests_debug_reports
-└── 1709547771
-    └── source-pokeapi
-        └── read
-            ├── dev
-            │   ├── airbyte_messages
-            |   │   ├── duck.db # DuckDB database
-            │   │   ├── logs.jsonl
-            │   │   ├── records.jsonl
-            │   │   └── traces.jsonl
-            │   ├── stderr.log
-            │   └── stdout.log
-            └── latest
-                ├── airbyte_messages
-                │   ├── duck.db # DuckDB database
-                │   ├── logs.jsonl
-                │   ├── records.jsonl
-                │   └── traces.jsonl
-                ├── stderr.log
-                └── stdout.log
-
-```
-
-You can also run the `debug` command on a live connection by passing the `--connection-id` option:
-
-```bash
-poetry run live-tests debug read \
---connector-image=airbyte/source-pokeapi:dev \
---connector-image=airbyte/source-pokeapi:latest \
---connection-id=<CONNECTION-ID>
-```
-
-##### Consuming `http_dump.mitm`
-
-You can install [`mitmproxy`](https://mitmproxy.org/):
-
-```bash
-pipx install mitmproxy
-```
-
-And run:
-
-```bash
-mitmweb --rfile=http_dump.mitm
-```
 
 ## Regression tests
 
 We created a regression test suite to run tests to compare the outputs of connector commands on different versions of the same connector.
+
+## Validation tests
+
+The validation test suite makes assertions about the output of airbyte commands for the target version of the connector only.
 
 ## Tutorial(s)
 
@@ -135,12 +39,11 @@ You can run the existing test suites with the following command:
 #### With local connection objects (`config.json`, `catalog.json`, `state.json`)
 
 ```bash
-poetry run pytest src/live_tests/regression_tests \
+poetry run pytest src/live_tests \
  --connector-image=airbyte/source-faker \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
  --target-version=dev \
- --control-version=latest \
  --pr-url=<PR-URL> # The URL of the PR you are testing
 ```
 
@@ -149,10 +52,9 @@ poetry run pytest src/live_tests/regression_tests \
 The live connection objects will be fetched.
 
 ```bash
- poetry run pytest src/live_tests/regression_tests \
+ poetry run pytest src/live_tests \
  --connector-image=airbyte/source-faker \
  --target-version=dev \
- --control-version=latest \
   --pr-url=<PR-URL> # The URL of the PR you are testing
 ```
 
@@ -257,23 +159,118 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ### Custom CLI Arguments
 
-| Argument                   | Description                                                                                                    | Required/Optional |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------- |
-| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker:latest`, `airbyte/source-faker:dev`). | Required          |
-| `--control-version`        | Version of the control connector for regression testing.                                                       | Required          |
-| `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                       | Optional          |
-| `--pr-url`                 | URL of the pull request being tested.                                                                          | Required          |
-| `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                        | Optional          |
-| `--config-path`            | Path to the custom source configuration file.                                                                  | Optional          |
-| `--catalog-path`           | Path to the custom configured catalog file.                                                                    | Optional          |
-| `--state-path`             | Path to the custom state file.                                                                                 | Optional          |
-| `--http-cache`             | Use the HTTP cache for the connector.                                                                          | Optional          |
-| `--run-id`                 | Unique identifier for the test run. If not provided, a timestamp will be used.                                 | Optional          |
-| `--auto-select-connection` | Automatically select a connection for testing.                                                                 | Optional          |
-| `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                          | Optional          |
-| `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                           | Optional          |
+| Argument                   | Description                                                                                                                                  | Required/Optional |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------| ----------------- |
+| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker`, `airbyte/source-faker`).                                          | Required          |
+| `--control-version`        | Version of the control connector for regression testing. Must be an unambiguous connector version (e.g. 1.2.3 rather than `latest`)          | Required          |
+| `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                                                     | Optional          |
+| `--pr-url`                 | URL of the pull request being tested.                                                                                                        | Required          |
+| `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                                                      | Optional          |
+| `--config-path`            | Path to the custom source configuration file.                                                                                                | Optional          |
+| `--catalog-path`           | Path to the custom configured catalog file.                                                                                                  | Optional          |
+| `--state-path`             | Path to the custom state file.                                                                                                               | Optional          |
+| `--http-cache`             | Use the HTTP cache for the connector.                                                                                                        | Optional          |
+| `--run-id`                 | Unique identifier for the test run. If not provided, a timestamp will be used.                                                               | Optional          |
+| `--auto-select-connection` | Automatically select a connection for testing.                                                                                               | Optional          |
+| `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                                                        | Optional          |
+| `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                                                         | Optional          |
+| `--test-evaluation-mode`   | Whether to run tests in "diagnostic" mode or "strict" mode. In diagnostic mode, eligible tests will always pass unless there's an exception. | Optional          |
+| `--connection-subset`      | The subset of connections to select from. Possible values are "sandboxes" or "all" (defaults to sandboxes).                                  | Optional          |
 
 ## Changelog
+
+### 0.19.8
+
+Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
+
+### 0.19.7
+
+Mount connection objects to readable paths in the container for rootless images.
+
+### 0.19.6
+
+Write connector output to a different in container path to avoid permission issues now that connector images are rootless.
+
+### 0.19.5
+
+Fix `ZeroDivisionError` in Regression test tool
+
+### 0.19.4
+
+Update `connection_retriever` to 0.7.4
+
+### 0.19.3
+
+Update `get_container_from_id` with the correct new Dagger API.
+
+### 0.19.2
+
+Update Dagger to 0.13.3
+
+### 0.19.1
+
+Fixed the `UserDict` type annotation not found bug.
+
+### 0.19.0
+
+Delete the `debug`command.
+
+### 0.18.8
+
+Improve error message when failing to retrieve connection.
+Ask to double-check that a sync ran with the control version on the selected connection.
+
+### 0.18.7
+
+Improve error message when failing to retrieve connection.
+
+### 0.18.6
+
+Disable the `SortQueryParams` MITM proxy addon to avoid double URL encoding.
+
+### 0.18.5
+
+Relax test_oneof_usage criteria for constant value definitions in connector SPEC output.
+
+### 0.18.4
+
+Bugfix: Use connection-retriever 0.7.2
+
+### 0.18.3
+
+Updated dependencies.
+
+### 0.18.2
+
+Allow live tests with or without state in CI.
+
+### 0.18.1
+
+Fix extra argument.
+
+### 0.18.0
+
+Add support for selecting from a subset of connections.
+
+### 0.17.8
+
+Fix the self-signed certificate path we bind to Python connectors.
+
+### 0.17.7
+
+Explicitly pass the control version to the connection retriever. Defaults to the latest released version of the connector under test.
+
+### 0.17.6
+
+Display diagnostic test with warning.
+
+### 0.17.5
+
+Performance improvements using caching.
+
+### 0.17.4
+
+Fix control image when running tests in CI.
 
 ### 0.17.3
 

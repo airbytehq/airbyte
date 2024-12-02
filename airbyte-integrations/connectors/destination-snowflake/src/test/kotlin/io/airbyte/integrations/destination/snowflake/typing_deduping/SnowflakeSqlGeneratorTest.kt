@@ -4,7 +4,13 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import io.airbyte.commons.json.Jsons.deserialize
-import io.airbyte.integrations.base.destination.typing_deduping.*
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -71,8 +77,8 @@ class SnowflakeSqlGeneratorTest {
 
     @Test
     fun columnCollision() {
-        val parser = CatalogParser(generator)
-        var expectedColumns = LinkedHashMap<ColumnId, AirbyteType>()
+        val parser = CatalogParser(generator, "unused")
+        val expectedColumns = LinkedHashMap<ColumnId, AirbyteType>()
         expectedColumns[ColumnId("_CURRENT_DATE", "CURRENT_DATE", "_CURRENT_DATE")] =
             AirbyteProtocolType.STRING
         expectedColumns[ColumnId("_CURRENT_DATE_1", "current_date", "_CURRENT_DATE_1")] =
@@ -80,7 +86,7 @@ class SnowflakeSqlGeneratorTest {
         Assertions.assertEquals(
             StreamConfig(
                 StreamId("BAR", "FOO", "airbyte_internal", "bar_raw__stream_foo", "bar", "foo"),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 expectedColumns,
@@ -92,6 +98,9 @@ class SnowflakeSqlGeneratorTest {
                 ConfiguredAirbyteStream()
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withGenerationId(0)
+                    .withMinimumGenerationId(0)
+                    .withSyncId(0)
                     .withStream(
                         AirbyteStream()
                             .withName("foo")
@@ -114,4 +123,30 @@ class SnowflakeSqlGeneratorTest {
             )
         )
     }
+
+    // INTENTIONALLY LEFT COMMENTED OUT FOR DEVS
+    // Uncomment to generate T+D sql statements for desired schemas
+    /*@Test
+    fun generateSqlStatement() {
+        val sqlGenerator = SnowflakeSqlGenerator(0);
+        val streamId = sqlGenerator.buildStreamId("gireesh_migration_test", "target_receipts", "gireesh_migration_test");
+        val columns : LinkedHashMap<ColumnId, AirbyteType> = linkedMapOf(
+            Pair(generator.buildColumnId("_ab_cdc_updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+            Pair(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+            Pair(generator.buildColumnId("receipt_id"), AirbyteProtocolType.NUMBER),
+            Pair(generator.buildColumnId("customer_name"), AirbyteProtocolType.STRING),
+            Pair(generator.buildColumnId("total_amount"), AirbyteProtocolType.NUMBER),
+        )
+        val streamConfig = StreamConfig(
+            streamId,
+            ImportType.DEDUPE,
+            listOf(generator.buildColumnId("receipt_id")),
+            Optional.empty(),
+            columns,
+            1, 1, 1,
+
+            )
+        val sql = generator.updateTable(streamConfig, "", Optional.empty(), true);
+        println(sql)
+    }*/
 }

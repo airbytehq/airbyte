@@ -47,7 +47,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 @Execution(ExecutionMode.CONCURRENT)
 abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> {
-    protected var DIFFER: RecordDiffer = mock()
+    protected var DIFFER: LegacyRecordDiffer = mock()
 
     /** Subclasses may use these four StreamConfigs in their tests. */
     protected var incrementalDedupStream: StreamConfig = mock()
@@ -200,7 +200,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 
         DIFFER =
-            RecordDiffer(
+            LegacyRecordDiffer(
                 rawMetadataColumnNames,
                 finalMetadataColumnNames,
                 id1 to AirbyteProtocolType.INTEGER,
@@ -219,7 +219,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -230,7 +230,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -242,7 +242,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -253,7 +253,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -358,7 +358,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 incrementalDedupStream.primaryKey,
                 incrementalDedupStream.cursor,
                 incrementalDedupStream.columns,
@@ -521,18 +521,39 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Verifies two behaviors:
      * 1. The isFinalTableEmpty method behaves correctly during a sync
      * 2. Column names with mixed case are handled correctly
-     *
+     * 3. Stream names with mixed case are handled correctly (under the assumption that destinations
+     * ```
+     *    that support this will also handle mixed-case namespaces, because this test is annoying
+     *    to set up with a different namespace).
+     * ```
      * The first behavior technically should be its own test, but we might as well just throw it
      * into a random testcase to avoid running test setup/teardown again.
      */
     @Test
     @Throws(java.lang.Exception::class)
     fun mixedCaseTest() {
+        fun toMixedCase(s: String): String =
+            s.mapIndexed { i, c ->
+                    if (i % 2 == 0) {
+                        c
+                    } else {
+                        c.uppercase()
+                    }
+                }
+                .joinToString(separator = "")
+        val streamId =
+            sqlGenerator.buildStreamId(
+                namespace = streamId.originalNamespace,
+                name = toMixedCase(streamId.originalName),
+                rawNamespaceOverride = streamId.rawNamespace,
+            )
+        val streamConfig = incrementalDedupStream.copy(id = streamId)
+
         // Add case-sensitive columnName to test json path querying
-        incrementalDedupStream.columns!![generator.buildColumnId("IamACaseSensitiveColumnName")] =
+        streamConfig.columns[generator.buildColumnId("IamACaseSensitiveColumnName")] =
             AirbyteProtocolType.STRING
         createRawTable(streamId)
-        createFinalTable(incrementalDedupStream, "")
+        createFinalTable(streamConfig, "")
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.readRecords(
@@ -540,20 +561,17 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             )
         )
 
-        var initialState =
-            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        var initialState = getOnly(destinationHandler.gatherInitialState(listOf(streamConfig)))
         Assertions.assertTrue(
             initialState.isFinalTableEmpty,
             "Final table should be empty before T+D"
         )
-
-        executeTypeAndDedupe(
-            generator,
-            destinationHandler,
-            incrementalDedupStream,
-            Optional.empty(),
-            ""
+        Assertions.assertTrue(
+            initialState.isFinalTablePresent,
+            "Final table should exist after we create it"
         )
+
+        executeTypeAndDedupe(generator, destinationHandler, streamConfig, Optional.empty(), "")
 
         verifyRecords(
             "sqlgenerator/mixedcasecolumnname_expectedrecords_raw.jsonl",
@@ -562,8 +580,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             dumpFinalTableRecords(streamId, "")
         )
 
-        initialState =
-            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        initialState = getOnly(destinationHandler.gatherInitialState(listOf(streamConfig)))
         assertFalse(initialState.isFinalTableEmpty, "Final table should not be empty after T+D")
     }
 
@@ -583,14 +600,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun minTimestampBehavesCorrectly() {
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
-            InitialRawTableStatus(false, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
         // When the raw table is empty, there are still no unprocessed records and no timestamp
         createRawTable(streamId)
         Assertions.assertEquals(
-            InitialRawTableStatus(true, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
@@ -643,7 +668,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
-            InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-02T00:00:00Z"))
+            ),
             "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at"
         )
 
@@ -968,7 +997,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.empty(),
                 COLUMNS,
@@ -1380,7 +1409,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 linkedMapOf(
@@ -1455,7 +1484,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             val stream =
                 StreamConfig(
                     modifiedStreamId,
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     java.util.List.of(columnId),
                     Optional.of(columnId),
                     linkedMapOf(columnId to AirbyteProtocolType.STRING),
@@ -1490,7 +1519,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 linkedMapOf(
@@ -1540,7 +1569,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
                 LinkedHashMap(),
@@ -1773,7 +1802,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val columnName1 = baseColumnName + "1"
         val columnName2 = baseColumnName + "2"
 
-        val catalogParser = CatalogParser(generator, rawNamespace)
+        // We're always setting a nonnull namespace, so the default namespace is never used.
+        // We just need to pass a value b/c it's nonnullable
+        val catalogParser = CatalogParser(generator, "unused", rawNamespace)
         val stream =
             catalogParser
                 .parseCatalog(
@@ -1800,6 +1831,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                                                 )
                                             )
                                     )
+                                    .withSyncId(42)
+                                    .withGenerationId(43)
+                                    .withMinimumGenerationId(0)
                                     .withSyncMode(SyncMode.INCREMENTAL)
                                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             )

@@ -14,7 +14,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 4.4.2
+          # removed useless `enum` from `payment_intent`,
+          # making the source crash because of api side changes (more or less values are returned).
+          disable_for_version: 5.4.5
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -37,8 +39,6 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_cards"
             bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "payment_methods"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "persons"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "reviews"
@@ -47,6 +47,16 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "events"
             bypass_reason: "Data expires every 30 days."
+          - name: "subscriptions"
+            bypass_reason: "Data appears to have expired and since we can't access our test account we cannot re-seed or verify this"
+          - name: "subscription_schedule"
+            bypass_reason: "Since we don't have subscriptions anymore, we can't get child records of subscriptions"
+          - name: "subscription_items"
+            bypass_reason: "Since we don't have subscriptions anymore, we can't get child records of subscriptions"
+          - name: "subscription_schedule"
+            bypass_reason: "Since we don't have subscriptions anymore, we can't get child records of subscriptions"
+          - name: "usage_records"
+            bypass_reason: "Since we don't have subscriptions_items anymore which depend on subscriptions, we can't get child records for usage_records"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
@@ -55,6 +65,9 @@ acceptance_tests:
         timeout_seconds: 3600
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        # The stream `setup_attempts` fails on the `test_read_sequential_slices` step,
+        # `Read 1 of 1 should produce at least one record.`, expecting some records to be set on the stream.
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

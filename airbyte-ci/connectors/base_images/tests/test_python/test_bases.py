@@ -19,7 +19,7 @@ class TestAirbytePythonConnectorBaseImage:
 
     def test_class_attributes(self):
         """Spot any regression in the class attributes."""
-        assert bases.AirbytePythonConnectorBaseImage.root_image == root_images.PYTHON_3_9_18
+        assert bases.AirbytePythonConnectorBaseImage.root_image == root_images.PYTHON_3_10_14
         assert bases.AirbytePythonConnectorBaseImage.repository == "airbyte/python-connector-base"
         assert bases.AirbytePythonConnectorBaseImage.pip_cache_name == "pip_cache"
 
@@ -30,10 +30,10 @@ class TestAirbytePythonConnectorBaseImage:
     async def test_pip_cache_volume(self, dagger_client, current_platform, dummy_version):
         base_image_version = bases.AirbytePythonConnectorBaseImage(dagger_client, dummy_version)
         container = base_image_version.get_container(current_platform)
-        assert "/root/.cache/pip" in await container.mounts()
+        assert "/custom_cache/pip" in await container.mounts()
 
     async def test_is_using_bookworm(self, dagger_client, current_platform, dummy_version):
         base_image_version = bases.AirbytePythonConnectorBaseImage(dagger_client, dummy_version)
         container = base_image_version.get_container(current_platform)
-        cat_output = await container.with_exec(["cat", "/etc/os-release"], skip_entrypoint=True).stdout()
+        cat_output = await container.with_exec(["cat", "/etc/os-release"]).stdout()
         assert "Debian GNU/Linux 12 (bookworm)" in [kv.split("=")[1].replace('"', "") for kv in cat_output.splitlines()]

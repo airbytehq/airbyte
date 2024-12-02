@@ -2,42 +2,56 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "application_fees" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "authorizations" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "cards" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "cardholders" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "charges" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "invoice_updated": 10000000000 },
+      "stream_descriptor": { "name": "invoice_line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "subscription_updated": 10000000000 },
+      "stream_descriptor": { "name": "subscription_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "coupons" }
     }
   },
@@ -51,35 +65,35 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "customers" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "plans" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "invoices" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "invoice_items" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "transfers" }
     }
   },
@@ -93,14 +107,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "subscriptions" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "subscription_schedule" }
     }
   },
@@ -114,49 +128,49 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "payouts" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "prices" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "disputes" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "products" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "refunds" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "payment_intents" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "promotion_codes" }
     }
   },
@@ -177,21 +191,21 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "reviews" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "setup_intents" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "top_ups" }
     }
   },
@@ -219,7 +233,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "transactions" }
     }
   },
@@ -277,6 +291,27 @@
     "stream": {
       "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "persons" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "customer_balance_transactions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "accounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "transfer_reversals" }
     }
   }
 ]

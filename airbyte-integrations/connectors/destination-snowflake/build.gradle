@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.35.13'
+    cdkVersionRequired = '0.46.0'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -12,12 +12,6 @@ java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-this-escape"
-    }
-}
-
-compileKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
     }
 }
 
@@ -48,6 +42,6 @@ integrationTestJava {
 }
 
 dependencies {
-    implementation 'net.snowflake:snowflake-jdbc:3.14.1'
-    implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation 'net.snowflake:snowflake-jdbc:3.20.0'
+    implementation 'org.apache.commons:commons-text:1.12.0'
 }

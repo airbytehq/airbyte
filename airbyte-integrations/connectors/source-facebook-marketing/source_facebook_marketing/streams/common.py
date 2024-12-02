@@ -181,7 +181,15 @@ def traced_exception(fb_exception: FacebookRequestError):
                 "Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh "
                 "access token with all required permissions."
             )
-
+    elif "reduce the amount of data" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = (
+            "Please reduce the number of fields requested. Go to the schema tab, select your source, "
+            "and unselect the fields you do not need."
+        )
+    elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = "Please set the start date of your sync to be within the last 3 years."
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
             message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",

@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-harness
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b0e46f61-e143-47cc-a595-4bb73bfa8a15
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/source-harness
   githubIssueLabel: source-harness
   icon: harness.svg
@@ -85,4 +85,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

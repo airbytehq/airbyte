@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Dict
 from connector_ops.utils import console  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.consts import GCS_PUBLIC_DOMAIN
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX, AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
 from pipelines.helpers.utils import format_duration
 from pipelines.models.artifacts import Artifact
 from pipelines.models.reports import Report
@@ -128,13 +129,13 @@ class ConnectorReport(Report):
         }
 
         if self.pipeline_context.is_ci:
-            template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
+            template_context["commit_url"] = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/commit/{self.pipeline_context.git_revision}"
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
             template_context[
                 "icon_url"
-            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            ] = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
         return template.render(template_context)
 
     async def save_html_report(self) -> None:

@@ -139,7 +139,7 @@ def _get_acceptance_test_steps(context: ConnectorTestContext) -> List[StepToRun]
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(
-                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=True
+                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=False
             ),
             args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],

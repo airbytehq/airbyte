@@ -90,8 +90,13 @@ You should now have all the requirements needed to configure Pulsar as a destina
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
 | 0.1.3   | 2022-08-05 | [15349](https://github.com/airbytehq/airbyte/pull/15349) | Update Pulsar destination to use outputRecordCollector to properly store state |
+
+</details>

@@ -68,8 +68,35 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
+| 0.1.21 | 2024-11-25 | [48641](https://github.com/airbytehq/airbyte/pull/48641) | Update dependencies |
+| 0.1.20 | 2024-11-04 | [48191](https://github.com/airbytehq/airbyte/pull/48191) | Update dependencies |
+| 0.1.19 | 2024-10-29 | [47757](https://github.com/airbytehq/airbyte/pull/47757) | Update dependencies |
+| 0.1.18 | 2024-10-28 | [47621](https://github.com/airbytehq/airbyte/pull/47621) | Update dependencies |
+| 0.1.17 | 2024-10-28 | [47054](https://github.com/airbytehq/airbyte/pull/47054) | Update dependencies |
+| 0.1.16 | 2024-10-12 | [46774](https://github.com/airbytehq/airbyte/pull/46774) | Update dependencies |
+| 0.1.15 | 2024-10-05 | [46417](https://github.com/airbytehq/airbyte/pull/46417) | Update dependencies |
+| 0.1.14 | 2024-09-28 | [46137](https://github.com/airbytehq/airbyte/pull/46137) | Update dependencies |
+| 0.1.13 | 2024-09-21 | [45830](https://github.com/airbytehq/airbyte/pull/45830) | Update dependencies |
+| 0.1.12 | 2024-09-14 | [45526](https://github.com/airbytehq/airbyte/pull/45526) | Update dependencies |
+| 0.1.11 | 2024-09-07 | [45217](https://github.com/airbytehq/airbyte/pull/45217) | Update dependencies |
+| 0.1.10 | 2024-08-31 | [44678](https://github.com/airbytehq/airbyte/pull/44678) | Update dependencies |
+| 0.1.9 | 2024-08-17 | [44293](https://github.com/airbytehq/airbyte/pull/44293) | Update dependencies |
+| 0.1.8 | 2024-08-12 | [43744](https://github.com/airbytehq/airbyte/pull/43744) | Update dependencies |
+| 0.1.7 | 2024-08-10 | [43529](https://github.com/airbytehq/airbyte/pull/43529) | Update dependencies |
+| 0.1.6 | 2024-08-03 | [43219](https://github.com/airbytehq/airbyte/pull/43219) | Update dependencies |
+| 0.1.5 | 2024-07-27 | [42620](https://github.com/airbytehq/airbyte/pull/42620) | Update dependencies |
+| 0.1.4 | 2024-07-20 | [42384](https://github.com/airbytehq/airbyte/pull/42384) | Update dependencies |
+| 0.1.3 | 2024-07-13 | [41919](https://github.com/airbytehq/airbyte/pull/41919) | Update dependencies |
+| 0.1.2 | 2024-07-10 | [41530](https://github.com/airbytehq/airbyte/pull/41530) | Update dependencies |
+| 0.1.1 | 2024-07-09 | [41096](https://github.com/airbytehq/airbyte/pull/41096) | Update dependencies |
+| 0.1.0 | 2024-06-27 | [41020](https://github.com/airbytehq/airbyte/pull/41020) | Update to Airbyte CDK 2.3 and qdrant-client 1.10 |
+| 0.0.13 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.0.12 | 2024-06-06 | [39172](https://github.com/airbytehq/airbyte/pull/39172) | [autopull] Upgrade base image to v1.2.2 |
 | 0.0.11  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK and pytest versions to fix security vulnerabilities          |
 | 0.0.10  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                    |
 | 0.0.9   | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                  |
@@ -81,3 +108,5 @@ You should now have all the requirements needed to configure Qdrant as a destina
 | 0.0.3   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820) | Update CDK                                                               |
 | 0.0.2   | 2023-09-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689) | Update CDK to support Azure OpenAI embeddings and text splitting options |
 | 0.0.1   | 2023-09-22 | [#30332](https://github.com/airbytehq/airbyte/pull/30332) | 🎉 New Destination: Qdrant (Vector Database)                             |
+
+</details>

@@ -34,6 +34,11 @@ public class SnowflakeDataSourceUtils {
 
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
+  public static final String KEY_PAIR_METHOD = "Key Pair Authentication";
+  public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
+  public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
+  public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
+
   public static final String UNRECOGNIZED = "Unrecognized";
   public static final String AIRBYTE_OSS = "airbyte_oss";
   public static final String AIRBYTE_CLOUD = "airbyte_cloud";
@@ -76,6 +81,10 @@ public class SnowflakeDataSourceUtils {
         case USERNAME_PASSWORD_METHOD -> {
           LOGGER.info("Authorization mode is 'Username and password'");
           populateUsernamePasswordConfig(dataSource, config.get("credentials"));
+        }
+        case KEY_PAIR_METHOD -> {
+          LOGGER.info("Authorization mode is 'Key Pair Authentication'");
+          populateKeyPairConfig(dataSource, config.get("credentials"));
         }
         default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
       }
@@ -202,6 +211,20 @@ public class SnowflakeDataSourceUtils {
   private static void populateUsernamePasswordConfig(final HikariConfig hikariConfig, final JsonNode config) {
     hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
     hikariConfig.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
+  }
+
+  private static void populateKeyPairConfig(final HikariConfig hikariConfig, final JsonNode config) {
+    hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
+    hikariConfig.setDataSourceProperties(buildKeyPairProperties(config));
+  }
+
+  private static Properties buildKeyPairProperties(JsonNode config) {
+    final Properties properties = new Properties();
+    properties.setProperty("private_key_file", PRIVATE_KEY_FILE_NAME);
+    if (config.has(PRIVATE_KEY_PASSWORD)) {
+      properties.setProperty("private_key_file_pwd", config.get(PRIVATE_KEY_PASSWORD).asText());
+    }
+    return properties;
   }
 
 }

@@ -63,13 +63,41 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.4   | 2024-04-19 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Updating to 0.80.0 CDK                                                          |
-| 0.2.3   | 2024-04-18 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Manage dependencies with Poetry.                                                |
-| 0.2.2   | 2024-04-15 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | schema descriptions                                                             |
-| 0.2.0   | 2023-08-22 | [29310](https://github.com/airbytehq/airbyte/pull/29310) | Migrate Python CDK to Low Code                                                  |
-| 0.1.2   | 2023-08-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976)   | Fix schemas and tests                                                           |
-| 0.1.1   | 2021-11-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976)   | Add oauth2.0 support                                                            |
-| 0.1.0   | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359)   | Initial Release                                                                 |
+| 0.3.0  | 2024-10-31 | [47327](https://github.com/airbytehq/airbyte/pull/47327) | Migrate to Manifest-only |
+| 0.2.26 | 2024-10-29 | [47802](https://github.com/airbytehq/airbyte/pull/47802) | Update dependencies |
+| 0.2.25 | 2024-10-28 | [47066](https://github.com/airbytehq/airbyte/pull/47066) | Update dependencies |
+| 0.2.24 | 2024-10-12 | [46784](https://github.com/airbytehq/airbyte/pull/46784) | Update dependencies |
+| 0.2.23 | 2024-10-05 | [46486](https://github.com/airbytehq/airbyte/pull/46486) | Update dependencies |
+| 0.2.22 | 2024-09-28 | [46102](https://github.com/airbytehq/airbyte/pull/46102) | Update dependencies |
+| 0.2.21 | 2024-09-21 | [45769](https://github.com/airbytehq/airbyte/pull/45769) | Update dependencies |
+| 0.2.20 | 2024-09-14 | [45546](https://github.com/airbytehq/airbyte/pull/45546) | Update dependencies |
+| 0.2.19 | 2024-09-07 | [45298](https://github.com/airbytehq/airbyte/pull/45298) | Update dependencies |
+| 0.2.18 | 2024-08-31 | [45008](https://github.com/airbytehq/airbyte/pull/45008) | Update dependencies |
+| 0.2.17 | 2024-08-24 | [44720](https://github.com/airbytehq/airbyte/pull/44720) | Update dependencies |
+| 0.2.16 | 2024-08-17 | [44219](https://github.com/airbytehq/airbyte/pull/44219) | Update dependencies |
+| 0.2.15 | 2024-08-10 | [43502](https://github.com/airbytehq/airbyte/pull/43502) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43246](https://github.com/airbytehq/airbyte/pull/43246) | Update dependencies |
+| 0.2.13 | 2024-07-27 | [42604](https://github.com/airbytehq/airbyte/pull/42604) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42371](https://github.com/airbytehq/airbyte/pull/42371) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41880](https://github.com/airbytehq/airbyte/pull/41880) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41496](https://github.com/airbytehq/airbyte/pull/41496) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41205](https://github.com/airbytehq/airbyte/pull/41205) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [40850](https://github.com/airbytehq/airbyte/pull/40850) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40443](https://github.com/airbytehq/airbyte/pull/40443) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [39956](https://github.com/airbytehq/airbyte/pull/39956) | Update dependencies |
+| 0.2.5 | 2024-06-04 | [39058](https://github.com/airbytehq/airbyte/pull/39058) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.4 | 2024-04-19 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37302](https://github.com/airbytehq/airbyte/pull/37302) | schema descriptions |
+| 0.2.0 | 2023-08-22 | [29310](https://github.com/airbytehq/airbyte/pull/29310) | Migrate Python CDK to Low Code |
+| 0.1.2 | 2023-08-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976) | Fix schemas and tests |
+| 0.1.1 | 2021-11-15 | [7976](https://github.com/airbytehq/airbyte/pull/7976) | Add oauth2.0 support |
+| 0.1.0 | 2021-07-08 | [4359](https://github.com/airbytehq/airbyte/pull/4359) | Initial Release |
+
+</details>

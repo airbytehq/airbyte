@@ -11,7 +11,7 @@ data:
   icon: teradata.svg
   license: MIT
   name: Teradata
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

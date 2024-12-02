@@ -5,77 +5,144 @@
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["event_time"]
+      "default_cursor_field": ["event_time"],
+      "is_resumable": true
     },
     {
-      "name": "installs",
+      "name": "organic_in_app_events",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["install_time"]
-    },
-    {
-      "name": "uninstall_events",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": ["event_time"]
+      "default_cursor_field": ["event_time"],
+      "is_resumable": true
     },
     {
       "name": "retargeting_in_app_events",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["event_time"]
+      "default_cursor_field": ["event_time"],
+      "is_resumable": true
     },
     {
-      "name": "retargeting_conversions",
+      "name": "installs",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["install_time"]
+      "default_cursor_field": ["install_time"],
+      "is_resumable": true
     },
     {
-      "name": "partners_report",
+      "name": "organic_installs",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
+      "default_cursor_field": ["install_time"],
+      "is_resumable": true
+    },
+    {
+      "name": "retargeting_installs",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["install_time"],
+      "is_resumable": true
+    },
+    {
+      "name": "uninstall_events",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["event_time"],
+      "is_resumable": true
+    },
+    {
+      "name": "organic_uninstall_events",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["event_time"],
+      "is_resumable": true
     },
     {
       "name": "daily_report",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
-    },
-    {
-      "name": "geo_report",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
-    },
-    {
-      "name": "retargeting_partners_report",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
+      "default_cursor_field": ["date"],
+      "is_resumable": true
     },
     {
       "name": "retargeting_daily_report",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "partners_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "retargeting_partners_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "partners_events_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "retargeting_partners_events_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "geo_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
     },
     {
       "name": "retargeting_geo_report",
       "json_schema": {},
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": ["date"]
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "geo_events_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
+    },
+    {
+      "name": "retargeting_geo_events_report",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "is_resumable": true
     }
   ]
 }

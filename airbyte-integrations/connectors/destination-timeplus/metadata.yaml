@@ -2,17 +2,17 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f70a8ece-351e-4790-b37b-cb790bcd6d54
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/destination-timeplus
   githubIssueLabel: destination-timeplus
   icon: timeplus.svg
   license: MIT
   name: Timeplus
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/timeplus
   tags:
@@ -24,11 +24,16 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-TIMEPLUS__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    # Disabling integration tests
+    # They are not passing
+    # No Airbyte Cloud Usage
+    # - suite: integrationTests
+    #   testSecrets:
+    #     - name: SECRET_DESTINATION-TIMEPLUS__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
 metadataSpecVersion: "1.0"

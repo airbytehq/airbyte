@@ -4,6 +4,7 @@
 package io.airbyte.commons.json
 
 import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
@@ -28,17 +29,26 @@ private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
 
+    // allow jackson to deserialize anything under 100 MiB
+    // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
+    private const val JSON_MAX_LENGTH = 100 * 1024 * 1024
+    private val STREAM_READ_CONSTRAINTS =
+        StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
+
     // Object Mapper is thread-safe
-    private val OBJECT_MAPPER: ObjectMapper = MoreMappers.initMapper()
+    private val OBJECT_MAPPER: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     // sort of a hotfix; I don't know how bad the performance hit is so not turning this on by
     // default
     // at time of writing (2023-08-18) this is only used in tests, so we don't care.
-    private val OBJECT_MAPPER_EXACT: ObjectMapper = MoreMappers.initMapper()
-
-    init {
-        OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-    }
+    private val OBJECT_MAPPER_EXACT: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
     private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER.writer(JsonPrettyPrinter())
@@ -127,6 +137,14 @@ object Jsons {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    // WARNING: This message throws bare exceptions on parse failure which might
+    // leak sensitive data. Use obfuscateDeserializationException() to strip
+    // the sensitive data before logging.
+    @JvmStatic
+    fun <T : Any> deserializeExactUnchecked(jsonString: String?, klass: Class<T>?): T {
+        return OBJECT_MAPPER_EXACT.readValue(jsonString, klass)
     }
 
     @JvmStatic
@@ -399,7 +417,7 @@ object Jsons {
                 } else {
                     return@toMap prefix
                 }
-            }
+            },
         )
     }
 
@@ -415,9 +433,17 @@ object Jsons {
      * potentially-sensitive information. </snip...>
      */
     private fun <T : Any> handleDeserThrowable(throwable: Throwable): Optional<T> {
-        // Manually build the stacktrace, excluding the top-level exception object
-        // so that we don't accidentally include the exception message.
-        // Otherwise we could just do ExceptionUtils.getStackTrace(t).
+        val obfuscated = obfuscateDeserializationException(throwable)
+        LOGGER.warn { "Failed to deserialize json due to $obfuscated" }
+        return Optional.empty()
+    }
+
+    /**
+     * Build a stacktrace from the given throwable, enabling us to log or rethrow without leaking
+     * sensitive information in the exception message (which would be exposed with eg,
+     * ExceptionUtils.getStackTrace(t).)
+     */
+    fun obfuscateDeserializationException(throwable: Throwable): String {
         var t: Throwable = throwable
         val sb = StringBuilder()
         sb.append(t.javaClass)
@@ -434,8 +460,7 @@ object Jsons {
                 sb.append(traceElement.toString())
             }
         }
-        LOGGER.warn { "Failed to deserialize json due to $sb" }
-        return Optional.empty()
+        return sb.toString()
     }
 
     /**

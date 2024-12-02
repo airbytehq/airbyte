@@ -69,6 +69,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                          | ✔                   | ✔                   |
 | [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                | ✔                   | ✔                   |
 | [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                  | ✔                   | ✔                   |
+| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.com/docs/api/subscriptions?lang=curl#retrieve_with_scheduled_changes)           | ✔                   | ✔                   |
 | [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                    | ✔                   | ✔                   |
 | [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                            | ✔                   | ✔                   |
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                  | ✔                   | ✔                   |
@@ -98,8 +99,37 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2   | 2024-11-20 | [48510](https://github.com/airbytehq/airbyte/pull/48510)     | Ensure no pagination issues on concurrent syncs                                                                                                |
+| 0.7.1   | 2024-11-04 | [48133](https://github.com/airbytehq/airbyte/pull/48133)     | Fix `error message pattern` to handle `Product 1.0` related errors                                                                             |
+| 0.7.0   | 2024-10-30 | [47978](https://github.com/airbytehq/airbyte/pull/47978)     | Upgrade the CDK and startup files to sync incremental streams concurrently                                                                     |
+| 0.6.18  | 2024-10-31 | [47099](https://github.com/airbytehq/airbyte/pull/47099) | Update dependencies                                                                                                                            |
+| 0.6.17  | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387)      | Update CDK dependencies to yield parent records more frequently                                                                                |
+| 0.6.16  | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies                                                                                                                            |
+| 0.6.15  | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies                                                                                                                            |
+| 0.6.14  | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams                                                                |
+| 0.6.13  | 2024-10-01 | [46294](https://github.com/airbytehq/airbyte/pull/46294) | Update CDK version to `^5`, increased the `maxSecondsBetweenMessages` to 6 hours                                                               |
+| 0.6.12  | 2024-09-28 | [46169](https://github.com/airbytehq/airbyte/pull/46169) | Update dependencies                                                                                                                            |
+| 0.6.11  | 2024-09-21 | [45805](https://github.com/airbytehq/airbyte/pull/45805) | Update dependencies                                                                                                                            |
+| 0.6.10  | 2024-09-14 | [45254](https://github.com/airbytehq/airbyte/pull/45254) | Update dependencies                                                                                                                            |
+| 0.6.9   | 2024-08-31 | [45028](https://github.com/airbytehq/airbyte/pull/45028) | Update dependencies                                                                                                                            |
+| 0.6.8   | 2024-08-24 | [44662](https://github.com/airbytehq/airbyte/pull/44662) | Update dependencies                                                                                                                            |
+| 0.6.7   | 2024-08-17 | [44265](https://github.com/airbytehq/airbyte/pull/44265) | Update dependencies                                                                                                                            |
+| 0.6.6   | 2024-08-10 | [43640](https://github.com/airbytehq/airbyte/pull/43640) | Update dependencies                                                                                                                            |
+| 0.6.5   | 2024-08-03 | [43081](https://github.com/airbytehq/airbyte/pull/43081) | Update dependencies                                                                                                                            |
+| 0.6.4   | 2024-07-27 | [42626](https://github.com/airbytehq/airbyte/pull/42626) | Update dependencies                                                                                                                            |
+| 0.6.3   | 2024-07-20 | [42296](https://github.com/airbytehq/airbyte/pull/42296) | Update dependencies                                                                                                                            |
+| 0.6.2   | 2024-07-13 | [41691](https://github.com/airbytehq/airbyte/pull/41691) | Update dependencies                                                                                                                            |
+| 0.6.1   | 2024-07-10 | [41113](https://github.com/airbytehq/airbyte/pull/41113) | Update dependencies                                                                                                                            |
+| 0.6.0   | 2024-07-10 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | Adds new stream `subscription_with_scheduled_changes`                                                                                          |
+| 0.5.5   | 2024-07-06 | [40965](https://github.com/airbytehq/airbyte/pull/40965) | Update dependencies                                                                                                                            |
+| 0.5.4   | 2024-06-25 | [40332](https://github.com/airbytehq/airbyte/pull/40332) | Update dependencies                                                                                                                            |
+| 0.5.3   | 2024-06-23 | [40074](https://github.com/airbytehq/airbyte/pull/40074) | Update dependencies                                                                                                                            |
+| 0.5.2   | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | [autopull] Upgrade base image to v1.2.2                                                                                                        |
 | 0.5.1   | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0                                                                                                             |
 | 0.5.0   | 2024-03-28 | [36518](https://github.com/airbytehq/airbyte/pull/36518) | Updates CDK to ^0, updates IncrementalSingleSliceCursor                                                                                        |
 | 0.4.2   | 2024-03-14 | [36037](https://github.com/airbytehq/airbyte/pull/36037) | Adds fields: `coupon_constraints` to `coupon` stream, `billing_month` to `customer stream`, and `error_detail` to `transaction` stream schemas |
@@ -131,5 +161,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067)   | Prepare connector for publishing                                                                                                               |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add entrypoint and bump version for connector                                                                                                  |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410)   | New Source: Chargebee                                                                                                                          |
+
+</details>
 
 </HideInUI>

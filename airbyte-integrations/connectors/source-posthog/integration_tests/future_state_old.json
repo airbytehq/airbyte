@@ -1,5 +1,13 @@
-{
-  "events": {
-    "timestamp": "2221-12-10T10:21:35.003000+00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "events"
+      },
+      "stream_state": {
+        "timestamp": "2021-12-10T10:21:35.208000+00:00"
+      }
+    }
   }
-}
+]

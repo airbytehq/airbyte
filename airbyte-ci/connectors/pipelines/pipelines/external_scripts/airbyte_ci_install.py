@@ -10,7 +10,6 @@ import os
 import shutil
 import ssl
 import sys
-import tempfile
 import urllib.request
 from typing import TYPE_CHECKING
 
@@ -90,26 +89,31 @@ def main(version: str = "latest") -> None:
     destination_dir = os.path.expanduser("~/.local/bin")
     os.makedirs(destination_dir, exist_ok=True)
 
-    # Download the binary to a temporary folder
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_file = os.path.join(tmp_dir, "airbyte-ci")
+    # Set the path of the versioned binary
+    versioned_path = os.path.join(destination_dir, f"airbyte-ci-{version}")
 
+    # If the version is not explicit, delete any existing versioned binary
+    if version == "latest" and os.path.exists(versioned_path):
+        os.remove(versioned_path)
+
+    # Download the versioned binary if it doesn't exist
+    if not os.path.exists(versioned_path):
         # Download the file using urllib.request
         print(f"Downloading from {url}")
         ssl_context = get_ssl_context()
-        with urllib.request.urlopen(url, context=ssl_context) as response, open(tmp_file, "wb") as out_file:
+        with urllib.request.urlopen(url, context=ssl_context) as response, open(versioned_path, "wb") as out_file:
             shutil.copyfileobj(response, out_file)
 
-        # Check if the destination path is a symlink and delete it if it is
-        destination_path = os.path.join(destination_dir, "airbyte-ci")
-        if os.path.islink(destination_path):
-            os.remove(destination_path)
+        # Make the versioned binary executable
+        os.chmod(versioned_path, 0o755)
 
-        # Copy the file from the temporary folder to the destination
-        shutil.copy(tmp_file, destination_path)
+    # Ensure that the destination path does not exist.
+    destination_path = os.path.join(destination_dir, "airbyte-ci")
+    if os.path.exists(destination_path):
+        os.remove(destination_path)
 
-        # Make the binary executable
-        os.chmod(destination_path, 0o755)
+    # Symlink the versioned binary to the destination path
+    os.symlink(versioned_path, destination_path)
 
     # ASCII Art and Completion Message
     install_complete_message = f"""

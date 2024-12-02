@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import java.sql.SQLException
 import java.util.*
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest :
     AbstractSnowflakeTypingDedupingTest() {
@@ -27,5 +29,18 @@ class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest :
             config.get(JdbcUtils.DATABASE_KEY).asText().lowercase(Locale.getDefault())
         )
         return config
+    }
+
+    @Disabled(
+        "upper casing the DB name was added as a fix in 2.1.7, Data in v1 lowercased DB will be lost"
+    )
+    @Test
+    override fun testV1V2Migration() {
+        super.testV1V2Migration()
+    }
+
+    @Test
+    override fun identicalNameSimultaneousSync() {
+        super.identicalNameSimultaneousSync()
     }
 }

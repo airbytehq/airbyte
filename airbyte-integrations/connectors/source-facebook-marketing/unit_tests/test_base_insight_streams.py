@@ -91,6 +91,23 @@ class TestBaseInsightsStream:
             "test2",
         ]
 
+    def test_init_statuses(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            fields=["account_id", "account_currency"],
+            filter_statuses=["ACTIVE", "ARCHIVED"]
+        )
+
+        assert stream.request_params()["filtering"] == [
+            {'field': 'ad.effective_status',
+             'operator': 'IN',
+             'value': ['ACTIVE', 'ARCHIVED']}
+        ]
+
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed
@@ -200,10 +217,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -227,10 +244,10 @@ class TestBaseInsightsStream:
                 },
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
             ),
@@ -239,10 +256,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -259,10 +276,10 @@ class TestBaseInsightsStream:
             (
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
                 None,
@@ -281,14 +298,14 @@ class TestBaseInsightsStream:
 
         assert stream.state == {
             "time_increment": 1,
-            "unknown_account": {"slices": set()},
+            "unknown_account": {"slices": []},
         }
 
         stream.state = state
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", set())
+        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
         result_state["time_increment"] = 1
 
         assert actual_state == result_state

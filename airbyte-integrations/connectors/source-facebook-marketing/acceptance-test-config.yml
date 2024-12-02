@@ -6,9 +6,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.2.2"
-          previous_connector_version: "1.2.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -20,9 +17,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.2.2"
-          previous_connector_version: "1.2.1"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -40,6 +34,8 @@ acceptance_tests:
         timeout_seconds: 6000
         future_state:
           future_state_path: "integration_tests/future_state.json"
+        # ads_insights is currently failing because there is a lookback window and the minimum value is one day
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

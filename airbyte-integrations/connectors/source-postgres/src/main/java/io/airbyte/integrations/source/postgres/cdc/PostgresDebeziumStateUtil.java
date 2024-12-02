@@ -84,7 +84,8 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
                                   final JsonNode cdcState,
                                   final JsonNode config) {
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final DebeziumPropertiesManager debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }
@@ -246,7 +247,9 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
   }
 
   private Long currentTransactionId(final JdbcDatabase database) throws SQLException {
-    final List<Long> transactionId = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from txid_current()"),
+    final List<Long> transactionId = database.bufferedResultSetQuery(
+        conn -> conn.createStatement().executeQuery(
+            "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmin(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"),
         resultSet -> resultSet.getLong(1));
     Preconditions.checkState(transactionId.size() == 1);
     return transactionId.get(0);

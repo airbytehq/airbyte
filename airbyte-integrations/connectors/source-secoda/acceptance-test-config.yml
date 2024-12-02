@@ -3,7 +3,7 @@
 connector_image: airbyte/source-secoda:dev
 tests:
   spec:
-    - spec_path: "source_secoda/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

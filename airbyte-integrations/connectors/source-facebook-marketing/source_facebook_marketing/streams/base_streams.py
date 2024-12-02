@@ -5,6 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
+from functools import cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -22,6 +23,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
+from airbyte_cdk.sources.streams import CheckpointMixin
 
 
 class FBMarketingStream(Stream, ABC):
@@ -55,12 +57,21 @@ class FBMarketingStream(Stream, ABC):
         self.page_size = page_size if page_size is not None else 100
         self._filter_statuses = filter_statuses
         self._fields = None
+        self._saved_fields = None
 
+    @cache
     def fields(self, **kwargs) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        """
         if self._fields:
             return self._fields
-        self._saved_fields = list(self.get_json_schema().get("properties", {}).keys())
+        json_schema = (
+            self.configured_json_schema
+            if self.configured_json_schema and self.configured_json_schema.get("properties")
+            else self.get_json_schema()
+        )
+        self._saved_fields = list(json_schema.get("properties", {}).keys())
         return self._saved_fields
 
     @classmethod
@@ -230,7 +241,7 @@ class FBMarketingStream(Stream, ABC):
         )
 
 
-class FBMarketingIncrementalStream(FBMarketingStream, ABC):
+class FBMarketingIncrementalStream(FBMarketingStream, CheckpointMixin, ABC):
     """Base class for incremental streams"""
 
     cursor_field = "updated_time"
@@ -239,8 +250,17 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None
+        self._state = {}
 
-    def get_updated_state(
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state.update(**value)
+
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
@@ -275,7 +295,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Additional filters associated with state if any set"""
 
         state_value = stream_state.get(self.cursor_field)
-        if stream_state:
+        if stream_state and state_value:
             filter_value = pendulum.parse(state_value)
         elif self._start_date:
             filter_value = self._start_date
@@ -302,6 +322,17 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
                 },
             ],
         }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
@@ -335,7 +366,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         for account_id in self._account_ids:
             cursor_value = transformed_state.get(account_id, {}).get(self.cursor_field)
             if cursor_value is not None:
-                self._cursor_values[account_id] = pendulum.parse(cursor_value)
+                self._cursor_values[account_id] = cursor_value
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
@@ -366,7 +397,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
             max_cursor_value = None
             for record in records_iter:
-                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                record_cursor_value = record[self.cursor_field]
                 if account_cursor and record_cursor_value < account_cursor:
                     break
 

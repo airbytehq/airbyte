@@ -8,7 +8,7 @@ data:
   icon: googlecloudstorage.svg
   license: ELv2
   name: Google Cloud Storage (GCS)
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

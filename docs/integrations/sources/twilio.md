@@ -95,8 +95,20 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.11.13 | 2024-11-25 | [43769](https://github.com/airbytehq/airbyte/pull/43769) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.11.12 | 2024-08-03 | [43132](https://github.com/airbytehq/airbyte/pull/43132) | Update dependencies |
+| 0.11.11 | 2024-07-27 | [42593](https://github.com/airbytehq/airbyte/pull/42593) | Update dependencies |
+| 0.11.10 | 2024-07-20 | [42177](https://github.com/airbytehq/airbyte/pull/42177) | Update dependencies |
+| 0.11.9 | 2024-07-13 | [41845](https://github.com/airbytehq/airbyte/pull/41845) | Update dependencies |
+| 0.11.8 | 2024-07-10 | [41478](https://github.com/airbytehq/airbyte/pull/41478) | Update dependencies |
+| 0.11.7 | 2024-06-26 | [40527](https://github.com/airbytehq/airbyte/pull/40527) | Update dependencies |
+| 0.11.6 | 2024-06-22 | [40030](https://github.com/airbytehq/airbyte/pull/40030) | Update dependencies |
+| 0.11.5 | 2024-06-06 | [39252](https://github.com/airbytehq/airbyte/pull/39252) | [autopull] Upgrade base image to v1.2.2 |
 | 0.11.4  | 2024-05-22 | [38559](https://github.com/airbytehq/airbyte/pull/38564) | Migrate authenticator to `requests_native_auth` package                                                 |
 | 0.11.3  | 2024-05-20 | [38262](https://github.com/airbytehq/airbyte/pull/38262) | Replace AirbyteLogger with logging.Logger |
 | 0.11.2  | 2024-04-19 | [36666](https://github.com/airbytehq/airbyte/pull/36666) | Updating to 0.80.0 CDK |
@@ -130,3 +142,5 @@ For more information, see [the Twilio docs for rate limitations](https://support
 | 0.1.2   | 2021-12-23 | [9092](https://github.com/airbytehq/airbyte/pull/9092) | Correct specification doc URL |
 | 0.1.1   | 2021-10-18 | [7034](https://github.com/airbytehq/airbyte/pull/7034) | Update schemas and transform data types according to the API schema |
 | 0.1.0   | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |
+
+</details>

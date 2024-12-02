@@ -60,11 +60,30 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1   | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder                                                                                           |
-| 1.0.0   | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
-| 0.2.1   | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification                                                                                       |
-| 0.2.0   | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML)                                                                             |
-| 0.1.1   | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count                                                                                                   |
-| 0.1.0   | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381)   | New Source: Chartmogul                                                                                                           |
+| 1.1.1 | 2024-10-28 | [47637](https://github.com/airbytehq/airbyte/pull/47637) | Update dependencies |
+| 1.1.0 | 2024-08-19 | [44418](https://github.com/airbytehq/airbyte/pull/44418) | Refactor connector to manifest-only format |
+| 1.0.13 | 2024-08-17 | [44342](https://github.com/airbytehq/airbyte/pull/44342) | Update dependencies |
+| 1.0.12 | 2024-08-12 | [43847](https://github.com/airbytehq/airbyte/pull/43847) | Update dependencies |
+| 1.0.11 | 2024-08-10 | [43660](https://github.com/airbytehq/airbyte/pull/43660) | Update dependencies |
+| 1.0.10 | 2024-08-03 | [43231](https://github.com/airbytehq/airbyte/pull/43231) | Update dependencies |
+| 1.0.9 | 2024-07-27 | [42589](https://github.com/airbytehq/airbyte/pull/42589) | Update dependencies |
+| 1.0.8 | 2024-07-20 | [42349](https://github.com/airbytehq/airbyte/pull/42349) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41854](https://github.com/airbytehq/airbyte/pull/41854) | Update dependencies |
+| 1.0.6 | 2024-07-10 | [41259](https://github.com/airbytehq/airbyte/pull/41259) | Update dependencies |
+| 1.0.5 | 2024-07-06 | [40963](https://github.com/airbytehq/airbyte/pull/40963) | Update dependencies |
+| 1.0.4 | 2024-06-25 | [40448](https://github.com/airbytehq/airbyte/pull/40448) | Update dependencies |
+| 1.0.3 | 2024-06-21 | [39932](https://github.com/airbytehq/airbyte/pull/39932) | Update dependencies |
+| 1.0.2 | 2024-06-06 | [39289](https://github.com/airbytehq/airbyte/pull/39289) | [autopull] Upgrade base image to v1.2.2 |
+| 1.0.1 | 2024-05-14 | [38145](https://github.com/airbytehq/airbyte/pull/38145) | Make connector compatible with builder |
+| 1.0.0 | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
+| 0.2.1 | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification |
+| 0.2.0 | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML) |
+| 0.1.1 | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count |
+| 0.1.0 | 2022-01-10 | [9381](https://github.com/airbytehq/airbyte/pull/9381) | New Source: Chartmogul |
+
+</details>

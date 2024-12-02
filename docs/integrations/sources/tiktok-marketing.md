@@ -1,6 +1,10 @@
 # TikTok Marketing
 
-This page guides you through the process of setting up the TikTok Marketing source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [TikTok Marketing](https://business-api.tiktok.com/portal/docs) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -29,7 +33,7 @@ To access the Sandbox environment:
 
 ## Setup guide
 
-### Step 1: Set up TikTok
+### Step 1: Set up TikTok Marketing
 
 1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250) <!-- env:oss -->
 2. Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
@@ -40,22 +44,23 @@ To access the Sandbox environment:
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a name for this connector.
-4. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
-5. Log in and Authorize to the Tiktok account
-6. Choose required Start date
-7. click `Set up source`.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select TikTok Marketing from the Source type dropdown.
+4. Enter a name for the TikTok Marketing connector.
+5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
+6. Log in and Authorize to the Tiktok account
+7. Choose required Start date
+8. click `Set up source`.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Go to local Airbyte page.
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
 4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
@@ -63,10 +68,17 @@ To access the Sandbox environment:
 6. Click `Set up source`.
 <!-- /env:oss -->
 
-## Supported streams and sync modes
+## Supported sync modes
+
+The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
+
+## Supported Streams
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | :----------- | :----------------------------------------- | :---------- |
+|:------------------------------------------|:-------------|:-------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -85,10 +97,10 @@ To access the Sandbox environment:
 | CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
 | CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
 | CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
 | CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
 | CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
-| AdvertiserIds                             | Prod         | advertiser_id                              | Yes         |
+| AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
@@ -121,8 +133,33 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.3.6 | 2024-10-12 | [46855](https://github.com/airbytehq/airbyte/pull/46855) | Update dependencies |
+| 4.3.5 | 2024-10-09 | [46676](https://github.com/airbytehq/airbyte/pull/46676) | Fix error handling for codes 40100 and 50002 |
+| 4.3.4 | 2024-10-05 | [46164](https://github.com/airbytehq/airbyte/pull/46164) | Update dependencies |
+| 4.3.3 | 2024-09-21 | [45790](https://github.com/airbytehq/airbyte/pull/45790) | Update dependencies |
+| 4.3.2 | 2024-09-14 | [45488](https://github.com/airbytehq/airbyte/pull/45488) | Update dependencies |
+| 4.3.1 | 2024-09-07 | [45270](https://github.com/airbytehq/airbyte/pull/45270) | Update dependencies |
+| 4.3.0 | 2024-09-03 | [44910](https://github.com/airbytehq/airbyte/pull/44910) | Migrate to CDK v4 |
+| 4.2.5 | 2024-08-31 | [44954](https://github.com/airbytehq/airbyte/pull/44954) | Update dependencies |
+| 4.2.4 | 2024-08-24 | [43783](https://github.com/airbytehq/airbyte/pull/43783) | Update dependencies |
+| 4.2.3 | 2024-08-19 | [44048](https://github.com/airbytehq/airbyte/pull/44048) | Fix include_deleted toggle |
+| 4.2.2 | 2024-08-03 | [42822](https://github.com/airbytehq/airbyte/pull/42822) | Update dependencies |
+| 4.2.1 | 2024-07-20 | [42375](https://github.com/airbytehq/airbyte/pull/42375) | Update dependencies |
+| 4.2.0 | 2024-07-17 | [42005](https://github.com/airbytehq/airbyte/pull/42005) | Migrate to CDK v3.5.3 |
+| 4.1.0 | 2024-07-17 | [42004](https://github.com/airbytehq/airbyte/pull/42004) | Migrate to CDK v2.4.0 |
+| 4.0.4 | 2024-07-13 | [41695](https://github.com/airbytehq/airbyte/pull/41695) | Update dependencies |
+| 4.0.3 | 2024-07-10 | [41370](https://github.com/airbytehq/airbyte/pull/41370) | Update dependencies |
+| 4.0.2 | 2024-07-09 | [41153](https://github.com/airbytehq/airbyte/pull/41153) | Update dependencies |
+| 4.0.1 | 2024-07-06 | [40915](https://github.com/airbytehq/airbyte/pull/40915) | Update dependencies |
+| 4.0.0 | 2024-07-01 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams. |
+| 3.9.10 | 2024-06-25 | [40373](https://github.com/airbytehq/airbyte/pull/40373) | Update dependencies |
+| 3.9.9 | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies |
+| 3.9.8 | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2 |
 | 3.9.7 | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image |
 | 3.9.6 | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK |
 | 3.9.5 | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Schema descriptions |
@@ -172,3 +209,5 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 0.1.2 | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292) | Support reports |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.0 | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887) | Release TikTok Marketing CDK Connector |
+
+</details>

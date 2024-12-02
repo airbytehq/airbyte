@@ -3,10 +3,10 @@
 #
 
 import json
+import logging
 from typing import Any, Dict, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -63,12 +63,12 @@ def client_fixture(config) -> FirestoreWriter:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationFirestore().check(AirbyteLogger(), config)
+    outcome = DestinationFirestore().check(logging.getLogger("airbyte"), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationFirestore().check(AirbyteLogger(), {"project_id": "not_a_real_id"})
+    outcome = DestinationFirestore().check(logging.getLogger("airbyte"), {"project_id": "not_a_real_id"})
     assert outcome.status == Status.FAILED
 
 

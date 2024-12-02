@@ -20,7 +20,7 @@ class TestEngagementCallsStream(HubspotTestCase):
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "engagements_calls"
     OBJECT_TYPE = "calls"
-    ASSOCIATIONS = ["contacts", "deal", "company", "tickets"]
+    ASSOCIATIONS = ["contacts", "deals", "companies", "tickets"]
 
     @property
     def response_builder(self):

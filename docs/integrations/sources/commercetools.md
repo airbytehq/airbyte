@@ -47,8 +47,36 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
-| 0.2.0   | 2023-08-24 | [29384](https://github.com/airbytehq/airbyte/pull/29384) | Migrate to low code                   |
-| 0.1.1   | 2023-08-23 | [5957](https://github.com/airbytehq/airbyte/pull/5957)   | Fix schemas                           |
-| 0.1.0   | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957)   | Initial Release. Source Commercetools |
+| 0.2.23 | 2024-11-04 | [48186](https://github.com/airbytehq/airbyte/pull/48186) | Update dependencies |
+| 0.2.22 | 2024-10-29 | [47859](https://github.com/airbytehq/airbyte/pull/47859) | Update dependencies |
+| 0.2.21 | 2024-10-28 | [47112](https://github.com/airbytehq/airbyte/pull/47112) | Update dependencies |
+| 0.2.20 | 2024-10-12 | [46779](https://github.com/airbytehq/airbyte/pull/46779) | Update dependencies |
+| 0.2.19 | 2024-10-05 | [46497](https://github.com/airbytehq/airbyte/pull/46497) | Update dependencies |
+| 0.2.18 | 2024-09-28 | [46103](https://github.com/airbytehq/airbyte/pull/46103) | Update dependencies |
+| 0.2.17 | 2024-09-21 | [45778](https://github.com/airbytehq/airbyte/pull/45778) | Update dependencies |
+| 0.2.16 | 2024-09-14 | [45552](https://github.com/airbytehq/airbyte/pull/45552) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45287](https://github.com/airbytehq/airbyte/pull/45287) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [45022](https://github.com/airbytehq/airbyte/pull/45022) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44744](https://github.com/airbytehq/airbyte/pull/44744) | Update dependencies |
+| 0.2.12 | 2024-08-17 | [44209](https://github.com/airbytehq/airbyte/pull/44209) | Update dependencies |
+| 0.2.11 | 2024-08-12 | [43770](https://github.com/airbytehq/airbyte/pull/43770) | Update dependencies |
+| 0.2.10 | 2024-08-03 | [43131](https://github.com/airbytehq/airbyte/pull/43131) | Update dependencies |
+| 0.2.9 | 2024-07-27 | [42673](https://github.com/airbytehq/airbyte/pull/42673) | Update dependencies |
+| 0.2.8 | 2024-07-20 | [42330](https://github.com/airbytehq/airbyte/pull/42330) | Update dependencies |
+| 0.2.7 | 2024-07-13 | [41849](https://github.com/airbytehq/airbyte/pull/41849) | Update dependencies |
+| 0.2.6 | 2024-07-10 | [41396](https://github.com/airbytehq/airbyte/pull/41396) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40781](https://github.com/airbytehq/airbyte/pull/40781) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40418](https://github.com/airbytehq/airbyte/pull/40418) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40198](https://github.com/airbytehq/airbyte/pull/40198) | Update dependencies |
+| 0.2.2 | 2024-06-04 | [38995](https://github.com/airbytehq/airbyte/pull/38995) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.1 | 2024-05-21 | [38522](https://github.com/airbytehq/airbyte/pull/38522) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-24 | [29384](https://github.com/airbytehq/airbyte/pull/29384) | Migrate to low code |
+| 0.1.1 | 2023-08-23 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Fix schemas |
+| 0.1.0 | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
+
+</details>

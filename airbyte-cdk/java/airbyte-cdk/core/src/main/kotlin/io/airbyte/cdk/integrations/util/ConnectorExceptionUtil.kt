@@ -4,15 +4,8 @@
 package io.airbyte.cdk.integrations.util
 
 import com.google.common.collect.ImmutableList
-import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
-import io.airbyte.commons.exceptions.ConfigErrorException
-import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.EOFException
-import java.sql.SQLException
-import java.sql.SQLSyntaxErrorException
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 private val LOGGER = KotlinLogging.logger {}
@@ -21,79 +14,8 @@ object ConnectorExceptionUtil {
 
     const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
-    const val RECOVERY_CONNECTION_ERROR_MESSAGE: String =
-        "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
-            "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
-    const val DATABASE_CONNECTION_ERROR: String =
-        "Encountered an error while connecting to the database error"
 
     @JvmField val HTTP_AUTHENTICATION_ERROR_CODES: List<Int> = ImmutableList.of(401, 403)
-
-    fun isConfigError(e: Throwable?): Boolean {
-        return isConfigErrorException(e) ||
-            isConnectionError(e) ||
-            isUnknownColumnInFieldListException(e)
-    }
-
-    fun isTransientError(e: Throwable?): Boolean {
-        return isTransientErrorException(e) ||
-            isRecoveryConnectionException(e) ||
-            isTransientEOFException(e) ||
-            isTransientSQLException(e)
-    }
-
-    fun getDisplayMessage(e: Throwable?): String? {
-        return if (e is ConfigErrorException) {
-            e.displayMessage
-        } else if (e is TransientErrorException) {
-            e.message
-        } else if (e is ConnectionErrorException) {
-            ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
-        } else if (isRecoveryConnectionException(e)) {
-            RECOVERY_CONNECTION_ERROR_MESSAGE
-        } else if (isUnknownColumnInFieldListException(e)) {
-            e!!.message
-        } else if (isTransientError(e)) {
-            DATABASE_CONNECTION_ERROR
-        } else {
-            String.format(
-                COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                if (e!!.message != null) e.message else ""
-            )
-        }
-    }
-
-    /**
-     * Returns the first instance of an exception associated with a configuration error (if it
-     * exists). Otherwise, the original exception is returned.
-     */
-    fun getRootConfigError(e: Exception?): Throwable? {
-        var current: Throwable? = e
-        while (current != null) {
-            if (isConfigError(current)) {
-                return current
-            } else {
-                current = current.cause
-            }
-        }
-        return e
-    }
-
-    /**
-     * Returns the first instance of an exception associated with a configuration error (if it
-     * exists). Otherwise, the original exception is returned.
-     */
-    fun getRootTransientError(e: Exception?): Throwable? {
-        var current: Throwable? = e
-        while (current != null) {
-            if (isTransientError(current)) {
-                return current
-            } else {
-                current = current.cause
-            }
-        }
-        return e
-    }
 
     /**
      * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple
@@ -128,59 +50,5 @@ object ConnectorExceptionUtil {
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
         return eithers.map { obj: Either<out T, Result> -> obj.right!! }
-    }
-
-    private val TRANSIENT_SQL_EXCEPTION_MESSAGE: Array<String> =
-        arrayOf(
-            "an i/o error occurred while sending to the backend",
-            "temporary file size exceeds temp_file_limit"
-        )
-    private val TRANSIENT_EOF_EXCEPTION_MESSAGE: Array<String> =
-        arrayOf("connection was unexpectedly lost")
-    private val RECOVERY_CONNECTION_EXCEPTION_MESSAGE: Array<String> =
-        arrayOf("due to conflict with recovery")
-
-    private fun isTransientErrorException(e: Throwable?): Boolean {
-        return e is TransientErrorException
-    }
-
-    private fun isConfigErrorException(e: Throwable?): Boolean {
-        return e is ConfigErrorException
-    }
-
-    private fun isConnectionError(e: Throwable?): Boolean {
-        return e is ConnectionErrorException
-    }
-
-    private fun containsOneOfTheErrorMessages(
-        e: Throwable?,
-        errorMessages: Array<String>
-    ): Boolean {
-        val msg = e?.message!!.lowercase()
-        for (errorMessage in errorMessages) {
-            if (msg.contains(errorMessage)) return true
-        }
-        return false
-    }
-
-    private fun isTransientEOFException(e: Throwable?): Boolean {
-        return (e is EOFException) &&
-            containsOneOfTheErrorMessages(e, TRANSIENT_EOF_EXCEPTION_MESSAGE)
-    }
-
-    private fun isTransientSQLException(e: Throwable?): Boolean {
-        return (e is SQLException) &&
-            containsOneOfTheErrorMessages(e, TRANSIENT_SQL_EXCEPTION_MESSAGE)
-    }
-
-    private fun isRecoveryConnectionException(e: Throwable?): Boolean {
-        return (e is SQLException) &&
-            containsOneOfTheErrorMessages(e, RECOVERY_CONNECTION_EXCEPTION_MESSAGE)
-    }
-
-    private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
-        return (e is SQLSyntaxErrorException &&
-            e.message!!.lowercase().contains("unknown column") &&
-            e.message!!.lowercase().contains("in 'field list'"))
     }
 }

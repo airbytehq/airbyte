@@ -6,9 +6,8 @@ from collections.abc import Callable
 import pytest
 from airbyte_protocol.models import Status, Type  # type: ignore
 from live_tests.commons.models import ExecutionResult
-from live_tests.regression_tests.consts import MAX_LINES_IN_REPORT
-
-from .utils import fail_test_on_failing_execution_results, tail_file
+from live_tests.consts import MAX_LINES_IN_REPORT
+from live_tests.utils import fail_test_on_failing_execution_results, is_successful_check, tail_file
 
 pytestmark = [
     pytest.mark.anyio,
@@ -31,12 +30,6 @@ async def test_check_passes_on_both_versions(
             check_target_execution_result,
         ],
     )
-
-    def is_successful_check(execution_result: ExecutionResult) -> bool:
-        for message in execution_result.airbyte_messages:
-            if message.type is Type.CONNECTION_STATUS and message.connectionStatus.status is Status.SUCCEEDED:
-                return True
-        return False
 
     successful_control_check: bool = is_successful_check(check_control_execution_result)
     successful_target_check: bool = is_successful_check(check_target_execution_result)

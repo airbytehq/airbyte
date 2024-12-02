@@ -78,6 +78,13 @@ def config_fixture(docker_client) -> Mapping[str, Any]:
     yield config
 
 
+@pytest.fixture(name="config_fixture_use_file_transfer", scope="session")
+def config_fixture_use_file_transfer(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_use_file_transfer.json")
+    config["host"] = get_docker_ip()
+    yield config
+
+
 @pytest.fixture(name="config_private_key", scope="session")
 def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
@@ -100,6 +107,16 @@ def config_fixture_password_all_csv(config) -> Mapping[str, Any]:
 @pytest.fixture(name="config_password_all_jsonl", scope="session")
 def config_fixture_password_all_jsonl(config) -> Mapping[str, Any]:
     yield config | load_config("stream_jsonl.json")
+
+
+@pytest.fixture(name="config_password_all_excel_xlsx", scope="session")
+def config_fixture_password_all_excel_xlsx(config) -> Mapping[str, Any]:
+    yield config | load_config("stream_excel_xlsx.json")
+
+
+@pytest.fixture(name="config_password_all_excel_xls", scope="session")
+def config_fixture_password_all_excel_xls(config) -> Mapping[str, Any]:
+    yield config | load_config("stream_excel_xls.json")
 
 
 @pytest.fixture(name="configured_catalog")

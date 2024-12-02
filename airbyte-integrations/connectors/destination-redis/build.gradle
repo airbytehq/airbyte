@@ -37,5 +37,5 @@ dependencies {
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    testImplementation libs.testcontainers
+    testImplementation 'org.testcontainers:testcontainers:1.19.0'
 }

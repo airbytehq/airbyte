@@ -1,14 +1,19 @@
-import React from "react";
 // Import the original mapper
-import MDXComponents from "@theme-original/MDXComponents";
 import { AppliesTo } from "@site/src/components/AppliesTo";
-import { FieldAnchor } from "@site/src/components/FieldAnchor";
-import { HideInUI } from "@site/src/components/HideInUI";
-import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
-import { SpecSchema } from "@site/src/components/SpecSchema";
-import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
-import { ProductInformation } from "@site/src/components/ProductInformation";
 import { Arcade } from "@site/src/components/Arcade";
+import { FieldAnchor } from "@site/src/components/FieldAnchor";
+import { HeaderDecoration } from "@site/src/components/HeaderDecoration";
+import { HideInUI } from "@site/src/components/HideInUI";
+import { ProductInformation } from "@site/src/components/ProductInformation";
+import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
+import { SpecSchema } from "@site/src/components/SpecSchema";
+import MDXComponents from "@theme-original/MDXComponents";
+import { CardWithIcon } from "../../components/Card/Card";
+import { Details } from "../../components/Details";
+import { DocMetaTags } from "../../components/DocMetaTags";
+import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
+import { Grid } from "../../components/Grid/Grid";
+import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 
 export default {
   // Re-use the default mapping
@@ -21,4 +26,10 @@ export default {
   SpecSchema,
   PyAirbyteExample,
   ProductInformation,
+  Details,
+  EntityRelationshipDiagram,
+  CardWithIcon,
+  Grid,
+  YoutubeEmbed,
+  DocMetaTags,
 };

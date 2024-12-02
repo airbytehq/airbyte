@@ -177,7 +177,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 
 
 class SurveyMonkeyBaseStream(HttpStream, ABC):
@@ -292,7 +292,7 @@ mv source_survey_monkey_demo/schemas/customers.json source_survey_monkey_demo/sc
 rm source_survey_monkey_demo/schemas/employees.json
 ```
 
-The two tests should now pass
+The test should now pass
 
 ```
 poetry run pytest unit_tests/

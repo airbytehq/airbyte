@@ -8,7 +8,7 @@ data:
   icon: redis.svg
   license: MIT
   name: Redis
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -75,6 +75,8 @@ With root level normalization, the output CSV is:
 | :------------------------------------- | :-------------------- | :-------- | :----------------------------------- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | 123       | `{ "first": "John", "last": "Doe" }` |
 
+With the field `File Extension`, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with `csv` extension.
+
 ### JSON Lines \(JSONL\)
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
@@ -115,6 +117,8 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
+With the field `File Extension`, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with `jsonl` extension.
+
 ## Getting started
 
 ### Requirements
@@ -124,25 +128,31 @@ They will be like this in the output file:
 
 ### Setup guide
 
-- Fill up AzureBlobStorage info
-  - **Endpoint Domain Name**
-    - Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
-  - **Azure blob storage container**
-    - If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
-  - **Azure Blob Storage account name**
-    - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
-  - **The Azure blob storage account key**
-    - Corresponding key to the above user.
-  - **Format**
-    - Data format that will be use for a migrated data representation in blob.
-- Make sure your user has access to Azure from the machine running Airbyte.
-  - This depends on your networking setup.
-  - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
+* Fill up AzureBlobStorage info
+  * **Endpoint Domain Name**
+    * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
+  * **Azure blob storage container**
+    * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
+  * **Azure Blob Storage account name**
+    * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
+  * **The Azure blob storage account key**
+    * Corresponding key to the above user.
+  * **Format**
+    * Data format that will be use for a migrated data representation in blob.
+    * With the field **File Extension**, it is possible to save the output files with extension. It is an optional field with default value as `false`. Enable this to store the files with extension.
+* Make sure your user has access to Azure from the machine running Airbyte.
+  * This depends on your networking setup.
+  * The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
 
-## CHANGELOG
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.2   | 2024-06-12 | [\#38061](https://github.com/airbytehq/airbyte/pull/38061) | File Extensions added for the output files                                                                                                                      |
 | 0.2.1   | 2023-09-13 | [\#30412](https://github.com/airbytehq/airbyte/pull/30412) | Switch noisy logging to debug                                                                                                                                   |
 | 0.2.0   | 2023-01-18 | [\#21467](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
 | 0.1.6   | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
@@ -152,3 +162,5 @@ They will be like this in the output file:
 | 0.1.2   | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682)   | Each data synchronization for each stream is written to a new blob to the folder with stream name.                                                              |
 | 0.1.1   | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190)   | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
 | 0.1.0   | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332)   | Initial release with JSONL and CSV output.                                                                                                                      |
+
+</details>

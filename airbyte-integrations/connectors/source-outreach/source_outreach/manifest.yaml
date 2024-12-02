@@ -180,7 +180,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: https://api.outreach.io/api/v2
+    url_base: https://api.outreach.io/api/v2/
     http_method: GET
     request_parameters:
       count: "false"

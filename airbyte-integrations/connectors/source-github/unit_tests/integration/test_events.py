@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -177,11 +177,12 @@ class EventsTest(TestCase):
             .with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2020-06-09T10:00:00Z"}})
             .build(),
         )
-        assert actual_messages.state_messages[0].state.stream.stream_state == {
+        assert actual_messages.state_messages[0].state.stream.stream_state.dict() == {
             "airbytehq/integration-test": {"created_at": "2022-06-09T12:47:28Z"}
         }
 
-    def test_read_handles_expected_error_correctly_and_exits_with_complete_status(self):
+    @mock.patch("time.sleep")
+    def test_read_handles_expected_error_correctly_and_exits_with_complete_status(self, time_mock):
         """Ensure read() method does not raise an Exception and log message with error is in output"""
         self.r_mock.get(
             HttpRequest(

@@ -3,8 +3,11 @@
  */
 package io.airbyte.cdk.integrations.debezium.internals
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.AbstractIterator
+import io.airbyte.cdk.db.DbAnalyticsUtils.debeziumCloseReasonMessage
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.airbyte.commons.lang.MoreBooleans
 import io.airbyte.commons.util.AutoCloseableIterator
@@ -12,6 +15,7 @@ import io.debezium.engine.ChangeEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.Field
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.*
@@ -36,6 +40,7 @@ class DebeziumRecordIterator<T>(
     private val publisherStatusSupplier: Supplier<Boolean>,
     private val debeziumShutdownProcedure: DebeziumShutdownProcedure<ChangeEvent<String?, String?>>,
     private val firstRecordWaitTime: Duration,
+    private val config: JsonNode
 ) : AbstractIterator<ChangeEventWithMetadata>(), AutoCloseableIterator<ChangeEventWithMetadata> {
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
@@ -47,34 +52,60 @@ class DebeziumRecordIterator<T>(
     private var lastHeartbeatPosition: T? = null
     private var maxInstanceOfNoRecordsFound = 0
     private var signalledDebeziumEngineShutdown = false
+    private var numUnloggedPolls: Int = -1
+    private var lastLoggedPoll: Instant = Instant.MIN
 
-    // The following logic incorporates heartbeat (CDC postgres only for now):
+    // The following logic incorporates heartbeat:
     // 1. Wait on queue either the configured time first or 1 min after a record received
     // 2. If nothing came out of queue finish sync
     // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
     // finish sync
     // 4. If change event lsn reached target finish sync
-    // 5. Otherwise check message queuen again
+    // 5. Otherwise check message queue again
     override fun computeNext(): ChangeEventWithMetadata? {
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
-        // messages it
-        // emitted.
+        // messages it emitted.
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
-
             val waitTime =
                 if (receivedFirstRecord) this.subsequentRecordWaitTime else this.firstRecordWaitTime
+            val instantBeforePoll: Instant = Instant.now()
             try {
                 next = queue.poll(waitTime.seconds, TimeUnit.SECONDS)
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
             }
+            val instantAfterPoll: Instant = Instant.now()
+            val isEventLogged: Boolean =
+                numUnloggedPolls >= POLL_LOG_MAX_CALLS_INTERVAL - 1 ||
+                    Duration.between(lastLoggedPoll, instantAfterPoll) > pollLogMaxTimeInterval ||
+                    next == null ||
+                    isHeartbeatEvent(next)
+            if (isEventLogged) {
+                val pollDuration: Duration = Duration.between(instantBeforePoll, Instant.now())
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        when (numUnloggedPolls) {
+                            -1 -> "blocked for $pollDuration in its first call."
+                            0 ->
+                                "blocked for $pollDuration after " +
+                                    "its previous call which was also logged."
+                            else ->
+                                "blocked for $pollDuration after " +
+                                    "$numUnloggedPolls previous call(s) which were not logged."
+                        }
+                }
+                numUnloggedPolls = 0
+                lastLoggedPoll = instantAfterPoll
+            } else {
+                numUnloggedPolls++
+            }
 
             // if within the timeout, the consumer could not get a record, it is time to tell the
-            // producer to
-            // shutdown.
+            // producer to shutdown.
             if (next == null) {
+                LOGGER.info { "CDC events queue poll(): returned nothing." }
                 if (
                     !receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10
                 ) {
@@ -82,34 +113,57 @@ class DebeziumRecordIterator<T>(
                         String.format(
                             "No records were returned by Debezium in the timeout seconds %s, closing the engine and iterator",
                             waitTime.seconds
-                        )
+                        ),
+                        DebeziumCloseReason.TIMEOUT
                     )
                 }
-                LOGGER.info { "no record found. polling again." }
+
                 maxInstanceOfNoRecordsFound++
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned nothing, polling again, attempt $maxInstanceOfNoRecordsFound."
+                }
                 continue
             }
 
             if (isHeartbeatEvent(next)) {
                 if (!hasSnapshotFinished) {
+                    LOGGER.info {
+                        "CDC events queue poll(): " +
+                            "returned a heartbeat event while snapshot is not finished yet."
+                    }
                     continue
                 }
 
                 val heartbeatPos = getHeartbeatPosition(next)
+                val isProgressing = heartbeatPos != lastHeartbeatPosition
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned a heartbeat event: " +
+                        if (isProgressing) {
+                            "progressing to $heartbeatPos."
+                        } else {
+                            "no progress since last heartbeat."
+                        }
+                }
                 // wrap up sync if heartbeat position crossed the target OR heartbeat position
                 // hasn't changed for
                 // too long
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
                     requestClose(
-                        "Closing: Heartbeat indicates sync is done by reaching the target position"
+                        "Closing: Heartbeat indicates sync is done by reaching the target position",
+                        DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
                     )
                 } else if (
                     heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging()
                 ) {
-                    requestClose("Closing: Heartbeat indicates sync is not progressing")
+                    requestClose(
+                        "Closing: Heartbeat indicates sync is not progressing",
+                        DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING
+                    )
                 }
 
-                if (heartbeatPos != lastHeartbeatPosition) {
+                if (isProgressing) {
                     this.tsLastHeartbeat = LocalDateTime.now()
                     this.lastHeartbeatPosition = heartbeatPos
                 }
@@ -117,14 +171,34 @@ class DebeziumRecordIterator<T>(
             }
 
             val changeEventWithMetadata = ChangeEventWithMetadata(next)
+
+            // #41647: discard event type with op code 'm'
+            if (!isEventTypeHandled(changeEventWithMetadata)) {
+                continue
+            }
+
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
+
+            if (isEventLogged) {
+                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson?.get("source")
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned a change event with \"source\": $source."
+                }
+            }
 
             // if the last record matches the target file position, it is time to tell the producer
             // to shutdown.
             if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
-                requestClose("Closing: Change event reached target position")
+                requestClose(
+                    "Closing: Change event reached target position",
+                    DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION
+                )
             }
             this.tsLastHeartbeat = null
+            if (!receivedFirstRecord) {
+                LOGGER.info { "Received first record from debezium." }
+            }
             this.receivedFirstRecord = true
             this.maxInstanceOfNoRecordsFound = 0
             return changeEventWithMetadata
@@ -175,7 +249,7 @@ class DebeziumRecordIterator<T>(
      */
     @Throws(Exception::class)
     override fun close() {
-        requestClose("Closing: Iterator closing")
+        requestClose("Closing: Iterator closing", DebeziumCloseReason.ITERATOR_CLOSE)
     }
 
     private fun isHeartbeatEvent(event: ChangeEvent<String?, String?>): Boolean {
@@ -188,20 +262,20 @@ class DebeziumRecordIterator<T>(
         if (this.tsLastHeartbeat == null) {
             return false
         }
+
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        LOGGER.info {
-            "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
-        }
-        // wait time for no change in heartbeat position is half of initial waitTime
-        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
+        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
     }
 
-    private fun requestClose(closeLogMessage: String) {
+    private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
         if (signalledDebeziumEngineShutdown) {
             return
         }
         LOGGER.info { closeLogMessage }
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(
+            debeziumCloseReasonMessage(closeReason.toString())
+        )
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
@@ -246,5 +320,35 @@ class DebeziumRecordIterator<T>(
         }
     }
 
-    companion object {}
+    enum class DebeziumCloseReason() {
+        TIMEOUT,
+        ITERATOR_CLOSE,
+        HEARTBEAT_REACHED_TARGET_POSITION,
+        CHANGE_EVENT_REACHED_TARGET_POSITION,
+        HEARTBEAT_NOT_PROGRESSING
+    }
+
+    companion object {
+        val pollLogMaxTimeInterval: Duration = Duration.ofSeconds(5)
+        const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
+        private val unhandledFoundTypeList: MutableList<String> = mutableListOf()
+        /**
+         * We are not interested in message events. According to debezium
+         * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
+         * , possible operation code are: c: create, u: update, d: delete, r: read (applies to only
+         * snapshots) t: truncate, m: message
+         */
+        fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
+            event.eventValueAsJson?.get("op")?.asText()?.let {
+                val handled = it in listOf("c", "u", "d", "t")
+                if (!handled && !unhandledFoundTypeList.contains(it)) {
+                    unhandledFoundTypeList.add(it)
+                    LOGGER.info { "WAL event type not handled: $it" }
+                    LOGGER.debug { "event: $event" }
+                }
+                return handled
+            }
+                ?: return false
+        }
+    }
 }

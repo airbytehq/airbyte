@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.24
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   icon: firebolt.svg
   license: MIT
   name: Firebolt
@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-firebolt
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -37,6 +37,10 @@ data:
         message: "Use new firebolt-sdk version."
         upgradeDeadline: "2024-06-01"
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: firebolt_config_dev_null
+          id: 63d919ce-b4ff-48d9-9cae-6665b5f56644
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

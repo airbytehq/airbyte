@@ -18,7 +18,79 @@
     },
     "created_by": {
       "description": "User ID or name of the creator of the page.",
-      "$ref": "user.json"
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "last_edited_time": {
       "description": "Date and time when the page was last edited.",
@@ -27,7 +99,79 @@
     },
     "last_edited_by": {
       "description": "User ID or name of the last editor of the page.",
-      "$ref": "user.json"
+
+      "type": "object",
+      "properties": {
+        "object": {
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "enum": ["person", "bot"]
+        },
+        "person": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "bot": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "owner": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "info": {
+                  "avatar_url": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "object": {
+                    "type": ["null", "string"]
+                  },
+                  "person": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "email": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                "workspace": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "workspace_name": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "archived": {
       "description": "Indicates whether the page is archived or not.",
@@ -35,15 +179,283 @@
     },
     "icon": {
       "description": "URL or reference to the page icon.",
-      "$ref": "icon.json"
+      "anyOf": [
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "enum": ["file", "external"]
+            },
+            "caption": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "text": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "content": {
+                        "type": ["null", "string"]
+                      },
+                      "link": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "type": {
+                            "enum": ["url"]
+                          },
+                          "url": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "mention": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "info": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "id": {
+                            "type": ["null", "string"]
+                          },
+                          "object": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "equation": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "expression": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "annotations": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "bold": {
+                        "type": ["null", "boolean"]
+                      },
+                      "italic": {
+                        "type": ["null", "boolean"]
+                      },
+                      "strikethrough": {
+                        "type": ["null", "boolean"]
+                      },
+                      "underline": {
+                        "type": ["null", "boolean"]
+                      },
+                      "code": {
+                        "type": ["null", "boolean"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "plain_text": {
+                    "type": ["null", "string"]
+                  },
+                  "href": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "external": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              }
+            },
+            "file": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "expiry_time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "emoji": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     },
     "cover": {
       "description": "URL or reference to the page cover image.",
-      "$ref": "file.json"
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "enum": ["file", "external"]
+        },
+        "caption": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "text": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "content": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "object"],
+                    "additionalProperties": true,
+                    "properties": {
+                      "type": {
+                        "enum": ["url"]
+                      },
+                      "url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "mention": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "info": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "object": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "equation": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "expression": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "annotations": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "bold": {
+                    "type": ["null", "boolean"]
+                  },
+                  "italic": {
+                    "type": ["null", "boolean"]
+                  },
+                  "strikethrough": {
+                    "type": ["null", "boolean"]
+                  },
+                  "underline": {
+                    "type": ["null", "boolean"]
+                  },
+                  "code": {
+                    "type": ["null", "boolean"]
+                  },
+                  "color": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "plain_text": {
+                "type": ["null", "string"]
+              },
+              "href": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "external": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "file": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "expiry_time": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
     },
     "parent": {
       "description": "ID or reference to the parent page.",
-      "$ref": "parent.json"
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["block_id", "database_id", "page_id", "workspace"]
+        },
+        "block_id": {
+          "type": "string"
+        },
+        "database_id": {
+          "type": "string"
+        },
+        "page_id": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "boolean"
+        }
+      }
     },
     "url": {
       "description": "URL of the page within the service.",
@@ -79,7 +491,66 @@
                     "enum": ["title"]
                   },
                   "title": {
-                    "$ref": "title.json"
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "text": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "content": {
+                              "type": ["null", "string"]
+                            },
+                            "link": {
+                              "type": ["null", "object"],
+                              "additionalProperties": true,
+                              "properties": {
+                                "type": {
+                                  "enum": ["url"]
+                                },
+                                "url": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "annotations": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "bold": {
+                              "type": ["null", "boolean"]
+                            },
+                            "italic": {
+                              "type": ["null", "boolean"]
+                            },
+                            "strikethrough": {
+                              "type": ["null", "boolean"]
+                            },
+                            "underline": {
+                              "type": ["null", "boolean"]
+                            },
+                            "code": {
+                              "type": ["null", "boolean"]
+                            },
+                            "color": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "plain_text": {
+                          "type": ["null", "string"]
+                        },
+                        "href": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -95,7 +566,92 @@
                   "rich_text": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "rich_text.json"
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "text": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "content": {
+                              "type": ["null", "string"]
+                            },
+                            "link": {
+                              "type": ["null", "object"],
+                              "additionalProperties": true,
+                              "properties": {
+                                "type": {
+                                  "enum": ["url"]
+                                },
+                                "url": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "mention": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "type": {
+                              "type": ["null", "string"]
+                            },
+                            "info": {
+                              "type": ["null", "object"],
+                              "properties": {
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "equation": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "expression": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "annotations": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "bold": {
+                              "type": ["null", "boolean"]
+                            },
+                            "italic": {
+                              "type": ["null", "boolean"]
+                            },
+                            "strikethrough": {
+                              "type": ["null", "boolean"]
+                            },
+                            "underline": {
+                              "type": ["null", "boolean"]
+                            },
+                            "code": {
+                              "type": ["null", "boolean"]
+                            },
+                            "color": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "plain_text": {
+                          "type": ["null", "string"]
+                        },
+                        "href": {
+                          "type": ["null", "string"]
+                        }
+                      }
                     }
                   }
                 }
@@ -110,7 +666,18 @@
                     "enum": ["select"]
                   },
                   "select": {
-                    "$ref": "options.json"
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
                   }
                 }
               },
@@ -126,7 +693,18 @@
                   "multi_select": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "options.json"
+                      "type": ["null", "object"],
+                      "properties": {
+                        "id": {
+                          "type": ["null", "string"]
+                        },
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "color": {
+                          "type": ["null", "string"]
+                        }
+                      }
                     }
                   }
                 }
@@ -141,7 +719,12 @@
                     "enum": ["date"]
                   },
                   "date": {
-                    "$ref": "date.json"
+                    "type": ["null", "object"],
+                    "properties": {
+                      "start": { "type": ["null", "string"] },
+                      "end": { "type": ["null", "string"] },
+                      "time_zone": { "type": ["null", "string"] }
+                    }
                   }
                 }
               },
@@ -170,7 +753,12 @@
                         "type": ["null", "boolean"]
                       },
                       "date": {
-                        "$ref": "date.json"
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
                       }
                     }
                   }
@@ -217,7 +805,12 @@
                         "type": ["null", "number"]
                       },
                       "date": {
-                        "$ref": "date.json"
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
                       },
                       "array": {
                         "type": ["null", "array"],
@@ -246,7 +839,78 @@
                   "people": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref": "user.json"
+                      "type": "object",
+                      "properties": {
+                        "object": {
+                          "enum": ["user"]
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "avatar_url": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "enum": ["person", "bot"]
+                        },
+                        "person": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "email": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "bot": {
+                          "type": ["null", "object"],
+                          "additionalProperties": true,
+                          "properties": {
+                            "owner": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "info": {
+                                  "avatar_url": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "id": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "name": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "object": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "person": {
+                                    "type": ["null", "object"],
+                                    "properties": {
+                                      "email": {
+                                        "type": ["null", "string"]
+                                      },
+                                      "type": {
+                                        "type": ["null", "string"]
+                                      }
+                                    }
+                                  }
+                                },
+                                "workspace": {
+                                  "type": ["null", "boolean"]
+                                }
+                              }
+                            },
+                            "workspace_name": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -362,7 +1026,78 @@
                     "enum": ["created_by"]
                   },
                   "created_by": {
-                    "$ref": "user.json"
+                    "type": "object",
+                    "properties": {
+                      "object": {
+                        "enum": ["user"]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "avatar_url": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "enum": ["person", "bot"]
+                      },
+                      "person": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "email": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "bot": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "owner": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "info": {
+                                "avatar_url": {
+                                  "type": ["null", "string"]
+                                },
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "name": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                },
+                                "person": {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "email": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "type": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                              },
+                              "workspace": {
+                                "type": ["null", "boolean"]
+                              }
+                            }
+                          },
+                          "workspace_name": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -390,7 +1125,78 @@
                     "enum": ["last_edited_by"]
                   },
                   "last_edited_by": {
-                    "$ref": "user.json"
+                    "type": "object",
+                    "properties": {
+                      "object": {
+                        "enum": ["user"]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "avatar_url": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "enum": ["person", "bot"]
+                      },
+                      "person": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "email": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "bot": {
+                        "type": ["null", "object"],
+                        "additionalProperties": true,
+                        "properties": {
+                          "owner": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "info": {
+                                "avatar_url": {
+                                  "type": ["null", "string"]
+                                },
+                                "id": {
+                                  "type": ["null", "string"]
+                                },
+                                "name": {
+                                  "type": ["null", "string"]
+                                },
+                                "object": {
+                                  "type": ["null", "string"]
+                                },
+                                "person": {
+                                  "type": ["null", "object"],
+                                  "properties": {
+                                    "email": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "type": {
+                                      "type": ["null", "string"]
+                                    }
+                                  }
+                                }
+                              },
+                              "workspace": {
+                                "type": ["null", "boolean"]
+                              }
+                            }
+                          },
+                          "workspace_name": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -423,7 +1229,18 @@
                     "enum": ["status"]
                   },
                   "status": {
-                    "$ref": "options.json"
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "color": {
+                        "type": ["null", "string"]
+                      }
+                    }
                   }
                 }
               },
@@ -465,10 +1282,86 @@
                         "enum": ["verified", "unverified"]
                       },
                       "verified_by": {
-                        "$ref": "user.json"
+                        "type": "object",
+                        "properties": {
+                          "object": {
+                            "enum": ["user"]
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": ["null", "string"]
+                          },
+                          "avatar_url": {
+                            "type": ["null", "string"]
+                          },
+                          "type": {
+                            "enum": ["person", "bot"]
+                          },
+                          "person": {
+                            "type": ["null", "object"],
+                            "additionalProperties": true,
+                            "properties": {
+                              "email": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          },
+                          "bot": {
+                            "type": ["null", "object"],
+                            "additionalProperties": true,
+                            "properties": {
+                              "owner": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string"
+                                  },
+                                  "info": {
+                                    "avatar_url": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "id": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "name": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "object": {
+                                      "type": ["null", "string"]
+                                    },
+                                    "person": {
+                                      "type": ["null", "object"],
+                                      "properties": {
+                                        "email": {
+                                          "type": ["null", "string"]
+                                        },
+                                        "type": {
+                                          "type": ["null", "string"]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "workspace": {
+                                    "type": ["null", "boolean"]
+                                  }
+                                }
+                              },
+                              "workspace_name": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          }
+                        }
                       },
                       "date": {
-                        "$ref": "date.json"
+                        "type": ["null", "object"],
+                        "properties": {
+                          "start": { "type": ["null", "string"] },
+                          "end": { "type": ["null", "string"] },
+                          "time_zone": { "type": ["null", "string"] }
+                        }
                       }
                     }
                   }

@@ -31,7 +31,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-hubspot spec
 poetry run source-hubspot check --config secrets/config.json
 poetry run source-hubspot discover --config secrets/config.json
-poetry run source-hubspot read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-hubspot read --config secrets/config.json --catalog integration_tests/basic_read_catalog.json
 ```
 
 ### Running unit tests

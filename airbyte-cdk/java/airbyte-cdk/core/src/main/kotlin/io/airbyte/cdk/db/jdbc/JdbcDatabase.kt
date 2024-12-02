@@ -33,19 +33,41 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @Throws(SQLException::class)
     abstract fun execute(query: CheckedConsumer<Connection, SQLException>)
 
-    @Throws(SQLException::class)
+    /**
+     * We can't define a default parameter in the method below because "An overriding function is
+     * not allowed to specify default values for its parameters" in kotlin And the interface could
+     * have a default parameter, but is not allowed an @JvmOverload because it's abstract. So for
+     * java compat, we have 2 functions, the same way we would in java
+     */
     override fun execute(sql: String?) {
-        execute { connection: Connection -> connection.createStatement().execute(sql) }
+        execute(sql, true)
     }
 
     @Throws(SQLException::class)
-    fun executeWithinTransaction(queries: List<String>) {
+    fun execute(sql: String?, logStatements: Boolean) {
+        execute { connection: Connection ->
+            if (logStatements) {
+                LOGGER.info("executing statement: $sql")
+            }
+            connection.createStatement().execute(sql)
+            if (logStatements) {
+                LOGGER.info("statement successfully executed")
+            }
+        }
+    }
+
+    @Throws(SQLException::class)
+    fun executeWithinTransaction(queries: List<String>, logStatements: Boolean = true) {
         execute { connection: Connection ->
             connection.autoCommit = false
             for (s in queries) {
-                LOGGER.info("executing query within transaction: $s")
+                if (logStatements) {
+                    LOGGER.info("executing query within transaction: $s")
+                }
                 connection.createStatement().execute(s)
-                LOGGER.info("done executing query within transaction: $s")
+                if (logStatements) {
+                    LOGGER.info("done executing query within transaction: $s")
+                }
             }
             connection.commit()
             connection.autoCommit = true

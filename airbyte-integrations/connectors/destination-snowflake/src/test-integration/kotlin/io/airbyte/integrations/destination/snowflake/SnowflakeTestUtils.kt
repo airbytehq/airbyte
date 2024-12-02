@@ -11,7 +11,6 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.*
-import java.util.Map
 import java.util.stream.Collectors
 import kotlin.collections.List
 import org.apache.commons.text.StringSubstitutor
@@ -20,11 +19,13 @@ object SnowflakeTestUtils {
     @Throws(SQLException::class)
     fun dumpRawTable(database: JdbcDatabase, tableIdentifier: String?): List<JsonNode> {
         return dumpTable(
-            java.util.List.of<String>(
+            listOf(
                 quote(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
                 timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
                 timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-                quote(JavaBaseConstants.COLUMN_NAME_DATA)
+                quote(JavaBaseConstants.COLUMN_NAME_DATA),
+                quote(JavaBaseConstants.COLUMN_NAME_AB_META),
+                quote(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
             ),
             database,
             tableIdentifier, // Raw tables still have lowercase names
@@ -98,14 +99,12 @@ object SnowflakeTestUtils {
                     .createStatement()
                     .executeQuery(
                         StringSubstitutor(
-                                Map.of(
-                                    "columns",
-                                    columns.stream().collect(Collectors.joining(",")),
-                                    "table",
-                                    tableIdentifier,
-                                    "extracted_at",
-                                    if (upcaseExtractedAt) "_AIRBYTE_EXTRACTED_AT"
-                                    else "\"_airbyte_extracted_at\""
+                                mapOf(
+                                    "columns" to columns.stream().collect(Collectors.joining(",")),
+                                    "table" to tableIdentifier,
+                                    "extracted_at" to
+                                        if (upcaseExtractedAt) "_AIRBYTE_EXTRACTED_AT"
+                                        else "\"_airbyte_extracted_at\""
                                 )
                             )
                             .replace(

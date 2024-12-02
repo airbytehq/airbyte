@@ -4,7 +4,7 @@ connector_image: airbyte/source-tmdb:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_tmdb/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -14,15 +14,15 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.2" #Type in schema['properties']['results']['items']['properties']['known_for']['items']['properties']['poster_path'] can be optionally null
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          exact_order: no
+        empty_streams:
+          - name: trending
+            bypass_reason: Streams seems to be not responding
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

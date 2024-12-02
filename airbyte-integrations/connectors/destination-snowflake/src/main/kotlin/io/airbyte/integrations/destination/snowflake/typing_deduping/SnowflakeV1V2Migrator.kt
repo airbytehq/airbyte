@@ -3,19 +3,20 @@
  */
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
-import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler.Companion.fromIsNullableIsoString
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import lombok.SneakyThrows
+import net.snowflake.client.jdbc.SnowflakeSQLException
+
+private val LOGGER = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeV1V2Migrator(
@@ -26,19 +27,19 @@ class SnowflakeV1V2Migrator(
     @SneakyThrows
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
-        return !database
-            .queryJsons(
-                """
-            SELECT SCHEMA_NAME
-            FROM information_schema.schemata
-            WHERE schema_name = ?
-            AND catalog_name = ?;
-            
-            """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName
-            )
-            .isEmpty()
+        try {
+            return database
+                .queryJsons(
+                    "SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE \"$databaseName\";",
+                )
+                .isNotEmpty()
+        } catch (e: SnowflakeSQLException) {
+            if (e.message != null && e.message!!.contains("does not exist")) {
+                return false
+            } else {
+                throw e
+            }
+        }
     }
 
     override fun schemaMatchesExpectation(
@@ -54,50 +55,9 @@ class SnowflakeV1V2Migrator(
         namespace: String?,
         tableName: String?
     ): Optional<TableDefinition> {
-        // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
-        // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
-        // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
-        // translates
-        // VARIANT as VARCHAR
-        val columns =
-            database
-                .queryJsons(
-                    """
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            ORDER BY ordinal_position;
-            
-            """.trimIndent(),
-                    databaseName,
-                    namespace!!,
-                    tableName!!
-                )
-                .stream()
-                .collect(
-                    { LinkedHashMap() },
-                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                        map[row["COLUMN_NAME"].asText()] =
-                            ColumnDefinition(
-                                row["COLUMN_NAME"].asText(),
-                                row["DATA_TYPE"].asText(),
-                                0,
-                                fromIsNullableIsoString(row["IS_NULLABLE"].asText())
-                            )
-                    },
-                    {
-                        obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                        m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                        obj.putAll(m!!)
-                    }
-                )
-        return if (columns.isEmpty()) {
-            Optional.empty()
-        } else {
-            Optional.of(TableDefinition(columns))
-        }
+        return Optional.ofNullable(
+            SnowflakeDestinationHandler.getTable(database, namespace!!, tableName!!)
+        )
     }
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {

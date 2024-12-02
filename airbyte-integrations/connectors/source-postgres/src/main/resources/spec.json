@@ -264,7 +264,7 @@
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 1200 seconds. Valid range: 120 seconds to 2400 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>.",
                 "default": 1200,
                 "order": 5,
                 "min": 120,
@@ -293,7 +293,7 @@
               "heartbeat_action_query": {
                 "type": "string",
                 "title": "Debezium heartbeat query (Advanced)",
-                "description": "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting.",
+                "description": "Specifies a query that the connector executes on the source database when the connector sends a heartbeat message. Please see the <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query\">setup guide</a> for how and when to configure this setting.",
                 "default": "",
                 "order": 8
               },
@@ -304,12 +304,21 @@
                 "enum": ["Fail sync", "Re-sync data"],
                 "default": "Fail sync",
                 "order": 9
+              },
+              "initial_load_timeout_hours": {
+                "type": "integer",
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+                "default": 8,
+                "min": 4,
+                "max": 24,
+                "order": 10
               }
             }
           },
           {
             "title": "Detect Changes with Xmin System Column",
-            "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Only recommended for tables up to 500GB.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Suitable for databases that have low transaction pressure.",
             "required": ["method"],
             "properties": {
               "method": {
