@@ -95,6 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.2  | 2024-12-02 | [48748](https://github.com/airbytehq/airbyte/pull/48748) | Bump CDK to evict non retriable requests to avoid high memory usage                                                           |
 | 2.11.1  | 2024-11-26 | [48710](https://github.com/airbytehq/airbyte/pull/48710) | Retry on "Temporary failure in name resolution"                                                                               |
 | 2.11.0  | 2024-11-18 | [48452](https://github.com/airbytehq/airbyte/pull/48452) | Enable concurrency for syncs that don't have client-side filtering                                                            |
 | 2.10.14 | 2024-11-07 | [48391](https://github.com/airbytehq/airbyte/pull/48391) | Remove custom datetime cursor dependency                                                                                      |
