@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -153,6 +152,10 @@ class DefaultDestinationTaskLauncher(
                 handleException(e)
             }
         }
+
+        override fun toString(): String {
+            return "TaskWrapper($innerTask)"
+        }
     }
 
     inner class NoopWrapper(
@@ -199,6 +202,12 @@ class DefaultDestinationTaskLauncher(
                 val task = processRecordsTaskFactory.make(this)
                 enqueue(task)
             }
+
+            repeat(config.numProcessBatchWorkers) {
+                log.info { "Launching process batch task $it" }
+                val task = processBatchTaskFactory.make(this)
+                enqueue(task)
+            }
         }
 
         // Start flush task
@@ -224,8 +233,8 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleSetupComplete() {
         catalog.streams.forEach {
             log.info { "Starting open stream task for $it" }
-            val openStreamTask = openStreamTaskFactory.make(this, it)
-            enqueue(openStreamTask)
+            val task = openStreamTaskFactory.make(this, it)
+            enqueue(task)
         }
     }
 
@@ -248,17 +257,13 @@ class DefaultDestinationTaskLauncher(
             streamManager.updateBatchState(wrapped)
 
             if (wrapped.batch.isPersisted()) {
+                log.info {
+                    "Batch $wrapped is persisted: Starting flush checkpoints task for $stream"
+                }
                 enqueue(flushCheckpointsTaskFactory.make())
             }
 
-            if (wrapped.batch.state != Batch.State.COMPLETE) {
-                log.info {
-                    "Batch not complete: Starting process batch task for ${stream}, batch $wrapped"
-                }
-
-                val task = processBatchTaskFactory.make(this, stream, wrapped)
-                enqueue(task)
-            } else if (streamManager.isBatchProcessingComplete()) {
+            if (streamManager.isBatchProcessingComplete()) {
                 log.info {
                     "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
                 }
@@ -291,12 +296,9 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun handleException(e: Exception) {
-        catalog.streams.forEach {
-            enqueue(
-                failStreamTaskFactory.make(this, e, it.descriptor),
-                withExceptionHandling = false
-            )
-        }
+        catalog.streams
+            .map { failStreamTaskFactory.make(this, e, it.descriptor) }
+            .forEach { enqueue(it, withExceptionHandling = false) }
     }
 
     override suspend fun handleFailStreamComplete(
