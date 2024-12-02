@@ -17,6 +17,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -47,6 +50,7 @@ class S3MultipartUpload<T : OutputStream>(
     private val wrappingBuffer = streamProcessor.wrapper(underlyingBuffer)
     private val partQueue = Channel<ByteArray>(Channel.UNLIMITED)
     private val isClosed = AtomicBoolean(false)
+    private val channelSize = AtomicLong(0L)
 
     /**
      * Run the upload using the provided block. This should only be used by the
@@ -72,6 +76,7 @@ class S3MultipartUpload<T : OutputStream>(
             }
             val uploadedParts = mutableListOf<CompletedPart>()
             for (bytes in partQueue) {
+                channelSize.decrementAndGet()
                 val part = uploadPart(bytes, uploadedParts)
                 uploadedParts.add(part)
             }
@@ -116,7 +121,11 @@ class S3MultipartUpload<T : OutputStream>(
         wrappingBuffer.flush()
         val bytes = underlyingBuffer.toByteArray()
         underlyingBuffer.reset()
-        runBlocking { partQueue.send(bytes) }
+        channelSize.incrementAndGet()
+        val duration = measureTime { runBlocking { partQueue.send(bytes) } }
+        log.info {
+            "Enqueued part in $duration (channelSize = ${channelSize.get()}; uploadId = ${response.uploadId})"
+        }
     }
 
     private suspend fun uploadPart(
@@ -131,10 +140,13 @@ class S3MultipartUpload<T : OutputStream>(
             body = ByteStream.fromBytes(bytes)
             this.partNumber = partNumber
         }
-        val uploadResponse = client.uploadPart(request)
+        val uploadResponse = measureTimedValue { client.uploadPart(request) }
+        log.info {
+            "Uploaded part $partNumber in ${uploadResponse.duration} (channelSize = ${channelSize.get()}; uploadId = ${response.uploadId})"
+        }
         return CompletedPart {
             this.partNumber = partNumber
-            this.eTag = uploadResponse.eTag
+            this.eTag = uploadResponse.value.eTag
         }
     }
 

@@ -141,10 +141,11 @@ class S3Client(
         block: suspend (OutputStream) -> Unit
     ): S3Object {
         if (uploadPermits != null) {
+            log.info {
+                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
+            }
             uploadPermits.withPermit {
-                log.info {
-                    "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-                }
+                log.info { "Acquired upload permit for $key" }
                 return streamingUploadInner(key, metadata, streamProcessor, block)
             }
         } else {
