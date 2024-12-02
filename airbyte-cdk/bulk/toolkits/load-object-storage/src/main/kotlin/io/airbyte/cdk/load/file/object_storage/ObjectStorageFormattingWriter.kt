@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -20,14 +21,17 @@ import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
+import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.Closeable
 import java.io.OutputStream
+import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecord)
@@ -72,9 +76,9 @@ class JsonFormattingWriter(
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
     override fun accept(record: DestinationRecord) {
-        outputStream.write(
+        val data =
             record.dataWithAirbyteMeta(stream, rootLevelFlattening).toJson().serializeToString()
-        )
+        outputStream.write(data)
         outputStream.write("\n")
     }
 
@@ -107,17 +111,24 @@ class AvroFormattingWriter(
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    val log = KotlinLogging.logger {}
+
     private val pipeline = AvroMapperPipelineFactory().create(stream)
-    private val avroSchema =
-        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
+    private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
+    private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer =
         outputStream.toAvroWriter(avroSchema, formatConfig.avroCompressionConfiguration)
+
+    init {
+        log.info { "Generated avro schema: $avroSchema" }
+    }
+
     override fun accept(record: DestinationRecord) {
         val dataMapped =
             pipeline
                 .map(record.data, record.meta?.changes)
                 .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(avroSchema))
+        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
     }
 
     override fun close() {
@@ -131,17 +142,24 @@ class ParquetFormattingWriter(
     formatConfig: ParquetFormatConfiguration,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val log = KotlinLogging.logger {}
+
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
-    private val avroSchema =
-        pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening).toAvroSchema(stream.descriptor)
-    private val writer =
+    private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
+    private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
+    private val writer: ParquetWriter =
         outputStream.toParquetWriter(avroSchema, formatConfig.parquetWriterConfiguration)
+
+    init {
+        log.info { "Generated avro schema: $avroSchema" }
+    }
+
     override fun accept(record: DestinationRecord) {
         val dataMapped =
             pipeline
                 .map(record.data, record.meta?.changes)
                 .withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
-        writer.write(dataMapped.toAvroRecord(avroSchema))
+        writer.write(dataMapped.toAvroRecord(mappedSchema, avroSchema))
     }
 
     override fun close() {

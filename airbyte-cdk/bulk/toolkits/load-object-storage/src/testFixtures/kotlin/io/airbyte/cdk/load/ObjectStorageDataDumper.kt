@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
+import java.io.BufferedReader
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
@@ -75,6 +76,29 @@ class ObjectStorageDataDumper(
                     }
                     .toList()
                     .flatten()
+            }
+        }
+    }
+
+    fun dumpFile(): List<String> {
+        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        return runBlocking {
+            withContext(Dispatchers.IO) {
+                client
+                    .list(prefix)
+                    .map { listedObject: RemoteObject<*> ->
+                        client.get(listedObject.key) { objectData: InputStream ->
+                            val decompressed =
+                                when (compressionConfig?.compressor) {
+                                    is GZIPProcessor -> GZIPInputStream(objectData)
+                                    is NoopProcessor,
+                                    null -> objectData
+                                    else -> error("Unsupported compressor")
+                                }
+                            BufferedReader(decompressed.reader()).readText()
+                        }
+                    }
+                    .toList()
             }
         }
     }

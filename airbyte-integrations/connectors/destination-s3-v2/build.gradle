@@ -27,12 +27,9 @@ dependencies {
     // temporary dependencies so that we can continue running the legacy test suite.
     // eventually we should remove those tests + rely solely on the bulk CDK tests.
     integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations"))
-    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
 
 // Exclude conflicting log4j-over-slf4j dependency
-configurations {
-    all {
-        exclude group: 'log4j-over-slf4j', module: 'log4j-over-slf4j'
-    }
+configurations.all {
+        exclude group: "org.slf4j", module: "slf4j-reload4j"
 }

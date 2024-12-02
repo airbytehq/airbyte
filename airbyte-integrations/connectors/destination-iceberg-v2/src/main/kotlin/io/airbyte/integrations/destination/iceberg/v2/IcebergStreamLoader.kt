@@ -78,8 +78,14 @@ class IcebergStreamLoader(
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
+            log.info {
+                "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
+            }
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
+                log.info {
+                    "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
+                }
                 val generationIdsToDelete =
                     (0 until stream.minimumGenerationId).map(
                         icebergUtil::constructGenerationIdSuffix
@@ -87,10 +93,14 @@ class IcebergStreamLoader(
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
                 icebergTableCleaner.deleteGenerationId(
                     table,
-                    DEFAULT_STAGING_BRANCH,
+                    stagingBranchName,
                     generationIdsToDelete
                 )
                 //  Doing it again to push the deletes from the staging to main branch
+                log.info {
+                    "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
+                        "Pushing these updates to the '$mainBranchName' branch."
+                }
                 table
                     .manageSnapshots()
                     .fastForwardBranch(mainBranchName, stagingBranchName)

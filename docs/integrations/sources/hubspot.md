@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Update dependencies |
+| 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |
 | 4.4.0-rc.1 | 2024-11-18 | [48472](https://github.com/airbytehq/airbyte/pull/48472) | Adds support to maintain use of legacy fields for `Contacts`, `Deals`, and `DealsArchived` streams: `hs_lifecyclestage_{stage_id}_date`, `hs_date_entered_{stage_id}`, `hs_date_exited_{stage_id}`, `hs_time_in_{stage_id}`. |
 | 4.3.0  | 2024-11-15 | [44481](https://github.com/airbytehq/airbyte/pull/44481) | Add `Leads` stream |
