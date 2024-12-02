@@ -481,8 +481,9 @@ class Client:
             for col in df.columns:
                 # if data type of the same column differs in dataframes, we choose the broadest one
                 prev_frame_column_type = fields.get(col)
-                df_type = df[col].dtype
-                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
+                if col is not None:
+                    df_type = df[col].dtype
+                    fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
         return {
             field: (
                 {"type": ["string", "null"], "format": "date-time"} if fields[field] == "date-time" else {"type": [fields[field], "null"]}
