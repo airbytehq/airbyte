@@ -216,7 +216,7 @@ class PyAirbyteValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping Python CLI validation.")
+            return self.skip("Connector is not flagged for PyPI publish, skipping Python CLI validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
