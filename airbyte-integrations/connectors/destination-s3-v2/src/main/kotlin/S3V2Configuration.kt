@@ -66,7 +66,13 @@ class S3V2ConfigurationFactory(
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            recordBatchSizeBytes = recordBatchSizeBytes
+            recordBatchSizeBytes = recordBatchSizeBytes,
+            objectStorageUploadConfiguration =
+            ObjectStorageUploadConfiguration(
+                pojo.uploadPartSize
+                    ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
+            ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
+        ),
         )
     }
 }
