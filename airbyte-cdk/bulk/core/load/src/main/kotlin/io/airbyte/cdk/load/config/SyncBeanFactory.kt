@@ -68,7 +68,7 @@ class SyncBeanFactory {
         val capacity = min(maxBatchesMinusUploadOverhead, idealDepth)
         log.info { "Creating file aggregate queue with limit $capacity" }
         val channel = Channel<FileAggregateMessage>(capacity)
-        return MultiProducerChannel(streamCount.toLong(), channel)
+        return MultiProducerChannel(streamCount.toLong(), channel, "fileAggregateQueue")
     }
 
     @Singleton
@@ -77,6 +77,6 @@ class SyncBeanFactory {
         config: DestinationConfiguration,
     ): MultiProducerChannel<BatchEnvelope<*>> {
         val channel = Channel<BatchEnvelope<*>>(config.batchQueueDepth)
-        return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel)
+        return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel, "batchQueue")
     }
 }
