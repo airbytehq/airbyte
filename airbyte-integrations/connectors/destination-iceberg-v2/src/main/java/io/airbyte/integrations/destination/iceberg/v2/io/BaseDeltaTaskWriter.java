@@ -11,6 +11,7 @@ import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.BaseTaskWriter;
@@ -18,6 +19,7 @@ import org.apache.iceberg.io.FileAppenderFactory;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.types.TypeUtil;
+import org.apache.iceberg.types.Types;
 
 /**
  * Implementation of the Iceberg {@link BaseTaskWriter} that handles delta-based updates (insert,
@@ -57,6 +59,16 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
     return wrapper;
   }
 
+  private Record constructIdentifierRecord(Record row) {
+    final GenericRecord recordWithIds = GenericRecord.create(deleteSchema);
+
+    for (final Types.NestedField idField : deleteSchema.columns()) {
+      recordWithIds.setField(idField.name(), row.getField(idField.name()));
+    }
+
+    return recordWithIds;
+  }
+
   @Override
   public void write(final Record row) throws IOException {
     final RowDataDeltaWriter writer = route(row);
@@ -64,9 +76,9 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
     if (rowOperation == Operation.INSERT) {
       writer.write(row);
     } else if (rowOperation == Operation.DELETE) {
-      writer.deleteKey(row);
+      writer.deleteKey(constructIdentifierRecord(row));
     } else {
-      writer.deleteKey(row);
+      writer.deleteKey(constructIdentifierRecord(row));
       writer.write(row);
     }
   }

@@ -40,7 +40,10 @@ class DestinationRecordToAirbyteValueWithMeta(
                 Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(stream.generationId),
             )
         if (flatten) {
-            properties.putAll((data as ObjectValue).values)
+            // Special case: if the top-level schema had no columns, do nothing.
+            if (stream.schema !is ObjectTypeWithEmptySchema) {
+                properties.putAll((data as ObjectValue).values)
+            }
         } else {
             properties[Meta.COLUMN_NAME_DATA] = data
         }

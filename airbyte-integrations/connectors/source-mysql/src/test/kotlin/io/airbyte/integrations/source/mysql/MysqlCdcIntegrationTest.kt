@@ -15,6 +15,7 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -77,8 +78,7 @@ class MysqlCdcIntegrationTest {
 
     @Test
     fun test() {
-        CliRunner.source("read", config(), configuredCatalog).run()
-        // TODO: add assertions on run1 messages.
+        val state1 = CliRunner.source("read", config(), configuredCatalog).run().states().last()
 
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -86,6 +86,9 @@ class MysqlCdcIntegrationTest {
                 stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
             }
         }
+
+        val run2InputState: List<AirbyteStateMessage> = listOf(state1)
+        CliRunner.source("read", config(), configuredCatalog, run2InputState).run().records()
     }
 
     @Test
