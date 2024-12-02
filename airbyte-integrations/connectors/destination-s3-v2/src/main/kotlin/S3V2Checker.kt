@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
@@ -31,7 +32,7 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
                 } else {
                     pathFactory.getFinalDirectory(mockStream())
                 }
-            val key = path.resolve("_EXAMPLE").toString()
+            val key = Paths.get(path, "_EXAMPLE").toString()
             log.info { "Checking if destination can write to $path" }
             var s3Object: S3Object? = null
             val compressor = config.objectStorageCompressionConfiguration.compressor

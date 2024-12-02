@@ -45,6 +45,7 @@ async def get_pylint_output(dagger_client: dagger.Client, connector: Connector) 
     return await (
         dagger_client.container()
         .from_(connector.image_address)
+        .with_user("root")
         .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
         .with_new_file("__init__.py", contents="")
         .with_exec(["pip", "install", "pylint"])
