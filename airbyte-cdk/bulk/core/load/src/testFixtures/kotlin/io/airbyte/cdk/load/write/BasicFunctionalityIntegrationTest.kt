@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecord.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -226,6 +227,73 @@ abstract class BasicFunctionalityIntegrationTest(
                 }
             },
         )
+    }
+
+    @Test
+    open fun testBasicWriteFile() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        val fileMessage =
+            DestinationFile.AirbyteRecordMessageFile(
+                fileUrl = "/tmp/test_file",
+                bytes = 1234L,
+                fileRelativePath = "path/to/file",
+                modified = 4321L,
+                sourceFileUrl = "file://path/to/source",
+            )
+
+        val messages =
+            runSync(
+                configContents,
+                stream,
+                listOf(
+                    DestinationFile(
+                        stream = stream.descriptor,
+                        emittedAtMs = 1234,
+                        serialized = "",
+                        fileMessage = fileMessage,
+                    ),
+                    StreamCheckpoint(
+                        streamName = stream.descriptor.name,
+                        streamNamespace = stream.descriptor.namespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                    )
+                ),
+                useFileTransfer = true,
+            )
+
+        val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
+        assertAll({
+            assertEquals(
+                1,
+                stateMessages.size,
+                "Expected to receive exactly one state message, got ${stateMessages.size} ($stateMessages)"
+            )
+            assertEquals(
+                StreamCheckpoint(
+                        streamName = stream.descriptor.name,
+                        streamNamespace = stream.descriptor.namespace,
+                        blob = """{"foo": "bar"}""",
+                        sourceRecordCount = 1,
+                        destinationRecordCount = 1,
+                    )
+                    .asProtocolMessage(),
+                stateMessages.first()
+            )
+        })
+
+        val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
+        val fileContent = dataDumper.dumpFile(config, stream)
+
+        assertEquals(listOf("123"), fileContent)
     }
 
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/10413")
