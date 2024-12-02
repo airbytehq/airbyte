@@ -23,7 +23,7 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.InternalScope
+import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
@@ -39,7 +39,7 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.fold
 
-interface SpillToDiskTask : InternalScope
+interface SpillToDiskTask : KillableScope
 
 /**
  * Reads records from the message queue and writes them to disk. Completes once the upstream
@@ -134,6 +134,7 @@ class DefaultSpillToDiskTask(
                 BatchEnvelope(
                     SimpleBatch(Batch.State.COMPLETE),
                     TreeRangeSet.create(),
+                    streamDescriptor
                 )
             taskLauncher.handleNewBatch(streamDescriptor, empty)
         } else {
