@@ -12,11 +12,12 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
+import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.write.StreamLoader
@@ -26,7 +27,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : StreamLevel, ImplementorScope
+interface ProcessRecordsTask : SyncLevel, KillableScope
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -37,61 +38,67 @@ interface ProcessRecordsTask : StreamLevel, ImplementorScope
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
-    private val file: SpilledRawMessagesLocalFile,
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     private val diskManager: ReservationManager,
+    private val fileQueue: MessageQueue<FileQueueMessage>,
 ) : ProcessRecordsTask {
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
 
-        log.info { "Fetching stream loader for $streamDescriptor" }
-        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
-
-        log.info { "Processing records from $file" }
-        val batch =
-            try {
-                file.localFile.inputStream().use { inputStream ->
-                    val records =
-                        inputStream
-                            .lineSequence()
-                            .map {
-                                when (val message = deserializer.deserialize(it)) {
-                                    is DestinationStreamAffinedMessage -> message
-                                    else ->
-                                        throw IllegalStateException(
-                                            "Expected record message, got ${message::class}"
-                                        )
+        fileQueue.consume().collect { (streamDescriptor, file) ->
+            log.info { "Fetching stream loader for $streamDescriptor" }
+            val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
+            log.info { "Processing records from $file for stream $streamDescriptor" }
+            val batch =
+                try {
+                    file.localFile.inputStream().use { inputStream ->
+                        val records =
+                            inputStream
+                                .lineSequence()
+                                .map {
+                                    when (val message = deserializer.deserialize(it)) {
+                                        is DestinationStreamAffinedMessage -> message
+                                        else ->
+                                            throw IllegalStateException(
+                                                "Expected record message, got ${message::class}"
+                                            )
+                                    }
                                 }
-                            }
-                            .takeWhile {
-                                it !is DestinationRecordStreamComplete &&
-                                    it !is DestinationRecordStreamIncomplete
-                            }
-                            .map { it as DestinationRecord }
-                            .iterator()
-                    streamLoader.processRecords(records, file.totalSizeBytes)
+                                .takeWhile {
+                                    it !is DestinationRecordStreamComplete &&
+                                        it !is DestinationRecordStreamIncomplete
+                                }
+                                .map { it as DestinationRecord }
+                                .iterator()
+                        val batch = streamLoader.processRecords(records, file.totalSizeBytes)
+                        log.info { "Finished processing $file" }
+                        batch
+                    }
+                } finally {
+                    log.info { "Processing completed, deleting $file" }
+                    file.localFile.toFile().delete()
+                    diskManager.release(file.totalSizeBytes)
                 }
-            } finally {
-                log.info { "Processing completed, deleting $file" }
-                file.localFile.toFile().delete()
-                diskManager.release(file.totalSizeBytes)
-            }
 
-        val wrapped = BatchEnvelope(batch, file.indexRange)
-        taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+            val wrapped = BatchEnvelope(batch, file.indexRange)
+            log.info { "Updating batch $wrapped for $streamDescriptor" }
+            taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+        }
     }
 }
 
 interface ProcessRecordsTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask
 }
+
+data class FileQueueMessage(
+    val streamDescriptor: DestinationStream.Descriptor,
+    val file: SpilledRawMessagesLocalFile
+)
 
 @Singleton
 @Secondary
@@ -99,19 +106,17 @@ class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     @Named("diskManager") private val diskManager: ReservationManager,
+    @Named("spillFileQueue") private val fileQueue: MessageQueue<FileQueueMessage>
 ) : ProcessRecordsTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask {
         return DefaultProcessRecordsTask(
-            stream,
             taskLauncher,
-            file,
             deserializer,
             syncManager,
             diskManager,
+            fileQueue,
         )
     }
 }
