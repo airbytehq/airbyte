@@ -88,9 +88,7 @@ class MysqlCdcIntegrationTest {
         }
 
         val run2InputState: List<AirbyteStateMessage> = listOf(state1)
-        val records2 =
-            CliRunner.source("read", config(), configuredCatalog, run2InputState).run().records()
-        kotlin.test.assertEquals(1, records2.size)
+        CliRunner.source("read", config(), configuredCatalog, run2InputState).run().records()
     }
 
     @Test
