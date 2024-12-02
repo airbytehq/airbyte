@@ -66,7 +66,7 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
 
         output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
 
-        self._http_mocker.assert_number_of_calls(first_page_request, 2)
+        self._http_mocker.assert_number_of_calls(first_page_request, 1)
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 10
@@ -129,8 +129,6 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
             state=state
         )
 
-        # We call the first page during check availability. And the sync actually starts with a request to the second page
-        self._http_mocker.assert_number_of_calls(first_page_request, 1)
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 3

@@ -7,7 +7,7 @@ import freezegun
 import mock
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder
@@ -151,4 +151,3 @@ class TestEngagementCallsStream(HubspotTestCase):
             self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental
         )
         assert len(output.state_messages) == 1
-
