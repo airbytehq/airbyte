@@ -9,7 +9,7 @@ data class ObjectStorageUploadConfiguration(
     val maxNumConcurrentUploads: Int = DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
 ) {
     companion object {
-        const val DEFAULT_STREAMING_UPLOAD_PART_SIZE = 5L * 1024L * 1024L
+        const val DEFAULT_STREAMING_UPLOAD_PART_SIZE = 100L * 1024L * 1024L
         const val DEFAULT_MAX_NUM_CONCURRENT_UPLOADS = 2
     }
 }
