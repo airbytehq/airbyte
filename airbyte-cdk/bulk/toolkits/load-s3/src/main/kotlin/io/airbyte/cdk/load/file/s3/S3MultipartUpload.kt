@@ -142,7 +142,7 @@ class S3MultipartUpload<T : OutputStream>(
         }
         val uploadResponse = measureTimedValue { client.uploadPart(request) }
         log.info {
-            "Uploaded part $partNumber in ${uploadResponse.duration} (channelSize = ${channelSize.get()}; uploadId = ${response.uploadId})"
+            "Uploaded part $partNumber in ${uploadResponse.duration} of size ${bytes.size} (channelSize = ${channelSize.get()}; uploadId = ${response.uploadId})"
         }
         return CompletedPart {
             this.partNumber = partNumber
