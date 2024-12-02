@@ -51,12 +51,13 @@ class ObjectStorageStreamLoaderTest {
     @Test
     fun `test processFile`() = runTest {
         val fileUrl = "/tmp/fileUrl"
+        Files.deleteIfExists(Path.of(fileUrl))
         Files.createFile(Path.of(fileUrl))
         val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
-            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl)
+            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl, fileRelativePath = fileUrl)
         every { pathFactory.getFinalDirectory(any()) } returns stagingDirectory
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
