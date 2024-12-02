@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -189,7 +190,12 @@ class DefaultDestinationTaskLauncher(
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
 
+        // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
+            // TODO: Close the task queues as part of shutdown
+            // so that it is not necessary to initialize
+            // every task before enqueueing.
+
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
                 log.info { "Starting spill-to-disk task for $stream" }
@@ -263,7 +269,7 @@ class DefaultDestinationTaskLauncher(
                 enqueue(flushCheckpointsTaskFactory.make())
             }
 
-            if (streamManager.isBatchProcessingComplete()) {
+            if (wrapped.batch.state == Batch.State.COMPLETE && streamManager.isBatchProcessingComplete()) {
                 log.info {
                     "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
                 }
@@ -272,7 +278,7 @@ class DefaultDestinationTaskLauncher(
                 enqueue(task)
             } else {
                 log.info {
-                    "Batch $wrapped complete, but batch processing not complete: nothing else to do."
+                    "Batch processing not complete: nothing else to do."
                 }
             }
         }

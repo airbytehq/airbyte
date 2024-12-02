@@ -21,12 +21,14 @@ import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.util.use
+import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
 
 interface ProcessRecordsTask : KillableScope
@@ -45,20 +47,25 @@ class DefaultProcessRecordsTask(
     private val syncManager: SyncManager,
     private val diskManager: ReservationManager,
     private val inputQueue: MessageQueue<FileAggregateMessage>,
-    private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>
+    private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessRecordsTask {
     private val log = KotlinLogging.logger {}
+    private val accumulators = ConcurrentHashMap<DestinationStream.Descriptor, BatchAccumulator>()
     override suspend fun execute() {
         outputQueue.use {
             inputQueue.consume().collect { (streamDescriptor, file) ->
                 log.info { "Fetching stream loader for $streamDescriptor" }
                 val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
+                val acc =
+                    accumulators.getOrPut(streamDescriptor) {
+                        streamLoader.createBatchAccumulator()
+                    }
                 log.info { "Processing records from $file for stream $streamDescriptor" }
                 val batch =
                     try {
                         file.localFile.inputStream().use { inputStream ->
                             val records = inputStream.toRecordIterator()
-                            val batch = streamLoader.processRecords(records, file.totalSizeBytes)
+                            val batch = acc.processRecords(records, file.totalSizeBytes)
                             log.info { "Finished processing $file" }
                             batch
                         }
@@ -119,6 +126,7 @@ class DefaultProcessRecordsTaskFactory(
     @Named("fileAggregateQueue") private val inputQueue: MessageQueue<FileAggregateMessage>,
     @Named("batchQueue") private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessRecordsTaskFactory {
+
     override fun make(
         taskLauncher: DestinationTaskLauncher,
     ): ProcessRecordsTask {
