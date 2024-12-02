@@ -91,7 +91,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.6.0  | 2024-12-02 | [45697](https://github.com/airbytehq/airbyte/pull/45697) | Fix incremental for TimeOff Requests stream |
+| 0.6.0  | 2024-12-02 | [48759](https://github.com/airbytehq/airbyte/pull/48759) | Fix incremental for TimeOff Requests stream |
 | 0.5.0  | 2024-10-28 | [47262](https://github.com/airbytehq/airbyte/pull/47262) | Migrate to Manifest-only |
 | 0.4.13 | 2024-10-12 | [46842](https://github.com/airbytehq/airbyte/pull/46842) | Update dependencies |
 | 0.4.14 | 2024-10-28 | [47072](https://github.com/airbytehq/airbyte/pull/47072) | Update dependencies |
