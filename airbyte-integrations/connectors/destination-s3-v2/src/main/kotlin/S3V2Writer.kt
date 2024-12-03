@@ -5,23 +5,17 @@
 package io.airbyte.integrations.destination.s3_v2
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.file.s3.S3Object
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoaderFactory
 import jakarta.inject.Singleton
 
 @Singleton
-class S3V2Writer : DestinationWriter {
+class S3V2Writer(
+    private val streamLoaderFactory: ObjectStorageStreamLoaderFactory<S3Object>,
+) : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        return S3V2StreamLoader(stream)
-    }
-
-    inner class S3V2StreamLoader(override val stream: DestinationStream) : StreamLoader {
-        override suspend fun processRecords(
-            records: Iterator<DestinationRecord>,
-            totalSizeBytes: Long
-        ): Batch = SimpleBatch(state = Batch.State.COMPLETE)
+        return streamLoaderFactory.create(stream)
     }
 }

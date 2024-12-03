@@ -45,12 +45,13 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     @Primary
     @Requires(env = ["DestinationTaskLauncherExceptionHandlerTest"])
     class MockFailStreamTaskFactory : FailStreamTaskFactory {
-        val didRunFor = Channel<Triple<DestinationStream, Exception, Boolean>>(Channel.UNLIMITED)
+        val didRunFor =
+            Channel<Triple<DestinationStream.Descriptor, Exception, Boolean>>(Channel.UNLIMITED)
 
         override fun make(
             exceptionHandler: DestinationTaskExceptionHandler<*, *>,
             exception: Exception,
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
             kill: Boolean
         ): FailStreamTask {
             return object : FailStreamTask {
@@ -91,7 +92,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor = MockDestinationCatalogFactory.stream1.descriptor
                 override suspend fun execute() {
                     throw RuntimeException("StreamTask failure")
                 }
@@ -100,7 +101,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         val wrappedTask = exceptionHandler.withExceptionHandling(mockTask as T)
         wrappedTask.execute()
         val (stream, exception) = mockFailStreamTaskFactory.didRunFor.receive()
-        Assertions.assertEquals(MockDestinationCatalogFactory.stream1, stream)
+        Assertions.assertEquals(MockDestinationCatalogFactory.stream1.descriptor, stream)
         Assertions.assertTrue(exception is RuntimeException)
     }
 
@@ -125,16 +126,15 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
                 (stream, exception, kill) ->
                 stream to Pair(exception, kill)
             }
-        println(streamResults)
         catalog.streams.forEach { stream ->
-            Assertions.assertTrue(streamResults[stream]!!.first is RuntimeException)
-            Assertions.assertTrue(streamResults[stream]!!.second)
+            Assertions.assertTrue(streamResults[stream.descriptor]!!.first is RuntimeException)
+            Assertions.assertTrue(streamResults[stream.descriptor]!!.second)
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     @Test
-    fun testSyncFailureBlocksSyncTasks(
+    fun testSyncFailureDoesNotBlockSyncTasks(
         mockFailSyncTaskFactory: MockFailSyncTaskFactory,
         syncManager: SyncManager,
         catalog: DestinationCatalog
@@ -154,8 +154,18 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         syncManager.markFailed(RuntimeException("dummy failure"))
         wrappedTask.execute()
         delay(1000)
-        Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure)
-        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+        // We do not execute the failure task, because that's triggered outside of the
+        // TaskWrapper stuff
+        Assertions.assertTrue(
+            mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure,
+            "fail sync task should not have executed",
+        )
+        // And we do execute the sync task, because we want to finish any pending work
+        // even if the sync has overall failed.
+        Assertions.assertFalse(
+            innerTaskRan.tryReceive().isFailure,
+            "mock task should have executed",
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -182,14 +192,15 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
 
     @Suppress("UNCHECKED_CAST")
     @Test
-    fun testStreamFailureBlocksStreamTasks(
+    fun testStreamFailureDoesNotBlockStreamTasks(
         mockFailStreamTaskFactory: MockFailStreamTaskFactory,
         syncManager: SyncManager
     ) = runTest {
         val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor: DestinationStream.Descriptor =
+                    MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {
                     innerTaskRan.send(true)
@@ -202,8 +213,19 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         manager.markFailed(RuntimeException("dummy failure"))
         launch { wrappedTask.execute() }
         delay(1000)
-        Assertions.assertTrue(mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure)
-        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+        // similar to testSyncFailureDoesNotBlockSyncTasks:
+        // We do not execute the failure task, because that's triggered outside of the
+        // TaskWrapper stuff
+        Assertions.assertTrue(
+            mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure,
+            "fail stream task should execute",
+        )
+        // And we do execute the stream task, because we want to finish any pending work
+        // even if the stream has overall failed.
+        Assertions.assertFalse(
+            innerTaskRan.tryReceive().isFailure,
+            "inner task should have executed",
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -214,7 +236,8 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor: DestinationStream.Descriptor =
+                    MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {
                     // do nothing
@@ -232,8 +255,10 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     }
 
     @Test
-    fun testHandleSyncFailed(scopeProvider: MockScopeProvider) = runTest {
+    fun testHandleSyncFailed() = runTest {
+        val wasHandled = Channel<Boolean>(Channel.UNLIMITED)
+        exceptionHandler.setCallback { wasHandled.send(true) }
         exceptionHandler.handleSyncFailed()
-        Assertions.assertTrue(scopeProvider.didKill)
+        Assertions.assertTrue(wasHandled.receive())
     }
 }

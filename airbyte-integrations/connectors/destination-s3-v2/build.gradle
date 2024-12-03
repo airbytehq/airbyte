@@ -5,12 +5,13 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = []
+    toolkits = ['load-s3']
     cdk = 'local'
 }
 
 application {
     mainClass = 'io.airbyte.integrations.destination.s3_v2.S3V2Destination'
+
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 
     // Uncomment and replace to run locally
@@ -25,6 +26,10 @@ application {
 dependencies {
     // temporary dependencies so that we can continue running the legacy test suite.
     // eventually we should remove those tests + rely solely on the bulk CDK tests.
-    // integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
-    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations"))
+}
+
+// Exclude conflicting log4j-over-slf4j dependency
+configurations.all {
+        exclude group: "org.slf4j", module: "slf4j-reload4j"
 }

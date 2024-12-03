@@ -45,7 +45,7 @@ class BuildConnectorImagesBase(Step, ABC):
                 connector_container = await self._build_connector(platform, *args)
                 connector_container = apply_airbyte_docker_labels(connector_container, self.context.connector)
                 try:
-                    await connector_container.with_exec(["spec"])
+                    await connector_container.with_exec(["spec"], use_entrypoint=True)
                 except ExecError as e:
                     return StepResult(
                         step=self,

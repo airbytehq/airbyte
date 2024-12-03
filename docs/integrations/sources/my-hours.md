@@ -36,6 +36,9 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.3.2 | 2024-10-29 | [47787](https://github.com/airbytehq/airbyte/pull/47787) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47095](https://github.com/airbytehq/airbyte/pull/47095) | Update dependencies |
+| 0.3.0 | 2024-10-19 | [47012](https://github.com/airbytehq/airbyte/pull/47012) | Migrate to manifest only format |
 | 0.2.20 | 2024-10-12 | [46852](https://github.com/airbytehq/airbyte/pull/46852) | Update dependencies |
 | 0.2.19 | 2024-10-05 | [46469](https://github.com/airbytehq/airbyte/pull/46469) | Update dependencies |
 | 0.2.18 | 2024-09-28 | [46167](https://github.com/airbytehq/airbyte/pull/46167) | Update dependencies |
