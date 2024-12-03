@@ -31,12 +31,12 @@ class MysqlSourceConfigurationSpecificationTestTest {
         Assertions.assertEquals("FOO", pojo.username)
         Assertions.assertEquals("BAR", pojo.password)
         Assertions.assertEquals("SYSTEM", pojo.database)
-        val encryption: Encryption = pojo.getEncryptionValue()
-        Assertions.assertTrue(encryption is EncryptionPreferred, encryption::class.toString())
-        val tunnelMethod: SshTunnelMethodConfiguration = pojo.getTunnelMethodValue()
+        val encryption: Encryption? = pojo.getEncryptionValue()
+        Assertions.assertTrue(encryption is EncryptionPreferred, encryption!!::class.toString())
+        val tunnelMethod: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         Assertions.assertTrue(
             tunnelMethod is SshPasswordAuthTunnelMethod,
-            tunnelMethod::class.toString(),
+            tunnelMethod!!::class.toString(),
         )
         Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
         Assertions.assertEquals(2, pojo.concurrency)

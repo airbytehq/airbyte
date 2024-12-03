@@ -9,152 +9,196 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
 interface AirbyteValueMapper {
-    val collectedChanges: List<DestinationRecord.Change>
     fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        path: List<String> = emptyList(),
-        nullable: Boolean = false
-    ): AirbyteValue
+        changes: List<DestinationRecord.Change> = emptyList()
+    ): Pair<AirbyteValue, List<DestinationRecord.Change>>
 }
 
 /** An optimized identity mapper that just passes through. */
 class AirbyteValueNoopMapper : AirbyteValueMapper {
-    override val collectedChanges: List<DestinationRecord.Change> = emptyList()
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        path: List<String>,
-        nullable: Boolean
-    ): AirbyteValue = value
+        changes: List<DestinationRecord.Change>
+    ): Pair<AirbyteValue, List<DestinationRecord.Change>> = value to changes
 }
 
 open class AirbyteValueIdentityMapper : AirbyteValueMapper {
-    override val collectedChanges: List<DestinationRecord.Change>
-        get() = changes.toList().also { changes.clear() }
-
-    private val changes: MutableList<DestinationRecord.Change> = mutableListOf()
-
-    private fun collectFailure(
-        path: List<String>,
-        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
-    ) {
-        val joined = path.joinToString(".")
-        if (changes.none { it.field == joined }) {
-            changes.add(DestinationRecord.Change(path.joinToString("."), Change.NULLED, reason))
-        }
-    }
+    data class Context(
+        val nullable: Boolean = false,
+        val path: List<String> = emptyList(),
+        val changes: MutableSet<DestinationRecord.Change> = mutableSetOf(),
+    )
 
     override fun map(
         value: AirbyteValue,
         schema: AirbyteType,
-        path: List<String>,
-        nullable: Boolean,
-    ): AirbyteValue =
+        changes: List<DestinationRecord.Change>
+    ): Pair<AirbyteValue, List<DestinationRecord.Change>> =
+        mapInner(value, schema, Context(changes = changes.toMutableSet())).let {
+            it.first to it.second.changes.toList()
+        }
+
+    fun nulledOut(
+        schema: AirbyteType,
+        context: Context,
+        reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
+    ): Pair<AirbyteValue, Context> {
+        context.changes.add(
+            DestinationRecord.Change(context.path.joinToString("."), Change.NULLED, reason)
+        )
+        return mapInner(NullValue, schema, context)
+    }
+
+    fun mapInner(
+        value: AirbyteValue,
+        schema: AirbyteType,
+        context: Context,
+    ): Pair<AirbyteValue, Context> =
         if (value is NullValue) {
-            if (!nullable) {
+            if (!context.nullable) {
                 throw IllegalStateException(
-                    "null value for non-nullable field at path: ${path.joinToString(".")}"
+                    "null value for non-nullable field at path: ${context.path.joinToString(".")}"
                 )
             }
-            mapNull(path)
+            mapNull(context)
         } else
             try {
                 when (schema) {
-                    is ObjectType -> mapObject(value as ObjectValue, schema, path)
-                    is ObjectTypeWithoutSchema ->
-                        mapObjectWithoutSchema(value as ObjectValue, schema, path)
-                    is ObjectTypeWithEmptySchema ->
-                        mapObjectWithEmptySchema(value as ObjectValue, schema, path)
-                    is ArrayType -> mapArray(value as ArrayValue, schema, path)
-                    is ArrayTypeWithoutSchema ->
-                        mapArrayWithoutSchema(value as ArrayValue, schema, path)
-                    is UnionType -> mapUnion(value, schema, path)
-                    is BooleanType -> mapBoolean(value as BooleanValue, path)
-                    is NumberType -> mapNumber(value as NumberValue, path)
-                    is StringType -> mapString(value as StringValue, path)
-                    is IntegerType -> mapInteger(value as IntegerValue, path)
-                    is DateType -> mapDate(value as DateValue, path)
+                    is ObjectType -> mapObject(value as ObjectValue, schema, context)
+                    is ObjectTypeWithoutSchema -> mapObjectWithoutSchema(value, schema, context)
+                    is ObjectTypeWithEmptySchema -> mapObjectWithEmptySchema(value, schema, context)
+                    is ArrayType -> mapArray(value as ArrayValue, schema, context)
+                    is ArrayTypeWithoutSchema -> mapArrayWithoutSchema(value, schema, context)
+                    is UnionType -> mapUnion(value, schema, context)
+                    is BooleanType -> mapBoolean(value as BooleanValue, context)
+                    is NumberType -> mapNumber(value as NumberValue, context)
+                    is StringType -> mapString(value as StringValue, context)
+                    is IntegerType -> mapInteger(value as IntegerValue, context)
+                    is DateType -> mapDate(value, context)
                     is TimeTypeWithTimezone ->
                         mapTimeWithTimezone(
-                            value as TimeValue,
-                            path,
+                            value,
+                            context,
                         )
                     is TimeTypeWithoutTimezone ->
                         mapTimeWithoutTimezone(
-                            value as TimeValue,
-                            path,
+                            value,
+                            context,
                         )
-                    is TimestampTypeWithTimezone ->
-                        mapTimestampWithTimezone(value as TimestampValue, path)
-                    is TimestampTypeWithoutTimezone ->
-                        mapTimestampWithoutTimezone(value as TimestampValue, path)
-                    is UnknownType -> mapUnknown(value as UnknownValue, path)
+                    is TimestampTypeWithTimezone -> mapTimestampWithTimezone(value, context)
+                    is TimestampTypeWithoutTimezone -> mapTimestampWithoutTimezone(value, context)
+                    is UnknownType -> mapUnknown(value as UnknownValue, context)
                 }
             } catch (e: Exception) {
-                collectFailure(path)
-                map(NullValue, schema, path, nullable)
+                nulledOut(schema, context)
             }
 
-    open fun mapObject(value: ObjectValue, schema: ObjectType, path: List<String>): AirbyteValue {
+    open fun mapObject(
+        value: ObjectValue,
+        schema: ObjectType,
+        context: Context
+    ): Pair<AirbyteValue, Context> {
         val values = LinkedHashMap<String, AirbyteValue>()
         schema.properties.forEach { (name, field) ->
             values[name] =
-                map(value.values[name] ?: NullValue, field.type, path + name, field.nullable)
+                mapInner(
+                        value.values[name] ?: NullValue,
+                        field.type,
+                        context.copy(path = context.path + name, nullable = field.nullable)
+                    )
+                    .first
         }
-        return ObjectValue(values)
+        return ObjectValue(values) to context
     }
 
     open fun mapObjectWithoutSchema(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
-        path: List<String>
-    ): AirbyteValue = value
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapObjectWithEmptySchema(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
-        path: List<String>
-    ): AirbyteValue = value
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapArray(value: ArrayValue, schema: ArrayType, path: List<String>): AirbyteValue {
-        return ArrayValue(
+    open fun mapArray(
+        value: ArrayValue,
+        schema: ArrayType,
+        context: Context
+    ): Pair<AirbyteValue, Context> {
+        val mapped =
             value.values.mapIndexed { index, element ->
-                map(element, schema.items.type, path + "[$index]", schema.items.nullable)
+                mapInner(
+                        element,
+                        schema.items.type,
+                        context.copy(
+                            path = context.path + "[$index]",
+                            nullable = schema.items.nullable
+                        )
+                    )
+                    .first
             }
-        )
+        return ArrayValue(mapped) to context
     }
 
     open fun mapArrayWithoutSchema(
-        value: ArrayValue,
+        value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
-        path: List<String>
-    ): AirbyteValue = value
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapUnion(value: AirbyteValue, schema: UnionType, path: List<String>): AirbyteValue =
-        value
+    open fun mapUnion(
+        value: AirbyteValue,
+        schema: UnionType,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapBoolean(value: BooleanValue, path: List<String>): AirbyteValue = value
+    open fun mapBoolean(value: BooleanValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 
-    open fun mapNumber(value: NumberValue, path: List<String>): AirbyteValue = value
+    open fun mapNumber(value: NumberValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 
-    open fun mapString(value: StringValue, path: List<String>): AirbyteValue = value
+    open fun mapString(value: StringValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 
-    open fun mapInteger(value: IntegerValue, path: List<String>): AirbyteValue = value
+    open fun mapInteger(value: IntegerValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 
-    open fun mapDate(value: DateValue, path: List<String>): AirbyteValue = value
+    /**
+     * Time types are only allowed to be strings on the wire, but can be Int/egerValue if passed
+     * through [TimeStringToInteger].
+     */
+    open fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 
-    open fun mapTimeWithTimezone(value: TimeValue, path: List<String>): AirbyteValue = value
+    open fun mapTimeWithTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapTimeWithoutTimezone(value: TimeValue, path: List<String>): AirbyteValue = value
+    open fun mapTimeWithoutTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapTimestampWithTimezone(value: TimestampValue, path: List<String>): AirbyteValue =
-        value
+    open fun mapTimestampWithTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapTimestampWithoutTimezone(value: TimestampValue, path: List<String>): AirbyteValue =
-        value
+    open fun mapTimestampWithoutTimezone(
+        value: AirbyteValue,
+        context: Context
+    ): Pair<AirbyteValue, Context> = value to context
 
-    open fun mapNull(path: List<String>): AirbyteValue = NullValue
+    open fun mapNull(context: Context): Pair<AirbyteValue, Context> = NullValue to context
 
-    open fun mapUnknown(value: UnknownValue, path: List<String>): AirbyteValue = value
+    open fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+        value to context
 }

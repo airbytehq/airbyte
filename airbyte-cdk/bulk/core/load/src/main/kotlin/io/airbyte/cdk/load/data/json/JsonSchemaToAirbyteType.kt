@@ -22,6 +22,7 @@ class JsonSchemaToAirbyteType {
                 when (schema.get("type").asText()) {
                     "string" -> fromString(schema)
                     "boolean" -> BooleanType
+                    "int",
                     "integer" -> IntegerType
                     "number" -> fromNumber(schema)
                     "array" -> fromArray(schema)
@@ -39,6 +40,23 @@ class JsonSchemaToAirbyteType {
                 unionFromCombinedTypes(schemaType.toList(), schema)
             } else {
                 UnknownType(schema)
+            }
+        } else if (schema.isObject && schema.has("\$ref")) {
+            // TODO: Determine whether we even still need to support this
+            return when (schema.get("\$ref").asText()) {
+                "WellKnownTypes.json#/definitions/Integer" -> IntegerType
+                "WellKnownTypes.json#/definitions/Number" -> NumberType
+                "WellKnownTypes.json#/definitions/String" -> StringType
+                "WellKnownTypes.json#/definitions/Boolean" -> BooleanType
+                "WellKnownTypes.json#/definitions/Date" -> DateType
+                "WellKnownTypes.json#/definitions/TimestampWithTimezone" ->
+                    TimestampTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimestampWithoutTimezone" ->
+                    TimestampTypeWithoutTimezone
+                "WellKnownTypes.json#/definitions/BinaryData" -> StringType
+                "WellKnownTypes.json#/definitions/TimeWithTimezone" -> TimeTypeWithTimezone
+                "WellKnownTypes.json#/definitions/TimeWithoutTimezone" -> TimeTypeWithoutTimezone
+                else -> UnknownType(schema)
             }
         } else if (schema.isObject) {
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
@@ -138,6 +156,9 @@ class JsonSchemaToAirbyteType {
                     convertInner(it)
                 }
             }
+        if (unionOptions.isEmpty()) {
+            return UnknownType(parentSchema)
+        }
         return UnionType.of(unionOptions)
     }
 }
