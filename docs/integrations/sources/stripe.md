@@ -127,11 +127,7 @@ The Stripe source connector supports the following streams:
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-<<<<<<< HEAD
-- [Usage Records](https://stripe.com/docs/api/usage_records/)
-=======
 - [Usage Records](https://stripe.com/docs/api/usage_records)
->>>>>>> master
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
