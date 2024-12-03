@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.LimitedMessageQueue
-import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.message.SimpleBatch
@@ -75,96 +74,93 @@ class DefaultSpillToDiskTask(
             queue.consume().fold(initialResult) {
                 (spillFile, outputStream, range, sizeBytes),
                 reserved ->
-                    try {
-                        reserved.use {
-                            when (val wrapped = it.value) {
-                                is StreamRecordEvent -> {
-                                    // once we have received a record for the stream, consider the
-                                    // aggregate opened.
-                                    timeWindow.open()
+                    reserved.use {
+                        when (val wrapped = it.value) {
+                            is StreamRecordEvent -> {
+                                // once we have received a record for the stream, consider the
+                                // aggregate opened.
+                                timeWindow.open()
 
-                                    // reserve enough room for the record
-                                    diskManager.reserve(wrapped.sizeBytes)
+                                // reserve enough room for the record
+                                diskManager.reserve(wrapped.sizeBytes)
 
-                                    // calculate whether we should flush
-                                    val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
-                                    val bytesProcessed = sizeBytes + wrapped.sizeBytes
-                                    val forceFlush =
-                                        flushStrategy.shouldFlush(
-                                            streamDescriptor,
-                                            rangeProcessed,
-                                            bytesProcessed
-                                        )
+                                // calculate whether we should flush
+                                val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
+                                val bytesProcessed = sizeBytes + wrapped.sizeBytes
+                                val forceFlush =
+                                    flushStrategy.shouldFlush(
+                                        streamDescriptor,
+                                        rangeProcessed,
+                                        bytesProcessed
+                                    )
 
-                                    outputStream.write(wrapped.record.serialized)
-                                    outputStream.write("\n")
+                                outputStream.write(wrapped.record.serialized)
+                                outputStream.write("\n")
 
-                                    if (forceFlush) {
-                                        val file =
-                                            SpilledRawMessagesLocalFile(
-                                                spillFile,
-                                                bytesProcessed,
-                                                rangeProcessed
-                                            )
-                                        publishFile(file)
-                                        val nextTmpFile = spillFileProvider.createTempFile()
-                                        outputStream.close()
-                                        ReadResult(nextTmpFile, nextTmpFile.outputStream())
-                                    } else {
-                                        ReadResult(
+                                if (forceFlush) {
+                                    val file =
+                                        SpilledRawMessagesLocalFile(
                                             spillFile,
-                                            outputStream,
-                                            rangeProcessed,
-                                            bytesProcessed
+                                            bytesProcessed,
+                                            rangeProcessed
                                         )
+                                    publishFile(file)
+                                    val nextTmpFile = spillFileProvider.createTempFile()
+                                    outputStream.close()
+                                    ReadResult(nextTmpFile, nextTmpFile.outputStream())
+                                } else {
+                                    ReadResult(
+                                        spillFile,
+                                        outputStream,
+                                        rangeProcessed,
+                                        bytesProcessed
+                                    )
+                                }
+                            }
+
+                            is StreamCompleteEvent -> {
+                                val nextRange = range.withNextAdjacentValue(wrapped.index)
+                                val file =
+                                    SpilledRawMessagesLocalFile(
+                                        spillFile,
+                                        sizeBytes,
+                                        nextRange,
+                                        endOfStream = true
+                                    )
+                                publishFile(file)
+                                ReadResult(
+                                    spillFile,
+                                    outputStream,
+                                    range,
+                                    sizeBytes
+                                ) // this will be the last message
+                            }
+
+                            is StreamFlushEvent -> {
+                                val forceFlush = timeWindow.isComplete()
+                                if (forceFlush) {
+                                    log.info {
+                                        "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $spillFile of (${sizeBytes}b)"
                                     }
                                 }
 
-                                is StreamCompleteEvent -> {
-                                    val nextRange = range.withNextAdjacentValue(wrapped.index)
+                                if (range != null && sizeBytes > 0L) {
                                     val file =
                                         SpilledRawMessagesLocalFile(
                                             spillFile,
                                             sizeBytes,
-                                            nextRange,
-                                            endOfStream = true
+                                            range,
+                                            endOfStream = false
                                         )
                                     publishFile(file)
-                                    ReadResult(
-                                        spillFile,
-                                        outputStream,
-                                        range,
-                                        sizeBytes
-                                    ) // this will be the last message
-                                }
-
-                                is StreamFlushEvent -> {
-                                    val forceFlush = timeWindow.isComplete()
-                                    if (forceFlush) {
-                                        log.info {
-                                            "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $spillFile of (${sizeBytes}b)"
-                                        }
-                                    }
-
-                                    if (range != null && sizeBytes > 0L) {
-                                        val file =
-                                            SpilledRawMessagesLocalFile(
-                                                spillFile,
-                                                sizeBytes,
-                                                range,
-                                                endOfStream = false
-                                            )
-                                        publishFile(file)
-                                        val nextTmpFile = spillFileProvider.createTempFile()
-                                        outputStream.close()
-                                        ReadResult(nextTmpFile, nextTmpFile.outputStream())
-                                    }
+                                    val nextTmpFile = spillFileProvider.createTempFile()
+                                    outputStream.close()
+                                    ReadResult(nextTmpFile, nextTmpFile.outputStream())
+                                } else {
                                     ReadResult(spillFile, outputStream, range, sizeBytes)
                                 }
                             }
                         }
-                    } finally {
-                        outputStream.close()
                     }
                 }
             }
