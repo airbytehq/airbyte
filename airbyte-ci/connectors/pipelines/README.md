@@ -310,7 +310,7 @@ flowchart TD
     entrypoint[[For each selected connector]]
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
-      sem["Check version follows semantic versionning"]
+      sem["Check version follows semantic versioning"]
       incr["Check version is incremented"]
       metadata_validation["Run metadata validation on metadata.yaml"]
       sem --> incr
@@ -319,7 +319,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        pyairbyte_validation[Run PyAirbyte validation tests]
+        pyairbyte_validation[Python CLI smoke tests via PyAirbyte]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
