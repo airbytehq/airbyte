@@ -9,18 +9,17 @@ import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessBatchTask : StreamLevel, ImplementorScope
+interface ProcessBatchTask : ImplementorScope
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
 class DefaultProcessBatchTask(
     private val syncManager: SyncManager,
     private val batchEnvelope: BatchEnvelope<*>,
-    override val streamDescriptor: DestinationStream.Descriptor,
+    private val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
     override suspend fun execute() {

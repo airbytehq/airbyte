@@ -76,11 +76,10 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
+class DestinationTaskLauncherTest<T: ScopedTask> {
     @Inject lateinit var mockScopeProvider: MockScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
-    @Inject lateinit var mockExceptionHandler: MockExceptionHandler<T>
 
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
@@ -188,7 +187,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -211,7 +209,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream
         ): OpenStreamTask {
             return object : OpenStreamTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream.descriptor
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -231,7 +228,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -251,7 +247,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             batchEnvelope: BatchEnvelope<*>
         ): ProcessBatchTask {
             return object : ProcessBatchTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(batchEnvelope)
                 }
@@ -270,7 +265,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -331,36 +325,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
     class MockBatch(override val state: Batch.State) : Batch
 
-    @Singleton
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockExceptionHandler<T> : TaskExceptionHandler<T, WrappedTask<ScopedTask>> where
-    T : LeveledTask,
-    T : ScopedTask {
-        val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
-        val callbacks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-
-        inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-            override suspend fun execute() {
-                innerTask.execute()
-            }
-        }
-
-        override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
-            wrappedTasks.send(task)
-            val innerTask =
-                object : InternalScope {
-                    override suspend fun execute() {
-                        task.execute()
-                    }
-                }
-            return IdentityWrapper(innerTask)
-        }
-
-        override suspend fun setCallback(callback: suspend () -> Unit) {
-            callbacks.send(callback)
-        }
-    }
-
     @Test
     fun testRun() = runTest {
         val job = launch { taskLauncher.run() }
@@ -384,15 +348,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             "update checkpoints task was started"
         )
 
-        // Collect the tasks wrapped by the exception handler: expect one Setup and [nStreams]
-        // SpillToDisk
-        mockExceptionHandler.wrappedTasks.close()
-        val taskList = mockExceptionHandler.wrappedTasks.toList()
-        Assertions.assertEquals(1, taskList.filterIsInstance<SetupTask>().size)
-        Assertions.assertEquals(
-            mockSpillToDiskTaskFactory.streamHasRun.size,
-            taskList.filterIsInstance<SpillToDiskTask>().size
-        )
         job.cancel()
     }
 
@@ -401,14 +356,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         // Verify that open stream ran for each stream
         taskLauncher.handleSetupComplete()
         mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
-
-        // Collect the tasks wrapped by the exception handler: expect [nStreams] OpenStream
-        mockExceptionHandler.wrappedTasks.close()
-        val taskList = mockExceptionHandler.wrappedTasks.toList()
-        Assertions.assertEquals(
-            mockOpenStreamTaskFactory.streamHasRun.size,
-            taskList.filterIsInstance<OpenStreamTask>().size
-        )
     }
 
     @Test
@@ -542,8 +489,8 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     fun testHandleCallbackWithFailure() = runTest {
         launch {
             taskLauncher.run()
+            taskLauncher.handleTeardownComplete(success = false)
             Assertions.assertTrue(mockScopeProvider.didKill)
         }
-        mockExceptionHandler.callbacks.receive().invoke()
     }
 }

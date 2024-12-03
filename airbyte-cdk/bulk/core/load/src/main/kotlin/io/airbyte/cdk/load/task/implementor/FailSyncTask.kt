@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.DestinationTaskExceptionHandler
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,7 +20,7 @@ interface FailSyncTask : ImplementorScope
  * resources and reporting the failure.
  */
 class DefaultFailSyncTask(
-    private val exceptionHandler: DestinationTaskExceptionHandler<*, *>,
+    private val taskLauncher: DestinationTaskLauncher,
     private val destinationWriter: DestinationWriter,
     private val exception: Exception,
     private val syncManager: SyncManager,
@@ -33,15 +33,14 @@ class DefaultFailSyncTask(
         checkpointManager.flushReadyCheckpointMessages()
         val result = syncManager.markFailed(exception) // awaits stream completion
         log.info { "Calling teardown with failure result $result" }
-        exceptionHandler.handleSyncFailed()
-        // Do this cleanup last, after all the tasks have had a decent chance to finish.
         destinationWriter.teardown(result)
+        taskLauncher.handleTeardownComplete()
     }
 }
 
 interface FailSyncTaskFactory {
     fun make(
-        exceptionHandler: DestinationTaskExceptionHandler<*, *>,
+        taskLauncher: DestinationTaskLauncher,
         exception: Exception
     ): FailSyncTask
 }
@@ -54,11 +53,11 @@ class DefaultFailSyncTaskFactory(
     private val destinationWriter: DestinationWriter
 ) : FailSyncTaskFactory {
     override fun make(
-        exceptionHandler: DestinationTaskExceptionHandler<*, *>,
+        taskLauncher: DestinationTaskLauncher,
         exception: Exception
     ): FailSyncTask {
         return DefaultFailSyncTask(
-            exceptionHandler,
+            taskLauncher,
             destinationWriter,
             exception,
             syncManager,
