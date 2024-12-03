@@ -40,7 +40,6 @@ import jakarta.inject.Singleton
         [
             "host",
             "port",
-            "connection_data",
             "username",
             "password",
             "schemas",
@@ -63,33 +62,13 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
     @JsonSchemaInject(json = """{"order":2,"minimum": 0,"maximum": 65536}""")
-    @JsonSchemaDefault("1521")
+    @JsonSchemaDefault("443")
     @JsonPropertyDescription(
         "Port of the database.\n" +
             "SapHana Corporations recommends the following port numbers:\n" +
-            "1521 - Default listening port for client connections to the listener. \n" +
-            "2484 - Recommended and officially registered listening port for client " +
-            "connections to the listener using TCP/IP with SSL.",
+            "443 - Default listening port for SAP HANA cloud client connections to the listener.",
     )
-    var port: Int = 1521
-
-    @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "connection_data")
-    val connectionData = MicronautPropertiesFriendlyConnectionData()
-
-    @JsonIgnore var connectionDataJson: ConnectionData? = null
-
-    @JsonSetter("connection_data")
-    fun setConnectionDataValue(value: ConnectionData) {
-        connectionDataJson = value
-    }
-
-    @JsonGetter("connection_data")
-    @JsonSchemaTitle("Connect by")
-    @JsonPropertyDescription("The scheme by which to establish a database connection.")
-    @JsonSchemaInject(json = """{"order":3}""")
-    fun getConnectionDataValue(): ConnectionData =
-        connectionDataJson ?: connectionData.asConnectionData()
+    var port: Int = 443
 
     @JsonProperty("username")
     @JsonSchemaTitle("User")
@@ -216,44 +195,6 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
-}
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "connection_type")
-@JsonSubTypes(
-    JsonSubTypes.Type(value = ServiceName::class, name = "service_name"),
-    JsonSubTypes.Type(value = Sid::class, name = "sid"),
-)
-@JsonSchemaTitle("Connect by")
-@JsonSchemaDescription("Connect data that will be used for DB connection.")
-sealed interface ConnectionData
-
-@JsonSchemaTitle("Service name")
-@JsonSchemaDescription("Use service name.")
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class ServiceName : ConnectionData {
-    @JsonProperty("service_name") @JsonSchemaTitle("Service name") lateinit var serviceName: String
-}
-
-@JsonSchemaTitle("System ID (SID)")
-@JsonSchemaDescription("Use SapHana System Identifier.")
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class Sid : ConnectionData {
-    @JsonProperty("sid") @JsonSchemaTitle("System ID (SID)") lateinit var sid: String
-}
-
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.connection_data")
-class MicronautPropertiesFriendlyConnectionData {
-    var connectionType: String = "service_name"
-    var serviceName: String? = null
-    var sid: String? = null
-
-    @JsonValue
-    fun asConnectionData(): ConnectionData =
-        when (connectionType) {
-            "service_name" -> ServiceName().also { it.serviceName = serviceName!! }
-            "sid" -> Sid().also { it.sid = sid!! }
-            else -> throw ConfigErrorException("invalid value $connectionType")
-        }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "encryption_method")

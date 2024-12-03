@@ -27,9 +27,7 @@ airbyte:
         #
         queries:
           - >-
-            SELECT 'version "' || banner || '" < 19 is not supported' AS version_check
-            FROM (SELECT banner, REGEXP_SUBSTR(banner, '\d+') AS major_version FROM v$version)
-            WHERE major_version < 19
+            SELECT 1 FROM M_DATABASE WHERE 1 = 0
 
     exception-classifiers:
       regex:
