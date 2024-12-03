@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 import importlib.util
-import sys
 
 @pytest.fixture(scope="session")
 def connector_dir():
