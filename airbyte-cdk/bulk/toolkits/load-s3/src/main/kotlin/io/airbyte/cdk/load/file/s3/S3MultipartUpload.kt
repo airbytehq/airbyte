@@ -72,7 +72,7 @@ class S3MultipartUpload<T : OutputStream>(
         log.info {
             "Starting multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
         }
-        run {
+        launch {
             log.info {
                 "Launching multipart upload to ${response.bucket}/${response.key} (${response.uploadId}"
             }
