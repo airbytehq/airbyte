@@ -2,17 +2,17 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.6.8rc1"
+version = "6.8.0rc1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.6.8rc1-py3-none-any.whl", hash = "sha256:51489338f1debdff143c0609c20904edc0bd6202055a44fc640588dc075617a0"},
-    {file = "airbyte_cdk-6.6.8rc1.tar.gz", hash = "sha256:cc98f234b4ed4590d2dff6702d5d7534510f80f7267c46d3ae55beb39cc3cec6"},
+    {file = "airbyte_cdk-6.8.0rc1-py3-none-any.whl", hash = "sha256:47ab59b07631d0237105759c252f0bb16f6bef704225357cdf0a8fea1e8bcaee"},
+    {file = "airbyte_cdk-6.8.0rc1.tar.gz", hash = "sha256:7d9c8b278937d096677103e749147023a95e82327b71764b069d0069014d5ffa"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = ">=0.13,<0.14"
+airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
 backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<44.0.0"
@@ -53,13 +53,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.13.1"
+version = "0.14.1"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.13.1-py3-none-any.whl", hash = "sha256:20a734b7b1c3479a643777830db6a2e0a34428f33d16abcfd320552576fabe5a"},
-    {file = "airbyte_protocol_models_dataclasses-0.13.1.tar.gz", hash = "sha256:ec6a0fb6b16267bde910f52279445d06c8e1a3e4ed82ac2937b405ab280449d5"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.1-py3-none-any.whl", hash = "sha256:dfe10b32ee09e6ba9b4f17bd309e841b61cbd61ec8f80b1937ff104efd6209a9"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.1.tar.gz", hash = "sha256:f62a46556b82ea0d55de144983141639e8049d836dd4e0a9d7234c5b2e103c08"},
 ]
 
 [[package]]
@@ -2111,4 +2111,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "e6faf93f723cfc8ba7c772eb07ac059886a619f67b806b663d9ab9da597dd1ee"
+content-hash = "16e0e60e6b1f92933612cb6d22b519e8c226134ae45a7061d4aaf3dd98a63762"
