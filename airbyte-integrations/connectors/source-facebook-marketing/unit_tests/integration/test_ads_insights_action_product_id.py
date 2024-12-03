@@ -423,7 +423,7 @@ class TestFullRefresh(TestCase):
             error_reduce_amount_of_data_response(),
         )
         http_mocker.get(
-            _get_insights_request(_JOB_ID).with_limit(int(limit / 2)).build(),
+            _get_insights_request(_JOB_ID).with_limit(int(limit / 4)).build(),
             _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
         )
 
