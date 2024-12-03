@@ -19,8 +19,8 @@ data:
     jobSpecific:
     - jobType: check_connection
       resourceRequirements:
-        memory_limit: 1024Mi
-        memory_request: 1024Mi
+        memory_limit: 2048Mi
+        memory_request: 2048Mi
   license: ELv2
   maxSecondsBetweenMessages: 1
   name: S3
