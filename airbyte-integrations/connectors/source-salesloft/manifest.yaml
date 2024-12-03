@@ -620,6 +620,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -672,6 +676,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -725,6 +733,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -778,6 +790,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -831,6 +847,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -884,6 +904,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -936,6 +960,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -988,6 +1016,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1040,6 +1072,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1092,6 +1128,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1144,6 +1184,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1196,6 +1240,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1248,6 +1296,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1300,6 +1352,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1353,6 +1409,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gt]
       schema_loader:
         type: InlineSchemaLoader
         schema:
