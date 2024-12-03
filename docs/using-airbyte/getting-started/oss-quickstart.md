@@ -7,16 +7,16 @@ import TabItem from "@theme/TabItem";
 
 # Quickstart
 
-This quickstart guides you through deploying a local instance of Airbyte Self-Managed Community, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data on our platform immediately.
+This quickstart guides you through deploying a local instance of Airbyte Self-Managed Community, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
 
 ## Overview
 
 This quickstart shows you how to:
 
-- [Install abctl](#install-abctl)
-- [Run Airbyte](#run-airbyte)
-- [Set up authentication](#authentication)
-- [Decide on your next steps](#next-steps)
+- [Install abctl](#part-1-install-abctl)
+- [Run Airbyte](#part-2-run-airbyte)
+- [Set up authentication](#part-3-set-up-authentication)
+- [Decide on your next steps](#whats-next)
 
 This is intended for most people who want to manage their own Airbyte instance, but it assumes you have basic knowledge of:
 
@@ -42,7 +42,7 @@ For best performance, run Airbyte on a machine with 4 or more CPUs and at least 
 
 abctl is Airbyte's command-line tool for deploying and managing Airbyte. 
 
-### Install abctl the fast way (Mac, Linux) <!-- I think Windows ships with cURL now - can we use it? -->
+### Install abctl the fast way (Mac, Linux)
 
 1. Open a terminal and run the following command.
 
@@ -185,6 +185,10 @@ abctl version
     abctl local install --low-resource-mode
     ```
 
+    :::note
+    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation will complete anyway. See [Suggested resources](#suggested-resources).
+    :::
+
 Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000).
 
 As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running again, you can access Airbyte normally.
@@ -228,15 +232,15 @@ Use this email and password to log into Airbyte in the future.
 
 ## What's next
 
-Congratulations! You have a fully-functional instance of Airbyte running locally. Time to take Airbyte for a spin.
+Congratulations! You have a fully functional instance of Airbyte running locally.
 
 ### Move data
 
-In Airbyte, you move data from [sources](./add-a-source) to [destinations](./add-a-destination.md). The relationship between sources and destination is called a [connection](./set-up-a-connection.md). Try moving some data on your local instance!
+In Airbyte, you move data from [sources](./add-a-source) to [destinations](./add-a-destination.md). The relationship between a source and a destination is called a [connection](./set-up-a-connection.md). Try moving some data on your local instance.
 
 ### Deploy Airbyte
 
-If you want to scale data movement in your organization, you eventually need to move Airbyte off your local machine. You can use a cloud provider like AWS, Google Cloud, or Azure. You can also use a single node like an AWS EC2 virtual machine. See the [deployment guide](../../deploying-airbyte/) to learn more.
+If you want to scale data movement in your organization, you probably need to move Airbyte off your local machine. You can deploy to a cloud provider like AWS, Google Cloud, or Azure. You can also use a single node like an AWS EC2 virtual machine. See the [deployment guide](../../deploying-airbyte/) to learn more.
 
 ## Uninstall Airbyte
 
@@ -260,52 +264,7 @@ To stop running containers and delete all data:
     rm -rf ~/.airbyte/abctl
     ```
 
-<!-- [[[this info is probably not required anymore. Preserving here just in case.]]]
-
-## Migrating from Docker Compose (Optional)
-
-:::note
-
-If you're using an external database or secret manager you don't need to run `--migrate` flag.
-You must create the `secrets.yaml` and `values.yaml` and then run `abctl local install --values ./values.yaml --secret ./secrets.yaml`.
-Please check [instructions](../../deploying-airbyte/integrations/database.md) to setup the external database as example.
-
-:::
-
-If you have data that you would like to migrate from an existing docker compose instance follow the steps below:
-
-1. Make sure that you have stopped the instance running in docker compose, this may require the following command:
-
-```
-docker compose stop
-```
-
-2. Make sure that you have the latest version of abctl by running the following command:
-
-```
-curl -LsfS https://get.airbyte.com | bash -
-```
-
-3. Run abctl with the migrate flag set with the following command:
-
-```
-abctl local install --migrate
-```
-
-:::note
-
-If you're using a version of Airbyte that you've installed with `abctl`, you can find instructions on upgrading your Airbyte installation [here](../../operator-guides/upgrading-airbyte.md#upgrading-with-abctl).
-
-:::
-
--->
-
-
-
-
-
-
-<!-- [[[move to deployment section for now]]]
+<!-- --Preserving for posterity but probably not relevant to include in the quick start. May move to deployment section later.--
 
 ## Customizing your Installation with a Values file
 
@@ -320,66 +279,4 @@ Here's a list of common customizations.
 - [External Database](../../deploying-airbyte/integrations/database)
 - [State and Logging Storage](../../deploying-airbyte/integrations/storage)
 - [Secret Management](../../deploying-airbyte/integrations/secrets)
-
-
-## Using an EC2 Instance with abctl
-
-This guide will assume that you are using the Amazon Linux distribution. However. any distribution that supports a docker engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide. You can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) documentation from Amazon.
-
-1. Install the docker engine:
-
-```shell
-sudo yum install -y docker
-```
-
-2. Add the ec2-user (or whatever your distros default user) to the docker group:
-
-```shell
-sudo usermod -a -G docker ec2-user
-```
-
-3. Start and optionally enable (start on boot) the docker engine:
-
-```shell
-sudo systemctl start docker
-sudo systemctl enable docker
-```
-
-4. Exit the shell and reconnect to the ec2 instance, an example would look like:
-
-```shell
-exit
-ssh -i ec2-user-key.pem ec2-user@1.2.3.4
-```
-
-5. Download the latest version of abctl and install it in your path:
-
-```shell
-curl -LsfS https://get.airbyte.com | bash -
-```
-
-6. Run the `abctl` command and install Airbyte:
-   :::tip
-   By default, `abctl` only configures an ingress rule for the host `localhost`. In order to ensure that Airbyte can be accessed outside of the EC2 instance, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
-   :::
-
-By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
-
-Ensure the security group configured for the EC2 Instance allows traffic in on the port (8000 by default, or whatever port was passed to `--port`) that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
-
-```shell
-abctl local install --host [HOSTNAME]
-```
-
-### Running over HTTP
-
-Airbyte suggest that you secure your instance of Airbyte using TLS. Running over plain HTTP allows attackers to see your
-password over clear text. If you understand the risk and would still like to run Airbyte over HTTP, you must set
-Secure Cookies to false. You can do this with `abctl` by passing the `--insecure-cookies` flag to `abctl`:
-
-```shell
-abctl local install --host [HOSTNAME] --insecure-cookies
-```
-
-
 -->
