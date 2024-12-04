@@ -79,7 +79,7 @@ class AirbyteMessageDeserializer(
                     partial.record?.meta,
                 )
             // store serialized json & meta
-            partial.withSerialized(Jsons.serialize(transformedData.first))
+            // partial.withSerialized(Jsons.serialize(transformedData.first))
             partial.record?.meta = transformedData.second
             // The connector doesn't need to be able to access to the record value. We can serialize
             // it here and
