@@ -44,7 +44,7 @@ abstract class BaseSheetGenerator(private val useV2Fields: Boolean = false) : Cs
 
     override fun getDataRow(
         id: UUID,
-        formattedString: String,
+        data: List<String>,
         emittedAt: Long,
         formattedAirbyteMetaString: String,
         generationId: Long,

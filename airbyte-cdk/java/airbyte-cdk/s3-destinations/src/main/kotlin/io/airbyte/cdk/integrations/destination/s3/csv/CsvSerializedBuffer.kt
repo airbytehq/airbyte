@@ -79,7 +79,7 @@ class CsvSerializedBuffer(
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
-                recordString,
+                listOf(recordString),
                 emittedAt,
                 airbyteMetaString,
                 generationId,

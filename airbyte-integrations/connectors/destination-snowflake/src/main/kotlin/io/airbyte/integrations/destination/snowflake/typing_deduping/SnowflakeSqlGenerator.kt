@@ -125,7 +125,7 @@ class SnowflakeSqlGenerator(
             // Remove eventually if insert+delete is proven to be bad
             if (useMergeForUpserts) {
                 return transactionally(
-                    upsertRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting),
+                    upsertRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/),
                     checkpointRawTable(stream.id)
                 )
             }
@@ -133,20 +133,20 @@ class SnowflakeSqlGenerator(
                 stream,
                 finalSuffix,
                 minRawTimestamp,
-                useExpensiveSaferCasting
+                //useExpensiveSaferCasting
             )
         }
-        return insertRecordsNoDedupe(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+        return insertRecordsNoDedupe(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
     }
 
     private fun insertRecordsDedupe(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        // useExpensiveSaferCasting: Boolean
     ): Sql {
         val insertNewRecords =
-            insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+            insertNewRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
         val dedupFinalTable =
             dedupFinalTable(stream.id, finalSuffix, stream.primaryKey, stream.cursor)
         val cdcDeletes = cdcDeletes(stream, finalSuffix)
@@ -158,7 +158,7 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        safeCast: Boolean
+        // safeCast: Boolean
     ): String {
         val targetTable = "TARGET_TABLE"
         val sourceTable = "DEDUPED_RECORDS"
@@ -214,7 +214,7 @@ class SnowflakeSqlGenerator(
             """
             |MERGE INTO ${stream.id.quotedFinalTableId(finalSuffix)} as $targetTable
             |USING (
-            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, safeCast).replaceIndent("  ")}
+            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, /*safeCast*/).replaceIndent("  ")}
             |) $sourceTable
             |ON
             |${pkEqualityMatch.replaceIndent("  ")} $whenMatchedCdcDeleteCondition
@@ -236,18 +236,18 @@ class SnowflakeSqlGenerator(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useExpensiveSaferCasting: Boolean
+        // useExpensiveSaferCasting: Boolean
     ): Sql {
         val insertNewRecords =
-            insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+            insertNewRecords(stream, finalSuffix, minRawTimestamp, /*useExpensiveSaferCasting*/)
         val checkpointRawTable = checkpointRawTable(stream.id)
         return transactionally(insertNewRecords, checkpointRawTable)
     }
 
     private fun extractAndCast(
         column: ColumnId,
-        airbyteType: AirbyteType,
-        useTryCast: Boolean
+        // airbyteType: AirbyteType,
+        // useTryCast: Boolean
     ): String {
         return "(${column.originalName.quoted()})::text"/*cast(
             "${JavaBaseConstants.COLUMN_NAME_DATA.quoted()}:${escapeJsonIdentifier(column.originalName).quoted()}",
@@ -256,7 +256,7 @@ class SnowflakeSqlGenerator(
         )*/
     }
 
-    private fun cast(sqlExpression: String, airbyteType: AirbyteType, useTryCast: Boolean): String {
+    /*private fun cast(sqlExpression: String, airbyteType: AirbyteType, useTryCast: Boolean): String {
         val castMethod = if (useTryCast) "TRY_CAST" else "CAST"
         if (airbyteType is Union) {
             // This is guaranteed to not be a Union, so we won't recurse infinitely
@@ -323,17 +323,17 @@ class SnowflakeSqlGenerator(
                 else -> "$castMethod(($sqlExpression)::text as $dialectType)"
             }
         }
-    }
+    }*/
 
     @VisibleForTesting
     fun insertNewRecords(
         stream: StreamConfig,
         finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
-        useTryCast: Boolean
+        // useTryCast: Boolean
     ): String {
         val selectRecordsFromRawTable =
-            selectTypedRecordsFromRawTable(stream, minRawTimestamp, useTryCast)
+            selectTypedRecordsFromRawTable(stream, minRawTimestamp, /*useTryCast*/)
 
         return """
             |INSERT INTO ${stream.id.quotedFinalTableId(finalSuffix)}(
@@ -344,7 +344,7 @@ class SnowflakeSqlGenerator(
             |""".trimMargin()
     }
 
-    private fun StreamConfig.projectionColumnsFromRawTable(safeCast: Boolean): String {
+    private fun StreamConfig.projectionColumnsFromRawTable(/*safeCast: Boolean*/): String {
         val adjustedExtractedAt =
             "${airbyteExtractedAtUtcForced(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.quoted())} as " +
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.quoted()
@@ -356,8 +356,8 @@ class SnowflakeSqlGenerator(
                 "${
                 extractAndCast(
                     it.key,
-                    it.value,
-                    safeCast,
+                    // it.value,
+                    // safeCast,
                 )
             } as ${it.key.name.quoted()}"
             } +
@@ -371,12 +371,12 @@ class SnowflakeSqlGenerator(
         return columns.joinToString(", \n")
     }
 
-    private fun StreamConfig.typeCastError(safeCast: Boolean): String {
+    private fun StreamConfig.typeCastError(/*safeCast: Boolean*/): String {
         val caseStatement: (Map.Entry<ColumnId, AirbyteType>) -> String = { col ->
             """
                 |CASE
                 |  WHEN (TYPEOF("_airbyte_data":"${escapeJsonIdentifier(col.key.originalName)}") NOT IN ('NULL', 'NULL_VALUE'))
-                |    AND (${extractAndCast(col.key, col.value, safeCast)} IS NULL)
+                |    AND (${extractAndCast(col.key, /*col.value, safeCast*/)} IS NULL)
                 |    THEN OBJECT_CONSTRUCT('field', '${escapeSingleQuotedString(col.key.originalName)}', 'change', 'NULLED', 'reason', 'DESTINATION_TYPECAST_ERROR')
                 |  ELSE NULL
                 |END
@@ -405,9 +405,9 @@ class SnowflakeSqlGenerator(
     private fun selectTypedRecordsFromRawTable(
         stream: StreamConfig,
         minRawTimestamp: Optional<Instant>,
-        useTryCast: Boolean,
+        // useTryCast: Boolean,
     ): String {
-        val projectionColumnsFromRawTable = stream.projectionColumnsFromRawTable(useTryCast)
+        val projectionColumnsFromRawTable = stream.projectionColumnsFromRawTable(/*useTryCast*/)
         val typeCastErrorsArray =
             """
             |ARRAY_COMPACT(
@@ -417,7 +417,7 @@ class SnowflakeSqlGenerator(
             |      ELSE ARRAY_CONSTRUCT()
             |    END,
             |    ARRAY_CONSTRUCT(
-            |${stream.typeCastError(useTryCast).replaceIndent("      ")}
+            |${stream.typeCastError(/*useTryCast*/).replaceIndent("      ")}
             |    )
             |  )
             |)
