@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.destination.record_buffer
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.io.CountingOutputStream
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -59,7 +60,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
      */
     @Throws(IOException::class)
     protected abstract fun writeRecord(
-        recordString: String,
+        record: JsonNode,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long,
@@ -105,7 +106,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
 
     @Throws(Exception::class)
     override fun accept(
-        recordString: String,
+        record: JsonNode,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
@@ -121,7 +122,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         }
         if (inputStream == null && !isClosed) {
             val startCount = byteCounter.count
-            writeRecord(recordString, airbyteMetaString, generationId, emittedAt)
+            writeRecord(record, airbyteMetaString, generationId, emittedAt)
             return byteCounter.count - startCount
         } else {
             throw IllegalCallerException("Buffer is already closed, it cannot accept more messages")

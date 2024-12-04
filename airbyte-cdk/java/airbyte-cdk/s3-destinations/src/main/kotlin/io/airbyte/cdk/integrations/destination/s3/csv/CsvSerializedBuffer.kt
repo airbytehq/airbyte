@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.csv
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
@@ -71,7 +72,7 @@ class CsvSerializedBuffer(
 
     @Throws(IOException::class)
     override fun writeRecord(
-        recordString: String,
+        record: JsonNode,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
@@ -79,7 +80,13 @@ class CsvSerializedBuffer(
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
-                listOf(recordString),
+                listOf(
+                    record.get("field1").asText(),
+                    record.get("field2").asText(),
+                    record.get("field3").asText(),
+                    record.get("field4").asText(),
+                    record.get("field5").asText(),
+                ),
                 emittedAt,
                 airbyteMetaString,
                 generationId,

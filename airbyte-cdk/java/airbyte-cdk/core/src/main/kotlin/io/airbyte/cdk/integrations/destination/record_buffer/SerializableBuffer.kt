@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.destination.record_buffer
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.io.*
 
@@ -40,7 +41,7 @@ interface SerializableBuffer : AutoCloseable {
      */
     @Throws(Exception::class)
     fun accept(
-        recordString: String,
+        record: JsonNode,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long

@@ -44,7 +44,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
         writeBuffer.use {
             stream.forEach { record: PartialAirbyteMessage ->
                 it.accept(
-                    record.serialized!!,
+                    record.record?.data!!,
                     Jsons.serialize(record.record!!.meta),
                     streamConfig.generationId,
                     record.record!!.emittedAt

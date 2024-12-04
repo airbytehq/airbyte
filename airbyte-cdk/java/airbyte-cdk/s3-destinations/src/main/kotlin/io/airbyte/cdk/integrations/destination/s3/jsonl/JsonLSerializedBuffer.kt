@@ -87,19 +87,19 @@ class JsonLSerializedBuffer(
 
     @Suppress("DEPRECATION")
     override fun writeRecord(
-        recordString: String,
+        record: JsonNode,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
     ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
-        writeRecord(
-            Jsons.deserialize(
-                    recordString,
-                    AirbyteRecordMessage::class.java,
-                )
-                .withEmittedAt(emittedAt),
-        )
+        // writeRecord(
+        //     Jsons.deserialize(
+        //             recordString,
+        //             AirbyteRecordMessage::class.java,
+        //         )
+        //         .withEmittedAt(emittedAt),
+        // )
     }
 
     override fun flushWriter() {
