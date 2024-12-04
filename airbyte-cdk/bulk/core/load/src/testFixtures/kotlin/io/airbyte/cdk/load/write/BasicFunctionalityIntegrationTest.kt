@@ -112,6 +112,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val stringifySchemalessObjects: Boolean,
     val promoteUnionToObject: Boolean,
     val preserveUndeclaredFields: Boolean,
+    val supportFileTransfer: Boolean,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -231,6 +232,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWriteFile() {
+        assumeTrue(supportFileTransfer)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream_file"),

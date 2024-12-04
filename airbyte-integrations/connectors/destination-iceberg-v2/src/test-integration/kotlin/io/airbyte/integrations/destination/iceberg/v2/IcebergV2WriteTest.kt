@@ -4,16 +4,14 @@
 
 package io.airbyte.integrations.destination.iceberg.v2
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
-import java.util.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.*
+import java.util.Base64
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -31,6 +29,7 @@ abstract class IcebergV2WriteTest(configContents: String) :
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
+        supportFileTransfer = false,
         allTypesBehavior = StronglyTyped(),
     ) {
     companion object {
@@ -50,24 +49,28 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
 
     companion object {
         private fun getToken(): String {
-            val mapper = ObjectMapper()
             val client = OkHttpClient()
-            val body =
-                "grant_type=client_credentials&scope=profile".toRequestBody(
-                    contentType = "application/x-www-form-urlencoded".toMediaType()
-                )
-            val request =
-                Request.Builder()
-                    .url("http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token")
-                    .post(body)
-                    .addHeader(
-                        "Authorization",
-                        "Basic ${Base64.getEncoder().encodeToString("client1:s3cr3t".toByteArray(Charsets.UTF_8))}"
-                    )
-                    .build()
+            val objectMapper = ObjectMapper()
+
+            val credentials = "client1:s3cr3t"
+            val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
+
+            val formBody = FormBody.Builder()
+                .add("grant_type", "client_credentials")
+                .add("scope", "profile")
+                .build()
+
+            val request = Request.Builder()
+                .url("http://127.0.0.1:8080/realms/iceberg/protocol/openid-connect/token")
+                .post(formBody)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Authorization", "Basic $encodedCredentials")
+                .build()
+
             val response = client.newCall(request).execute()
-            val responseBody = response.body?.string()
-            return mapper.readValue(responseBody, Map::class.java)["access_token"] as String
+            val jsonResponse = response.body?.string() ?: throw RuntimeException("Empty response")
+            val jsonNode: JsonNode = objectMapper.readTree(jsonResponse)
+            return jsonNode.get("access_token").asText()
         }
 
         fun getConfig(): String {
@@ -90,7 +93,7 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
                 "server_uri": "http://$nessieEndpoint:19120/api/v1",
                 "warehouse_location": "s3://demobucket/",
                 "main_branch_name": "main",
-                "accessToken": "$authToken"
+                "access_token": "$authToken"
             }
             """.trimIndent()
         }
