@@ -69,15 +69,20 @@ async def _generate_release(dagger_client: dagger.Client):
                 message=f"Which kind of new version would you like to cut? (latest version is {latest_version}))",
                 choices=[
                     ("prerelease", latest_version.bump_prerelease()),
+                    ("finalize", latest_version.finalize_version()),
                     ("patch", latest_version.bump_patch()),
+                    ("patch-prerelease", latest_version.bump_patch().bump_prerelease()),
                     ("minor", latest_version.bump_minor()),
+                    ("minor-prerelease", latest_version.bump_minor().bump_prerelease()),
                     ("major", latest_version.bump_major()),
+                    ("major-prerelease", latest_version.bump_major().bump_prerelease()),
                 ],
             ),
             inquirer.Text("changelog_entry", message="What should the changelog entry be?", validate=lambda _, entry: len(entry) > 0),
             inquirer.Confirm("publish_now", message="Would you like to publish it to our remote registry now?"),
         ]
     )
+
     new_version, changelog_entry, publish_now = (
         new_version_answers["new_version"],
         new_version_answers["changelog_entry"],

@@ -106,7 +106,6 @@ class SourceAmazonAds(YamlDeclarativeSource):
         return available_profiles
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-ads",
             connectionSpecification=SourceAmazonAdsSpec.schema(),

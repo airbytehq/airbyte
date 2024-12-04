@@ -7,7 +7,7 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.models import FailureType
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -58,7 +58,6 @@ class ErrorResponse(BaseModel):
 
 class AmazonAdsErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-
         if response_or_exception.status_code == HTTPStatus.OK:
             return ErrorResolution(ResponseAction.SUCCESS)
 
@@ -83,8 +82,6 @@ class BasicAmazonAdsStream(Stream, ABC):
     """
     Base class for all Amazon Ads streams.
     """
-
-    is_resumable = False
 
     def __init__(self, config: Mapping[str, Any], profiles: List[dict[str, Any]] = None):
         self._profiles = profiles or []

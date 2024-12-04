@@ -292,7 +292,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         stream_state = stream_state or {}
         no_data = True
 
@@ -311,9 +310,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @state.setter
     def state(self, value):
         self._state = deepcopy(value)
-
-    def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self._state
 
     def _update_state(self, profile: dict[str, Any], report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()

@@ -11,8 +11,8 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 class MockDestinationConfiguration : DestinationConfiguration() {
-    // override to 10KB instead of 200MB
-    override val recordBatchSizeBytes = 10 * 1024L
+    // Micro-batch for testing.
+    override val recordBatchSizeBytes = 1L
 }
 
 @Singleton

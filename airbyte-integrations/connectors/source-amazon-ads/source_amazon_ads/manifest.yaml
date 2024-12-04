@@ -8,7 +8,7 @@ check:
     - streams
 
 definitions:
-  error_handler:
+  sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
     #    max_retries: 5
     response_filters:
@@ -21,6 +21,16 @@ definitions:
       - http_codes: [404]
         action: IGNORE
         error_message: "Skip current AdGroup because the specified ad group has no associated bid"
+
+  basic_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ 'message' in response }}"
+        action: FAIL
+        error_message: "{{ response.message }}"
+      - predicate: "{{ 'code' in response and 'details' in response }}"
+        action: IGNORE
+        error_message: "{{ response.code }}; {{ response.details }}"
 
   oauth_authenticator:
     type: OAuthAuthenticator
@@ -138,6 +148,8 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           path: sd/campaigns
           http_method: GET
           request_headers:
@@ -170,6 +182,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/adGroups
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -198,6 +212,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/productAds
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -226,6 +242,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/targets
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -254,6 +272,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sd/creatives
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -280,8 +300,13 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: sp/budgetRules # WHY sp here???
+          #    Important: API docs contains incorrect endpoint path:
+          #        sd/budgetRules - endpoint from API docs which always returns empty results
+          #        sp/budgetRules - working endpoint
+          path: sp/budgetRules # TODO: check/rename stream during next breaking changes
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/basic_error_handler"
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
@@ -322,14 +347,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sb/keywords
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           http_method: GET
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -359,14 +377,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: sb/v4/campaigns/list
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
@@ -411,14 +422,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - predicate: "{{ 'message' in response }}"
-                action: FAIL
-                error_message: "{{ response.message }}"
-              - predicate: "{{ 'code' in response and 'details' in response }}"
-                action: IGNORE
-                error_message: "{{ response.code }}; {{ response.details }}"
+            $ref: "#/definitions/basic_error_handler"
           path: sb/v4/adGroups/list
           http_method: POST
           request_headers:
@@ -758,7 +762,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          error_handler: "#/definitions/error_handler"
+          error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
           path: /sp/targets/bid/recommendations
           http_method: POST
           request_headers:
@@ -788,7 +792,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: ["bidRecommendations"]
+            field_path: []
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -808,8 +812,10 @@ definitions:
           fields:
             - path: ["adGroupId"]
               value: '{{ stream_slice["adGroupId"] }}'
+              value_type: string
             - path: ["campaignId"]
               value: '{{ stream_slice.extra_fields["campaignId"] }}'
+              value_type: string
 
     sponsored_product_ad_group_suggested_keywords:
       type: DeclarativeStream
@@ -819,7 +825,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          error_handler: "#/definitions/error_handler"
+          error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
           path: "v2/sp/adGroups/{{ stream_slice['adGroupId'] }}/suggested/keywords"
           http_method: GET
           request_headers:
@@ -855,12 +861,15 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - http_codes: [400]
+              - predicate: '{{ response.message == "This profileID is not authorized to use Amazon Attribution" }}'
                 action: IGNORE
                 error_message: "{{ response }}"
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
+              - predicate: "{{ 'code' in response and 'details' in response }}"
+                action: IGNORE
+                error_message: "{{ response.code }}; {{ response.details }}"
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -1326,11 +1335,7 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_campaign"
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
 
-
-  - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
-
-
-# TODO: change concurrency after migration of async based reports
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 1
+  default_concurrency: 10
+  max_concurrency: 10
