@@ -88,6 +88,9 @@ class S3V2Specification :
 
     @get: JsonProperty("num_concurrent_uploads")
     val numConcurrentUploads: Int? = null
+
+    @get: JsonProperty("memory_overhead_ratio")
+    val memoryOverheadRatio: Double? = null
 }
 
 @Singleton

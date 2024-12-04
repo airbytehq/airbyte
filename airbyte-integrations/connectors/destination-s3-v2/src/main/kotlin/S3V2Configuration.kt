@@ -40,7 +40,7 @@ data class S3V2Configuration<T : OutputStream>(
         ObjectStorageUploadConfiguration(),
     override val recordBatchSizeBytes: Long,
     override val maxMessageQueueMemoryUsageRatio: Double = 0.2,
-    override val estimatedRecordMemoryOverheadRatio: Double = 1.1,
+    override val estimatedRecordMemoryOverheadRatio: Double,
 
     override val numProcessRecordsWorkers: Int
 ) :
@@ -71,7 +71,8 @@ class S3V2ConfigurationFactory(
             recordBatchSizeBytes = recordBatchSizeBytes,
             objectStorageUploadConfiguration = ObjectStorageUploadConfiguration(streamingUploadPartSize = pojo.partSizeBytes
                 ?: (10 * 1024 * 1024)),
-            numProcessRecordsWorkers = pojo.numConcurrentUploads ?: 2
+            numProcessRecordsWorkers = pojo.numConcurrentUploads ?: 2,
+            estimatedRecordMemoryOverheadRatio = pojo.memoryOverheadRatio ?: 5.0
             )
     }
 }
