@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.Deserializer
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.ReservationManager
@@ -73,13 +74,25 @@ class ProcessRecordsTaskTest {
             // To demonstrate that the primed data was actually processed
             val (sum, count) =
                 records.asSequence().fold(SumAndCount()) { acc, record ->
-                    SumAndCount(acc.sum + (record.data as IntegerValue).value, acc.count + 1)
+                    SumAndCount(
+                        acc.sum + (record.data as IntegerValue).value.toLong(),
+                        acc.count + 1
+                    )
                 }
             return MockBatch(
                 state = Batch.State.COMPLETE,
                 reportedByteSize = totalSizeBytes,
                 recordCount = count,
                 pmChecksum = sum
+            )
+        }
+
+        override suspend fun processFile(file: DestinationFile): Batch {
+            return MockBatch(
+                state = Batch.State.COMPLETE,
+                reportedByteSize = file.fileMessage.bytes ?: 0,
+                recordCount = 1,
+                pmChecksum = 1
             )
         }
     }
@@ -111,7 +124,7 @@ class ProcessRecordsTaskTest {
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = MockDestinationCatalogFactory.stream1,
+                stream = MockDestinationCatalogFactory.stream1.descriptor,
                 file = file
             )
         mockFile.outputStream().use { outputStream ->
