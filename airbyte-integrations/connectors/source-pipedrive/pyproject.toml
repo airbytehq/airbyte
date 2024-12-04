@@ -17,7 +17,7 @@ include = "source_pipedrive"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "==6.7.0rc2"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-pipedrive = "source_pipedrive.run:run"
