@@ -108,8 +108,8 @@ class JdbcSelectQuerier(
             val record: ObjectNode = reusable ?: Jsons.objectNode()
             var colIdx = 1
             for (column in q.columns) {
-                    log.debug { "Getting value #$colIdx for $column." }
-                    val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
+                log.debug { "Getting value #$colIdx for $column." }
+                val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
                     record.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                 } catch (e: Exception) {
@@ -117,8 +117,7 @@ class JdbcSelectQuerier(
                     log.info {
                         "Failed to serialize column: ${column.id}, of type ${column.type}, with error ${e.message}"
                     }
-                    metaChanges.set(column,
-                        FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                    metaChanges.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
                 }
                 colIdx++
             }
