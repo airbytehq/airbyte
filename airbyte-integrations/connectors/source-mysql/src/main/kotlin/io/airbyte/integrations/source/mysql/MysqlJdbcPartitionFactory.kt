@@ -29,7 +29,6 @@ import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
-import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -322,8 +321,12 @@ class MysqlJdbcPartitionFactory(
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
                     LeafAirbyteSchemaType.BINARY -> {
-                        val ba = Base64.getDecoder().decode(stateValue!!)
-                        Jsons.valueToTree<BinaryNode>(ba)
+                        try {
+                            val ba = Base64.getDecoder().decode(stateValue!!)
+                            Jsons.valueToTree<BinaryNode>(ba)
+                        } catch (_: RuntimeException) {
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
@@ -340,9 +343,9 @@ class MysqlJdbcPartitionFactory(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
                             )
-                        } catch (_: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
@@ -356,12 +359,12 @@ class MysqlJdbcPartitionFactory(
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )
-                        } catch (_: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
-                    else -> Jsons.valueToTree(stateValue)
+                    else -> Jsons.valueToTree<JsonNode>(stateValue)
                 }
             else ->
                 throw IllegalStateException(
