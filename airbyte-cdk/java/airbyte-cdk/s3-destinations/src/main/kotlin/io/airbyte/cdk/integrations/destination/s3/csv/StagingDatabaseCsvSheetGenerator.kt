@@ -81,17 +81,19 @@ constructor(
                 )
             JavaBaseConstants.DestinationColumns.V2_WITHOUT_META ->
                 listOf(id, Instant.ofEpochMilli(emittedAt), "", "formattedString")
-            JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION ->
+            JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
+                logger.error { data[0] }
                 listOf(
                     id,
                     Instant.ofEpochMilli(emittedAt),
-                    "",) +
+                    "",
+                ) +
                     data +
                     listOf(
-                    formattedAirbyteMetaString,
-                    generationId
+                        formattedAirbyteMetaString,
+                        generationId,
                     )
-
+            }
         }
     }
 }

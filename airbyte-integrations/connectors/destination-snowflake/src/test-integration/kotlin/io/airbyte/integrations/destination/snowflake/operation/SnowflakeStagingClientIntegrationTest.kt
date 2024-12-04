@@ -89,12 +89,12 @@ class SnowflakeStagingClientIntegrationTest {
 
                 override fun getDataRow(
                     id: UUID,
-                    formattedString: String,
+                    data: List<String>,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
                     generationId: Long
                 ): List<Any> {
-                    return listOf(id, Instant.ofEpochMilli(emittedAt), formattedString)
+                    return listOf(id, Instant.ofEpochMilli(emittedAt), data)
                 }
 
                 override fun getHeaderRow(): List<String> {
@@ -145,7 +145,7 @@ class SnowflakeStagingClientIntegrationTest {
 
                 override fun getDataRow(
                     id: UUID,
-                    formattedString: String,
+                    data: List<String>,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
                     generationId: Long
@@ -153,7 +153,7 @@ class SnowflakeStagingClientIntegrationTest {
                     return listOf(
                         id,
                         Instant.ofEpochMilli(emittedAt),
-                        formattedString,
+                        data,
                         "unknown_data_column"
                     )
                 }
