@@ -120,7 +120,14 @@
                 "default": "AES256",
                 "description": "This parameter defines what encryption algorithm is used.",
                 "title": "Encryption Algorithm",
-                "enum": ["AES256", "RC4_56", "3DES168"]
+                "enum": [
+                  "AES256",
+                  "AES192",
+                  "AES128",
+                  "3DES168",
+                  "3DES112",
+                  "DES"
+                ]
               }
             },
             "required": ["encryption_method", "encryption_algorithm"]

@@ -177,6 +177,12 @@ class OracleSourceDebeziumOperations(
                 // See comment in [deserialize] for why we're setting a custom metric tag here.
                 .with("custom.metric.tags", "synthetic=true")
                 .with("snapshot.mode", "recovery")
+                // This extra exclude list is required to support Amazon RDS.
+                // Otherwise, Debezium tries to lock tables in the ADMIN and RDSADMIN schemas
+                // when capturing the schema change history of the database.
+                // For some reason, these tables are not present in the hardcoded ignore-list:
+                // https://debezium.io/documentation/reference/stable/connectors/oracle.html#schemas-that-the-debezium-oracle-connector-excludes-when-capturing-change-events
+                .with("table.exclude.list", """"?RDSADMIN"?\..*,"?ADMIN"?\..*""")
                 .buildMap()
         val offsetKey: JsonNode =
             Jsons.arrayNode().apply {

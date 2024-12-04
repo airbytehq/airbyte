@@ -283,7 +283,7 @@ class EncryptionAlgorithm : Encryption {
     @JsonSchemaTitle("Encryption Algorithm")
     @JsonPropertyDescription("This parameter defines what encryption algorithm is used.")
     @JsonSchemaDefault("AES256")
-    @JsonSchemaInject(json = """{"enum":["AES256","RC4_56","3DES168"]}""")
+    @JsonSchemaInject(json = """{"enum":["AES256","AES192","AES128","3DES168","3DES112","DES"]}""")
     var encryptionAlgorithm: String = "AES256"
 }
 
