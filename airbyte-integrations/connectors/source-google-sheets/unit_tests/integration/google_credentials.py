@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 # todo check if we can make fake private_key it pass RSA validation, then we wouldn't need to mock Credentials classes
 service_account_info = (
     "{\n"
@@ -40,3 +42,7 @@ service_account_info = (
     "}"
 )
 
+service_account_credentials = {
+    "auth_type": "Service",
+    "service_account_info": service_account_info,
+}

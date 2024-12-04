@@ -35,6 +35,10 @@ class GoogleSheetsClient:
 
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
     def get(self, **kwargs):
+        # 'https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id?includeGridData=false&alt=json'
+        # {'includeGridData': True, 'ranges': 'a_stream_name!1:1', 'spreadsheetId': 'a_spreadsheet_id'}
+        # 'https://sheets.googleapis.com/v4/spreadsheets//a_spreadsheet_id?includeGridData=false&alt=json')
+        # 'https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id?includeGridData=false&alt=json'
         return self.client.get(**kwargs).execute()
 
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)

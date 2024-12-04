@@ -55,6 +55,7 @@ class SourceGoogleSheets(Source):
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         try:
+            # 'https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id?includeGridData=false&alt=json'
             spreadsheet = client.get(spreadsheetId=spreadsheet_id, includeGridData=False)
         except errors.HttpError as err:
             message = "Config error: "
@@ -120,6 +121,7 @@ class SourceGoogleSheets(Source):
             streams = []
             for sheet_name in grid_sheets:
                 try:
+                    # here is the other request with range parameter and includeGridData
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                     if config.get("names_conversion"):
                         header_row_data = [safe_name_conversion(h) for h in header_row_data]
