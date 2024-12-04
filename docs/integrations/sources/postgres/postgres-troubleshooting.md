@@ -159,12 +159,40 @@ When using the `Read Changes using Write-Ahead Log (CDC)` update method, you mig
 
 This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
 
-To fix the issue for both primary and replica:
+#### Fix when reading against a primary or standalone
+
+To fix the issue when reading against primary or standalone, artificially add events to a heartbeat table the Airbyte user can write to.
+
+1. Create an `airbyte_heartbeat` table in the database and schema being tracked.
+
+	```sql
+	CREATE TABLE airbyte_heartbeat (
+		id SERIAL PRIMARY KEY,
+		timestamp TIMESTAMP NOT NULL DEFAULT current_timestamp,
+		text TEXT
+	);
+	```
+
+2. Add this table to the airbyte publication.
+
+	```sql
+	ALTER PUBLICATION <publicationName> ADD TABLE airbyte_heartbeat;
+	```
+
+3. In the Postgres source connector in Airbyte, configure the `Debezium heartbeat query` property. Airbyte periodically executes this query on the `airbyte_heartbeat` table. For example:
+
+	```sql
+	INSERT INTO airbyte_heartbeat (text) VALUES ('heartbeat')
+	```
+
+#### Fix when reading against a read replica
+
+To fix the issue when reading against a read replica:
 
 1. [Add pg_cron as an extension](#wal-pg-cron).
 2. [Periodically add events](#wal-heartbeat-table) to a heartbeat table your Airbyte user can write to.
 
-#### Add the pg_cron extension {#wal-pg-cron}
+##### Add the pg_cron extension {#wal-pg-cron}
 
 [pg_cron](https://github.com/citusdata/pg_cron) is a cron-based job scheduler for PostgreSQL that runs inside the database as an extension so you can schedule PostgreSQL commands directly from the database.
 
@@ -219,7 +247,7 @@ PostgreSQL now preloads the `pg_cron` extension when the instance starts.
   </TabItem>
 </Tabs>
 
-#### Enable the pg_cron extension, create a heartbeat table, and schedule a cron job {#wal-heartbeat-table}
+##### Enable the pg_cron extension, create a heartbeat table, and schedule a cron job {#wal-heartbeat-table}
 
 1. Verify pg_cron was successfully added to `shared_preload_libraries`.
 
@@ -264,7 +292,7 @@ PostgreSQL now preloads the `pg_cron` extension when the instance starts.
 
 6. Sync normally from the primary to the replica. <!-- Steps?? Not yet totally clear on this one. -->
 
-#### Stop the sync
+##### Stop the sync
 
 If you need to stop syncing later, unschedule the cron job.
 
