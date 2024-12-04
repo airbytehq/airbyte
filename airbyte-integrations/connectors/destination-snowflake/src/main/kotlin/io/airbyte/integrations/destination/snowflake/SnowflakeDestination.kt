@@ -215,8 +215,8 @@ constructor(
         val snowflakeDestinationHandler =
             SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
         val parsedCatalog: ParsedCatalog = catalogParser.parseCatalog(catalog)
-        val disableTypeDedupe =
-            config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
+        // val disableTypeDedupe =
+        //     config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
         val migrations: List<Migration<SnowflakeState>> =
             listOf(
                 SnowflakeDV2Migration(

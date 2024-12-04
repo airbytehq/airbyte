@@ -109,7 +109,11 @@ class SnowflakeStorageOperation(
         |   "${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID}" VARCHAR PRIMARY KEY,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
         |   "${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-        |   "${JavaBaseConstants.COLUMN_NAME_DATA}" VARIANT,
+        |   "field1" TEXT,
+        |   "field2" TEXT,
+        |   "field3" TEXT,
+        |   "field4" TEXT,
+        |   "field5" TEXT,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_META}" VARIANT DEFAULT NULL,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" INTEGER DEFAULT NULL
         |) data_retention_time_in_days = $retentionPeriodDays;
