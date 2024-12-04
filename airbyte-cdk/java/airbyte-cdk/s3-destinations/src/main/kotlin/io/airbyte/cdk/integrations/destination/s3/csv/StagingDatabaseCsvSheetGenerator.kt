@@ -83,16 +83,14 @@ constructor(
                 listOf(id, Instant.ofEpochMilli(emittedAt), "", "formattedString")
             JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
                 // logger.error { data[0] }
-                listOf(
-                    id,
-                    Instant.ofEpochMilli(emittedAt),
-                    "",
-                ) +
-                    data +
-                    listOf(
-                        formattedAirbyteMetaString,
-                        generationId,
-                    )
+                mutableListOf<Any>().apply {
+                    add(id)
+                    add(Instant.ofEpochMilli(emittedAt))
+                    add("")
+                    addAll(data)
+                    add(formattedAirbyteMetaString)
+                    add(generationId)
+                }
             }
         }
     }
