@@ -542,7 +542,7 @@ class Client:
                         failure_type=FailureType.config_error,
                     )
                 column_names = data[header]  # Extract the header row
-                data = data[header + 1 :]   # Remove the header row and rows above it
+                data = data[header + 1 :]  # Remove the header row and rows above it
             else:
                 raise AirbyteTracedException(
                     message="Unable to determine column names. Please provide valid reader options.",
@@ -556,7 +556,6 @@ class Client:
                     internal_message="Column names are empty or invalid.",
                     failure_type=FailureType.config_error,
                 )
-
 
             if len(data) == 0:
                 raise AirbyteTracedException(
@@ -574,6 +573,7 @@ class Client:
 
             if chunk:
                 yield pd.DataFrame(chunk)
+
 
 class URLFileSecure(URLFile):
     """Updating of default logic:
