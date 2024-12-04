@@ -31,8 +31,6 @@ _CONFIG = {
   "credentials": service_account_credentials
 }
 
-MOCK_GOOGLE_OBJECTS = False
-
 @pytest.fixture
 def mock_google_credentials():
     with patch("google.oauth2.service_account.Credentials.from_service_account_info", return_value=AnonymousCredentials()):
@@ -54,72 +52,8 @@ def mock_google_credentials_with_error():
 
 class GoogleSheetSourceTest(TestCase):
     def setUp(self) -> None:
-        if MOCK_GOOGLE_OBJECTS:
-            self._authentication_patch, self._authentication_mock = self._patch("google.oauth2.service_account.Credentials")
-            self._discovery_build_patch, self._discovery_build_mock = self._patch("googleapiclient.discovery.build")
-
-            self._sheets_client = Mock()
-        def discovery_build(*args, **kwargs) -> Any:
-            match args[0]:
-                case "sheets":
-                    sheet_discovery_build = Mock()
-                    sheet_discovery_build.spreadsheets.return_value = self._sheets_client
-                    return sheet_discovery_build
-                case "drive":
-                    return Mock()
-                case _:
-                    raise ValueError("Unknown service name")
-        if MOCK_GOOGLE_OBJECTS:
-            self._discovery_build_mock.side_effect = discovery_build
-
         self._config = deepcopy(_CONFIG)
         self._source = SourceGoogleSheets()
-
-    def _patch(self, class_name: str) -> Tuple[Any, Mock]:
-        patcher = patch(class_name)
-        return patcher, patcher.start()
-
-    def tearDown(self) -> None:
-        if MOCK_GOOGLE_OBJECTS:
-            self._authentication_patch.stop()
-            self._discovery_build_patch.stop()
-
-    def _mock_spreadsheet(self, spreadsheet) -> None:
-        def _get_response_based_on_args(*args, **kwargs):
-            get_mock = Mock()
-            return_value = deepcopy(spreadsheet)
-            if "ranges" in kwargs:
-                sheet_has_data = "data" in return_value["sheets"][0]
-                if sheet_has_data:
-                    # this is for schema discovery so only return the first row
-                    if not return_value["sheets"][0]["data"]:
-                        return_value["sheets"][0]["data"][0]["rowData"] = [{"columnMetadata": [], "rowMetatada": []}]  # there should be data in "rowMetadata" and "columnMetadata" here but it is not useful for the tests
-                    return_value["sheets"][0]["data"][0]["rowData"] = return_value["sheets"][0]["data"][0]["rowData"][:1]
-
-            get_mock.execute.return_value = return_value
-            return get_mock
-
-        if MOCK_GOOGLE_OBJECTS:
-            self._sheets_client.get.side_effect = _get_response_based_on_args
-
-        def _batch_get_response(*args, **kwargs):
-            # self.client.values().batchGet(ranges=range, **kwargs).execute()
-            range_search = re.search(r".*!([0-9]*):([0-9]*)", kwargs["ranges"])
-            range_lower_index = int(range_search.group(1)) - 1
-            range_upper_index = int(range_search.group(2)) - 1
-            batch_get_mock = Mock()
-            for sheet in spreadsheet["sheets"]:
-                if sheet["properties"]["title"] in kwargs["ranges"]:
-                    batch_get_mock.execute.return_value = {
-                        "spreadsheetId": spreadsheet["spreadsheetId"],
-                        "valueRanges": [{"values": [list(map(lambda row: row["formattedValue"], _range["values"])) for _range in sheet["data"][0]["rowData"][range_lower_index:range_upper_index]]}]
-                    }
-                    break
-
-            return batch_get_mock
-
-        if MOCK_GOOGLE_OBJECTS:
-            self._sheets_client.values.return_value.batchGet.side_effect = _batch_get_response
 
     @staticmethod
     def _get_discovery_ranges_response(spreadsheet):
