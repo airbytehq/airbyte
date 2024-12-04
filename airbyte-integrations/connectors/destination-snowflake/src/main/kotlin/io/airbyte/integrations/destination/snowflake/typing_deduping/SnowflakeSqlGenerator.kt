@@ -249,11 +249,11 @@ class SnowflakeSqlGenerator(
         airbyteType: AirbyteType,
         useTryCast: Boolean
     ): String {
-        return cast(
+        return "(${column.originalName.quoted()})::text"/*cast(
             "${JavaBaseConstants.COLUMN_NAME_DATA.quoted()}:${escapeJsonIdentifier(column.originalName).quoted()}",
             airbyteType,
             useTryCast,
-        )
+        )*/
     }
 
     private fun cast(sqlExpression: String, airbyteType: AirbyteType, useTryCast: Boolean): String {
