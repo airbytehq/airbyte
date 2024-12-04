@@ -8,9 +8,9 @@ from pipelines.airbyte_ci.connectors.build_image.steps.manifest_only_connectors 
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, IncrementalAcceptanceTests, LiveTests
+from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
-from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.models.steps import STEP_PARAMS
 
 
@@ -54,6 +54,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
             )
         ],
     ]
+
 
 class ManifestOnlyConnectorUnitTests(PytestStep):
     """A step to run unit tests for a manifest-only connector"""

@@ -1,6 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from unittest.mock import MagicMock
+
 import pytest
 import requests
-from unittest.mock import MagicMock
+
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
     """Helper function to create mock responses"""
@@ -26,6 +30,7 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
 )
 def test_page_increment(components_module, current_page, total_pages, expected_next_page):
     """Test the CustomPageIncrement pagination for various page combinations"""
+
     CustomPageIncrement = components_module.CustomPageIncrement
     
     config = {}
@@ -38,7 +43,7 @@ def test_page_increment(components_module, current_page, total_pages, expected_n
     
     mock_response = create_response(current_page, total_pages)
     next_page = paginator.next_page_token(mock_response)
-    assert next_page == expected_next_page, f"From page {current_page} of {total_pages} should get next_page={expected_next_page}"
+    assert next_page == expected_next_page, f"Page {current_page} of {total_pages} should get next_page={expected_next_page}"
 
 def test_reset_functionality(components_module):
     """Test the reset behavior of CustomPageIncrement"""

@@ -1,6 +1,10 @@
-import pytest
-from pathlib import Path
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import importlib.util
+from pathlib import Path
+
+import pytest
+
 
 @pytest.fixture(scope="session")
 def connector_dir():
