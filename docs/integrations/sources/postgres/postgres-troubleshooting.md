@@ -151,15 +151,23 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
-### (Advanced) Resolving sync failures due to WAL disk consumption
-
-<!-- Applicable to other methods? -->
+### (Advanced) Resolving sync failures due to WAL disk consumption {#advanced-wal-disk-consumption-and-heartbeat-action-query}
 
 When using the `Read Changes using Write-Ahead Log (CDC)` update method, you might encounter a situation where your initial sync is successful, but further syncs fail. You may also notice that the `confirmed_flush_lsn` column of the server's `pg_replication_slots` view doesn't advance as expected.
 
-This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
+This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector when dealing with low volumes. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
 
-#### Fix when reading against a primary or standalone
+#### Simple fix (read-only)
+
+The easiest way to fix this issue is to add one or more high-volume tables to the Airbyte publication. You do not need to actually sync these tables, but adding them to the publication will advance the log sequence number (LSN), ensuring the sync can succeed without you giving Airbyte write access to the database. However, this may greatly increase disk consumption.
+
+```sql
+ALTER PUBLICATION <publicationName> ADD TABLE <high_volume_table>;
+```
+
+If you do not want to increase disk consumption, use the following solutions, which require write access.
+
+#### Fix when reading against a primary or standalone (write)
 
 To fix the issue when reading against primary or standalone, artificially add events to a heartbeat table the Airbyte user can write to.
 
@@ -179,13 +187,15 @@ To fix the issue when reading against primary or standalone, artificially add ev
 	ALTER PUBLICATION <publicationName> ADD TABLE airbyte_heartbeat;
 	```
 
-3. In the Postgres source connector in Airbyte, configure the `Debezium heartbeat query` property. Airbyte periodically executes this query on the `airbyte_heartbeat` table. For example:
+3. In the Postgres source connector in Airbyte, configure the `Debezium heartbeat query` property. For example:
 
 	```sql
 	INSERT INTO airbyte_heartbeat (text) VALUES ('heartbeat')
 	```
 
-#### Fix when reading against a read replica
+Airbyte periodically executes this query on the `airbyte_heartbeat` table.
+
+#### Fix when reading against a read replica (write)
 
 To fix the issue when reading against a read replica:
 
@@ -207,7 +217,7 @@ To fix the issue when reading against a read replica:
 
 2. Configure your database flags to enable pg_cron. For help with this, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/flags).
 
-	1. Set the `cloudsql.enable_pg_cron` flag to `on`. For more information, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/extensions#pg_cron). <!-- I think this is necessary but not totally sure how it interacts with the next step -->
+	1. Set the `cloudsql.enable_pg_cron` flag to `on`. For more information, see [Google Cloud's docs](https://cloud.google.com/sql/docs/postgres/extensions#pg_cron).
 
 	2. Set the `shared_preload_libraries` flag to include `pg_cron`.
 
@@ -290,7 +300,7 @@ PostgreSQL now preloads the `pg_cron` extension when the instance starts.
 	ALTER PUBLICATION airbyte_publication ADD TABLE periodic_log;
 	```
 
-6. Sync normally from the primary to the replica. <!-- Steps?? Not yet totally clear on this one. -->
+6. Sync normally from the primary to the replica.
 
 ##### Stop the sync
 
