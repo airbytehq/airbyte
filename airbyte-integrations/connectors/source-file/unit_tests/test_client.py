@@ -6,12 +6,14 @@
 from unittest.mock import patch, sentinel
 
 import pytest
+import pandas as pd
 from airbyte_cdk.utils import AirbyteTracedException
 from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
 from source_file.utils import backoff_handler
 from urllib3.exceptions import ProtocolError
+from tempfile import NamedTemporaryFile
 
 
 @pytest.fixture
@@ -79,6 +81,7 @@ def test_load_dataframes_xlsb(config, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.xlsb"
     read_file = next(client.load_dataframes(fp=f))
     expected = read_excel(f, engine="pyxlsb")
+
     assert read_file.equals(expected)
 
 
@@ -223,3 +226,71 @@ def test_backoff_handler(caplog):
     expected = [('airbyte', 20, 'Caught retryable error after 1 tries. Waiting 1 seconds then retrying...')]
 
     assert caplog.record_tuples == expected
+
+def generate_excel_file(data):
+    """
+    Helper function to generate an Excel file with the given data.
+    """
+    tmp_file = NamedTemporaryFile(suffix=".xlsx", delete=False)
+    df = pd.DataFrame(data)
+    df.to_excel(tmp_file.name, index=False, header=False)
+    tmp_file.seek(0)
+    return tmp_file
+
+
+def test_excel_reader_option_names(config):
+    """
+    Test the 'names' option for the Excel reader.
+    """
+    config["format"] = "excel"
+    config["reader_options"] = {"names": ["CustomCol1", "CustomCol2"]}
+    client = Client(**config)
+
+    data = [["Value1", "Value2"], ["Value3", "Value4"]]
+    expected_data = [
+        {"CustomCol1": "Value1", "CustomCol2": "Value2"},
+        {"CustomCol1": "Value3", "CustomCol2": "Value4"},
+    ]
+
+    with generate_excel_file(data) as tmp:
+        read_file = next(client.load_dataframes(fp=tmp.name))
+        assert isinstance(read_file, pd.DataFrame)
+        assert read_file.to_dict(orient="records") == expected_data
+
+
+def test_excel_reader_option_skiprows(config):
+    """
+    Test the 'skiprows' option for the Excel reader.
+    """
+    config["format"] = "excel"
+    config["reader_options"] = {"skiprows": 1}
+    client = Client(**config)
+
+    data = [["SkipRow1", "SkipRow2"], ["Header1", "Header2"], ["Value1", "Value2"]]
+    expected_data = [
+        {"Header1": "Value1", "Header2": "Value2"},
+    ]
+
+    with generate_excel_file(data) as tmp:
+        read_file = next(client.load_dataframes(fp=tmp.name))
+        assert isinstance(read_file, pd.DataFrame)
+        assert read_file.to_dict(orient="records") == expected_data
+
+
+def test_excel_reader_option_header(config):
+    """
+    Test the 'header' option for the Excel reader.
+    """
+    config["format"] = "excel"
+    config["reader_options"] = {"header": 1}
+    client = Client(**config)
+
+    data = [["UnusedRow1", "UnusedRow2"], ["Header1", "Header2"], ["Value1", "Value2"]]
+    expected_data = [
+        {"Header1": "Value1", "Header2": "Value2"},
+    ]
+
+    with generate_excel_file(data) as tmp:
+        read_file = next(client.load_dataframes(fp=tmp.name))
+        assert isinstance(read_file, pd.DataFrame)
+        assert read_file.to_dict(orient="records") == expected_data
