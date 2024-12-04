@@ -36,7 +36,9 @@ class IcebergV2Specification :
 class IcebergV2SpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
         listOf(
+            DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
+            DestinationSyncMode.APPEND_DEDUP
         )
     override val supportsIncremental = true
 }

@@ -32,7 +32,7 @@ class TimeStringToInteger : AirbyteValueIdentityMapper() {
     override fun mapDate(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> {
         value as DateValue
         val epochDay = LocalDate.parse(value.value, DATE_TIME_FORMATTER).toEpochDay()
-        return IntValue(epochDay.toInt()) to context
+        return IntegerValue(epochDay) to context
     }
 
     private fun toMicrosOfDayWithTimezone(timeString: String): Long {

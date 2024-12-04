@@ -28,7 +28,9 @@ import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
@@ -156,11 +158,22 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            when (streamFeedBootstrap.currentState?.isEmpty) {
-                false -> streamFeedBootstrap.currentState!!
-                else -> return coldStart(streamState)
-            }
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (streamFeedBootstrap.currentState?.isNull == true) {
+            return null
+        }
+
+        // A legacy saved state may be null for an empty table. We will attempt to read it again
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
+            return coldStart(streamState)
+        }
+
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -279,6 +292,10 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
+            if (cursorCheckpoint.isNull) {
+                return coldStart(streamState)
+            }
+
             if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
@@ -312,7 +329,13 @@ class MysqlJdbcPartitionFactory(
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
                         try {
                             val formatter: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                                DateTimeFormatterBuilder()
+                                    .appendPattern(timestampInStatePattern)
+                                    .optionalStart()
+                                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+                                    .optionalEnd()
+                                    .toFormatter()
+
                             Jsons.textNode(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
