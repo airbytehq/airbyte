@@ -164,7 +164,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         } catch (e: TestHarnessException) {
             assertContains(
                 e.outputMessages!![0].trace.error.internalMessage,
-                "Failed to deserialize airbyte message"
+                "Failed to convert AirbyteMessage"
             )
         }
     }
