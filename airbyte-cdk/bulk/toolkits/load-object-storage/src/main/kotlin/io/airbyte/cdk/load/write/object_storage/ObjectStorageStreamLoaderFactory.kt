@@ -105,7 +105,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             records.forEach {
                 totalRecordProcessingTime += measureTime { writer.accept(it) }
                 nRecords++
-                writer.accept(it)
                 if (writer.isDataSufficient()) {
                     upload.uploadPart(writer.takeBytes())
                 }

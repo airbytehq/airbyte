@@ -35,28 +35,26 @@ interface FlushStrategy {
 @Secondary
 class DefaultFlushStrategy(
     private val config: DestinationConfiguration,
-    private val eventQueue: QueueReader<ForceFlushEvent>
+//    private val eventQueue: QueueReader<ForceFlushEvent>
 ) : FlushStrategy {
-    private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
+    // private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
     override suspend fun shouldFlush(
         stream: DestinationStream.Descriptor,
         rangeRead: Range<Long>,
         bytesProcessed: Long
     ): Boolean {
-        if (bytesProcessed >= config.recordBatchSizeBytes) {
-            return true
-        }
+        return bytesProcessed >= config.recordBatchSizeBytes
 
         // Listen to the event stream for a new force flush index
-        val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream)
+        // val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream)
 
         // Always update the index if the new one is not null
-        return when (
-            val testIndex = forceFlushIndexes.compute(stream) { _, v -> nextFlushIndex ?: v }
-        ) {
-            null -> false
-            else -> rangeRead.contains(testIndex)
-        }
+//        return when (
+//            val testIndex = forceFlushIndexes.compute(stream) { _, v -> nextFlushIndex ?: v }
+//        ) {
+//            null -> false
+//            else -> rangeRead.contains(testIndex)
+//        }
     }
 }

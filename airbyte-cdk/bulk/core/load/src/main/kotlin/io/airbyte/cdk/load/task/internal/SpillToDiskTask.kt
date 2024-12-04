@@ -97,6 +97,10 @@ class DefaultSpillToDiskTask(
                                 outputStream.write(wrapped.record.serialized)
                                 outputStream.write("\n")
 
+                                if (wrapped.index % 1000L == 0L) {
+                                    outputStream.flush()
+                                }
+
                                 if (forceFlush) {
                                     val file =
                                         SpilledRawMessagesLocalFile(

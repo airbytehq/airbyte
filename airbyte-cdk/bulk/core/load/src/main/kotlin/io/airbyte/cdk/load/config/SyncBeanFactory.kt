@@ -43,7 +43,7 @@ class SyncBeanFactory {
         catalog: DestinationCatalog,
         config: DestinationConfiguration,
     ): LimitedMessageQueue<FileQueueMessage> {
-        val maxNumberChunksInFlight = ((availableBytes / config.recordBatchSizeBytes) * 0.8).toInt()
+        val maxNumberChunksInFlight = ((availableBytes / config.recordBatchSizeBytes) * 0.6).toInt()
         val minusOnePerStream = maxNumberChunksInFlight - catalog.streams.size
         return LimitedMessageQueue(min(minusOnePerStream, 1))
     }

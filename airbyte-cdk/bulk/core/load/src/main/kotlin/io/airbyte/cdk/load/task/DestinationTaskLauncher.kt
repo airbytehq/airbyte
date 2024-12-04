@@ -169,12 +169,12 @@ class DefaultDestinationTaskLauncher(
         }
 
         // Start flush task
-        log.info { "Starting timed file aggregate flush task " }
-        enqueue(flushTickTask)
-
-        // Start the checkpoint management tasks
-        log.info { "Starting timed checkpoint flush task" }
-        enqueue(timedCheckpointFlushTask)
+//        log.info { "Starting timed file aggregate flush task " }
+//        enqueue(flushTickTask)
+//
+//        // Start the checkpoint management tasks
+//        log.info { "Starting timed checkpoint flush task" }
+//        enqueue(timedCheckpointFlushTask)
 
         log.info { "Starting checkpoint update task" }
         enqueue(updateCheckpointsTask)

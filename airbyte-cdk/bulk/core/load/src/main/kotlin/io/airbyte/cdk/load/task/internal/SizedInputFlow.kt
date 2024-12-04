@@ -43,7 +43,7 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
             collector.emit(Pair(lineSize, reserved.replace(message)))
 
             if (index % 10_000 == 0) {
-                log.info { "Processed $index lines" }
+                log.info { "Processed $index lines (${memoryManager.totalBytesReserved} bytes reserved)" }
             }
         }
 

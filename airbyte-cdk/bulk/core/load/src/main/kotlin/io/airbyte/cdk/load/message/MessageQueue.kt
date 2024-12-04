@@ -47,6 +47,7 @@ class LimitedMessageQueue<T>(limit: Int) : ChannelMessageQueue<T>() {
     override val channel = Channel<T>(limit)
     init {
         require(limit > 0) { "Limit must be greater than 0" }
+        log.info { "Creating queue (limit=$limit)" }
     }
 
     fun take(): LimitedMessageQueue<T> {
