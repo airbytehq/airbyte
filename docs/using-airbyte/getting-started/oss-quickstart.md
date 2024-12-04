@@ -4,6 +4,8 @@ products: oss-community
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWindows } from "@fortawesome/free-brands-svg-icons";
 
 # Quickstart
 
@@ -122,7 +124,7 @@ abctl version
 
 1. Verify your processor architecture.
 
-    1. Press <kbd><svg xmlns="http://www.w3.org/2000/svg" height="10" width="8.75" viewBox="0 0 448 512"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg></kbd> + <kbd>I</kbd>.
+    1. Press <kbd><FontAwesomeIcon icon={faWindows} /> Windows</kbd> + <kbd>I</kbd>.
 
     2. Click **System** > **About**.
 
@@ -136,7 +138,7 @@ abctl version
 
 4. Add the executable to your `Path` environment variable.
 
-    1. Click <svg xmlns="http://www.w3.org/2000/svg" height="10" width="8.75" viewBox="0 0 448 512"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg> **Start** and type `environment`.
+    1. Click <FontAwesomeIcon icon={faWindows} /> **Start** and type `environment`.
 
     2. Click **Edit the system environment variables**. The System Properties opens.
 
