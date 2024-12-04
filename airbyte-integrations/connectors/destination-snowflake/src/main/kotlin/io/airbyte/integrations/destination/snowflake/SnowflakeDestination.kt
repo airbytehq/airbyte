@@ -253,7 +253,7 @@ constructor(
                     )
                 },
                 migrations,
-                disableTypeDedupe
+                true
             )
 
         return AsyncStreamConsumer(

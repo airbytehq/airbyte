@@ -43,7 +43,16 @@ constructor(
     ): List<Any> {
         return getDataRow(
             id,
-            Jsons.serialize(recordMessage.data),
+            listOf(
+                recordMessage.data.get("added_to_cart_at").asText(),
+                recordMessage.data.get("created_at").asText(),
+                recordMessage.data.get("id").asText(),
+                recordMessage.data.get("product_id").asText(),
+                recordMessage.data.get("purchased_at").asText(),
+                recordMessage.data.get("returned_at").asText(),
+                recordMessage.data.get("updated_at").asText(),
+                recordMessage.data.get("user_id").asText(),
+            ),
             recordMessage.emittedAt,
             Jsons.serialize(recordMessage.meta),
             // Legacy code. Default to generation 0.
@@ -57,33 +66,35 @@ constructor(
 
     override fun getDataRow(
         id: UUID,
-        formattedString: String,
+        data: List<String>,
         emittedAt: Long,
         formattedAirbyteMetaString: String,
         generationId: Long,
     ): List<Any> {
         return when (destinationColumns) {
             JavaBaseConstants.DestinationColumns.LEGACY ->
-                listOf(id, formattedString, Instant.ofEpochMilli(emittedAt))
+                listOf(id, "formattedString", Instant.ofEpochMilli(emittedAt))
             JavaBaseConstants.DestinationColumns.V2_WITH_META ->
                 listOf(
                     id,
                     Instant.ofEpochMilli(emittedAt),
                     "",
-                    formattedString,
+                    "formattedString",
                     formattedAirbyteMetaString
                 )
             JavaBaseConstants.DestinationColumns.V2_WITHOUT_META ->
-                listOf(id, Instant.ofEpochMilli(emittedAt), "", formattedString)
+                listOf(id, Instant.ofEpochMilli(emittedAt), "", "formattedString")
             JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION ->
                 listOf(
                     id,
                     Instant.ofEpochMilli(emittedAt),
-                    "",
-                    formattedString,
+                    "",) +
+                    data +
+                    listOf(
                     formattedAirbyteMetaString,
                     generationId
-                )
+                    )
+
         }
     }
 }
