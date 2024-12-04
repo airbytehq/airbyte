@@ -44,5 +44,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.8.0rc2@sha256:3165568456534a95876d8a65cf47626717d04144a3259646898d31bb6dd721b8
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.8.0rc3@sha256:ad76d596aa08a45a9bbc2cc7cc8e003791792f34076ebe8e9192cad4803c7246
 metadataSpecVersion: "1.0"
