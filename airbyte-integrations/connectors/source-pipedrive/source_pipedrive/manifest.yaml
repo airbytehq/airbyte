@@ -48,10 +48,6 @@ definitions:
     $ref: "#/definitions/retriever"
     record_selector:
       $ref: "#/definitions/selector_increment"
-      # Some streams, e.g. Files stream, can return data without cursor field(update_time) in it, which leads to value error for cursor.
-      # To handle this case record filter was added to retriever_increment. Condition should be updated if you use it for streams with another cursor field.
-      record_filter:
-        condition: "{{ 'update_time' in record.keys() }}"
 
   incremental_base:
     type: DatetimeBasedCursor
