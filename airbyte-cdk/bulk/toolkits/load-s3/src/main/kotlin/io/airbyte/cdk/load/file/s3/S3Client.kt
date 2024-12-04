@@ -188,17 +188,10 @@ class S3Client(
             this.metadata = metadata
         }
         val response = client.createMultipartUpload(request)
-        if (uploadPermits != null) {
-            log.info {
-                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-            uploadPermits.acquire()
-            log.info {
-                "Acquired upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-            return S3StreamingUpload(client, bucketConfig, response, uploadPermits)
-        }
-        return S3StreamingUpload(client, bucketConfig, response, null)
+
+        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+        
+        return S3StreamingUpload(client, bucketConfig, response)
     }
 }
 

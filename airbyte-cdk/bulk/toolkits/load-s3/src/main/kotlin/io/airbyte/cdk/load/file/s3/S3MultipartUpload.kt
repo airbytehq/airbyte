@@ -166,7 +166,6 @@ class S3StreamingUpload(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     private val bucketConfig: S3BucketConfiguration,
     private val response: CreateMultipartUploadResponse,
-    private val uploadPermits: Semaphore?,
 ) : StreamingUpload<S3Object> {
     private val log = KotlinLogging.logger {}
     private val uploadedParts = ConcurrentLinkedQueue<CompletedPart>()
@@ -190,6 +189,8 @@ class S3StreamingUpload(
     }
 
     override suspend fun complete(): S3Object {
+        log.info { "Completing multipart upload to ${response.key} (uploadId=${response.uploadId}" }
+
         val request = CompleteMultipartUploadRequest {
             uploadId = response.uploadId
             bucket = response.bucket
@@ -197,12 +198,6 @@ class S3StreamingUpload(
             this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts.toList() }
         }
         client.completeMultipartUpload(request)
-        if (uploadPermits != null) {
-            log.info {
-                "Releasing upload permit for key ${response.key} (${uploadPermits.availablePermits} available)"
-            }
-            uploadPermits.release()
-        }
         return S3Object(response.key!!, bucketConfig)
     }
 }
