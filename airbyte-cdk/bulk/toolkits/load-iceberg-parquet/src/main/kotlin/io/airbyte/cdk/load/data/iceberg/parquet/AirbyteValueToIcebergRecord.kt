@@ -27,13 +27,21 @@ class AirbyteValueToIcebergRecord {
                     if (type.isStructType) {
                         type.asStructType().asSchema()
                     } else {
-                        throw IllegalArgumentException("ObjectValue should be mapped to ObjectType")
+                        throw IllegalArgumentException("ObjectValue should be mapped to StructType")
                     }
-                val associate = recordSchema.columns().associate { it.name() to it.type() }
+
                 val record = GenericRecord.create(recordSchema)
-                airbyteValue.values.forEach { (name, value) ->
-                    associate[name]?.let { field -> record.setField(name, convert(value, field)) }
-                }
+                recordSchema
+                    .columns()
+                    .filter { column -> airbyteValue.values.containsKey(column.name()) }
+                    .associate { column ->
+                        column.name() to
+                            convert(
+                                airbyteValue.values.getOrDefault(column.name(), NullValue),
+                                column.type(),
+                            )
+                    }
+                    .forEach { (name, value) -> record.setField(name, value) }
                 return record
             }
             is ArrayValue -> {
@@ -41,7 +49,7 @@ class AirbyteValueToIcebergRecord {
                     if (type.isListType) {
                         type.asListType().elementType()
                     } else {
-                        throw IllegalArgumentException("ArrayValue should be mapped to ArrayType")
+                        throw IllegalArgumentException("ArrayValue should be mapped to ListType")
                     }
 
                 val array: MutableList<Any?> = mutableListOf()
@@ -66,14 +74,13 @@ class AirbyteValueToIcebergRecord {
 }
 
 fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-
-    val associate = schema.columns().associate { it.name() to it.type() }
-    val create = GenericRecord.create(schema)
+    val record = GenericRecord.create(schema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    this.values.forEach { (name, value) ->
-        associate[name]?.let { field ->
-            create.setField(name, airbyteValueToIcebergRecord.convert(value, field))
+    schema.asStruct().fields().forEach { field ->
+        val value = this.values[field.name()]
+        if (value != null) {
+            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
         }
     }
-    return create
+    return record
 }

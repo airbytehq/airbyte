@@ -44,7 +44,6 @@ class IcebergV2ConfigurationFactory :
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 @Factory
 class IcebergV2ConfigurationProvider(private val config: DestinationConfiguration) {
     @Singleton

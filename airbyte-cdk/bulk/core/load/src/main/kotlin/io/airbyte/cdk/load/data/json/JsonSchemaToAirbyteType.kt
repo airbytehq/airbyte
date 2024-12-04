@@ -22,6 +22,7 @@ class JsonSchemaToAirbyteType {
                 when (schema.get("type").asText()) {
                     "string" -> fromString(schema)
                     "boolean" -> BooleanType
+                    "int",
                     "integer" -> IntegerType
                     "number" -> fromNumber(schema)
                     "array" -> fromArray(schema)

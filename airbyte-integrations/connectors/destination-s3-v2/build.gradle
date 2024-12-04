@@ -30,8 +30,6 @@ dependencies {
 }
 
 // Exclude conflicting log4j-over-slf4j dependency
-configurations {
-    all {
-        exclude group: 'log4j-over-slf4j', module: 'log4j-over-slf4j'
-    }
+configurations.all {
+        exclude group: "org.slf4j", module: "slf4j-reload4j"
 }
