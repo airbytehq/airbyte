@@ -19,9 +19,14 @@ application {
 }
 
 ext {
-    apacheIcebergVersion = "1.6.1"
-    awsSdkVersion = "2.29.9"
-    junitVersion = "5.11.3"
+    apacheIcebergVersion = '1.7.0'
+    awsSdkVersion = '2.29.9'
+    junitVersion = '5.11.3'
+}
+
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude group:"org.slf4j", module:"slf4j-reload4j"
 }
 
 // Uncomment to run locally

@@ -158,11 +158,22 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            when (streamFeedBootstrap.currentState?.isEmpty) {
-                false -> streamFeedBootstrap.currentState!!
-                else -> return coldStart(streamState)
-            }
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (streamFeedBootstrap.currentState?.isNull == true) {
+            return null
+        }
+
+        // A legacy saved state may be null for an empty table. We will attempt to read it again
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
+            return coldStart(streamState)
+        }
+
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -281,6 +292,10 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
+            if (cursorCheckpoint.isNull) {
+                return coldStart(streamState)
+            }
+
             if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
