@@ -162,6 +162,8 @@ object TestFixtures {
                 override fun hasNext(): Boolean = wrapped.hasNext()
                 override fun next(): ObjectNode = wrapped.next()
                 override fun close() {}
+                override val changes: Map<Field, FieldValueChange>?
+                    get() = null
             }
         }
     }
