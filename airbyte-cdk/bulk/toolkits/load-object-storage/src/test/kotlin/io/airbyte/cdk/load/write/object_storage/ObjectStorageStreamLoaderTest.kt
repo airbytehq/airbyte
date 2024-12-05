@@ -50,7 +50,7 @@ class ObjectStorageStreamLoaderTest {
     @Test
     fun `test processFile`() = runTest {
         val fileUrl = "fileUrl"
-        val stagingDirectory = Path.of("stagingDirectory")
+        val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
@@ -76,7 +76,7 @@ class ObjectStorageStreamLoaderTest {
         coVerify { client.streamingUpload(expectedKey, metadata, compressor, any()) }
         assertEquals(
             mockRemoteObject,
-            (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
+            (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
         )
         verify { mockedFile.delete() }
     }

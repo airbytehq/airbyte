@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
@@ -318,6 +319,8 @@ data class GlobalCheckpoint(
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
     override val additionalProperties: Map<String, Any>,
+    val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
+        AirbyteStateMessage.AirbyteStateType.GLOBAL,
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -333,7 +336,7 @@ data class GlobalCheckpoint(
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
             AirbyteStateMessage()
-                .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                .withType(originalTypeField)
                 .withGlobal(
                     AirbyteGlobalState()
                         .withSharedState(state)
@@ -405,7 +408,11 @@ class DestinationMessageFactory(
                 } else {
                     DestinationRecord(
                         stream = stream.descriptor,
-                        data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
+                        data =
+                            message.record.data?.let {
+                                JsonToAirbyteValue().convert(it, stream.schema)
+                            }
+                                ?: ObjectValue(linkedMapOf()),
                         emittedAtMs = message.record.emittedAt,
                         meta =
                             DestinationRecord.Meta(
@@ -433,7 +440,10 @@ class DestinationMessageFactory(
                         namespace = status.streamDescriptor.namespace,
                         name = status.streamDescriptor.name,
                     )
-                if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
+                if (
+                    message.trace.type == null ||
+                        message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS
+                ) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
@@ -444,7 +454,7 @@ class DestinationMessageFactory(
                             } else {
                                 DestinationRecordStreamComplete(
                                     stream.descriptor,
-                                    message.trace.emittedAt.toLong()
+                                    message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
@@ -476,6 +486,7 @@ class DestinationMessageFactory(
                                 },
                             additionalProperties = message.state.additionalProperties,
                         )
+                    null,
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
                             sourceStats =
@@ -488,6 +499,7 @@ class DestinationMessageFactory(
                                     fromAirbyteStreamState(it)
                                 },
                             additionalProperties = message.state.additionalProperties,
+                            originalTypeField = message.state.type,
                         )
                     else -> // TODO: Do we still need to handle LEGACY?
                     Undefined

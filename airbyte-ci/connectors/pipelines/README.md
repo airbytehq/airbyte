@@ -310,7 +310,7 @@ flowchart TD
     entrypoint[[For each selected connector]]
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
-      sem["Check version follows semantic versionning"]
+      sem["Check version follows semantic versioning"]
       incr["Check version is incremented"]
       metadata_validation["Run metadata validation on metadata.yaml"]
       sem --> incr
@@ -319,7 +319,7 @@ flowchart TD
         build[Build connector docker image]
         unit[Run unit tests]
         integration[Run integration tests]
-        pyairbyte_validation[Run PyAirbyte validation tests]
+        pyairbyte_validation[Python CLI smoke tests via PyAirbyte]
         cat[Run connector acceptance tests]
         secret[Load connector configuration]
 
@@ -850,6 +850,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.43.1  | [#48824](https://github.com/airbytehq/airbyte/pull/48824)  | Allow uploading CI reports to GCS with fewer permissions set.                                                                |
 | 4.43.0  | [#36545](https://github.com/airbytehq/airbyte/pull/36545)  | Switch to `airbyte` user when available in Python base image.                                                                |
 | 4.42.2  | [#48404](https://github.com/airbytehq/airbyte/pull/48404)  | Include `advanced_auth` in spec migration for manifest-only pipeline                                                         |
 | 4.42.1  | [#47316](https://github.com/airbytehq/airbyte/pull/47316)  | Connector testing: skip incremental acceptance test when the connector is not released.                                      |

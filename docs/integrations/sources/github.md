@@ -225,7 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.8.17 | 2024-11-25 | [48631](https://github.com/airbytehq/airbyte/pull/48631) | Update dependencies |
+| 1.8.17 | 2024-11-25 | [48631](https://github.com/airbytehq/airbyte/pull/48631) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.8.16 | 2024-11-05 | [48318](https://github.com/airbytehq/airbyte/pull/48318) | Update dependencies |
 | 1.8.15 | 2024-10-28 | [47051](https://github.com/airbytehq/airbyte/pull/47051) | Update dependencies |
 | 1.8.14 | 2024-10-12 | [46766](https://github.com/airbytehq/airbyte/pull/46766) | Update dependencies |

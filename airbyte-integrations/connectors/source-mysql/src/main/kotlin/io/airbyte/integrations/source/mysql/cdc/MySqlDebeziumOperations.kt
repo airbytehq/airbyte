@@ -146,11 +146,19 @@ class MySqlDebeziumOperations(
                 return abortCdcSync()
             }
         }
+        if (!savedGtidSet.isEmpty) {
+            // If the connector has saved GTID set, we will use that to validate and skip
+            // binlog validation. GTID and binlog works in an independent way to ensure data
+            // integrity where GTID is for storing transactions and binlog is for storing changes
+            // in DB.
+            return CdcStateValidateResult.VALID
+        }
         val existingLogFiles: List<String> = getBinaryLogFileNames()
         val found = existingLogFiles.contains(savedStateOffset.position.fileName)
         if (!found) {
             log.info {
-                "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server"
+                "Connector last known binlog file ${savedStateOffset.position.fileName} is " +
+                    "not found in the server. Server has $existingLogFiles"
             }
             return abortCdcSync()
         }
@@ -277,13 +285,12 @@ class MySqlDebeziumOperations(
     }
 
     private fun getBinaryLogFileNames(): List<String> {
-        val logNameField = Field("Log_name", StringFieldType)
+        // Very old Mysql version (4.x) has different output of SHOW BINARY LOGS output.
         return jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
                 val sql = "SHOW BINARY LOGS"
                 stmt.executeQuery(sql).use { rs: ResultSet ->
-                    generateSequence { if (rs.next()) rs.getString(logNameField.id) else null }
-                        .toList()
+                    generateSequence { if (rs.next()) rs.getString(1) else null }.toList()
                 }
             }
         }
