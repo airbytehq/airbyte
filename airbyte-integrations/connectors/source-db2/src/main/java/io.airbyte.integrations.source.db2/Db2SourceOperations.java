@@ -109,8 +109,18 @@ public class Db2SourceOperations extends JdbcSourceOperations {
   @Override
   public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
       switch (jdbcType) {
+          case SMALLINT, INTEGER, BIGINT:
+              return JsonSchemaType.INTEGER;
+          case DOUBLE, DECIMAL, NUMERIC, REAL:
+              return JsonSchemaType.NUMBER;
           case DATE:
               return JsonSchemaType.STRING_DATE;
+          case BLOB, BINARY, VARBINARY:
+              return JsonSchemaType.STRING_BASE_64;
+          case TIME:
+              return JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+          case TIMESTAMP:
+              return JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
           default:
               return super.getAirbyteType(jdbcType);
       }
