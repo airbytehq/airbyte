@@ -66,6 +66,7 @@ internal class AsyncFlush(
                         0,
                         record.record!!.emittedAt
                     )
+                    record.record = null
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
