@@ -1,0 +1,516 @@
+{
+  "type": "object",
+  "properties": {
+    "actionOverrides": {
+      "description": "Specifies the action overrides for the object.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "formFactor": {
+            "description": "Specifies the form factor for the action.",
+            "type": ["null", "string"]
+          },
+          "isAvailableInTouch": {
+            "description": "Indicates if the action is available in touch.",
+            "type": ["null", "boolean"]
+          },
+          "name": {
+            "description": "The name of the action override.",
+            "type": ["null", "string"]
+          },
+          "pageId": {
+            "description": "The page ID associated with the action.",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "The URL for the action.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "activateable": {
+      "description": "Indicates if the object can be activated.",
+      "type": ["null", "boolean"]
+    },
+    "associateEntityType": {
+      "description": "Specifies the associated entity type.",
+      "type": ["null", "string"]
+    },
+    "associateParentEntity": {
+      "description": "Specifies the parent entity associated with the object.",
+      "type": ["null", "string"]
+    },
+    "childRelationships": {
+      "description": "Contains information about the child relationships of the object.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "cascadeDelete": {
+            "description": "Indicates if the delete operation cascades to the child records.",
+            "type": ["null", "boolean"]
+          },
+          "childSObject": {
+            "description": "Specifies the child sObject.",
+            "type": "string"
+          },
+          "deprecatedAndHidden": {
+            "description": "Indicates if the relationship is deprecated and hidden.",
+            "type": ["null", "boolean"]
+          },
+          "field": {
+            "description": "Specifies the field related to the relationship.",
+            "type": ["null", "string"]
+          },
+          "junctionIdListNames": {
+            "description": "The list of junction IDs.",
+            "type": "array",
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "junctionReferenceTo": {
+            "description": "References to the junction object.",
+            "type": "array",
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "relationshipName": {
+            "description": "The name of the relationship.",
+            "type": ["null", "string"]
+          },
+          "restrictedDelete": {
+            "description": "Indicates if the delete is restricted.",
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "compactLayoutable": {
+      "description": "Indicates if the object supports compact layouts.",
+      "type": ["null", "boolean"]
+    },
+    "createable": {
+      "description": "Indicates if the object can be created.",
+      "type": ["null", "boolean"]
+    },
+    "custom": {
+      "description": "Indicates if the object is custom.",
+      "type": ["null", "boolean"]
+    },
+    "customSetting": {
+      "description": "Indicates if the object is a custom setting.",
+      "type": ["null", "boolean"]
+    },
+    "dataTranslationEnabled": {
+      "description": "Indicates if data translation is enabled for the object.",
+      "type": ["null", "boolean"]
+    },
+    "deepCloneable": {
+      "description": "Indicates if the object can be deep cloned.",
+      "type": ["null", "boolean"]
+    },
+    "defaultImplementation": {
+      "description": "Specifies the default implementation for the object.",
+      "type": ["null", "string"]
+    },
+    "deletable": {
+      "description": "Indicates if the object can be deleted.",
+      "type": ["null", "boolean"]
+    },
+    "deprecatedAndHidden": {
+      "description": "Indicates if the object is deprecated and hidden.",
+      "type": ["null", "boolean"]
+    },
+    "extendedBy": {
+      "description": "Lists objects extended by this object.",
+      "type": ["null", "string"]
+    },
+    "extendsInterfaces": {
+      "description": "Lists interfaces extended by this object.",
+      "type": ["null", "string"]
+    },
+    "feedEnabled": {
+      "description": "Indicates if feeds are enabled for the object.",
+      "type": ["null", "boolean"]
+    },
+    "fields": {
+      "description": "Contains information about the fields of the object.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "autoNumber": {
+            "description": "Indicates if the field is an auto number field.",
+            "type": ["null", "boolean"]
+          },
+          "byteLength": {
+            "description": "Specifies the byte length of the field.",
+            "type": ["null", "integer"]
+          },
+          "calculated": {
+            "description": "Indicates if the field is calculated.",
+            "type": ["null", "boolean"]
+          },
+          "caseSensitive": {
+            "description": "Indicates if the field is case sensitive.",
+            "type": ["null", "boolean"]
+          },
+          "controllerName": {
+            "description": "Specifies the controller name.",
+            "type": ["null", "string"]
+          },
+          "createable": {
+            "description": "Indicates if the field can be created.",
+            "type": ["null", "boolean"]
+          },
+          "custom": {
+            "description": "Indicates if the field is custom.",
+            "type": ["null", "boolean"]
+          },
+          "dataTranslationEnabled": {
+            "description": "Indicates if data translation is enabled for the field.",
+            "type": ["null", "boolean"]
+          },
+          "defaultedOnCreate": {
+            "description": "Indicates if the field is defaulted on create.",
+            "type": ["null", "boolean"]
+          },
+          "defaultValueFormula": {
+            "description": "Specifies the default value formula.",
+            "type": ["null", "string"]
+          },
+          "dependentPicklist": {
+            "description": "Indicates if the field is a dependent picklist.",
+            "type": ["null", "boolean"]
+          },
+          "deprecatedAndHidden": {
+            "description": "Indicates if the field is deprecated and hidden.",
+            "type": ["null", "boolean"]
+          },
+          "digits": {
+            "description": "Specifies the number of digits for the field.",
+            "type": ["null", "integer"]
+          },
+          "displayLocationInDecimal": {
+            "description": "Indicates the display location in decimal.",
+            "type": ["null", "boolean"]
+          },
+          "encrypted": {
+            "description": "Indicates if the field is encrypted.",
+            "type": ["null", "boolean"]
+          },
+          "extraTypeInfo": {
+            "description": "Specifies extra type information for the field.",
+            "type": ["null", "string"]
+          },
+          "filterable": {
+            "description": "Indicates if the field is filterable.",
+            "type": ["null", "boolean"]
+          },
+          "filteredLookupInfo": {
+            "description": "Contains information about filtered lookup.",
+            "type": ["null", "object"],
+            "properties": {
+              "controllingFields": {
+                "description": "Specifies the controlling fields.",
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "dependent": {
+                "description": "Indicates if the field is dependent.",
+                "type": ["null", "boolean"]
+              },
+              "optionalFilter": {
+                "description": "Specifies optional filter information.",
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "formula": {
+            "description": "Indicates if the field is a formula field.",
+            "type": ["null", "string"]
+          },
+          "groupable": {
+            "description": "Indicates if the field is groupable.",
+            "type": ["null", "boolean"]
+          },
+          "highScaleNumber": {
+            "description": "Indicates if the field is a high scale number.",
+            "type": ["null", "boolean"]
+          },
+          "htmlFormatted": {
+            "description": "Indicates if the field is HTML formatted.",
+            "type": ["null", "boolean"]
+          },
+          "idLookup": {
+            "description": "Indicates if the field is an ID lookup field.",
+            "type": ["null", "boolean"]
+          },
+          "inlineHelpText": {
+            "description": "Specifies the inline help text for the field.",
+            "type": ["null", "string"]
+          },
+          "label": {
+            "description": "The label of the field.",
+            "type": ["null", "string"]
+          },
+          "length": {
+            "description": "Specifies the length of the field.",
+            "type": ["null", "integer"]
+          },
+          "mask": {
+            "description": "Specifies the mask for the field.",
+            "type": ["null", "string"]
+          },
+          "maskType": {
+            "description": "Specifies the mask type for the field.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name of the field.",
+            "type": ["null", "string"]
+          },
+          "nameField": {
+            "description": "Indicates if the field is a name field.",
+            "type": ["null", "boolean"]
+          },
+          "namePointing": {
+            "description": "Indicates if the field is name pointing.",
+            "type": ["null", "boolean"]
+          },
+          "nillable": {
+            "description": "Indicates if the field is nillable.",
+            "type": ["null", "boolean"]
+          },
+          "permissionable": {
+            "description": "Indicates if the field is permissionable.",
+            "type": ["null", "boolean"]
+          },
+          "picklistValues": {
+            "description": "Contains information about the picklist values of the field.",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "active": {
+                  "description": "Indicates if the picklist value is active.",
+                  "type": ["null", "boolean"]
+                },
+                "defaultValue": {
+                  "description": "Indicates if the picklist value is the default value.",
+                  "type": ["null", "boolean"]
+                },
+                "label": {
+                  "description": "The label of the picklist value.",
+                  "type": ["null", "string"]
+                },
+                "validFor": {
+                  "description": "Specifies the validity of the picklist value.",
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
+                },
+                "value": {
+                  "description": "The value of the picklist value.",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "polymorphicForeignKey": {
+            "description": "Indicates if the field is a polymorphic foreign key.",
+            "type": ["null", "boolean"]
+          },
+          "precision": {
+            "description": "Specifies the precision of the field.",
+            "type": ["null", "integer"]
+          },
+          "referenceTargetField": {
+            "description": "Specifies the target field for reference.",
+            "type": ["null", "string"]
+          },
+          "referenceTo": {
+            "description": "Specifies the reference object.",
+            "type": "array",
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "relationshipName": {
+            "description": "The name of the relationship.",
+            "type": ["null", "string"]
+          },
+          "relationshipOrder": {
+            "description": "Specifies the order of the relationship.",
+            "type": ["null", "integer"]
+          },
+          "restrictedPicklist": {
+            "description": "Indicates if the picklist is restricted.",
+            "type": ["null", "boolean"]
+          },
+          "scale": {
+            "description": "Specifies the scale of the field.",
+            "type": ["null", "integer"]
+          },
+          "searchPrefilterable": {
+            "description": "Indicates if the field is prefilterable in search.",
+            "type": ["null", "boolean"]
+          },
+          "soapType": {
+            "description": "Specifies the SOAP type of the field.",
+            "type": ["null", "string"]
+          },
+          "sortable": {
+            "description": "Indicates if the field is sortable.",
+            "type": ["null", "boolean"]
+          },
+          "type": {
+            "description": "The data type of the field.",
+            "type": ["null", "string"]
+          },
+          "unique": {
+            "description": "Indicates if the field values are unique.",
+            "type": ["null", "boolean"]
+          },
+          "updateable": {
+            "description": "Indicates if the field can be updated.",
+            "type": ["null", "boolean"]
+          },
+          "writeRequiresMasterRead": {
+            "description": "Indicates if writing requires master read access.",
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "implementedBy": {
+      "description": "Specifies the objects implemented by this object.",
+      "type": ["null", "string"]
+    },
+    "implementsInterfaces": {
+      "description": "Specifies the interfaces implemented by this object.",
+      "type": ["null", "string"]
+    },
+    "isInterface": {
+      "description": "Indicates if the object is an interface.",
+      "type": ["null", "boolean"]
+    },
+    "keyPrefix": {
+      "description": "Specifies the key prefix of the object.",
+      "type": ["null", "string"]
+    },
+    "label": {
+      "description": "The label of the object.",
+      "type": ["null", "string"]
+    },
+    "labelPlural": {
+      "description": "The plural label of the object.",
+      "type": ["null", "string"]
+    },
+    "layoutable": {
+      "description": "Indicates if the object supports layouts.",
+      "type": ["null", "boolean"]
+    },
+    "mergeable": {
+      "description": "Indicates if the object is mergeable.",
+      "type": ["null", "boolean"]
+    },
+    "mruEnabled": {
+      "description": "Indicates if most recently used (MRU) is enabled for the object.",
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "description": "The name of the object.",
+      "type": ["null", "string"]
+    },
+    "namedLayoutInfos": {
+      "description": "Contains information about named layouts.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "description": "The name of the layout.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "networkScopeFieldName": {
+      "description": "Specifies the network scope field name.",
+      "type": ["null", "string"]
+    },
+    "queryable": {
+      "description": "Indicates if the object is queryable.",
+      "type": ["null", "boolean"]
+    },
+    "recordTypeInfos": {
+      "description": "Contains information about record types.",
+      "type": ["null", "array"]
+    },
+    "replicateable": {
+      "description": "Indicates if the object can be replicated.",
+      "type": ["null", "boolean"]
+    },
+    "retrieveable": {
+      "description": "Indicates if the object is retrieveable.",
+      "type": ["null", "boolean"]
+    },
+    "searchable": {
+      "description": "Indicates if the object is searchable.",
+      "type": ["null", "boolean"]
+    },
+    "searchLayoutable": {
+      "description": "Indicates if the object supports search layouts.",
+      "type": ["null", "boolean"]
+    },
+    "supportedScopes": {
+      "description": "Contains information about supported scopes.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "description": "The label of the supported scope.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name of the supported scope.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "triggerable": {
+      "description": "Indicates if the object is triggerable.",
+      "type": ["null", "boolean"]
+    },
+    "undeletable": {
+      "description": "Indicates if the object is undeletable.",
+      "type": ["null", "boolean"]
+    },
+    "updateable": {
+      "description": "Indicates if the object can be updated.",
+      "type": ["null", "boolean"]
+    },
+    "urlDetail": {
+      "description": "The URL for the detailed view of the object.",
+      "type": ["null", "string"]
+    },
+    "urlEdit": {
+      "description": "The URL for editing the object.",
+      "type": ["null", "string"]
+    },
+    "urlNew": {
+      "description": "The URL for creating a new object.",
+      "type": ["null", "string"]
+    }
+  }
+}

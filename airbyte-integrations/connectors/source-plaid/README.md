@@ -1,75 +1,65 @@
-# Plaid Source
+# Plaid source connector
 
-This is the repository for the JavaScript Template source connector, written in JavaScript.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/javascript-template).
+This directory contains the manifest-only connector for `source-plaid`.
+This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
+
+For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/plaid).
 
 ## Local development
 
-### Prerequisites
+We recommend using the Connector Builder to edit this connector.
+Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
+Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
 
-**To iterate on this connector, make sure to complete this prerequisites section.**
+If you prefer to develop locally, you can follow the instructions below.
 
-#### Build & Activate Virtual Environment
+### Building the docker image
 
-First, build the module by running the following from the `airbyte` project root directory:
+You can build any manifest-only connector with `airbyte-ci`:
 
-```
-./gradlew :airbyte-integrations:connectors:source-plaid:build
-```
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
 
-This will generate a virtualenv for this module in `source-plaid/.venv`. Make sure this venv is active in your
-development environment of choice. To activate the venv from the terminal, run:
-
-```
-cd airbyte-integrations/connectors/source-plaid # cd into the connector directory
-source .venv/bin/activate
+```bash
+airbyte-ci connectors --name=source-plaid build
 ```
 
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+An image will be available on your host with the tag `airbyte/source-plaid:dev`.
 
-#### Create credentials
+### Creating credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/javascript-template)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_javascript_template/spec.json` file.
-See `sample_files/sample_config.json` for a sample config file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/plaid)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
-**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-plaid-integration-test-config`
-and place them into `secrets/config.json`.
+### Running as a docker container
 
-### Locally running the connector
+Then run any of the standard source connector commands:
 
-```
-npm install
-node source.js spec
-node source.js check --config secrets/config.json
-node source.js discover --config secrets/config.json
-node source.js read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Unit Tests (wip)
-
-To run unit tests locally, from the connector directory run:
-
-```
-npm test
-```
-
-### Locally running the connector docker image
-
-```
-# in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-plaid:airbyteDocker
+```bash
 docker run --rm airbyte/source-plaid:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets airbyte/source-plaid:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets airbyte/source-plaid:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-plaid/sample_files:/sample_files airbyte/source-plaid:dev read --config /secrets/config.json --catalog /sample_files/fullrefresh_configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-plaid:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-plaid:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-plaid:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-### Integration Tests
+### Running the CI test suite
 
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-plaid:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `node test (wip)`.
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
-## Dependency Management
+```bash
+airbyte-ci connectors --name=source-plaid test
+```
 
-All of your dependencies should go in `package.json`.
+## Publishing a new version of the connector
+
+If you want to contribute changes to `source-plaid`, here's how you can do that:
+1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
+2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-plaid test`
+3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/plaid.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

@@ -1,0 +1,123 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+    "reportOptions": {
+      "dateGranularity": "DAY",
+      "asinGranularity": "SKU"
+    },
+    "dataStartTime": "2021-06-11",
+    "dataEndTime": "2021-06-14",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "salesAndTrafficByDate": [
+    {
+      "date": "2021-06-11",
+      "salesByDate": {
+        "orderedProductSales": {
+          "amount": 238.44,
+          "currencyCode": "USD"
+        },
+        "unitsOrdered": 23,
+        "totalOrderItems": 20,
+        "averageSalesPerOrderItem": {
+          "amount": 11.92,
+          "currencyCode": "USD"
+        },
+        "averageUnitsPerOrderItem": 1.15,
+        "averageSellingPrice": {
+          "amount": 10.37,
+          "currencyCode": "USD"
+        },
+        "unitsRefunded": 1,
+        "refundRate": 4.35,
+        "claimsGranted": 0,
+        "claimsAmount": {
+          "amount": 0.0,
+          "currencyCode": "USD"
+        },
+        "shippedProductSales": {
+          "amount": 650.72,
+          "currencyCode": "USD"
+        },
+        "unitsShipped": 59,
+        "ordersShipped": 54
+      },
+      "trafficByDate": {
+        "browserPageViews": 1158,
+        "mobileAppPageViews": 500,
+        "pageViews": 1658,
+        "browserSessions": 906,
+        "mobileAppSessions": 94,
+        "sessions": 1000,
+        "buyBoxPercentage": 10.54,
+        "orderItemSessionPercentage": 2.21,
+        "unitSessionPercentage": 2.54,
+        "averageOfferCount": 9686,
+        "averageParentItems": 9630,
+        "feedbackReceived": 10,
+        "negativeFeedbackReceived": 1,
+        "receivedNegativeFeedbackRate": 10.0
+      }
+    }
+  ],
+  "salesAndTrafficByAsin": [
+    {
+      "parentAsin": "B123456789",
+      "childAsin": "B123456789",
+      "sku": "AB-1C2D-EFGH",
+      "salesByAsin": {
+        "unitsOrdered": 1,
+        "orderedProductSales": {
+          "amount": 16.79,
+          "currencyCode": "USD"
+        },
+        "totalOrderItems": 1
+      },
+      "trafficByAsin": {
+        "browserSessions": 13,
+        "mobileAppSessions": 5,
+        "sessions": 18,
+        "browserSessionPercentage": 0.33,
+        "mobileAppSessionPercentage": 0.2,
+        "sessionPercentage": 0.26,
+        "browserPageViews": 21,
+        "mobileAppPageViews": 22,
+        "pageViews": 43,
+        "browserPageViewsPercentage": 0.41,
+        "mobileAppPageViewsPercentage": 0.2,
+        "pageViewsPercentage": 0.3,
+        "buyBoxPercentage": 95.24,
+        "unitSessionPercentage": 7.69
+      }
+    },
+    {
+      "parentAsin": "B234567890",
+      "childAsin": "B234567890",
+      "sku": "CD-2E3F-GHIJ",
+      "salesByAsin": {
+        "unitsOrdered": 3,
+        "orderedProductSales": {
+          "amount": 26.25,
+          "currencyCode": "USD"
+        },
+        "totalOrderItems": 2
+      },
+      "trafficByAsin": {
+        "browserSessions": 8,
+        "mobileAppSessions": 5,
+        "sessions": 13,
+        "browserSessionPercentage": 0.33,
+        "mobileAppSessionPercentage": 0.1,
+        "sessionPercentage": 0.2,
+        "browserPageViews": 21,
+        "mobileAppPageViews": 12,
+        "pageViews": 33,
+        "browserPageViewsPercentage": 0.41,
+        "mobileAppPageViewsPercentage": 0.25,
+        "pageViewsPercentage": 0.32,
+        "buyBoxPercentage": 0.0,
+        "unitSessionPercentage": 37.5
+      }
+    }
+  ]
+}

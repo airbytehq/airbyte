@@ -1,44 +1,26 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.streaming.NoOpStreamingQueryConfig;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +28,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClickHouseSource extends AbstractJdbcSource implements Source {
+public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   /**
    * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
@@ -56,61 +38,98 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
+  public static final String SSL_MODE = "sslmode=none";
+  public static final String HTTPS_PROTOCOL = "https";
+  public static final String HTTP_PROTOCOL = "http";
+
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
+                                                          final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> SourceJdbcUtils
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
               try {
-                return database.resultSetQuery(connection -> {
-                  String sql = "SELECT name FROM system.columns WHERE database = ? AND  table = ? AND is_in_primary_key = 1";
-                  PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                return database.queryStrings(connection -> {
+                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
+                  final PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getNameSpace());
                   preparedStatement.setString(2, tableInfo.getName());
                   return preparedStatement.executeQuery();
-
-                }, resultSet -> resultSet.getString("name")).collect(Collectors.toList());
-              } catch (SQLException e) {
+                }, resultSet -> resultSet.getString("name"));
+              } catch (final SQLException e) {
                 throw new RuntimeException(e);
               }
             }));
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
+
+  public static Source getWrappedSource() {
+    return new SshWrappedSource(new ClickHouseSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
 
   /**
-   * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
-   * setting fetch size to 1000) for ClickHouse is cause method
+   * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
+   * size to 1000) for ClickHouse is cause method
    * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()))
-        .build());
+  public JsonNode toDatabaseConfig(final JsonNode config) {
+    final boolean isSsl = !config.has("ssl") || config.get("ssl").asBoolean();
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse:%s://%s:%s/%s",
+        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    final boolean isAdditionalParamsExists =
+        config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
+    final List<String> params = new ArrayList<>();
+    // assume ssl if not explicitly mentioned.
+    if (isSsl) {
+      params.add(SSL_MODE);
+    }
+    if (isAdditionalParamsExists) {
+      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    }
+
+    if (isSsl || isAdditionalParamsExists) {
+      jdbcUrl.append("?");
+      jdbcUrl.append(String.join("&", params));
+    }
+
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
+
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Collections.singleton("system");
+    return Set.of("system", "information_schema", "INFORMATION_SCHEMA");
   }
 
-  public static void main(String[] args) throws Exception {
-    final Source source = new ClickHouseSource();
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  public static void main(final String[] args) throws Exception {
+    final Source source = ClickHouseSource.getWrappedSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ClickHouseSource.class);

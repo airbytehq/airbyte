@@ -1,0 +1,4 @@
+{
+  "credentials": { "auth_type": "apikey", "apikey": "random_api_key-us10" },
+  "data_center": "us10"
+}

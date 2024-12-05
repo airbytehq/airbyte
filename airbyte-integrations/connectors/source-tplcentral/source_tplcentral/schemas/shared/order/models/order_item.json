@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ReadOnly": {
+      "$ref": "order_item_read_only.json"
+    },
+    "ItemIdentifier": {
+      "$ref": "../../generic/models/item_identifier.json"
+    },
+    "Qualifier": {
+      "type": "string"
+    },
+    "ExternalId": {
+      "description": "connection of this order item to the same order item on some other system",
+      "type": "string"
+    },
+    "Qty": {
+      "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
+      "type": ["null", "number"]
+    },
+    "SecondaryQty": {
+      "description": "optional secondary quantity ordered; if not specified, must specify Qty",
+      "type": ["null", "number"]
+    },
+    "LotNumber": {
+      "description": "if present, used to allocate matching inventory",
+      "type": "string"
+    },
+    "SerialNumber": {
+      "description": "if present, used to allocate matching inventory",
+      "type": "string"
+    },
+    "ExpirationDate": {
+      "description": "if present, used to allocate matching inventory",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "WeightImperial": {
+      "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
+      "type": ["null", "number"]
+    },
+    "WeightMetric": {
+      "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
+      "type": ["null", "number"]
+    },
+    "Notes": {
+      "type": "string"
+    },
+    "FulfillInvSalePrice": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvDiscountPct": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvDiscountAmt": {
+      "type": ["null", "number"]
+    },
+    "FulfillInvNote": {
+      "type": "string"
+    },
+    "SavedElements": {
+      "type": "array",
+      "items": {
+        "$ref": "../../generic/models/saved_element.json"
+      }
+    },
+    "ProposedAllocations": {
+      "description": "empty on GET; may be supplied on PUT, POST",
+      "type": "array",
+      "items": {
+        "$ref": "../../generic/models/proposed_allocation.json"
+      }
+    },
+    "OrderItemInPackages": {
+      "description": "declares the package arrangement, which gets translated into real packages, during order creation; empty on GET; ignored on PUT; may be supplied on POST",
+      "type": "array",
+      "items": {
+        "$ref": "order_item_in_package.json"
+      }
+    }
+  }
+}

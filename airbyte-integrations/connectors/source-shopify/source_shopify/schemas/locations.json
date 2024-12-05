@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "active": {
+      "description": "Indicates if the location is currently active or not.",
+      "type": ["null", "boolean"]
+    },
+    "address1": {
+      "description": "The first line of the location's address.",
+      "type": ["null", "string"]
+    },
+    "address2": {
+      "description": "The second line of the location's address.",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The Admin GraphQL API ID of the location.",
+      "type": ["null", "string"]
+    },
+    "city": {
+      "description": "The city where the location is based.",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "The full name of the country where the location is located.",
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "description": "The ISO country code of the location.",
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "description": "The name of the country where the location is located.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the location was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "description": "The unique identifier of the location.",
+      "type": ["null", "integer"]
+    },
+    "legacy": {
+      "description": "Indicates if the location is a legacy location or not.",
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "description": "The name of the location.",
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "description": "The phone number associated with the location.",
+      "type": ["null", "string"]
+    },
+    "province": {
+      "description": "The full name of the province or state where the location is located.",
+      "type": ["null", "string"]
+    },
+    "province_code": {
+      "description": "The ISO code of the province or state where the location is located.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the location was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "zip": {
+      "description": "The postal or ZIP code of the location.",
+      "type": ["null", "string"]
+    },
+    "localized_country_name": {
+      "description": "The localized name of the country where the location is located.",
+      "type": ["null", "string"]
+    },
+    "localized_province_name": {
+      "description": "The localized name of the province or state of the location.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop associated with the location.",
+      "type": ["null", "string"]
+    }
+  }
+}

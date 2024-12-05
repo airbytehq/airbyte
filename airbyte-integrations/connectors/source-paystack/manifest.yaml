@@ -1,0 +1,3677 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - transactions
+    - customers
+    - invoices
+    - disputes
+    - refunds
+    - settlements
+    - subscriptions
+    - transfers
+definitions:
+  streams:
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: transaction
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties:
+                referrer:
+                  type:
+                    - "null"
+                    - string
+            amount:
+              type:
+                - "null"
+                - integer
+            authorization:
+              type:
+                - "null"
+                - object
+              properties: {}
+            channel:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            customer:
+              type:
+                - "null"
+                - object
+              properties: {}
+            domain:
+              type:
+                - "null"
+                - string
+            fees:
+              type:
+                - "null"
+                - integer
+            fees_split:
+              type:
+                - "null"
+                - string
+            gateway_response:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            ip_address:
+              type:
+                - "null"
+                - string
+            log:
+              type:
+                - "null"
+                - object
+              properties:
+                attempts:
+                  type:
+                    - "null"
+                    - integer
+                errors:
+                  type:
+                    - "null"
+                    - integer
+                history:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      message:
+                        type:
+                          - "null"
+                          - string
+                      time:
+                        type:
+                          - "null"
+                          - integer
+                input:
+                  type:
+                    - "null"
+                    - array
+                  items: {}
+                mobile:
+                  type:
+                    - "null"
+                    - boolean
+                start_time:
+                  type:
+                    - "null"
+                    - integer
+                success:
+                  type:
+                    - "null"
+                    - boolean
+                time_spent:
+                  type:
+                    - "null"
+                    - integer
+            message:
+              type:
+                - "null"
+                - string
+            order_id:
+              type:
+                - "null"
+                - integer
+            paidAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            paid_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            plan:
+              type:
+                - "null"
+                - object
+              properties: {}
+            reference:
+              type:
+                - "null"
+                - string
+            requested_amount:
+              type:
+                - "null"
+                - integer
+            source:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                entry_point:
+                  type:
+                    - "null"
+                    - string
+                identifier:
+                  type:
+                    - "null"
+                    - string
+                source:
+                  type:
+                    - "null"
+                    - string
+            split:
+              type:
+                - "null"
+                - object
+              properties: {}
+            status:
+              type:
+                - "null"
+                - string
+            subaccount:
+              type:
+                - "null"
+                - object
+              properties: {}
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: customer
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties: {}
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            customer_code:
+              type:
+                - "null"
+                - string
+            domain:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+            first_name:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            last_name:
+              type:
+                - "null"
+                - string
+            phone:
+              type:
+                - "null"
+                - string
+            risk_action:
+              type:
+                - "null"
+                - string
+            updatedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: paymentrequest
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            metadata:
+              type:
+                - "null"
+                - object
+              properties: {}
+            amount:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            customer:
+              type:
+                - "null"
+                - object
+              properties: {}
+            description:
+              type:
+                - "null"
+                - string
+            domain:
+              type:
+                - "null"
+                - string
+            due_date:
+              type:
+                - "null"
+                - string
+              format: date-time
+            has_invoice:
+              type:
+                - "null"
+                - boolean
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            invoice_number:
+              type:
+                - "null"
+                - integer
+            line_items:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  quantity:
+                    type:
+                      - "null"
+                      - integer
+            notifications:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  channel:
+                    type:
+                      - "null"
+                      - string
+                  sent_at:
+                    type:
+                      - "null"
+                      - string
+            offline_reference:
+              type:
+                - "null"
+                - string
+            paid:
+              type:
+                - "null"
+                - boolean
+            paid_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            pdf_url:
+              type:
+                - "null"
+                - string
+            request_code:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            tax:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  amount:
+                    type:
+                      - "null"
+                      - integer
+                  name:
+                    type:
+                      - "null"
+                      - string
+    disputes:
+      type: DeclarativeStream
+      name: disputes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: dispute
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            attachments:
+              type:
+                - "null"
+                - string
+            bin:
+              type:
+                - "null"
+                - string
+            category:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            customer:
+              type:
+                - "null"
+                - object
+              properties: {}
+            domain:
+              type:
+                - "null"
+                - string
+            dueAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            evidence:
+              type:
+                - "null"
+                - string
+            history:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  by:
+                    type:
+                      - "null"
+                      - string
+                  createdAt:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  status:
+                    type:
+                      - "null"
+                      - string
+            id:
+              type:
+                - "null"
+                - integer
+            last4:
+              type:
+                - "null"
+                - string
+            messages:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  body:
+                    type:
+                      - "null"
+                      - string
+                  createdAt:
+                    type:
+                      - "null"
+                      - string
+                    format: date-time
+                  sender:
+                    type:
+                      - "null"
+                      - string
+            note:
+              type:
+                - "null"
+                - string
+            refund_amount:
+              type:
+                - "null"
+                - integer
+            resolution:
+              type:
+                - "null"
+                - string
+            resolvedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            status:
+              type:
+                - "null"
+                - string
+            transaction:
+              type:
+                - "null"
+                - object
+              properties: {}
+            transaction_reference:
+              type:
+                - "null"
+                - string
+            updatedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+    refunds:
+      type: DeclarativeStream
+      name: refunds
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: refund
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            amount:
+              type:
+                - "null"
+                - integer
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            customer_note:
+              type:
+                - "null"
+                - string
+            deducted_amount:
+              type:
+                - "null"
+                - integer
+            dispute:
+              type:
+                - "null"
+                - object
+              properties: {}
+            domain:
+              type:
+                - "null"
+                - string
+            fully_deducted:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            merchant_note:
+              type:
+                - "null"
+                - string
+            refunded_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            refunded_by:
+              type:
+                - "null"
+                - string
+            settlement:
+              type:
+                - "null"
+                - object
+              properties: {}
+            status:
+              type:
+                - "null"
+                - string
+            transaction:
+              type:
+                - "null"
+                - integer
+    settlements:
+      type: DeclarativeStream
+      name: settlements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: settlement
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            deductions:
+              type:
+                - "null"
+                - integer
+            domain:
+              type:
+                - "null"
+                - string
+            effective_amount:
+              type:
+                - "null"
+                - integer
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            settled_by:
+              type:
+                - "null"
+                - string
+            settlement_date:
+              type:
+                - "null"
+                - string
+              format: date-time
+            status:
+              type:
+                - "null"
+                - string
+            subaccount:
+              type:
+                - "null"
+                - object
+              properties: {}
+            total_amount:
+              type:
+                - "null"
+                - integer
+            total_fees:
+              type:
+                - "null"
+                - integer
+            total_processed:
+              type:
+                - "null"
+                - integer
+            updatedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: subscription
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            amount:
+              type:
+                - "null"
+                - integer
+            authorization:
+              type:
+                - "null"
+                - object
+              properties: {}
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            cron_expression:
+              type:
+                - "null"
+                - string
+            customer:
+              type:
+                - "null"
+                - object
+              properties: {}
+            domain:
+              type:
+                - "null"
+                - string
+            email_token:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            invoice_limit:
+              type:
+                - "null"
+                - integer
+            most_recent_invoice:
+              type:
+                - "null"
+                - object
+              properties: {}
+            next_payment_date:
+              type:
+                - "null"
+                - string
+              format: date-time
+            open_invoice:
+              type:
+                - "null"
+                - string
+            payments_count:
+              type:
+                - "null"
+                - integer
+            plan:
+              type:
+                - "null"
+                - object
+              properties: {}
+            quantity:
+              type:
+                - "null"
+                - integer
+            split_code:
+              type:
+                - "null"
+                - string
+            start:
+              type:
+                - "null"
+                - integer
+            status:
+              type:
+                - "null"
+                - string
+            subscription_code:
+              type:
+                - "null"
+                - string
+    transfers:
+      type: DeclarativeStream
+      name: transfers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.paystack.co/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['secret_key'] }}"
+          path: transfer
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 200
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            amount:
+              type:
+                - "null"
+                - integer
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            domain:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+            integration:
+              type:
+                - "null"
+                - integer
+            reason:
+              type:
+                - "null"
+                - string
+            reference:
+              type:
+                - "null"
+                - string
+            recipient:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                metadata:
+                  type:
+                    - "null"
+                    - object
+                  properties: {}
+                active:
+                  type:
+                    - "null"
+                    - boolean
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                currency:
+                  type:
+                    - "null"
+                    - string
+                description:
+                  type:
+                    - "null"
+                    - string
+                details:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    account_name:
+                      type:
+                        - "null"
+                        - string
+                    account_number:
+                      type:
+                        - "null"
+                        - string
+                    bank_code:
+                      type:
+                        - "null"
+                        - string
+                    bank_name:
+                      type:
+                        - "null"
+                        - string
+                domain:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - integer
+                integration:
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  type:
+                    - "null"
+                    - string
+                recipient_code:
+                  type:
+                    - "null"
+                    - string
+                updatedAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+            source:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            transfer_code:
+              type:
+                - "null"
+                - string
+            updatedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.paystack.co/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['secret_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: transactions
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: transaction
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties:
+              referrer:
+                type:
+                  - "null"
+                  - string
+          amount:
+            type:
+              - "null"
+              - integer
+          authorization:
+            type:
+              - "null"
+              - object
+            properties: {}
+          channel:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - object
+            properties: {}
+          domain:
+            type:
+              - "null"
+              - string
+          fees:
+            type:
+              - "null"
+              - integer
+          fees_split:
+            type:
+              - "null"
+              - string
+          gateway_response:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          ip_address:
+            type:
+              - "null"
+              - string
+          log:
+            type:
+              - "null"
+              - object
+            properties:
+              attempts:
+                type:
+                  - "null"
+                  - integer
+              errors:
+                type:
+                  - "null"
+                  - integer
+              history:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    message:
+                      type:
+                        - "null"
+                        - string
+                    time:
+                      type:
+                        - "null"
+                        - integer
+              input:
+                type:
+                  - "null"
+                  - array
+                items: {}
+              mobile:
+                type:
+                  - "null"
+                  - boolean
+              start_time:
+                type:
+                  - "null"
+                  - integer
+              success:
+                type:
+                  - "null"
+                  - boolean
+              time_spent:
+                type:
+                  - "null"
+                  - integer
+          message:
+            type:
+              - "null"
+              - string
+          order_id:
+            type:
+              - "null"
+              - integer
+          paidAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          paid_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          plan:
+            type:
+              - "null"
+              - object
+            properties: {}
+          reference:
+            type:
+              - "null"
+              - string
+          requested_amount:
+            type:
+              - "null"
+              - integer
+          source:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              entry_point:
+                type:
+                  - "null"
+                  - string
+              identifier:
+                type:
+                  - "null"
+                  - string
+              source:
+                type:
+                  - "null"
+                  - string
+          split:
+            type:
+              - "null"
+              - object
+            properties: {}
+          status:
+            type:
+              - "null"
+              - string
+          subaccount:
+            type:
+              - "null"
+              - object
+            properties: {}
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: customer
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties: {}
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          customer_code:
+            type:
+              - "null"
+              - string
+          domain:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          last_name:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          risk_action:
+            type:
+              - "null"
+              - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    name: invoices
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: paymentrequest
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          metadata:
+            type:
+              - "null"
+              - object
+            properties: {}
+          amount:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - object
+            properties: {}
+          description:
+            type:
+              - "null"
+              - string
+          domain:
+            type:
+              - "null"
+              - string
+          due_date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          has_invoice:
+            type:
+              - "null"
+              - boolean
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          invoice_number:
+            type:
+              - "null"
+              - integer
+          line_items:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  type:
+                    - "null"
+                    - integer
+          notifications:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                channel:
+                  type:
+                    - "null"
+                    - string
+                sent_at:
+                  type:
+                    - "null"
+                    - string
+          offline_reference:
+            type:
+              - "null"
+              - string
+          paid:
+            type:
+              - "null"
+              - boolean
+          paid_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          pdf_url:
+            type:
+              - "null"
+              - string
+          request_code:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          tax:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  type:
+                    - "null"
+                    - string
+  - type: DeclarativeStream
+    name: disputes
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: dispute
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - "null"
+              - string
+          bin:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - object
+            properties: {}
+          domain:
+            type:
+              - "null"
+              - string
+          dueAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          evidence:
+            type:
+              - "null"
+              - string
+          history:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                by:
+                  type:
+                    - "null"
+                    - string
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                status:
+                  type:
+                    - "null"
+                    - string
+          id:
+            type:
+              - "null"
+              - integer
+          last4:
+            type:
+              - "null"
+              - string
+          messages:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                body:
+                  type:
+                    - "null"
+                    - string
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                sender:
+                  type:
+                    - "null"
+                    - string
+          note:
+            type:
+              - "null"
+              - string
+          refund_amount:
+            type:
+              - "null"
+              - integer
+          resolution:
+            type:
+              - "null"
+              - string
+          resolvedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type:
+              - "null"
+              - string
+          transaction:
+            type:
+              - "null"
+              - object
+            properties: {}
+          transaction_reference:
+            type:
+              - "null"
+              - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    name: refunds
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: refund
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          customer_note:
+            type:
+              - "null"
+              - string
+          deducted_amount:
+            type:
+              - "null"
+              - integer
+          dispute:
+            type:
+              - "null"
+              - object
+            properties: {}
+          domain:
+            type:
+              - "null"
+              - string
+          fully_deducted:
+            type:
+              - "null"
+              - integer
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          merchant_note:
+            type:
+              - "null"
+              - string
+          refunded_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          refunded_by:
+            type:
+              - "null"
+              - string
+          settlement:
+            type:
+              - "null"
+              - object
+            properties: {}
+          status:
+            type:
+              - "null"
+              - string
+          transaction:
+            type:
+              - "null"
+              - integer
+  - type: DeclarativeStream
+    name: settlements
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: settlement
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          deductions:
+            type:
+              - "null"
+              - integer
+          domain:
+            type:
+              - "null"
+              - string
+          effective_amount:
+            type:
+              - "null"
+              - integer
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          settled_by:
+            type:
+              - "null"
+              - string
+          settlement_date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type:
+              - "null"
+              - string
+          subaccount:
+            type:
+              - "null"
+              - object
+            properties: {}
+          total_amount:
+            type:
+              - "null"
+              - integer
+          total_fees:
+            type:
+              - "null"
+              - integer
+          total_processed:
+            type:
+              - "null"
+              - integer
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+  - type: DeclarativeStream
+    name: subscriptions
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: subscription
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          authorization:
+            type:
+              - "null"
+              - object
+            properties: {}
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          cron_expression:
+            type:
+              - "null"
+              - string
+          customer:
+            type:
+              - "null"
+              - object
+            properties: {}
+          domain:
+            type:
+              - "null"
+              - string
+          email_token:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          invoice_limit:
+            type:
+              - "null"
+              - integer
+          most_recent_invoice:
+            type:
+              - "null"
+              - object
+            properties: {}
+          next_payment_date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          open_invoice:
+            type:
+              - "null"
+              - string
+          payments_count:
+            type:
+              - "null"
+              - integer
+          plan:
+            type:
+              - "null"
+              - object
+            properties: {}
+          quantity:
+            type:
+              - "null"
+              - integer
+          split_code:
+            type:
+              - "null"
+              - string
+          start:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          subscription_code:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: transfers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.paystack.co/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['secret_key'] }}"
+        path: transfer
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: perPage
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 200
+          inject_on_first_request: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: createdAt
+      lookback_window: P31D
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          amount:
+            type:
+              - "null"
+              - integer
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          domain:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          reason:
+            type:
+              - "null"
+              - string
+          reference:
+            type:
+              - "null"
+              - string
+          recipient:
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+              metadata:
+                type:
+                  - "null"
+                  - object
+                properties: {}
+              active:
+                type:
+                  - "null"
+                  - boolean
+              createdAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              currency:
+                type:
+                  - "null"
+                  - string
+              description:
+                type:
+                  - "null"
+                  - string
+              details:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  account_name:
+                    type:
+                      - "null"
+                      - string
+                  account_number:
+                    type:
+                      - "null"
+                      - string
+                  bank_code:
+                    type:
+                      - "null"
+                      - string
+                  bank_name:
+                    type:
+                      - "null"
+                      - string
+              domain:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              integration:
+                type:
+                  - "null"
+                  - integer
+              name:
+                type:
+                  - "null"
+                  - string
+              recipient_code:
+                type:
+                  - "null"
+                  - string
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          source:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          transfer_code:
+            type:
+              - "null"
+              - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - secret_key
+    properties:
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        order: 0
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (in days)
+        default: 0
+        minimum: 0
+        description: >-
+          When set, the connector will always reload data from the past N days,
+          where N is the value set here. This is useful if your data is updated
+          after creation.
+        order: 1
+      secret_key:
+        type: string
+        title: Secret Key
+        pattern: ^(s|r)k_(live|test)_[a-zA-Z0-9]+$
+        description: >-
+          The Paystack API key (usually starts with 'sk_live_'; find yours <a
+          href="https://dashboard.paystack.com/#/settings/developer">here</a>).
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    transactions: false
+    customers: false
+    invoices: false
+    disputes: false
+    refunds: false
+    settlements: false
+    subscriptions: false
+    transfers: false
+schemas:
+  transactions:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties:
+          referrer:
+            type:
+              - "null"
+              - string
+      amount:
+        type:
+          - "null"
+          - integer
+      authorization:
+        type:
+          - "null"
+          - object
+        properties: {}
+      channel:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      customer:
+        type:
+          - "null"
+          - object
+        properties: {}
+      domain:
+        type:
+          - "null"
+          - string
+      fees:
+        type:
+          - "null"
+          - integer
+      fees_split:
+        type:
+          - "null"
+          - string
+      gateway_response:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      ip_address:
+        type:
+          - "null"
+          - string
+      log:
+        type:
+          - "null"
+          - object
+        properties:
+          attempts:
+            type:
+              - "null"
+              - integer
+          errors:
+            type:
+              - "null"
+              - integer
+          history:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                message:
+                  type:
+                    - "null"
+                    - string
+                time:
+                  type:
+                    - "null"
+                    - integer
+          input:
+            type:
+              - "null"
+              - array
+            items: {}
+          mobile:
+            type:
+              - "null"
+              - boolean
+          start_time:
+            type:
+              - "null"
+              - integer
+          success:
+            type:
+              - "null"
+              - boolean
+          time_spent:
+            type:
+              - "null"
+              - integer
+      message:
+        type:
+          - "null"
+          - string
+      order_id:
+        type:
+          - "null"
+          - integer
+      paidAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      paid_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      plan:
+        type:
+          - "null"
+          - object
+        properties: {}
+      reference:
+        type:
+          - "null"
+          - string
+      requested_amount:
+        type:
+          - "null"
+          - integer
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          entry_point:
+            type:
+              - "null"
+              - string
+          identifier:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+      split:
+        type:
+          - "null"
+          - object
+        properties: {}
+      status:
+        type:
+          - "null"
+          - string
+      subaccount:
+        type:
+          - "null"
+          - object
+        properties: {}
+  customers:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties: {}
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      customer_code:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      email:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      last_name:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      risk_action:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  invoices:
+    type: object
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - "null"
+          - object
+        properties: {}
+      amount:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      customer:
+        type:
+          - "null"
+          - object
+        properties: {}
+      description:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      due_date:
+        type:
+          - "null"
+          - string
+        format: date-time
+      has_invoice:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      invoice_number:
+        type:
+          - "null"
+          - integer
+      line_items:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            amount:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            quantity:
+              type:
+                - "null"
+                - integer
+      notifications:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            channel:
+              type:
+                - "null"
+                - string
+            sent_at:
+              type:
+                - "null"
+                - string
+      offline_reference:
+        type:
+          - "null"
+          - string
+      paid:
+        type:
+          - "null"
+          - boolean
+      paid_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      pdf_url:
+        type:
+          - "null"
+          - string
+      request_code:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      tax:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            amount:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+  disputes:
+    type: object
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - "null"
+          - string
+      bin:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      customer:
+        type:
+          - "null"
+          - object
+        properties: {}
+      domain:
+        type:
+          - "null"
+          - string
+      dueAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      evidence:
+        type:
+          - "null"
+          - string
+      history:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            by:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            status:
+              type:
+                - "null"
+                - string
+      id:
+        type:
+          - "null"
+          - integer
+      last4:
+        type:
+          - "null"
+          - string
+      messages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            body:
+              type:
+                - "null"
+                - string
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            sender:
+              type:
+                - "null"
+                - string
+      note:
+        type:
+          - "null"
+          - string
+      refund_amount:
+        type:
+          - "null"
+          - integer
+      resolution:
+        type:
+          - "null"
+          - string
+      resolvedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - "null"
+          - string
+      transaction:
+        type:
+          - "null"
+          - object
+        properties: {}
+      transaction_reference:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  refunds:
+    type: object
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      customer_note:
+        type:
+          - "null"
+          - string
+      deducted_amount:
+        type:
+          - "null"
+          - integer
+      dispute:
+        type:
+          - "null"
+          - object
+        properties: {}
+      domain:
+        type:
+          - "null"
+          - string
+      fully_deducted:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      merchant_note:
+        type:
+          - "null"
+          - string
+      refunded_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      refunded_by:
+        type:
+          - "null"
+          - string
+      settlement:
+        type:
+          - "null"
+          - object
+        properties: {}
+      status:
+        type:
+          - "null"
+          - string
+      transaction:
+        type:
+          - "null"
+          - integer
+  settlements:
+    type: object
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deductions:
+        type:
+          - "null"
+          - integer
+      domain:
+        type:
+          - "null"
+          - string
+      effective_amount:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      settled_by:
+        type:
+          - "null"
+          - string
+      settlement_date:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - "null"
+          - string
+      subaccount:
+        type:
+          - "null"
+          - object
+        properties: {}
+      total_amount:
+        type:
+          - "null"
+          - integer
+      total_fees:
+        type:
+          - "null"
+          - integer
+      total_processed:
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  subscriptions:
+    type: object
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - integer
+      authorization:
+        type:
+          - "null"
+          - object
+        properties: {}
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      cron_expression:
+        type:
+          - "null"
+          - string
+      customer:
+        type:
+          - "null"
+          - object
+        properties: {}
+      domain:
+        type:
+          - "null"
+          - string
+      email_token:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      invoice_limit:
+        type:
+          - "null"
+          - integer
+      most_recent_invoice:
+        type:
+          - "null"
+          - object
+        properties: {}
+      next_payment_date:
+        type:
+          - "null"
+          - string
+        format: date-time
+      open_invoice:
+        type:
+          - "null"
+          - string
+      payments_count:
+        type:
+          - "null"
+          - integer
+      plan:
+        type:
+          - "null"
+          - object
+        properties: {}
+      quantity:
+        type:
+          - "null"
+          - integer
+      split_code:
+        type:
+          - "null"
+          - string
+      start:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      subscription_code:
+        type:
+          - "null"
+          - string
+  transfers:
+    type: object
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      domain:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      integration:
+        type:
+          - "null"
+          - integer
+      reason:
+        type:
+          - "null"
+          - string
+      reference:
+        type:
+          - "null"
+          - string
+      recipient:
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          metadata:
+            type:
+              - "null"
+              - object
+            properties: {}
+          active:
+            type:
+              - "null"
+              - boolean
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          details:
+            type:
+              - "null"
+              - object
+            properties:
+              account_name:
+                type:
+                  - "null"
+                  - string
+              account_number:
+                type:
+                  - "null"
+                  - string
+              bank_code:
+                type:
+                  - "null"
+                  - string
+              bank_name:
+                type:
+                  - "null"
+                  - string
+          domain:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+          integration:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          recipient_code:
+            type:
+              - "null"
+              - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+      source:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      transfer_code:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time

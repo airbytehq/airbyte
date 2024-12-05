@@ -1,130 +1,35 @@
 # Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
+If you'd like to build a connector that doesn't yet exist in Airbyte's catalog, in most cases you should use [Connector Builder](./connector-builder-ui/overview.md)!
+Builder works for most API source connectors as long as you can read the data with HTTP requests (REST, GraphQL) and get results in JSON or JSONL formats, CSV and XML support to come soon.
 
-To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
+In rare cases when you need something more complex, you can use the Low-Code CDK directly. Other options and SDKs are described below.
 
-**Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
+:::note
 
-## Connector-Development Kit (CDK)
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md). As you begin, you should also familiarize yourself with our guide to [Best Practices for Connector Development](./best-practices.md).
+If you need support along the way, visit the [Slack channel](https://airbytehq.slack.com/archives/C027KKE4BCZ) we have dedicated to helping users with connector development where you can search previous discussions or ask a question of your own.
 
-You can build a connector very quickly with the [Airbyte CDK](cdk-python/README.md), which generates 75% of the code required for you.   
+:::
 
-## The Airbyte specification
+### Process overview
 
-Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+1. **Pick the technology and build**. The first step in creating a new connector is to choose the tools you’ll use to build it. For _most_ cases, you should start in Connector Builder. To understand which approach you should take, review the [compatibility guide](./connector-builder-ui/connector-builder-compatibility.md).
+2. **Publish as a custom connector**.After building and testing your connector, you’ll need to publish it. This makes it available in your workspace. At that point, you can use the connector you’ve built to move some data!
+3. **Contribute back to Airbyte**. If you want to contribute what you’ve built to the Airbyte Cloud and OSS connector catalog, follow the steps provided in the [contribution guide for submitting new connectors](../contributing-to-airbyte/submit-new-connector.md).
 
-## Adding a new connector
+### Connector development options
 
-### Requirements
+| Tool                                                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Connector Builder](./connector-builder-ui/overview.md)                             | We recommend Connector Builder for developing a connector for an API source. If you’re using Airbyte Cloud, no local developer environment is required to create a new connection with the Connector Builder because you configure it directly in the Airbyte web UI. This tool guides you through creating and testing a connection. Refer to our [tutorial](./connector-builder-ui/tutorial.mdx) on the Connector Builder to guide you through the basics. |
+| [Low Code Connector Development Kit (CDK)](./config-based/low-code-cdk-overview.md) | This framework lets you build source connectors for HTTP API sources. The Low-code CDK is a declarative framework that allows you to describe the connector using a [YAML schema](./schema-reference) without writing Python code. It’s flexible enough to include [custom Python components](./config-based/advanced-topics.md#custom-components) in conjunction with this method if necessary.                                                             |
+| [Python Connector Development Kit (CDK)](./cdk-python/basic-concepts.md)            | While this method provides the most flexibility to developers, it also requires the most code and maintenance. This library provides classes that work out-of-the-box for most scenarios you’ll encounter along with the generators to make the connector scaffolds for you. We maintain an [in-depth guide](./tutorials/custom-python-connector/0-getting-started.md) to building a connector using the Python CDK.                                         |
+| [Java CDK](./tutorials/building-a-java-destination.md)                              | If you're bulding a source or a destination against a traditional database (not an HTTP API, not a vector database), you should use the Java CDK instead.                                                                                                                                                                                                                                                                                                    |
 
-To add a new connector you need to:
 
-1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
-2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors/README.md), but you can also add your own tests. 
-3. Document how to build & test your connector
-4. Publish the Docker image containing the connector
+### Community maintained CDKs
 
-Each requirement has a subsection below.
-
-### 1. Implement & package the connector
-
-If you are building a connector in any of the following languages/frameworks, then you're in luck! We provide autogenerated templates to get you started quickly:
-
-#### Sources
-* **Python Source Connector**
-* [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github-singer) for an example of an Airbyte Connector implemented on top of a Singer tap.
-* **Generic Connector**: This template provides a basic starting point for any language.
-
-#### Destinations
-* **Java Destination Connector**
-* **Python Destination Connector**
-
-#### Creating a connector from a template
-
-Run the interactive generator:
-
-```text
-cd airbyte-integrations/connector-templates/generator
-./generate.sh
-```
-
-and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
-
-Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
-
-* [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http)
-* [Building a Python source](tutorials/building-a-python-source.md) 
-* [Building a Python destination](tutorials/building-a-python-destination.md)
-* [Building a Java destination](tutorials/building-a-java-destination.md)
-
-As you implement your connector, make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is not a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
-
-### 2. Integration tests
-
-At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors/README.md)
-
-**Note:  Acceptance tests are not yet available for Python destination connectors. Coming [soon](https://github.com/airbytehq/airbyte/issues/4698)!**
-
-### 3. Document building & testing your connector
-
-If you're writing in Python or Java, skip this section -- it is provided automatically.
-
-If you're writing in another language, please document the commands needed to:
-
-1. Build your connector docker image \(usually this is just `docker build .` but let us know if there are necessary flags, gotchas, etc..\) 
-2. Run any unit or integration tests _in a Docker image_.
-
-Your integration and unit tests must be runnable entirely within a Docker image. This is important to guarantee consistent build environments.
-
-When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build system as follows:
-
-1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
-2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
-
-### 4. Publish the connector
-Typically this will be handled as part of code review by an Airbyter. There is a section below on what steps are needed for publishing a connector and will mostly be used by Airbyte employees publishing the connector. 
-
-## Updating an existing connector
-The steps for updating an existing connector are the same as for building a new connector minus the need to use the autogenerator to create a new connector. Therefore the steps are: 
-
-1. Iterate on the connector to make the needed changes
-2. Run tests
-3. Add any needed docs updates
-4. Create a PR to get the connector published
-
-## Publishing a connector
-
-Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box. 
-
-1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
-2. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
-3. Update the connector JSON definition. To find the appropriate JSON file to update, find a JSON file `<uuid>.json` where the UUID portion is the ID specified in the YAML file you modified in step 2. The relevant directories are: 
-   * `airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
-   * `airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
-4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
-
-   ```text
-   # to run integration tests for the connector
-   # Example: /test connector=connectors/source-hubspot
-   /test connector=(connectors|bases)/<connector_name> 
-
-   # to run integration tests and publish the connector
-   # Example: /publish connector=connectors/source-hubspot
-   /publish connector=(connectors|bases)/<connector_name>
-   ```
-
-6. The new version of the connector is now available for everyone who uses it. Thank you!
-
-## Using credentials in CI
-In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
-
-1. **Place the credentials into Lastpass**: Airbyte uses a shared Lastpass account as the source of truth for all secrets. Place the credentials **exactly as they should be used by the connector** into a secure note i.e: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `<source OR destination> <name> creds` e.g: `source google adwords creds` or `destination snowflake creds`.
-2. **Add the credentials to Github Secrets**: To inject credentials into a CI workflow, the first step is to add it to Github Secrets, specifically within the ["more-secrets" environment](https://github.com/airbytehq/airbyte/settings/environments/276695501/edit). Admin access to the Airbyte repo is required to do this. All Airbyte engineers have admin access and should be able to do this themselves. External contributors or contractors will need to request this from their team lead or project manager who should have admin access. Follow the same naming pattern as all the other secrets e.g: if you are placing credentials for source google adwords, name the secret `SOURCE_GOOGLE_ADWORDS_CREDS`. After doing this step, the secret will be available in the relevant Github workflows using the workflow secrets syntax. 
-3. **Inject the credentials into test and publish CI workflows**: edit the files `.github/workflows/publish-command.yml` and `.github/workflows/test-command.yml` to inject the secret into the CI run. This will make these secrets available to the `/test` and `/publish` commands.
-4. **During CI, write the secret from env variables to the connector directory**: edit `tools/bin/ci_credentials.sh` to write the secret into the `secrets/` directory of the relevant connector.  
-5. That should be it.
+- The [Typescript CDK](https://github.com/faros-ai/airbyte-connectors) is actively maintained by
+  Faros.ai for use in their product.
+- The [Airbyte Dotnet CDK](https://github.com/mrhamburg/airbyte.cdk.dotnet) in C#.

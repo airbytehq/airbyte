@@ -1,0 +1,67 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the balance transaction.",
+      "type": "integer"
+    },
+    "type": {
+      "description": "The type of transaction.",
+      "type": ["null", "string"]
+    },
+    "test": {
+      "description": "Flag indicating if the transaction is a test transaction.",
+      "type": ["null", "boolean"]
+    },
+    "payout_id": {
+      "description": "The identifier of the associated payout.",
+      "type": ["null", "integer"]
+    },
+    "payout_status": {
+      "description": "The status of the payout associated with this transaction.",
+      "type": ["null", "string"]
+    },
+    "payoucurrencyt_status": {
+      "description": "Indicates the status of the payout for the currency in which the transaction occurred.",
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "description": "The amount of the transaction in the specified currency.",
+      "type": ["null", "number"]
+    },
+    "fee": {
+      "description": "The fee associated with the transaction.",
+      "type": ["null", "number"]
+    },
+    "net": {
+      "description": "The final amount received after deducting fees.",
+      "type": ["null", "number"]
+    },
+    "source_id": {
+      "description": "The identifier of the source related to the transaction.",
+      "type": ["null", "integer"]
+    },
+    "source_type": {
+      "description": "The type of source for the transaction.",
+      "type": ["null", "string"]
+    },
+    "source_order_transaction_id": {
+      "description": "The transaction identifier within the order.",
+      "type": ["null", "integer"]
+    },
+    "source_order_id": {
+      "description": "The identifier of the order related to the transaction.",
+      "type": ["null", "integer"]
+    },
+    "processed_at": {
+      "description": "The date and time when the transaction was processed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shop_url": {
+      "description": "The URL of the shop related to the transaction.",
+      "type": ["null", "string"]
+    }
+  }
+}

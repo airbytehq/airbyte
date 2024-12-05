@@ -1,32 +1,27 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, List, Mapping
 
-from base_python import BaseSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.core import Stream
 
-from .client import Client
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+
+WARNING: Do not modify this file.
+"""
 
 
-class SourceLooker(BaseSource):
-    client_class = Client
+# Declarative Source
+class SourceLooker(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = super().streams(config)
+        if not config.get("run_look_ids"):
+            return [stream for stream in streams if stream.name != "run_looks"]
+        return streams

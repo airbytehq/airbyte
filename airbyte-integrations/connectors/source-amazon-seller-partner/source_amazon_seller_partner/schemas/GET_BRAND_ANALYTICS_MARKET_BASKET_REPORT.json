@@ -1,0 +1,44 @@
+{
+  "title": "Brand Analytics Market Basket Reports",
+  "description": "Brand Analytics Market Basket Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "startDate": {
+      "description": "The start date of the data collection period.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "endDate": {
+      "description": "The end date of the data collection period.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "asin": {
+      "description": "The ASIN (Amazon Standard Identification Number) of the product.",
+      "type": ["null", "string"]
+    },
+    "purchasedWithAsin": {
+      "description": "The ASINs of the products that were frequently purchased with this ASIN.",
+      "type": ["null", "string"]
+    },
+    "purchasedWithRank": {
+      "description": "The ranking of products that were frequently purchased with this ASIN.",
+      "type": ["null", "integer"]
+    },
+    "combinationPct": {
+      "description": "The percentage of times this ASIN was purchased with another ASIN.",
+      "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "The date and time when the data collection ended.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "description": "The end date of the query period.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

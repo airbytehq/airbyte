@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "required": ["uuid", "account", "flowAmount", "flowCode", "status"],
+  "properties": {
+    "uuid": {
+      "description": "The unique identifier for the cash flow transaction",
+      "type": ["string", "null"]
+    },
+    "transactionDate": {
+      "description": "The date on which the cash flow transaction occurred",
+      "type": ["string", "null"]
+    },
+    "valueDate": {
+      "description": "The date on which the value of the cash flow is effective",
+      "type": ["string", "null"]
+    },
+    "accountingDate": {
+      "description": "The date on which the cash flow is accounted for",
+      "type": ["string", "null"]
+    },
+    "updateDateTime": {
+      "description": "The date and time when the cash flow data was last updated",
+      "type": ["string", "null"]
+    },
+    "account": {
+      "description": "The account associated with the cash flow",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "flowCode": {
+      "description": "Flow code",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "budgetCode": {
+      "description": "Budget code",
+      "$ref": "_definitions.json#/definitions/ReferenceModel"
+    },
+    "status": {
+      "description": "The status of the cash flow transaction",
+      "type": ["string", "null"]
+    },
+    "flowAmount": {
+      "description": "Flow amount",
+      "$ref": "_definitions.json#/definitions/AmountModel"
+    },
+    "accountAmount": {
+      "description": "Account amount",
+      "$ref": "_definitions.json#/definitions/AmountModel"
+    },
+    "description": {
+      "description": "The description of the cash flow transaction",
+      "type": ["null", "string"]
+    },
+    "reference": {
+      "description": "A reference associated with the cash flow",
+      "type": ["null", "string"]
+    },
+    "origin": {
+      "description": "The origin/source of the cash flow transaction",
+      "type": ["string", "null"]
+    },
+    "number": {
+      "description": "The identification number of the cash flow transaction",
+      "type": ["integer", "null"]
+    },
+    "glStatus": {
+      "description": "The status of the general ledger related to the cash flow",
+      "type": ["string", "null"]
+    },
+    "userZones": {
+      "description": "User zones of the cash flow",
+      "$ref": "_definitions.json#/definitions/UserZonesModel"
+    },
+    "actualMode": {
+      "description": "The actual mode of the cash flow transaction",
+      "type": ["string", "null"]
+    }
+  },
+  "title": "CashFlowSearchModel",
+  "$schema": "http://json-schema.org/schema#"
+}

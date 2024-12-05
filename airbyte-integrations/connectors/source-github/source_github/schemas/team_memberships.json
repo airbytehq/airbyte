@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "state": {
+      "description": "The current state of the team membership (active, pending, etc.).",
+      "type": ["null", "string"]
+    },
+    "role": {
+      "description": "The role or position of the user within the team.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL link to access more details about the team membership.",
+      "type": "string"
+    },
+    "organization": {
+      "description": "The name of the organization the team membership belongs to.",
+      "type": "string"
+    },
+    "team_slug": {
+      "description": "The unique identifier (slug) of the team the user belongs to.",
+      "type": "string"
+    },
+    "username": {
+      "description": "The username of the user associated with the team membership.",
+      "type": "string"
+    }
+  }
+}

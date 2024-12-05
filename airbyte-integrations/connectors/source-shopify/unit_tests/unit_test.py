@@ -1,35 +1,21 @@
 #
-# MIT License
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
+from typing import Any, Mapping, Optional
+from unittest.mock import patch
 
+import pytest
 import requests
-from source_shopify.source import ShopifyStream
+from source_shopify.source import ConnectionCheckTest, SourceShopify
+from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.utils import ShopifyNonRetryableErrors
 
 
-def test_get_next_page_token(requests_mock):
+def test_get_next_page_token(requests_mock, auth_config):
     """
     Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,
     """
+    stream = PriceRules(auth_config)
     response_header_links = {
         "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
         "Content-Type": "application/json; charset=utf-8",
@@ -43,5 +29,103 @@ def test_get_next_page_token(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=response_header_links)
     response = requests.get("https://test.myshopify.com/")
 
-    test = ShopifyStream.next_page_token(response)
+    test = stream.next_page_token(response=response)
     assert test == expected_output_token
+
+
+@pytest.mark.parametrize(
+    "fetch_transactions_user_id, expected",
+    [
+        (
+            True,
+            [
+                "abandoned_checkouts",
+                "customer_journey_summary",
+                "fulfillments",
+                "metafield_orders",
+                "metafield_shops",
+                "order_agreements",
+                "order_refunds",
+                "order_risks",
+                "orders",
+                "shop",
+                "tender_transactions",
+                "transactions",
+                "countries",
+            ],
+        ),
+        (
+            False,
+            [
+                "abandoned_checkouts",
+                "customer_journey_summary",
+                "fulfillments",
+                "metafield_orders",
+                "metafield_shops",
+                "order_agreements",
+                "order_refunds",
+                "order_risks",
+                "orders",
+                "shop",
+                "tender_transactions",
+                "transactions",
+                "countries",
+            ],
+        ),
+    ],
+)
+def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
+    requests_mock.get(
+        "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
+        json={"access_scopes": [{"handle": "read_orders"}]},
+    )
+    basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id
+    # mock the get_shop_id method
+    with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
+        source = SourceShopify()
+        streams = source.streams(basic_config)
+    assert [stream.name for stream in streams] == expected
+
+
+@pytest.mark.parametrize(
+    "stream, slice, status_code, json_response",
+    [
+        (BalanceTransactions, None, 404, {"errors": "Not Found"}),
+        (PriceRules, None, 403, {"errors": "Forbidden"}),
+        (FulfillmentOrders, {"order_id": 123}, 500, {"errors": "Internal Server Error"}),
+    ],
+    ids=[
+        "Stream not found (404)",
+        "No permissions (403)",
+        "Internal Server Error for slice (500)",
+    ],
+)
+def test_unavailable_stream(requests_mock, auth_config, stream, slice: Optional[Mapping[str, Any]], status_code: int,
+                            json_response: Mapping[str, Any]):
+    stream = stream(auth_config)
+    url = stream.url_base + stream.path(stream_slice=slice)
+    requests_mock.get(url=url, json=json_response, status_code=status_code)
+    response = requests.get(url)
+    expected_error_resolution = ShopifyNonRetryableErrors(stream.name).get(status_code)
+    assert stream.get_error_handler().interpret_response(response) == expected_error_resolution
+
+
+def test_filter_records_newer_than_state(auth_config):
+    stream = DiscountCodes(auth_config)
+    records_slice = [
+        # present cursor older than state - record should be omitted
+        {"id": 1, "updated_at": "2022-01-01T01:01:01-07:00"},
+        # missing cursor, record should be present
+        {"id": 2},
+        # cursor is set to null
+        {"id": 3, "updated_at": "null"},
+        # cursor is set to null
+        {"id": 4, "updated_at": None},
+    ]
+    state = {"updated_at": "2022-02-01T00:00:00-07:00"}
+
+    # we expect records with: id = 2, 3, 4. We output them `As Is`,
+    # because we cannot compare them to the STATE and SKIPPING them leads to data loss,
+    expected = [{"id": 2}, {"id": 3, "updated_at": "null"}, {"id": 4, "updated_at": None}]
+    result = list(stream.filter_records_newer_than_state(state, records_slice))
+    assert result == expected

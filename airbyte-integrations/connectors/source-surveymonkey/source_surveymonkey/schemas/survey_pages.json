@@ -3,22 +3,28 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string"
+      "description": "Title or name of the survey page.",
+      "type": ["string", "null"]
     },
     "description": {
-      "type": "string"
+      "description": "Description of the survey page.",
+      "type": ["string", "null"]
     },
     "position": {
-      "type": "integer"
+      "description": "Position of the survey page within the survey.",
+      "type": ["integer", "null"]
     },
     "question_count": {
-      "type": "integer"
+      "description": "Number of questions on the survey page.",
+      "type": ["integer", "null"]
     },
     "id": {
-      "type": "string"
+      "description": "Unique identifier of the survey page.",
+      "type": ["string", "null"]
     },
     "href": {
-      "type": "string"
+      "description": "The URL link to the survey page.",
+      "type": ["string", "null"]
     }
   }
 }

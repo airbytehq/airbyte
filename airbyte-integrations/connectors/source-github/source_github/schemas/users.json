@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "organization": {
+      "description": "The organization the user belongs to",
+      "type": ["null", "string"]
+    },
+    "login": {
+      "description": "The username of the user",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identification number of the user",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The ID assigned to the user in the GraphQL API",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "The URL of the user's avatar image",
+      "type": ["null", "string"]
+    },
+    "gravatar_id": {
+      "description": "The Gravatar ID associated with the user's email",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The user's GitHub API URL",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "The URL of the user's GitHub page",
+      "type": ["null", "string"]
+    },
+    "followers_url": {
+      "description": "The URL listing the user's followers",
+      "type": ["null", "string"]
+    },
+    "following_url": {
+      "description": "The URL listing the users being followed by the user",
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "description": "The URL of the user's gists",
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "description": "The URL listing repositories starred by the user",
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "description": "The URL listing repositories the user is subscribed to",
+      "type": ["null", "string"]
+    },
+    "organizations_url": {
+      "description": "The URL listing organizations the user belongs to",
+      "type": ["null", "string"]
+    },
+    "repos_url": {
+      "description": "The URL listing repositories owned by the user",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "The URL of the events that the user has been involved in",
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "description": "The URL of events received by the user",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type of user account (e.g., User or Organization)",
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "description": "Specifies if the user is a GitHub site administrator",
+      "type": ["null", "boolean"]
+    }
+  }
+}

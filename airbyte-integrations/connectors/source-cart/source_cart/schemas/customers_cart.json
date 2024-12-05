@@ -1,109 +1,161 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the customer",
       "type": "integer"
     },
     "customer_number": {
+      "description": "Unique identifier for the customer",
+      "type": ["string", "null"]
+    },
+    "credit_limit": {
+      "description": "The credit limit assigned to the customer",
+      "type": ["string", "null"]
+    },
+    "payment_net_term": {
+      "description": "Net term for payment",
       "type": ["string", "null"]
     },
     "last_name": {
+      "description": "Last name of the customer",
       "type": ["string", "null"]
     },
     "first_name": {
+      "description": "First name of the customer",
       "type": ["string", "null"]
     },
     "email": {
+      "description": "Email address of the customer",
       "type": ["string", "null"]
     },
     "phone_number": {
+      "description": "Phone number of the customer",
       "type": ["string", "null"]
     },
     "registered_at": {
+      "description": "Date and time when the customer registered",
       "type": ["string", "null"]
     },
     "last_visit_at": {
+      "description": "Date and time of the customer's last visit",
       "type": ["string", "null"]
     },
     "adcode": {
+      "description": "Unique identifier for the adcode associated with the customer",
       "type": ["string", "null"]
     },
     "adcode_id": {
+      "description": "ID of the adcode for reference",
       "type": ["integer", "null"]
     },
     "affiliate_id": {
+      "description": "ID of the affiliate associated with the customer",
       "type": ["integer", "null"]
     },
     "customer_type_id": {
+      "description": "ID representing the type of customer",
       "type": ["integer", "null"]
     },
     "is_no_tax_customer": {
-      "type": "boolean"
+      "description": "Flag indicating if the customer is exempt from taxes",
+      "type": ["boolean", "null"]
+    },
+    "is_inactive": {
+      "description": "Flag indicating if the customer is inactive",
+      "type": ["boolean", "null"]
+    },
+    "lock_default_address": {
+      "description": "Flag indicating if the customer's default address is locked",
+      "type": ["boolean", "null"]
     },
     "comments": {
+      "description": "Additional comments or notes about the customer",
       "type": ["string", "null"]
     },
     "store_id": {
+      "description": "ID of the store associated with the customer",
       "type": ["integer", "null"]
     },
     "source": {
+      "description": "Source from which the customer originated",
       "type": ["string", "null"]
     },
     "search_string": {
+      "description": "String used for searching customer information",
       "type": ["string", "null"]
     },
     "no_account": {
+      "description": "Flag indicating if the customer has no account",
       "type": "boolean"
     },
     "sales_person": {
+      "description": "Name of the sales person associated with the customer",
       "type": ["string", "null"]
     },
     "alternate_phone_number": {
+      "description": "Secondary phone number of the customer",
       "type": ["string", "null"]
     },
     "is_affiliate_customer": {
+      "description": "Flag indicating if the customer is an affiliate",
       "type": "boolean"
     },
     "updated_at": {
+      "description": "Date and time when the customer record was last updated",
       "type": "string"
     },
     "created_at": {
+      "description": "Date and time when the customer record was created",
       "type": "string"
     },
     "username": {
+      "description": "Username associated with the customer",
       "type": "string"
     },
     "is_contact_information_only": {
+      "description": "Flag indicating if the customer has only contact information without full account details",
       "type": "boolean"
     },
     "tax_exemption_number": {
+      "description": "Tax exemption number of the customer",
       "type": ["string", "null"]
     },
     "company": {
+      "description": "Name of the customer's company",
       "type": ["string", "null"]
     },
     "source_group": {
+      "description": "Group to which the source belongs",
       "type": ["string", "null"]
     },
     "sales_person_user_id": {
+      "description": "ID of the sales person user",
       "type": ["string", "null"]
     },
     "store_payment_methods_enabled": {
+      "description": "Payment methods enabled for the store",
       "type": "array",
       "items": {
         "type": ["string", "null"]
       }
     },
     "tax_rate": {
+      "description": "Tax rate applicable to the customer",
       "type": ["string", "null"]
     },
     "reward_tier_id": {
+      "description": "ID representing the reward tier of the customer",
       "type": ["string", "null"]
     },
     "sub": {
+      "description": "Sub information related to the customer",
       "type": ["string", "null"]
     },
     "customer_payment_methods_availability": {
+      "description": "Availability of payment methods for the customer",
       "type": "array",
       "items": {
         "type": ["string", "null"]

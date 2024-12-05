@@ -1,0 +1,18 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "click_view",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["click_view.gclid"], ["segments.date"]],
+        "default_cursor_field": ["segments.date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"],
+      "primary_key": [["click_view.gclid"], ["segments.date"]]
+    }
+  ]
+}

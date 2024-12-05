@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "canonical-vid": {
+      "description": "The unique ID associated with the contact in the HubSpot CRM",
+      "type": ["null", "integer"]
+    },
+    "static-list-id": {
+      "description": "The static ID assigned to the list of contacts within the HubSpot CRM",
+      "type": ["null", "integer"]
+    },
+    "internal-list-id": {
+      "description": "The internal ID assigned to the list of contacts within the HubSpot CRM",
+      "type": ["null", "integer"]
+    },
+    "timestamp": {
+      "description": "The timestamp when the contact was added to or removed from the list",
+      "type": ["null", "integer"]
+    },
+    "vid": {
+      "description": "The ID associated with the contact in the HubSpot CRM",
+      "type": ["null", "integer"]
+    },
+    "is-member": {
+      "description": "Flag indicating whether the contact is a member of the list or not",
+      "type": ["null", "boolean"]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "error": {
+    "message": "Your account is not set up to use Issuing. Please visit https://dashboard.stripe.com/issuing/overview to get started.",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_OzHOvvVQ4ALtKm?t=1702476901",
+    "type": "invalid_request_error"
+  }
+}

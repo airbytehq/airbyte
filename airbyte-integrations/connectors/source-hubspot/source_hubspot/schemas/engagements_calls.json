@@ -1,0 +1,498 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "description": "Information related to the properties of the call engagement.",
+      "type": "object",
+      "properties": {
+        "hs_activity_type": {
+          "description": "Type of activity associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_all_assigned_business_unit_ids": {
+          "description": "IDs of all business units assigned to the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_at_mentioned_owner_ids": {
+          "description": "IDs of owners mentioned in the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_attachment_ids": {
+          "description": "IDs of attachments associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview": {
+          "description": "Preview of the body content of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_html": {
+          "description": "HTML-formatted preview of the body content of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_is_truncated": {
+          "description": "Indicates if the body preview is truncated or not.",
+          "type": ["null", "boolean"]
+        },
+        "hs_call_app_id": {
+          "description": "App ID associated with the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_call_authed_url_provider": {
+          "description": "Provider of the authenticated call URL.",
+          "type": ["null", "string"]
+        },
+        "hs_call_body": {
+          "description": "Body content of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_callee_object_id": {
+          "description": "Object ID of the callee associated with the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_call_callee_object_type": {
+          "description": "Type of object of the callee associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_disposition": {
+          "description": "Disposition of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_duration": {
+          "description": "Duration of the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_call_external_account_id": {
+          "description": "External account ID associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_external_id": {
+          "description": "External ID associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_from_number": {
+          "description": "Phone number from which the call was made.",
+          "type": ["null", "string"]
+        },
+        "hs_call_has_transcript": {
+          "description": "Indicates if the call has a transcript or not.",
+          "type": ["null", "boolean"]
+        },
+        "hs_call_recording_url": {
+          "description": "URL of the call recording.",
+          "type": ["null", "string"]
+        },
+        "hs_call_source": {
+          "description": "Source of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_status": {
+          "description": "Status of the call.",
+          "type": ["null", "string"]
+        },
+        "hs_call_title": {
+          "description": "Title of the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_call_to_number": {
+          "description": "Phone number to which the call was made.",
+          "type": ["null", "string"]
+        },
+        "hs_call_transcription_id": {
+          "description": "Transcription ID of the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_call_video_recording_url": {
+          "description": "URL of the video call recording.",
+          "type": ["null", "string"]
+        },
+        "hs_call_zoom_meeting_uuid": {
+          "description": "UUID of the Zoom meeting associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_calls_service_call_id": {
+          "description": "Service call ID associated with the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_created_by": {
+          "description": "User who created the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_created_by_user_id": {
+          "description": "User ID of the creator of the call engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_createdate": {
+          "description": "Date and time when the call engagement was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_engagement_source": {
+          "description": "Source of the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_engagement_source_id": {
+          "description": "ID of the source of the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_follow_up_action": {
+          "description": "Follow-up action required for the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_gdpr_deleted": {
+          "description": "Indicates if the engagement is deleted due to GDPR compliance.",
+          "type": ["null", "boolean"]
+        },
+        "hs_lastmodifieddate": {
+          "description": "Date and time when the call engagement was last modified.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_merged_object_ids": {
+          "description": "IDs of merged objects associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_modified_by": {
+          "description": "User who last modified the engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_object_id": {
+          "description": "Object ID of the engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_product_name": {
+          "description": "Name of the product associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_queue_membership_ids": {
+          "description": "IDs of queue memberships associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_timestamp": {
+          "description": "Timestamp of the engagement.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_unique_creation_key": {
+          "description": "Unique key for creation of the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_unique_id": {
+          "description": "Unique ID associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_unknown_visitor_conversation": {
+          "description": "Indicates if the conversation is with an unknown visitor.",
+          "type": ["null", "boolean"]
+        },
+        "hs_updated_by_user_id": {
+          "description": "User ID of the last user who updated the engagement.",
+          "type": ["null", "number"]
+        },
+        "hs_user_ids_of_all_notification_followers": {
+          "description": "User IDs of all notification followers.",
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "User IDs of all notification unfollowers.",
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_owners": {
+          "description": "User IDs of all owners associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hubspot_owner_assigneddate": {
+          "description": "Date and time when the owner was assigned.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hubspot_owner_id": {
+          "description": "Owner ID associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hubspot_team_id": {
+          "description": "Team ID associated with the engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_all_owner_ids": {
+          "description": "IDs of all owners associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_all_team_ids": {
+          "description": "IDs of all teams associated with the call engagement.",
+          "type": ["null", "string"]
+        },
+        "hs_all_accessible_team_ids": {
+          "description": "IDs of all teams that have access to the call engagement.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "properties_hs_activity_type": {
+      "description": "Type of activity associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_assigned_business_unit_ids": {
+      "description": "IDs of all business units assigned to the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_at_mentioned_owner_ids": {
+      "description": "IDs of owners mentioned in the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_attachment_ids": {
+      "description": "IDs of attachments associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview": {
+      "description": "Preview of the body content of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_html": {
+      "description": "HTML-formatted preview of the body content of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_is_truncated": {
+      "description": "Indicates if the body preview is truncated or not.",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_call_app_id": {
+      "description": "App ID associated with the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_call_authed_url_provider": {
+      "description": "Provider of the authenticated call URL.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_body": {
+      "description": "Body content of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_callee_object_id": {
+      "description": "Object ID of the callee associated with the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_call_callee_object_type": {
+      "description": "Type of object of the callee associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_disposition": {
+      "description": "Disposition of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_duration": {
+      "description": "Duration of the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_call_external_account_id": {
+      "description": "External account ID associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_external_id": {
+      "description": "External ID associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_from_number": {
+      "description": "Phone number from which the call was made.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_has_transcript": {
+      "description": "Indicates if the call has a transcript or not.",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_call_recording_url": {
+      "description": "URL of the call recording.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_source": {
+      "description": "Source of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_status": {
+      "description": "Status of the call.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_title": {
+      "description": "Title of the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_to_number": {
+      "description": "Phone number to which the call was made.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_transcription_id": {
+      "description": "Transcription ID of the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_call_video_recording_url": {
+      "description": "URL of the video call recording.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_call_zoom_meeting_uuid": {
+      "description": "UUID of the Zoom meeting associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_calls_service_call_id": {
+      "description": "Service call ID associated with the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_created_by": {
+      "description": "User who created the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_created_by_user_id": {
+      "description": "User ID of the creator of the call engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_createdate": {
+      "description": "Date and time when the call engagement was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_engagement_source": {
+      "description": "Source of the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_engagement_source_id": {
+      "description": "ID of the source of the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_follow_up_action": {
+      "description": "Follow-up action required for the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_gdpr_deleted": {
+      "description": "Indicates if the engagement is deleted due to GDPR compliance.",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_lastmodifieddate": {
+      "description": "Date and time when the call engagement was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_merged_object_ids": {
+      "description": "IDs of merged objects associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_modified_by": {
+      "description": "User who last modified the engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_object_id": {
+      "description": "Object ID of the engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_product_name": {
+      "description": "Name of the product associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_queue_membership_ids": {
+      "description": "IDs of queue memberships associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_timestamp": {
+      "description": "Timestamp of the engagement.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_unique_creation_key": {
+      "description": "Unique key for creation of the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_unique_id": {
+      "description": "Unique ID associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_unknown_visitor_conversation": {
+      "description": "Indicates if the conversation is with an unknown visitor.",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_updated_by_user_id": {
+      "description": "User ID of the last user who updated the engagement.",
+      "type": ["null", "number"]
+    },
+    "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "User IDs of all notification followers.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "User IDs of all notification unfollowers.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_owners": {
+      "description": "User IDs of all owners associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_owner_assigneddate": {
+      "description": "Date and time when the owner was assigned.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hubspot_owner_id": {
+      "description": "Owner ID associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_team_id": {
+      "description": "Team ID associated with the engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_owner_ids": {
+      "description": "IDs of all owners associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_team_ids": {
+      "description": "IDs of all teams associated with the call engagement.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_accessible_team_ids": {
+      "description": "IDs of all teams that have access to the call engagement.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "Date and time when the call engagement was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Date and time when the call engagement was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates if the call engagement is archived or not.",
+      "type": ["null", "boolean"]
+    },
+    "contacts": {
+      "description": "Contacts associated with the call engagement.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "deals": {
+      "description": "Deals associated with the call engagement.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "companies": {
+      "description": "Companies associated with the call engagement.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tickets": {
+      "description": "Tickets associated with the call engagement.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

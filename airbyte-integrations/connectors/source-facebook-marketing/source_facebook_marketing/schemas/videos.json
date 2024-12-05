@@ -1,0 +1,163 @@
+{
+  "properties": {
+    "account_id": {
+      "description": "The ID of the Facebook account associated with the video.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique ID of the video.",
+      "type": "string"
+    },
+    "ad_breaks": {
+      "description": "Information about ad breaks within the video.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "integer"
+      }
+    },
+    "backdated_time": {
+      "description": "The time when the video was backdated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "backdated_time_granularity": {
+      "description": "Granularity of the backdated time.",
+      "type": ["null", "string"]
+    },
+    "content_category": {
+      "description": "The category of the video content.",
+      "type": ["null", "string"]
+    },
+    "content_tags": {
+      "description": "Tags associated with the video content.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_time": {
+      "description": "The time when the video was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "custom_labels": {
+      "description": "Custom labels assigned to the video.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "description": "Description or caption of the video.",
+      "type": ["null", "string"]
+    },
+    "embed_html": {
+      "description": "HTML code for embedding the video.",
+      "type": ["null", "string"]
+    },
+    "embeddable": {
+      "description": "Flag indicating if the video is embeddable.",
+      "type": ["null", "boolean"]
+    },
+    "format": {
+      "description": "Specifies the format of the video data being fetched.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Different formats available for the video.",
+        "type": "object",
+        "properties": {
+          "filter": {
+            "description": "Filter applied to the video format.",
+            "type": "string"
+          },
+          "embed_html": {
+            "description": "HTML code for embedding the video in a specific format.",
+            "type": "string"
+          },
+          "width": {
+            "description": "Width of the video format.",
+            "type": "integer"
+          },
+          "height": {
+            "description": "Height of the video format.",
+            "type": "integer"
+          },
+          "picture": {
+            "description": "URL of the thumbnail picture for the video format.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "icon": {
+      "description": "Icon associated with the video.",
+      "type": ["null", "string"]
+    },
+    "is_crosspost_video": {
+      "description": "Flag indicating if the video is a crosspost.",
+      "type": ["null", "boolean"]
+    },
+    "is_crossposting_eligible": {
+      "description": "Flag indicating if the video is eligible for crossposting.",
+      "type": ["null", "boolean"]
+    },
+    "is_episode": {
+      "description": "Flag indicating if the video is an episode of a series.",
+      "type": ["null", "boolean"]
+    },
+    "is_instagram_eligible": {
+      "description": "Flag indicating if the video is eligible for posting on Instagram.",
+      "type": ["null", "boolean"]
+    },
+    "length": {
+      "description": "Duration of the video.",
+      "type": "number"
+    },
+    "live_status": {
+      "description": "Status of the live video.",
+      "type": "string"
+    },
+    "permalink_url": {
+      "description": "URL for accessing the video directly.",
+      "type": ["null", "string"]
+    },
+    "post_views": {
+      "description": "Number of views on the video post.",
+      "type": ["null", "integer"]
+    },
+    "premiere_living_room_status": {
+      "description": "Status of the video premiere in living rooms.",
+      "type": ["null", "boolean"]
+    },
+    "published": {
+      "description": "Flag indicating if the video is published.",
+      "type": ["null", "boolean"]
+    },
+    "scheduled_publish_time": {
+      "description": "Scheduled time for publishing the video.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "description": "Source of the video.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "Title or name of the video.",
+      "type": ["null", "string"]
+    },
+    "universal_video_id": {
+      "description": "Universal unique ID for the video.",
+      "type": ["null", "string"]
+    },
+    "updated_time": {
+      "description": "The time when the video was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "views": {
+      "description": "Number of views on the video.",
+      "type": ["null", "integer"]
+    }
+  }
+}

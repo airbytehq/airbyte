@@ -1,0 +1,515 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "Suppliers": {
+      "type": "array",
+      "description": "Suppliers",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "IsDefault": {
+            "type": "boolean",
+            "description": "If supplier information is default"
+          },
+          "Supplier": {
+            "type": "string",
+            "description": "Supplier name"
+          },
+          "SupplierID": {
+            "type": "string",
+            "description": "Supplier ID"
+          },
+          "Code": {
+            "type": "string",
+            "description": "Supplier code"
+          },
+          "SupplierBarcode": {
+            "type": "string",
+            "description": "Supplier barcode"
+          },
+          "LeadTime": {
+            "type": "integer",
+            "description": "Supplier lead time"
+          },
+          "PurchasePrice": {
+            "type": "number",
+            "description": "Supplier purchase price"
+          },
+          "MinPrice": {
+            "type": "number",
+            "description": "Minimum price"
+          },
+          "MaxPrice": {
+            "type": "number",
+            "description": "Maximum price"
+          },
+          "AveragePrice": {
+            "type": "number",
+            "description": "Average price"
+          },
+          "AverageLeadTime": {
+            "type": "number",
+            "description": "Average lead time"
+          },
+          "SupplierMinOrderQty": {
+            "type": "integer",
+            "description": "Minimum order quantity from this supplier"
+          },
+          "SupplierPackSize": {
+            "type": "integer",
+            "description": "Supplier pack size"
+          },
+          "SupplierCurrency": {
+            "type": "string",
+            "description": "Supplier default currency"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item integer Id"
+          }
+        }
+      }
+    },
+    "StockLevels": {
+      "type": "array",
+      "description": "Stock Levels",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "Location": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Location ID",
+            "properties": {
+              "StockLocationId": {
+                "type": "string",
+                "description": "Location ID"
+              },
+              "StockLocationIntId": {
+                "type": "integer",
+                "description": "Stock location integer id"
+              },
+              "LocationName": {
+                "type": "string",
+                "description": "Location name"
+              },
+              "IsFulfillmentCenter": {
+                "type": "boolean",
+                "description": "If location is a fulfillment center"
+              },
+              "LocationTag": {
+                "type": "string",
+                "description": "Location tag"
+              },
+              "BinRack": {
+                "type": ["null", "string"],
+                "description": "Bin rack"
+              },
+              "IsWarehouseManaged": {
+                "type": ["null", "boolean"],
+                "description": "If the location is warehouse managed"
+              }
+            }
+          },
+          "StockLevel": {
+            "type": "integer",
+            "description": "Stock level"
+          },
+          "StockValue": {
+            "type": "number",
+            "description": "Stock value"
+          },
+          "MinimumLevel": {
+            "type": "integer",
+            "description": "Minimum level"
+          },
+          "InOrderBook": {
+            "type": "integer",
+            "description": "Currently in open orders"
+          },
+          "Due": {
+            "type": "integer",
+            "description": "Due to come in purchase orders"
+          },
+          "JIT": {
+            "type": "boolean",
+            "description": "Stock Item Just In Time (JIT) status"
+          },
+          "InOrders": {
+            "type": "integer",
+            "description": "Currently in open orders"
+          },
+          "Available": {
+            "type": "integer",
+            "description": "StockLevel - InOrders"
+          },
+          "UnitCost": {
+            "type": "number",
+            "description": "if( Quantity == 0 ) dbo.StockItem.PurchasePrice Else CurrentStockValue / Quantity"
+          },
+          "SKU": {
+            "type": ["null", "string"],
+            "description": "Product SKU"
+          },
+          "AutoAdjust": {
+            "type": "boolean",
+            "description": "If level is auto adjusted"
+          },
+          "LastUpdateDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last time stock level was adjusted"
+          },
+          "LastUpdateOperation": {
+            "type": "string",
+            "description": "Name of last update operation"
+          },
+          "rowid": {
+            "type": "string",
+            "description": "dbo.StockLevel.rowid"
+          },
+          "PendingUpdate": {
+            "type": "boolean",
+            "description": "dbo.StockLevel.PendingUpdate"
+          },
+          "StockItemPurchasePrice": {
+            "type": "number",
+            "description": "Stock item purchase price. It's used to calculate UnitCost"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item interger Id"
+          }
+        }
+      }
+    },
+    "ItemChannelDescriptions": {
+      "type": "array",
+      "description": "List of item descriptions",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "pkRowId": {
+            "type": "string",
+            "description": "Record row ID (generate random GUID)"
+          },
+          "Source": {
+            "type": "string",
+            "description": "ChannelName/Source (e.g. EBAY)"
+          },
+          "SubSource": {
+            "type": "string",
+            "description": "Channel subsource (e.g EBAY1)"
+          },
+          "Description": {
+            "type": "string",
+            "description": "Product description"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item interger Id"
+          }
+        }
+      }
+    },
+    "ItemExtendedProperties": {
+      "type": "array",
+      "description": "List of extended properties",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "pkRowId": {
+            "type": "string",
+            "description": "Record row ID (generate random)"
+          },
+          "fkStockItemId": {
+            "type": "string",
+            "description": "Stock Item ID"
+          },
+          "ProperyName": {
+            "type": "string",
+            "description": "Property name"
+          },
+          "PropertyValue": {
+            "type": "string",
+            "description": "Property value"
+          },
+          "PropertyType": {
+            "type": "string",
+            "description": "Property type"
+          }
+        }
+      }
+    },
+    "ItemChannelTitles": {
+      "type": "array",
+      "description": "List item titles",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "pkRowId": {
+            "type": "string",
+            "description": "Record row id (generate random)"
+          },
+          "Source": {
+            "type": "string",
+            "description": "ChannelName/Source (e.g. EBAY)"
+          },
+          "SubSource": {
+            "type": "string",
+            "description": "SubSource (EBAY1)"
+          },
+          "Title": {
+            "type": "string",
+            "description": "Item title"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item integer Id"
+          }
+        }
+      }
+    },
+    "ItemChannelPrices": {
+      "type": "array",
+      "description": "List of item prices",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "Rules": {
+            "type": "array",
+            "description": "Pricing rule",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "pkRowId": {
+                  "type": ["null", "integer"],
+                  "description": "Record row ID (optional)"
+                },
+                "fkStockPricingId": {
+                  "type": "string",
+                  "description": "Stock pricing ID"
+                },
+                "Type": {
+                  "type": "string",
+                  "description": "Type"
+                },
+                "LowerBound": {
+                  "type": "integer",
+                  "description": "Lower level"
+                },
+                "Value": {
+                  "type": "number",
+                  "description": "Value/Price level"
+                }
+              }
+            }
+          },
+          "pkRowId": {
+            "type": "string",
+            "description": "Record row ID (generate random)"
+          },
+          "Source": {
+            "type": "string",
+            "description": "ChannelName/Source (e.g. EBAY)"
+          },
+          "SubSource": {
+            "type": "string",
+            "description": "SubSource (e.g. EBAY1)"
+          },
+          "Price": {
+            "type": "number",
+            "description": "Channel price"
+          },
+          "Tag": {
+            "type": "string",
+            "description": "Product price tag"
+          },
+          "UpdateStatus": {
+            "type": "string"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item interger Id"
+          }
+        }
+      }
+    },
+    "Images": {
+      "type": "array",
+      "description": "Image urls",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "Source": {
+            "type": "string",
+            "description": "URL to thumnail image"
+          },
+          "FullSource": {
+            "type": "string",
+            "description": "Url to full size image"
+          },
+          "CheckSumValue": {
+            "type": ["null", "string"],
+            "description": "Image check sum"
+          },
+          "pkRowId": {
+            "type": "string",
+            "description": "Unique id of image"
+          },
+          "IsMain": {
+            "type": "boolean",
+            "description": "Is the image the main image"
+          },
+          "SortOrder": {
+            "type": "integer",
+            "description": "Sort order for the image"
+          },
+          "ChecksumValue": {
+            "type": ["null", "string"],
+            "description": "Internal checksum value"
+          },
+          "RawChecksum": {
+            "type": ["null", "string"],
+            "description": "Raw file checksum (Used for UI to determine if the image file is the same before submitting for upload)"
+          },
+          "StockItemId": {
+            "type": "string",
+            "description": "Stock Item Id"
+          },
+          "StockItemIntId": {
+            "type": "integer",
+            "description": "Stock Item interger Id"
+          }
+        }
+      }
+    },
+    "ItemNumber": {
+      "type": "string",
+      "description": "SKU"
+    },
+    "ItemTitle": {
+      "type": "string",
+      "description": "Item title"
+    },
+    "BarcodeNumber": {
+      "type": "string",
+      "description": "Barcode number"
+    },
+    "MetaData": {
+      "type": "string",
+      "description": "Item description"
+    },
+    "isBatchedStockType": {
+      "type": "boolean",
+      "description": "Returns true is the stock item is tracked by batch"
+    },
+    "PurchasePrice": {
+      "type": "number",
+      "description": "Default item purchase price"
+    },
+    "RetailPrice": {
+      "type": ["null", "number"],
+      "description": "Default item retail price"
+    },
+    "TaxRate": {
+      "type": "number",
+      "description": "Default item tax rate. Set -1 to use country tax rate"
+    },
+    "PostalServiceId": {
+      "type": "string",
+      "description": "Default postal service id"
+    },
+    "PostalServiceName": {
+      "type": "string",
+      "description": "Default postal service name"
+    },
+    "CategoryId": {
+      "type": "string",
+      "description": "Default category id"
+    },
+    "CategoryName": {
+      "type": "string",
+      "description": "Default category name"
+    },
+    "PackageGroupId": {
+      "type": "string",
+      "description": "Default package group id"
+    },
+    "PackageGroupName": {
+      "type": ["null", "string"],
+      "description": "Default package group name"
+    },
+    "Height": {
+      "type": "number",
+      "description": "Item height"
+    },
+    "Width": {
+      "type": "number",
+      "description": "Item width"
+    },
+    "Depth": {
+      "type": "number",
+      "description": "Item depth"
+    },
+    "Weight": {
+      "type": "number",
+      "description": "Item weight"
+    },
+    "CreationDate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "Stock item creation date"
+    },
+    "InventoryTrackingType": {
+      "type": "integer",
+      "description": "Stock item tracking type. 0 = none. 1 = Ordered by Sell by Date. 2 = Ordered by Priority Sequence"
+    },
+    "BatchNumberScanRequired": {
+      "type": "boolean",
+      "description": "User must scan batch number when procesing orders"
+    },
+    "SerialNumberScanRequired": {
+      "type": "boolean",
+      "description": "User must scan item serial number when processing ordesr"
+    },
+    "StockItemId": {
+      "type": "string",
+      "description": "Stock Item Id"
+    },
+    "StockItemIntId": {
+      "type": "integer",
+      "description": "Stock Item interger Id"
+    }
+  }
+}

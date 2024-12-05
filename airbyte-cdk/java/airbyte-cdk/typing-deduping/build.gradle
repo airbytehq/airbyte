@@ -1,0 +1,26 @@
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+
+    implementation 'commons-codec:commons-codec:1.16.0'
+
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation "io.mockk:mockk:1.13.11"
+}

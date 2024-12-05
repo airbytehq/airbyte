@@ -1,0 +1,6 @@
+{
+  "api_token": "<valid api_key>",
+  "api_url": "<your_domain_api_url>",
+  "project_name": "<project_name>",
+  "nameprefix": "<feature_name>"
+}

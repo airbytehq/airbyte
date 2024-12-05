@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the goal.",
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "description": "Represents the properties associated with the goal",
+      "type": ["null", "object"],
+      "properties": {
+        "hs_created_by_user_id": {
+          "description": "ID of the user who created the goal.",
+          "type": ["null", "string"]
+        },
+        "hs_createdate": {
+          "description": "Date and time when the goal was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_start_datetime": {
+          "description": "Start date and time of the goal period.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_end_datetime": {
+          "description": "End date and time of the goal period.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_goal_name": {
+          "description": "Name of the goal.",
+          "type": ["null", "string"]
+        },
+        "hs_lastmodifieddate": {
+          "description": "Date and time when the goal was last modified.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_kpi_value_last_calculated_at": {
+          "description": "Date and time when the KPI value was last calculated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_object_id": {
+          "description": "ID of the object associated with the goal.",
+          "type": ["null", "string"]
+        },
+        "hs_target_amount": {
+          "description": "Target amount set for the goal.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "properties_hs_created_by_user_id": {
+      "description": "ID of the user who created the goal.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_createdate": {
+      "description": "Date and time when the goal was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_start_datetime": {
+      "description": "Start date and time of the goal period.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_end_datetime": {
+      "description": "End date and time of the goal period.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_goal_name": {
+      "description": "Name of the goal.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_lastmodifieddate": {
+      "description": "Date and time when the goal was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_kpi_value_last_calculated_at": {
+      "description": "Date and time when the KPI value was last calculated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_object_id": {
+      "description": "ID of the object associated with the goal.",
+      "type": ["null", "string"]
+    },
+    "properties_hs_target_amount": {
+      "description": "Target amount set for the goal.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "Date and time when the goal was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Date and time when the goal was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates if the goal is archived or not.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

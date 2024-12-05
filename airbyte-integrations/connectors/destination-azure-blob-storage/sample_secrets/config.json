@@ -1,0 +1,6 @@
+{
+  "azure_blob_storage_endpoint_domain_name": "blob.core.windows.net",
+  "azure_blob_storage_account_name": "your_account_name_here",
+  "azure_blob_storage_account_key": "your_account_key_here",
+  "azure_blob_storage_container_name": "testcontainername"
+}

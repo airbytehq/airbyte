@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the reaction.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "A unique identifier for the reaction node.",
+      "type": ["null", "string"]
+    },
+    "content": {
+      "description": "The type of reaction content, e.g., '+1', 'heart', 'laugh', etc.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the reaction was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "user": {
+      "description": "The user who reacted to the pull request comment.",
+      "$ref": "user_graphql.json"
+    },
+    "repository": {
+      "description": "The repository associated with the pull request comment.",
+      "type": "string"
+    },
+    "comment_id": {
+      "description": "The ID of the pull request comment to which the reaction belongs.",
+      "type": "integer"
+    }
+  }
+}

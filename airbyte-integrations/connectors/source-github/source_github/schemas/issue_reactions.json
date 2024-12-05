@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the reaction",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The unique identifier of the reaction node",
+      "type": ["null", "string"]
+    },
+    "content": {
+      "description": "The type of reaction (e.g., thumbs up, thumbs down, heart)",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the reaction was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "user": {
+      "description": "The user who created the reaction",
+      "$ref": "user_graphql.json"
+    },
+    "repository": {
+      "description": "The repository to which the reaction belongs",
+      "type": "string"
+    },
+    "issue_number": {
+      "description": "The issue number to which the reaction belongs",
+      "type": "integer"
+    }
+  }
+}

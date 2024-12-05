@@ -1,54 +1,54 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "rank": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "agents": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "integer"
+            "type": ["null", "integer"]
           }
         }
       }
     },
     "match_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "conditions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "resource_type": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "field_name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "operator": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         }

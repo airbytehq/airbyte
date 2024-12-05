@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the inventory level.",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier for the inventory levels in GraphQL format.",
+      "type": ["null", "string"]
+    },
+    "available": {
+      "description": "The quantity of items available for sale in the inventory.",
+      "type": ["null", "integer"]
+    },
+    "can_deactivate": {
+      "description": "Whether the inventory items associated with the inventory level can be deactivated.",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "The date and time when the inventory level was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "inventory_history_url": {
+      "description": "The URL that points to the inventory history for the item.",
+      "type": ["null", "string"]
+    },
+    "locations_count": {
+      "description": "The number of locations where this inventory item is stocked.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "count": {
+          "description": "The count of elements.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "deactivation_alert": {
+      "description": "Describes either the impact of deactivating the inventory level, or why the inventory level can't be deactivated.",
+      "type": ["null", "string"]
+    },
+    "inventory_item_id": {
+      "description": "The unique identifier for the associated inventory item.",
+      "type": ["null", "integer"]
+    },
+    "location_id": {
+      "description": "The unique identifier for the location related to the inventory level.",
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "description": "The date and time when the inventory level was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the inventory belongs.",
+      "type": ["null", "string"]
+    },
+    "quantities": {
+      "description": "The quantities of items available for sale in the inventory.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "integer"]
+          },
+          "updatedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "admin_graphql_api_id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

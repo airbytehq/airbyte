@@ -1,0 +1,104 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "billing_scheme": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "currency_options": {
+      "type": ["null", "string"]
+    },
+    "custom_unit_amount": {
+      "type": ["null", "object"],
+      "properties": {
+        "maximum": {
+          "type": ["null", "integer"]
+        },
+        "minimum": {
+          "type": ["null", "integer"]
+        },
+        "preset": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "lookup_key": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "object"]
+    },
+    "nickname": {
+      "type": ["null", "string"]
+    },
+    "product": {
+      "type": ["null", "string"]
+    },
+    "recurring": {
+      "type": ["null", "object"],
+      "properties": {
+        "aggregate_usage": {
+          "type": ["null", "string"]
+        },
+        "interval": {
+          "type": ["null", "string"]
+        },
+        "interval_count": {
+          "type": ["null", "integer"]
+        },
+        "usage_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tax_behavior": {
+      "type": ["null", "string"]
+    },
+    "tiers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tiers_mode": {
+      "type": ["null", "string"]
+    },
+    "transform_quantity": {
+      "type": ["null", "object"],
+      "properties": {
+        "divide_by": {
+          "type": ["null", "integer"]
+        },
+        "round": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "unit_amount": {
+      "type": ["null", "integer"]
+    },
+    "unit_amount_decimal": {
+      "type": ["null", "string"]
+    }
+  }
+}

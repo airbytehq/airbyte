@@ -1,0 +1,137 @@
+{
+  "title": "FBA Storage Fees Report",
+  "description": "FBA Storage Fees Report",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "asin": {
+      "description": "Unique identifier for the Amazon Standard Identification Number.",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network Stock Keeping Unit for the item.",
+      "type": ["null", "string"]
+    },
+    "product_name": {
+      "description": "Name of the product or item.",
+      "type": ["null", "string"]
+    },
+    "fulfillment_center": {
+      "description": "Location identifier for the fulfillment center.",
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "description": "Country code where the data is applicable.",
+      "type": ["null", "string"]
+    },
+    "longest_side": {
+      "description": "Length of the longest side of the item.",
+      "type": ["null", "string"]
+    },
+    "median_side": {
+      "description": "Length of the median side of the item.",
+      "type": ["null", "string"]
+    },
+    "shortest_side": {
+      "description": "Length of the shortest side of the item.",
+      "type": ["null", "string"]
+    },
+    "measurement_units": {
+      "description": "Units used for measurements (e.g., inches, centimeters).",
+      "type": ["null", "string"]
+    },
+    "weight": {
+      "description": "Weight of the item.",
+      "type": ["null", "string"]
+    },
+    "weight_units": {
+      "description": "Units used for weight measurements.",
+      "type": ["null", "string"]
+    },
+    "item_volume": {
+      "description": "Volume occupied by the item.",
+      "type": ["null", "string"]
+    },
+    "volume_units": {
+      "description": "Units used for volume measurements.",
+      "type": ["null", "string"]
+    },
+    "product_size_tier": {
+      "description": "Tier or category based on the size of the product.",
+      "type": ["null", "string"]
+    },
+    "average_quantity_on_hand": {
+      "description": "Average quantity of items available in inventory at hand.",
+      "type": ["null", "string"]
+    },
+    "average_quantity_pending_removal": {
+      "description": "Average quantity of items pending removal from inventory.",
+      "type": ["null", "string"]
+    },
+    "estimated_total_item_volume": {
+      "description": "Estimated total volume occupied by the item.",
+      "type": ["null", "string"]
+    },
+    "month_of_charge": {
+      "description": "Month for which the storage fee is charged.",
+      "type": ["null", "string"]
+    },
+    "storage_rate": {
+      "description": "Rate applied for storage fees.",
+      "type": ["null", "string"]
+    },
+    "estimated_monthly_storage_fee": {
+      "description": "Estimated monthly fee for storage of the item.",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "Currency used for monetary values.",
+      "type": ["null", "string"]
+    },
+    "average_quantity_customer_orders": {
+      "description": "Average quantity of items ordered by customers within the specified timeframe.",
+      "type": ["null", "number"]
+    },
+    "base_rate": {
+      "description": "Base rate used for calculating storage fees.",
+      "type": ["null", "number"]
+    },
+    "breakdown_incentive_fee_amount": {
+      "description": "Breakdown of incentive fee amount applied for storage.",
+      "type": ["null", "string"]
+    },
+    "dangerous_goods_storage_type": {
+      "description": "Type of storage for dangerous goods, if applicable.",
+      "type": ["null", "string"]
+    },
+    "eligible_for_inventory_discount": {
+      "description": "Flag indicating if the item is eligible for inventory discount.",
+      "type": ["null", "string"]
+    },
+    "qualifies_for_inventory_discount": {
+      "description": "Flag indicating if the item qualifies for inventory discount.",
+      "type": ["null", "string"]
+    },
+    "storage_utilization_ratio": {
+      "description": "Ratio of storage utilization.",
+      "type": ["null", "number"]
+    },
+    "storage_utilization_ratio_units": {
+      "description": "Units used for storage utilization ratio (e.g., percentage).",
+      "type": ["null", "string"]
+    },
+    "total_incentive_fee_amount": {
+      "description": "Total amount of incentive fees applied.",
+      "type": ["null", "number"]
+    },
+    "utilization_surcharge_rate": {
+      "description": "Rate for utilization surcharge, if applicable.",
+      "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data collection period.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

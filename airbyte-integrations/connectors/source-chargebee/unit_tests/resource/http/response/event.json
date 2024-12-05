@@ -1,0 +1,204 @@
+{
+  "list": [
+    {
+      "event": {
+        "id": "ev_16BPgETyVrQbiGhA",
+        "occurred_at": 1706822167,
+        "source": "admin_console",
+        "user": "sarah@sarah.com",
+        "object": "event",
+        "api_version": "v2",
+        "content": {
+          "subscription": {
+            "id": "16BPgETyVrQVHGh1",
+            "billing_period": 1,
+            "billing_period_unit": "month",
+            "customer_id": "sarah",
+            "status": "active",
+            "current_term_start": 1702578600,
+            "current_term_end": 1705256999,
+            "next_billing_at": 1705257000,
+            "created_at": 1702645601,
+            "started_at": 1702578600,
+            "activated_at": 1702578600,
+            "created_from_ip": "10.0.0.1",
+            "updated_at": 1702645601,
+            "has_scheduled_changes": false,
+            "channel": "web",
+            "resource_version": 1702645601793,
+            "deleted": false,
+            "object": "subscription",
+            "currency_code": "INR",
+            "subscription_items": [
+              {
+                "item_price_id": "cross-train-advanced-INR-1_MONTH",
+                "item_type": "plan",
+                "quantity": 1,
+                "quantity_in_decimal": "1.0000",
+                "unit_price": 11667,
+                "unit_price_in_decimal": "116.66667",
+                "amount": 11667,
+                "amount_in_decimal": "116.66667",
+                "free_quantity": 0,
+                "free_quantity_in_decimal": "0.0000",
+                "object": "subscription_item"
+              }
+            ],
+            "due_invoices_count": 0,
+            "mrr": 0,
+            "has_scheduled_advance_invoices": false,
+            "override_relationship": false,
+            "create_pending_invoices": false,
+            "auto_close_invoices": true,
+            "business_entity_id": "16CQtCTrgrYwi9n2E"
+          },
+          "customer": {
+            "id": "sarah",
+            "auto_collection": "on",
+            "net_term_days": 0,
+            "allow_direct_debit": false,
+            "created_at": 1700038561,
+            "created_from_ip": "10.0.0.2",
+            "taxability": "taxable",
+            "updated_at": 1702645580,
+            "pii_cleared": "active",
+            "channel": "web",
+            "resource_version": 1702645580741,
+            "deleted": false,
+            "object": "customer",
+            "card_status": "valid",
+            "promotional_credits": 0,
+            "refundable_credits": 0,
+            "excess_payments": 0,
+            "unbilled_charges": 0,
+            "preferred_currency_code": "INR",
+            "mrr": 0,
+            "primary_payment_source_id": "pm_169vujTyVrL5fFDl",
+            "payment_method": {
+              "object": "payment_method",
+              "type": "card",
+              "reference_id": "tok_169vujTyVrL5LFDk",
+              "gateway": "chargebee",
+              "gateway_account_id": "gw_1mk51R4QrLmQtYMht",
+              "status": "valid"
+            },
+            "business_entity_id": "16CQtCTrgrYwi9n2E",
+            "tax_providers_fields": [],
+            "auto_close_invoices": true
+          },
+          "card": {
+            "status": "valid",
+            "gateway": "chargebee",
+            "gateway_account_id": "gw_1mk51R4QrLmQtYMht",
+            "iin": "411111",
+            "last4": "1111",
+            "card_type": "visa",
+            "funding_type": "credit",
+            "expiry_month": 12,
+            "expiry_year": 2024,
+            "created_at": 1702645580,
+            "updated_at": 1702645580,
+            "ip_address": "10.0.0.1",
+            "resource_version": 1702645580740,
+            "object": "card",
+            "masked_number": "************1111",
+            "customer_id": "boom",
+            "payment_source_id": "pm_169vujTyVrL5fFDl"
+          },
+          "invoice": {
+            "id": "203",
+            "customer_id": "boom",
+            "subscription_id": "16BPgETyVrQVHGh1",
+            "recurring": true,
+            "status": "paid",
+            "price_type": "tax_exclusive",
+            "date": 1702578600,
+            "due_date": 1702578600,
+            "net_term_days": 0,
+            "exchange_rate": 83.283543,
+            "total": 11667,
+            "amount_paid": 11667,
+            "amount_adjusted": 0,
+            "write_off_amount": 0,
+            "credits_applied": 0,
+            "amount_due": 0,
+            "paid_at": 1702645601,
+            "updated_at": 1702645601,
+            "resource_version": 1702645601783,
+            "deleted": false,
+            "object": "invoice",
+            "first_invoice": true,
+            "amount_to_collect": 0,
+            "round_off_amount": 0,
+            "new_sales_amount": 11667,
+            "has_advance_charges": false,
+            "currency_code": "INR",
+            "base_currency_code": "USD",
+            "generated_at": 1702578600,
+            "is_gifted": false,
+            "term_finalized": true,
+            "channel": "web",
+            "tax": 0,
+            "line_items": [
+              {
+                "id": "li_16BPgETyVrQWBGh3",
+                "date_from": 1702578600,
+                "date_to": 1705256999,
+                "unit_amount": 11667,
+                "quantity": 1,
+                "amount": 11667,
+                "pricing_model": "per_unit",
+                "is_taxed": false,
+                "tax_amount": 0,
+                "unit_amount_in_decimal": "116.66667",
+                "quantity_in_decimal": "1.0000",
+                "amount_in_decimal": "116.66667",
+                "object": "line_item",
+                "subscription_id": "16BPgETyVrQVHGh1",
+                "customer_id": "boom",
+                "description": "cross-train-advanced-INR-1_MONTH",
+                "entity_type": "plan_item_price",
+                "entity_id": "cross-train-advanced-INR-1_MONTH",
+                "metered": false,
+                "tax_exempt_reason": "export",
+                "discount_amount": 0,
+                "item_level_discount_amount": 0
+              }
+            ],
+            "sub_total": 11667,
+            "linked_payments": [
+              {
+                "txn_id": "txn_16BPgETyVrQXVGh4",
+                "applied_amount": 11667,
+                "applied_at": 1702645601,
+                "txn_status": "success",
+                "txn_date": 1702645601,
+                "txn_amount": 11667
+              }
+            ],
+            "applied_credits": [],
+            "adjustment_credit_notes": [],
+            "issued_credit_notes": [],
+            "linked_orders": [],
+            "dunning_attempts": [],
+            "notes": [
+              {
+                "note": "You can pay card."
+              }
+            ],
+            "business_entity_id": "16CQtCTrgrYwi9n2E"
+          }
+        },
+        "event_type": "subscription_created",
+        "webhook_status": "not_configured",
+        "webhooks": [
+          {
+            "id": "whv2_Azz5aITsMVdKtVWV",
+            "webhook_status": "not_applicable",
+            "object": "webhook"
+          }
+        ]
+      }
+    }
+  ]
+}

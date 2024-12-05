@@ -1,0 +1,42 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-google-search-console:dev
+test_strictness_level: "high"
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_google_search_console/spec.json"
+        backward_compatibility_tests_config:
+          # changed the structure of `custom_reports`
+          # from `json string` to `list[reports]`
+          disable_for_version: "1.3.2"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/service_account_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        timeout_seconds: 3600
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog.json"
+        timeout_seconds: 3600
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        timeout_seconds: 3600
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

@@ -1,38 +1,18 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -57,12 +37,10 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
 
-  private AirbyteMessage lastStateMessage = null;
-
-  public KafkaRecordConsumer(KafkaDestinationConfig kafkaDestinationConfig,
-                             ConfiguredAirbyteCatalog catalog,
-                             Consumer<AirbyteMessage> outputRecordCollector,
-                             NamingConventionTransformer nameTransformer) {
+  public KafkaRecordConsumer(final KafkaDestinationConfig kafkaDestinationConfig,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final Consumer<AirbyteMessage> outputRecordCollector,
+                             final NamingConventionTransformer nameTransformer) {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
@@ -78,9 +56,9 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) {
+  protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
 
@@ -102,14 +80,14 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(),
             pair -> nameTransformer.getIdentifier(topicPattern
                 .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
                 .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
   }
 
-  private void sendRecord(ProducerRecord<String, JsonNode> record) {
+  private void sendRecord(final ProducerRecord<String, JsonNode> record) {
     producer.send(record, (recordMetadata, exception) -> {
       if (exception != null) {
         LOGGER.error("Error sending message to topic.", exception);
@@ -118,15 +96,13 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     });
     if (sync) {
       producer.flush();
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     producer.flush();
     producer.close();
-    outputRecordCollector.accept(lastStateMessage);
   }
 
 }

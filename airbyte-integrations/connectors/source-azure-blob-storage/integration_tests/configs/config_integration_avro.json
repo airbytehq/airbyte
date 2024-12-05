@@ -1,0 +1,38 @@
+{
+  "azure_blob_storage_endpoint": "http://localhost:10000/account1",
+  "azure_blob_storage_account_name": "account1",
+  "credentials": {
+    "auth_type": "storage_account_key",
+    "azure_blob_storage_account_key": "key1"
+  },
+  "azure_blob_storage_container_name": "testcontainer",
+  "streams": [
+    {
+      "name": "users",
+      "file_type": "avro",
+      "globs": ["**/test_avro_users*.avro"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "avro"
+      }
+    },
+    {
+      "name": "purchases",
+      "file_type": "avro",
+      "globs": ["**/test_avro_purchases*.avro"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "avro"
+      }
+    },
+    {
+      "name": "products",
+      "file_type": "avro",
+      "globs": ["**/test_avro_products*.avro"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "avro"
+      }
+    }
+  ]
+}

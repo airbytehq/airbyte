@@ -1,0 +1,403 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountName": {
+      "description": "Name of the account.",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "Number assigned to the account.",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "Unique identifier of the account.",
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "description": "Time period to which the data corresponds.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "CampaignStatus": {
+      "description": "Status of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "description": "Name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "description": "Unique identifier of the campaign.",
+      "type": ["null", "integer"]
+    },
+    "CurrencyCode": {
+      "description": "Code of the currency used.",
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "description": "Distribution network where the ad has been displayed.",
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "description": "Total number of impressions.",
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "description": "Total number of clicks.",
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "description": "Click-through rate.",
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "description": "Average cost per click.",
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "description": "Total amount spent on ads.",
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "description": "Average position of the ad.",
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "description": "Total number of conversions.",
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "description": "Percentage of conversions compared to total clicks.",
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "description": "Average cost for each conversion.",
+      "type": ["null", "number"]
+    },
+    "LowQualityClicks": {
+      "description": "Total number of low-quality clicks.",
+      "type": ["null", "integer"]
+    },
+    "LowQualityClicksPercent": {
+      "description": "Percentage of low-quality clicks compared to total clicks.",
+      "type": ["null", "number"]
+    },
+    "LowQualityImpressions": {
+      "description": "Total number of low-quality impressions.",
+      "type": ["null", "integer"]
+    },
+    "LowQualityImpressionsPercent": {
+      "description": "Percentage of low-quality impressions compared to total impressions.",
+      "type": ["null", "number"]
+    },
+    "LowQualityConversions": {
+      "description": "Total number of low-quality conversions.",
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversionRate": {
+      "description": "Conversion rate of low-quality clicks.",
+      "type": ["null", "number"]
+    },
+    "DeviceType": {
+      "description": "Type of device where the ad was displayed.",
+      "type": ["null", "string"]
+    },
+    "ImpressionSharePercent": {
+      "description": "The percentage of impressions divided by the total available impressions.",
+      "type": ["null", "number"]
+    },
+    "ImpressionLostToBudgetPercent": {
+      "description": "Percentage of impressions lost due to budget constraints.",
+      "type": ["null", "number"]
+    },
+    "ImpressionLostToRankAggPercent": {
+      "description": "Percentage of impressions lost due to aggregated rank constraints.",
+      "type": ["null", "number"]
+    },
+    "QualityScore": {
+      "description": "Quality score of the ad.",
+      "type": ["null", "number"]
+    },
+    "ExpectedCtr": {
+      "description": "Expected click-through rate.",
+      "type": ["null", "string"]
+    },
+    "AdRelevance": {
+      "description": "Relevance score of the ad.",
+      "type": ["null", "number"]
+    },
+    "LandingPageExperience": {
+      "description": "Score of the landing page experience.",
+      "type": ["null", "number"]
+    },
+    "HistoricalQualityScore": {
+      "description": "Historical quality score of the ad.",
+      "type": ["null", "integer"]
+    },
+    "HistoricalExpectedCtr": {
+      "description": "Historical expected click-through rate.",
+      "type": ["null", "integer"]
+    },
+    "HistoricalAdRelevance": {
+      "description": "Historical relevance score of the ad.",
+      "type": ["null", "integer"]
+    },
+    "HistoricalLandingPageExperience": {
+      "description": "Historical landing page experience score.",
+      "type": ["null", "integer"]
+    },
+    "PhoneImpressions": {
+      "description": "Total number of impressions on phones.",
+      "type": ["null", "integer"]
+    },
+    "PhoneCalls": {
+      "description": "Total number of phone calls generated from the ad.",
+      "type": ["null", "integer"]
+    },
+    "Ptr": {
+      "description": "Phone-through rate.",
+      "type": ["null", "number"]
+    },
+    "Network": {
+      "description": "Network where the ad was displayed.",
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "description": "Total assists in conversions.",
+      "type": ["null", "integer"]
+    },
+    "Revenue": {
+      "description": "Total revenue generated.",
+      "type": ["null", "number"]
+    },
+    "ReturnOnAdSpend": {
+      "description": "Revenue generated for each unit of currency spent on ads.",
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "description": "Average cost for each assist in conversions.",
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "description": "Average revenue generated per conversion.",
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "description": "Average revenue generated per assist in conversions.",
+      "type": ["null", "number"]
+    },
+    "TrackingTemplate": {
+      "description": "Template used for tracking purposes.",
+      "type": ["null", "string"]
+    },
+    "CustomParameters": {
+      "description": "Custom parameters associated with the ad.",
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "description": "Status of the account.",
+      "type": ["null", "string"]
+    },
+    "LowQualityGeneralClicks": {
+      "description": "Total number of low-quality general clicks.",
+      "type": ["null", "integer"]
+    },
+    "LowQualitySophisticatedClicks": {
+      "description": "Total number of low-quality sophisticated clicks.",
+      "type": ["null", "integer"]
+    },
+    "CampaignLabels": {
+      "description": "Labels associated with the campaign.",
+      "type": ["null", "string"]
+    },
+    "ExactMatchImpressionSharePercent": {
+      "description": "The percentage of exact match impressions divided by the total available exact match impressions.",
+      "type": ["null", "number"]
+    },
+    "ClickSharePercent": {
+      "description": "Percentage of available clicks compared to total clicks.",
+      "type": ["null", "number"]
+    },
+    "AbsoluteTopImpressionSharePercent": {
+      "description": "The percentage of absolute top impressions divided by the total available absolute top impressions.",
+      "type": ["null", "number"]
+    },
+    "FinalUrlSuffix": {
+      "description": "Suffix added to the final URL of the ad.",
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "description": "Type of the campaign.",
+      "type": ["null", "string"]
+    },
+    "TopImpressionShareLostToRankPercent": {
+      "description": "The percentage of top impressions lost due to rank constraints.",
+      "type": ["null", "number"]
+    },
+    "TopImpressionShareLostToBudgetPercent": {
+      "description": "The percentage of top impressions lost due to budget constraints.",
+      "type": ["null", "number"]
+    },
+    "AbsoluteTopImpressionShareLostToRankPercent": {
+      "description": "The percentage of absolute top impressions lost due to rank constraints.",
+      "type": ["null", "number"]
+    },
+    "AbsoluteTopImpressionShareLostToBudgetPercent": {
+      "description": "The percentage of absolute top impressions lost due to budget constraints.",
+      "type": ["null", "number"]
+    },
+    "TopImpressionSharePercent": {
+      "description": "The percentage of top impressions divided by the total available top impressions.",
+      "type": ["null", "number"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of absolute top impressions divided by the total available absolute top impressions.",
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "description": "The percentage of top impressions divided by the total available top impressions.",
+      "type": ["null", "number"]
+    },
+    "BaseCampaignId": {
+      "description": "Base identifier of the campaign.",
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "description": "Total number of conversions.",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "Total revenue generated.",
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "description": "Percentage of conversions compared to all clicks.",
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "description": "Average cost for each conversion.",
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "description": "Revenue earned for each unit of currency spent on ads.",
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "description": "Average revenue generated per conversion.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "description": "Conversions that occur after a view-through impression.",
+      "type": ["null", "integer"]
+    },
+    "AudienceImpressionSharePercent": {
+      "description": "The percentage of audience impressions divided by the total available audience impressions.",
+      "type": ["null", "number"]
+    },
+    "AudienceImpressionLostToRankPercent": {
+      "description": "Percentage of audience impressions lost due to rank constraints.",
+      "type": ["null", "number"]
+    },
+    "AudienceImpressionLostToBudgetPercent": {
+      "description": "Percentage of audience impressions lost due to budget limitations.",
+      "type": ["null", "number"]
+    },
+    "RelativeCtr": {
+      "description": "Relative click-through rate.",
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "description": "Average cost per thousand impressions.",
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "description": "Qualified total number of conversions.",
+      "type": ["null", "number"]
+    },
+    "LowQualityConversionsQualified": {
+      "description": "Qualified total number of low-quality conversions.",
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "description": "Qualified total number of conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "Qualified view-through conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "description": "Revenue generated from view-through impressions.",
+      "type": ["null", "number"]
+    },
+    "VideoViews": {
+      "description": "Total number of video views.",
+      "type": ["null", "integer"]
+    },
+    "ViewThroughRate": {
+      "description": "Rate of view-through impressions compared to total impressions.",
+      "type": ["null", "number"]
+    },
+    "AverageCPV": {
+      "description": "Average cost per video view.",
+      "type": ["null", "number"]
+    },
+    "VideoViewsAt25Percent": {
+      "description": "Total number of video views at 25% completion.",
+      "type": ["null", "integer"]
+    },
+    "VideoViewsAt50Percent": {
+      "description": "Total number of video views at 50% completion.",
+      "type": ["null", "integer"]
+    },
+    "VideoViewsAt75Percent": {
+      "description": "Total number of video views at 75% completion.",
+      "type": ["null", "integer"]
+    },
+    "CompletedVideoViews": {
+      "description": "Total number of video views that were completed.",
+      "type": ["null", "integer"]
+    },
+    "VideoCompletionRate": {
+      "description": "Rate at which viewers complete watching the video.",
+      "type": ["null", "number"]
+    },
+    "TotalWatchTimeInMS": {
+      "description": "Total watch time in milliseconds.",
+      "type": ["null", "integer"]
+    },
+    "AverageWatchTimePerVideoView": {
+      "description": "Average watch time per video view.",
+      "type": ["null", "number"]
+    },
+    "AverageWatchTimePerImpression": {
+      "description": "Average watch time per impression.",
+      "type": ["null", "number"]
+    },
+    "Sales": {
+      "description": "Total number of sales.",
+      "type": ["null", "integer"]
+    },
+    "CostPerSale": {
+      "description": "Average cost for each sale.",
+      "type": ["null", "number"]
+    },
+    "RevenuePerSale": {
+      "description": "Average revenue generated per sale.",
+      "type": ["null", "number"]
+    },
+    "Installs": {
+      "description": "Total number of app installations.",
+      "type": ["null", "integer"]
+    },
+    "CostPerInstall": {
+      "description": "Average cost for each install.",
+      "type": ["null", "number"]
+    },
+    "RevenuePerInstall": {
+      "description": "Average revenue generated per install.",
+      "type": ["null", "number"]
+    }
+  }
+}

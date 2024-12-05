@@ -1,0 +1,12 @@
+{
+  "adGroups": [
+    {
+      "campaignId": "string",
+      "name": "string",
+      "state": "ENABLED",
+      "adGroupId": "string",
+      "extendedData": {}
+    }
+  ],
+  "totalResults": 100
+}

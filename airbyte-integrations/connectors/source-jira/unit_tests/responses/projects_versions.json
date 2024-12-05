@@ -1,0 +1,38 @@
+{
+  "self": "https://your-domain.atlassian.net/rest/api/3/project/PR/version?startAt=0&maxResults=2",
+  "nextPage": "https://your-domain.atlassian.net/rest/api/3/project/PR/version?startAt=2&maxResults=2",
+  "maxResults": 2,
+  "startAt": 2,
+  "total": 7,
+  "isLast": true,
+  "values": [
+    {
+      "self": "https://your-domain.atlassian.net/rest/api/3/version/10000",
+      "id": "1",
+      "description": "An excellent version",
+      "name": "New Version 1",
+      "archived": false,
+      "released": true,
+      "releaseDate": "2010-07-06",
+      "overdue": true,
+      "userReleaseDate": "6/Jul/2010",
+      "projectId": 1
+    },
+    {
+      "self": "https://your-domain.atlassian.net/rest/api/3/version/10010",
+      "id": "2",
+      "description": "Minor Bugfix version",
+      "name": "Next Version",
+      "archived": false,
+      "released": false,
+      "overdue": false,
+      "projectId": 1,
+      "issuesStatusForFixVersion": {
+        "unmapped": 0,
+        "toDo": 10,
+        "inProgress": 20,
+        "done": 100
+      }
+    }
+  ]
+}

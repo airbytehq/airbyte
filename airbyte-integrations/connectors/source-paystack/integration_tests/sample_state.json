@@ -1,0 +1,58 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "disputes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "invoices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "refunds" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "settlements" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "subscriptions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "transactions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2019-08-01T00:00:00Z" },
+      "stream_descriptor": { "name": "transfers" }
+    }
+  }
+]

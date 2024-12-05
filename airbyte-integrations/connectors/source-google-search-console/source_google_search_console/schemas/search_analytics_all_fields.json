@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "site_url": {
+      "description": "The URL of the site from which the data originates.",
+      "type": ["null", "string"]
+    },
+    "search_type": {
+      "description": "The type of search (e.g., web, image, video) that triggered the search result.",
+      "type": ["null", "string"]
+    },
+    "date": {
+      "description": "The date when the search query occurred.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "country": {
+      "description": "The country from which the search query originated.",
+      "type": ["null", "string"]
+    },
+    "device": {
+      "description": "The type of device used by the user (e.g., desktop, mobile).",
+      "type": ["null", "string"]
+    },
+    "page": {
+      "description": "The page URL that appeared in the search results.",
+      "type": ["null", "string"]
+    },
+    "query": {
+      "description": "The search query entered by the user.",
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "description": "The number of times users clicked on the search result for a specific query.",
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "description": "The number of times a search result appeared in response to a query.",
+      "type": ["null", "integer"]
+    },
+    "ctr": {
+      "description": "Click-through rate, calculated as clicks divided by impressions.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    },
+    "position": {
+      "description": "The average position of the search result on the search engine results page.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    }
+  }
+}

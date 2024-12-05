@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -45,6 +25,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
         ("ssh", "files/test.csv", "csv"),
         ("scp", "files/test.csv", "csv"),
         ("sftp", "files/test.csv", "csv"),
+        ("ssh", "files/test.csv.zip", "csv"),
         ("ssh", "files/test.csv.gz", "csv"),  # text in binary
         ("ssh", "files/test.pkl", "pickle"),  # binary
         ("sftp", "files/test.pkl.gz", "pickle"),  # binary in binary
@@ -79,13 +60,13 @@ def test__read_file_not_found(provider_config, provider_name, file_path, file_fo
 )
 def test__streams_from_ssh_providers(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path, provider=provider_config(provider_name))
-    streams = list(client.streams)
+    streams = list(client.streams())
     assert len(streams) == 1
     assert streams[0].json_schema["properties"] == {
-        "header1": {"type": "string"},
-        "header2": {"type": "number"},
-        "header3": {"type": "number"},
-        "header4": {"type": "boolean"},
+        "header1": {"type": ["string", "null"]},
+        "header2": {"type": ["number", "null"]},
+        "header3": {"type": ["number", "null"]},
+        "header4": {"type": ["boolean", "null"]},
     }
 
 
@@ -110,8 +91,8 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
     config = {
         "format": "csv",
         "dataset_name": "output",
-        "reader_options": json.dumps({"sep": separator, "nrows": 42}),
-        "provider": {"storage": storage_provider},
+        "reader_options": {"sep": separator, "nrows": 42},
+        "provider": {"storage": storage_provider, "user_agent": False},
         "url": url,
     }
 
@@ -123,7 +104,7 @@ def test__read_from_private_gcs(google_cloud_service_credentials, private_google
         "dataset_name": "output",
         "format": "csv",
         "url": private_google_cloud_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "GCS",
             "service_account_json": json.dumps(google_cloud_service_credentials),
@@ -137,7 +118,7 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
         "dataset_name": "output",
         "format": "csv",
         "url": private_aws_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
@@ -152,7 +133,7 @@ def test__read_from_public_azblob(azblob_credentials, public_azblob_file):
         "dataset_name": "output",
         "format": "csv",
         "url": public_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {"storage": "AzBlob", "storage_account": azblob_credentials["storage_account"]},
     }
     check_read(config)
@@ -163,7 +144,7 @@ def test__read_from_private_azblob_shared_key(azblob_credentials, private_azblob
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],
@@ -178,7 +159,7 @@ def test__read_from_private_azblob_sas_token(azblob_credentials, private_azblob_
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],

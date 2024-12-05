@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "object_id": {
+      "type": ["null", "string"]
+    },
+    "view": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "is_complete": {
+      "type": ["null", "boolean"]
+    },
+    "created_by_name": {
+      "type": ["null", "string"]
+    },
+    "lead_name": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "assigned_to": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "contact_name": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "opportunity_value_period": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_name": {
+      "type": ["null", "string"]
+    },
+    "opportunity_note": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "opportunity_value": {
+      "type": ["null", "number"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "object_type": {
+      "type": ["null", "string"]
+    },
+    "opportunity_value_formatted": {
+      "type": ["null", "string"]
+    }
+  }
+}

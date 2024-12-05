@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "integer"
+    },
+    "channel_id": {
+      "type": ["null", "string"]
+    },
+    "video_id": {
+      "type": ["null", "string"]
+    },
+    "live_or_on_demand": {
+      "type": ["null", "string"]
+    },
+    "subscribed_status": {
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "traffic_source_type": {
+      "type": ["null", "integer"]
+    },
+    "traffic_source_detail": {
+      "type": ["null", "string"]
+    },
+    "views": {
+      "type": ["null", "integer"]
+    },
+    "watch_time_minutes": {
+      "type": ["null", "number"]
+    },
+    "average_view_duration_seconds": {
+      "type": ["null", "number"]
+    },
+    "average_view_duration_percentage": {
+      "type": ["null", "number"]
+    },
+    "red_views": {
+      "type": ["null", "integer"]
+    },
+    "red_watch_time_minutes": {
+      "type": ["null", "number"]
+    }
+  }
+}

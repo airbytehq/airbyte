@@ -1,0 +1,10 @@
+{
+  "account_id": "<Account ID>",
+  "replication_start_date": "2021-01-01T00:00:00Z",
+  "credentials": {
+    "auth_type": "Client",
+    "client_id": "<Client ID>",
+    "client_secret": "<Client Secret>",
+    "client_refresh_token": "<Client Refresh Token>"
+  }
+}

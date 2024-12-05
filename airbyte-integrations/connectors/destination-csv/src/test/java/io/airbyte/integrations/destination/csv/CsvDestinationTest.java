@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -37,25 +17,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -98,22 +79,31 @@ class CsvDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, null, Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, null, Field.of("name", JsonSchemaType.STRING),
+          Field.of("id", JsonSchemaType.STRING)),
+      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaType.STRING))));
 
   private Path destinationPath;
+  private JsonNode delimiter;
   private JsonNode config;
 
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
+    delimiter = Jsons.jsonNode(ImmutableMap.of("delimiter", "\\u002c"));
+    config =
+        Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_TYPE, delimiter));
   }
 
   private CsvDestination getDestination() {
-    CsvDestination result = spy(CsvDestination.class);
+    final CsvDestination result = spy(CsvDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
+    return result;
+  }
+
+  private CsvDestination getDelimiter() {
+    final CsvDestination result = spy(CsvDestination.class);
+    doReturn(delimiter).when(result).getDelimiter(any());
     return result;
   }
 
@@ -137,7 +127,7 @@ class CsvDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    CsvDestination destination = spy(CsvDestination.class);
+    final CsvDestination destination = spy(CsvDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
@@ -221,8 +211,8 @@ class CsvDestinationTest {
     assertEquals(Collections.emptySet(), actualFilenames);
   }
 
-  private List<JsonNode> csvToJson(Path csvPath) throws IOException {
-    final Reader in = new FileReader(csvPath.toFile());
+  private List<JsonNode> csvToJson(final Path csvPath) throws IOException {
+    final Reader in = new FileReader(csvPath.toFile(), Charset.defaultCharset());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "description": "The unique identifier of the account associated with the label.",
+      "type": ["null", "integer"]
+    },
+    "Color": {
+      "description": "The color code or name associated with the label for visual identification purposes.",
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "description": "The unique identifier of the client associated with the label.",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "A brief description or notes related to the label.",
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "description": "The unique identifier of the label.",
+      "type": ["null", "integer"]
+    },
+    "Label": {
+      "description": "The name or title given to the label for identification.",
+      "type": ["null", "string"]
+    },
+    "Modified Time": {
+      "description": "The date and time when the label was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Status": {
+      "description": "The current status of the label, such as active, inactive, or archived.",
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the metafield draft order.",
+      "type": ["null", "integer"]
+    },
+    "namespace": {
+      "description": "The namespace of the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "key": {
+      "description": "The key associated with the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The value of the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "value_type": {
+      "description": "The data type of the value of the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The textual description of the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "description": "The unique identifier of the owner (e.g., shop) associated with the metafield draft order.",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the metafield draft order was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the metafield draft order was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "owner_resource": {
+      "description": "The type of owner resource (e.g., shop) associated with the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type of the metafield draft order.",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the metafield draft order within the admin GraphQL API.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop to which the metafield draft order belongs.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "type": ["null", "object"]
+}

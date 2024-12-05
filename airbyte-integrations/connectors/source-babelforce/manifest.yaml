@@ -1,0 +1,633 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - calls
+definitions:
+  streams:
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['region'] }}.babelforce.com/api/v2
+          path: /calls/reporting/simple
+          http_method: GET
+          request_headers:
+            X-Auth-Access-ID: "{{ config['access_key_id'] }}"
+            X-Auth-Access-Token: "{{ config['access_token'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: max
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 102
+            cursor_value: "{{ response['pagination']['current'] + 1 }}"
+            stop_condition: "{{ 'current' not in response['pagination'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['date_created_from'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filters.dateCreated.from
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: filters.dateCreated.to
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['date_created_to'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            type:
+              type: string
+              maxLength: 256
+            anonymous:
+              type:
+                - boolean
+                - "null"
+            bridged:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                number:
+                  type:
+                    - string
+                    - "null"
+            conversationId:
+              type: string
+              maxLength: 32
+            dateCreated:
+              type: string
+              format: date-time
+            dateEstablished:
+              type:
+                - string
+                - "null"
+              format: date-time
+            dateFinished:
+              type:
+                - string
+                - "null"
+              format: date-time
+            domain:
+              type: string
+              maxLength: 256
+            duration:
+              type:
+                - integer
+                - "null"
+            finishReason:
+              type: string
+              maxLength: 256
+            from:
+              type:
+                - string
+                - "null"
+            id:
+              type: string
+              maxLength: 32
+            lastUpdated:
+              type: string
+              format: date-time
+            parentId:
+              type:
+                - string
+                - "null"
+              maxLength: 32
+            recordings:
+              type:
+                - array
+                - "null"
+              items:
+                type: object
+                properties:
+                  agent:
+                    type: object
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      number:
+                        type:
+                          - string
+                          - "null"
+                  dateCreated:
+                    type: string
+                    format: date-time
+                  duration:
+                    type: integer
+                  file:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      contentType:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type: string
+                        maxLength: 32
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      size:
+                        type:
+                          - integer
+                          - "null"
+                      state:
+                        type:
+                          - string
+                          - "null"
+                  id:
+                    type: string
+                    maxLength: 32
+                  lastUpdated:
+                    type: string
+                    format: date-time
+                  state:
+                    type: string
+                    maxLength: 256
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                  url:
+                    type: string
+            sessionId:
+              type: string
+              maxLength: 32
+            source:
+              type: string
+              maxLength: 256
+            state:
+              type: string
+              maxLength: 256
+            to:
+              type:
+                - string
+                - "null"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['region'] }}.babelforce.com/api/v2
+streams:
+  - type: DeclarativeStream
+    name: calls
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['region'] }}.babelforce.com/api/v2
+        path: /calls/reporting/simple
+        http_method: GET
+        request_headers:
+          X-Auth-Access-ID: "{{ config['access_key_id'] }}"
+          X-Auth-Access-Token: "{{ config['access_token'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: max
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 102
+          cursor_value: "{{ response['pagination']['current'] + 1 }}"
+          stop_condition: "{{ 'current' not in response['pagination'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: dateCreated
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['date_created_from'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: filters.dateCreated.from
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: filters.dateCreated.to
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['date_created_to'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          type:
+            type: string
+            maxLength: 256
+          anonymous:
+            type:
+              - boolean
+              - "null"
+          bridged:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              number:
+                type:
+                  - string
+                  - "null"
+          conversationId:
+            type: string
+            maxLength: 32
+          dateCreated:
+            type: string
+            format: date-time
+          dateEstablished:
+            type:
+              - string
+              - "null"
+            format: date-time
+          dateFinished:
+            type:
+              - string
+              - "null"
+            format: date-time
+          domain:
+            type: string
+            maxLength: 256
+          duration:
+            type:
+              - integer
+              - "null"
+          finishReason:
+            type: string
+            maxLength: 256
+          from:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+            maxLength: 32
+          lastUpdated:
+            type: string
+            format: date-time
+          parentId:
+            type:
+              - string
+              - "null"
+            maxLength: 32
+          recordings:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                agent:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    number:
+                      type:
+                        - string
+                        - "null"
+                dateCreated:
+                  type: string
+                  format: date-time
+                duration:
+                  type: integer
+                file:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    contentType:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type: string
+                      maxLength: 32
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - integer
+                        - "null"
+                    state:
+                      type:
+                        - string
+                        - "null"
+                id:
+                  type: string
+                  maxLength: 32
+                lastUpdated:
+                  type: string
+                  format: date-time
+                state:
+                  type: string
+                  maxLength: 256
+                tags:
+                  type: array
+                  items:
+                    type: string
+                url:
+                  type: string
+          sessionId:
+            type: string
+            maxLength: 32
+          source:
+            type: string
+            maxLength: 256
+          state:
+            type: string
+            maxLength: 256
+          to:
+            type:
+              - string
+              - "null"
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_key_id
+      - access_token
+      - region
+    properties:
+      access_key_id:
+        type: string
+        title: Access Key ID
+        description: The Babelforce access key ID
+        airbyte_secret: true
+        order: 0
+      access_token:
+        type: string
+        title: Access Token
+        description: The Babelforce access token
+        airbyte_secret: true
+        order: 1
+      date_created_from:
+        type: integer
+        title: Date Created from
+        description: >-
+          Timestamp in Unix the replication from Babelforce API will start from.
+          For example 1651363200 which corresponds to 2022-05-01 00:00:00.
+        examples:
+          - 1651363200
+        order: 2
+      date_created_to:
+        type: integer
+        title: Date Created to
+        description: >-
+          Timestamp in Unix the replication from Babelforce will be up to. For
+          example 1651363200 which corresponds to 2022-05-01 00:00:00.
+        examples:
+          - 1651363200
+        order: 3
+      region:
+        type: string
+        title: Region
+        description: Babelforce region
+        default: services
+        enum:
+          - services
+          - us-east
+          - ap-southeast
+        order: 4
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    calls: false
+schemas:
+  calls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        maxLength: 256
+      anonymous:
+        type:
+          - boolean
+          - "null"
+      bridged:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+      conversationId:
+        type: string
+        maxLength: 32
+      dateCreated:
+        type: string
+        format: date-time
+      dateEstablished:
+        type:
+          - string
+          - "null"
+        format: date-time
+      dateFinished:
+        type:
+          - string
+          - "null"
+        format: date-time
+      domain:
+        type: string
+        maxLength: 256
+      duration:
+        type:
+          - integer
+          - "null"
+      finishReason:
+        type: string
+        maxLength: 256
+      from:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+        maxLength: 32
+      lastUpdated:
+        type: string
+        format: date-time
+      parentId:
+        type:
+          - string
+          - "null"
+        maxLength: 32
+      recordings:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          properties:
+            agent:
+              type: object
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                number:
+                  type:
+                    - string
+                    - "null"
+            dateCreated:
+              type: string
+              format: date-time
+            duration:
+              type: integer
+            file:
+              type:
+                - object
+                - "null"
+              properties:
+                contentType:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type: string
+                  maxLength: 32
+                name:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - integer
+                    - "null"
+                state:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type: string
+              maxLength: 32
+            lastUpdated:
+              type: string
+              format: date-time
+            state:
+              type: string
+              maxLength: 256
+            tags:
+              type: array
+              items:
+                type: string
+            url:
+              type: string
+      sessionId:
+        type: string
+        maxLength: 32
+      source:
+        type: string
+        maxLength: 256
+      state:
+        type: string
+        maxLength: 256
+      to:
+        type:
+          - string
+          - "null"

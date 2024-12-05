@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "identities": {
+      "type": ["null", "array"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "smtp": {
+      "type": ["null", "object"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "imap": {
+      "type": ["null", "object"]
+    }
+  }
+}

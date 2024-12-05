@@ -21,12 +21,12 @@
       "type": ["null", "boolean"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "selected": {
       "type": ["null", "boolean"]

@@ -3,83 +3,112 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string"
+      "description": "Title or name of the survey",
+      "type": ["string", "null"]
     },
     "nickname": {
-      "type": "string"
+      "description": "Nickname or alias for the survey",
+      "type": ["string", "null"]
     },
     "language": {
-      "type": "string"
+      "description": "Language in which the survey is conducted",
+      "type": ["string", "null"]
+    },
+    "theme_id": {
+      "description": "ID of the theme applied to the survey",
+      "type": ["string", "null"]
     },
     "folder_id": {
-      "type": "string"
+      "description": "ID of the folder where the survey is stored",
+      "type": ["string", "null"]
     },
     "category": {
-      "type": "string"
+      "description": "Category or topic of the survey",
+      "type": ["string", "null"]
     },
     "question_count": {
-      "type": "integer"
+      "description": "Total number of questions in the survey",
+      "type": ["integer", "null"]
     },
     "page_count": {
-      "type": "integer"
+      "description": "Number of pages in the survey",
+      "type": ["integer", "null"]
     },
     "response_count": {
-      "type": "integer"
+      "description": "Number of responses received for the survey",
+      "type": ["integer", "null"]
     },
     "date_created": {
-      "type": "string",
+      "description": "Date and time when the survey was created",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "date_modified": {
-      "type": "string",
+      "description": "Date and time when the survey was last modified",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "id": {
-      "type": "string"
+      "description": "Unique identifier for the survey",
+      "type": ["string", "null"]
     },
     "buttons_text": {
-      "type": "object",
+      "description": "Text displayed on buttons associated with the survey.",
+      "type": ["object", "null"],
       "properties": {
         "next_button": {
-          "type": "string"
+          "description": "Text for the 'Next' button",
+          "type": ["string", "null"]
         },
         "prev_button": {
-          "type": "string"
+          "description": "Text for the 'Previous' button",
+          "type": ["string", "null"]
         },
         "done_button": {
-          "type": "string"
+          "description": "Text for the 'Done' button",
+          "type": ["string", "null"]
         },
         "exit_button": {
-          "type": "string"
+          "description": "Text for the 'Exit' button",
+          "type": ["string", "null"]
         }
       }
     },
     "is_owner": {
-      "type": "boolean"
+      "description": "Flag indicating if the user is the owner of the survey",
+      "type": ["boolean", "null"]
     },
     "footer": {
-      "type": "boolean"
+      "description": "Footer content for the survey",
+      "type": ["boolean", "null"]
     },
     "custom_variables": {
-      "type": "object"
+      "description": "Custom variables associated with the survey",
+      "type": ["object", "null"]
     },
     "href": {
-      "type": "string"
+      "description": "URL reference for the survey",
+      "type": ["string", "null"]
     },
     "analyze_url": {
-      "type": "string"
+      "description": "URL for analyzing survey results",
+      "type": ["string", "null"]
     },
     "edit_url": {
-      "type": "string"
+      "description": "URL for editing the survey",
+      "type": ["string", "null"]
     },
     "collect_url": {
-      "type": "string"
+      "description": "URL for collecting survey responses",
+      "type": ["string", "null"]
     },
     "summary_url": {
-      "type": "string"
+      "description": "URL for viewing the summary of survey results",
+      "type": ["string", "null"]
     },
     "preview": {
-      "type": "string"
+      "description": "Preview content or link for the survey",
+      "type": ["string", "null"]
     }
   }
 }

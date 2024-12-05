@@ -1,0 +1,7 @@
+{
+  "start_date": "2021-01-01T00:00:00Z",
+  "credentials": {
+    "access_token": "access_token",
+    "auth_method": "oauth2.0"
+  }
+}

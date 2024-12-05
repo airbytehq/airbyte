@@ -3,101 +3,133 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "description": "Unique identifier for the survey response",
+      "type": ["string", "null"]
     },
     "recipient_id": {
-      "type": "string"
+      "description": "Unique identifier for the respondent",
+      "type": ["string", "null"]
     },
     "collection_mode": {
-      "type": "string"
+      "description": "The mode in which the survey response was collected (e.g., Web, Email)",
+      "type": ["string", "null"]
     },
     "response_status": {
-      "type": "string"
+      "description": "Status of the survey response (e.g., Completed, Incomplete)",
+      "type": ["string", "null"]
     },
     "custom_value": {
-      "type": "string"
+      "description": "Custom value provided by the respondent during the survey",
+      "type": ["string", "null"]
     },
     "first_name": {
-      "type": "string"
+      "description": "First name of the respondent",
+      "type": ["string", "null"]
     },
     "last_name": {
-      "type": "string"
+      "description": "Last name of the respondent",
+      "type": ["string", "null"]
     },
     "email_address": {
-      "type": "string"
+      "description": "Email address of the respondent",
+      "type": ["string", "null"]
     },
     "ip_address": {
-      "type": "string"
+      "description": "IP address of the respondent",
+      "type": ["string", "null"]
     },
     "logic_path": {
-      "type": "object"
+      "description": "Path taken through the survey based on logic and branching",
+      "type": ["object", "null"]
     },
     "metadata": {
-      "type": "object",
+      "description": "Additional metadata associated with the survey response",
+      "type": ["object", "null"],
       "properties": {
         "contact": {
-          "type": "object"
+          "description": "Contact information related to the survey response",
+          "type": ["object", "null"]
         }
       }
     },
     "page_path": {
-      "type": "array",
+      "description": "Path followed within the survey pages",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "collector_id": {
-      "type": "string"
+      "description": "Unique identifier for the collector associated with the response",
+      "type": ["string", "null"]
     },
     "survey_id": {
-      "type": "string"
+      "description": "Unique identifier for the survey associated with the response",
+      "type": ["string", "null"]
     },
     "custom_variables": {
-      "type": "object"
+      "description": "Additional custom variables associated with the response",
+      "type": ["object", "null"]
     },
     "edit_url": {
-      "type": "string"
+      "description": "URL to edit the survey response",
+      "type": ["string", "null"]
     },
     "analyze_url": {
-      "type": "string"
+      "description": "URL to view analysis of survey responses",
+      "type": ["string", "null"]
+    },
+    "language": {
+      "description": "Language used by the respondent during the survey",
+      "type": ["string", "null"]
     },
     "total_time": {
-      "type": "integer"
+      "description": "Total time taken by the respondent to complete the survey",
+      "type": ["integer", "null"]
     },
     "date_modified": {
-      "type": "string",
+      "description": "Date and time when the survey response was last modified",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "date_created": {
-      "type": "string",
+      "description": "Date and time when the survey response was created",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "href": {
-      "type": "string"
+      "description": "Hyperlink reference to the survey response",
+      "type": ["string", "null"]
     },
     "pages": {
-      "type": "array",
+      "description": "List of pages within the survey",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string"
+            "description": "Unique identifier for the survey page",
+            "type": ["string", "null"]
           },
           "questions": {
-            "type": "array",
+            "description": "List of questions within the survey page",
+            "type": ["array", "null"],
             "items": {
-              "type": "object",
+              "type": ["object", "null"],
               "properties": {
                 "id": {
-                  "type": "string"
+                  "description": "Unique identifier for the survey question",
+                  "type": ["string", "null"]
                 },
                 "answers": {
-                  "type": "array",
+                  "description": "List of answers provided by the respondent for the question",
+                  "type": ["array", "null"],
                   "items": {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "properties": {
                       "choice_id": {
-                        "type": "string"
+                        "description": "Identifier for the choice selected by the respondent",
+                        "type": ["string", "null"]
                       }
                     }
                   }

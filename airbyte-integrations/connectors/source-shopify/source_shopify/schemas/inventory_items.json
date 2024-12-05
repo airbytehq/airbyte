@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the inventory item",
+      "type": ["null", "integer"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier for the inventory item in the admin GraphQL API",
+      "type": ["null", "string"]
+    },
+    "cost": {
+      "description": "The cost of the inventory item",
+      "type": ["null", "number"]
+    },
+    "currency_code": {
+      "description": "Currency of the money",
+      "type": ["null", "string"]
+    },
+    "country_code_of_origin": {
+      "description": "The country code indicating the origin of the inventory item",
+      "type": ["null", "string"]
+    },
+    "country_harmonized_system_codes": {
+      "description": "The harmonized system codes associated with the inventory item",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "duplicate_sku_count": {
+      "description": "The number of inventory items that share the same SKU with this item",
+      "type": ["null", "integer"]
+    },
+    "harmonized_system_code": {
+      "description": "The harmonized system code for the inventory item",
+      "type": ["null", "string"]
+    },
+    "province_code_of_origin": {
+      "description": "The province code indicating the origin of the inventory item",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the inventory item was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "description": "The date and time when the inventory item was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sku": {
+      "description": "The stock keeping unit (SKU) of the inventory item",
+      "type": ["null", "string"]
+    },
+    "tracked": {
+      "description": "Flag indicating if the inventory item is tracked",
+      "type": ["null", "boolean"]
+    },
+    "requires_shipping": {
+      "description": "Flag indicating if the inventory item requires shipping",
+      "type": ["null", "boolean"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the inventory item belongs",
+      "type": ["null", "string"]
+    }
+  }
+}

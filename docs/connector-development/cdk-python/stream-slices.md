@@ -8,11 +8,11 @@ When a stream is being read incrementally, Slices can be used to control when st
 
 When slicing is enabled, a state message will be output by the connector after reading every slice. Slicing is completely optional and is provided as a way for connectors to checkpoint state in a more granular way than basic interval-based state checkpointing. Slicing is typically used when reading a large amount of data or when the underlying data source imposes strict rate limits that make it difficult to re-read the same data over and over again. This being said, interval-based checkpointing is compatible with slicing with one difference: intervals are counted within a slice rather than across all records. In other words, the counter used to determine if the interval has been reached \(e.g: every 10k records\) resets at the beginning of every slice.
 
-The relationship between records in a slice is up to the developer, but slices are typically used to implement date-based checkpointing, for example to group records generated within a particular hour, day, or month etc.
+The relationship between records in a slice is up to the developer, but the list of slices must be yielded in ascending order, using the cursor field as context for the ordering. This is to ensure that the state can't be updated to a timestamp that is ahead of other slices yet to be processed. Slices are typically used to implement date-based checkpointing, for example to group records generated within a particular hour, day, or month etc.
 
 Slices can be hard-coded or generated dynamically \(e.g: by making a query\).
 
-The only restriction imposed on slices is that they must be described with a list of `dict`s returned from the `Stream.stream_slices()` method, where each `dict` describes a slice. The `dict`s may have any schema, and are passed as input to each stream's `read_stream` method. This way, the connector can read the current slice description \(the input `dict`\) and use that to make queries as needed.
+An important restriction imposed on slices is that they must be described with a list of `dict`s returned from the `Stream.stream_slices()` method, where each `dict` describes a slice. The `dict`s may have any schema, and are passed as input to each stream's `read_stream` method. This way, the connector can read the current slice description \(the input `dict`\) and use that to make queries as needed. As described above, this list of dicts must be in appropriate ascending order based on the cursor field.
 
 ### Use cases
 
@@ -25,4 +25,3 @@ Slack is a chat platform for businesses. Collectively, a company can easily post
 This is a great usecase for stream slicing. The `messages` stream, which outputs one record per chat message, can slice records by time e.g: hourly. It implements this by specifying the beginning and end timestamp of each hour that it wants to pull data from. Then after all the records in a given hour \(i.e: slice\) have been read, the connector outputs a STATE message to indicate that state should be saved. This way, if the connector ever fails during a sync \(for example if the API goes down\) then at most, it will reread only one hour's worth of messages.
 
 See the implementation of the Slack connector [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py).
-

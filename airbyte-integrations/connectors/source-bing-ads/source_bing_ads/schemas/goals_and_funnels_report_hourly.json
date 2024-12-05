@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "AccountName": {
+      "description": "The name of the account associated with the data.",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "The account number assigned to the account.",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "The unique identifier of the account associated with the data.",
+      "type": ["null", "string"]
+    },
+    "TimePeriod": {
+      "description": "The time period the data corresponds to.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "CampaignName": {
+      "description": "The name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier of the campaign.",
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group.",
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier of the ad group.",
+      "type": ["null", "integer"]
+    },
+    "Keyword": {
+      "description": "The keyword triggered in the process.",
+      "type": ["null", "string"]
+    },
+    "KeywordId": {
+      "description": "The unique identifier of the keyword.",
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "description": "The goal achieved.",
+      "type": ["null", "string"]
+    },
+    "AllConversions": {
+      "description": "Total number of conversions recorded.",
+      "type": ["null", "integer"]
+    },
+    "Assists": {
+      "description": "Number of assists in the conversion process.",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "Total revenue generated from all conversions.",
+      "type": ["null", "number"]
+    },
+    "GoalId": {
+      "description": "The unique identifier of the goal.",
+      "type": ["null", "integer"]
+    },
+    "DeviceType": {
+      "description": "The type of device used.",
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "description": "The operating system of the device.",
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "description": "The status of the account.",
+      "type": ["null", "string"]
+    },
+    "CampaignStatus": {
+      "description": "The status of the campaign.",
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "description": "The status of the ad group.",
+      "type": ["null", "string"]
+    },
+    "KeywordStatus": {
+      "description": "The status of the keyword.",
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "description": "The type of goal achieved.",
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "description": "Number of view-through conversions recorded.",
+      "type": ["null", "integer"]
+    },
+    "AllConversionsQualified": {
+      "description": "Number of qualified conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "Number of qualified view-through conversions.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "description": "Total revenue generated from view-through conversions.",
+      "type": ["null", "number"]
+    }
+  }
+}

@@ -1,0 +1,880 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >-
+  The Cal.com connector enables seamless data synchronization between Cal.com’s
+  scheduling platform and various destinations. It helps extract events,
+  attendees, and booking details from Cal.com, making it easy to analyze
+  scheduling data or integrate it into downstream systems like data warehouses
+  or CRMs. This connector streamlines automated reporting and insights for time
+  management and booking analytics
+
+check:
+  type: CheckStream
+  stream_names:
+    - event_types
+
+definitions:
+  streams:
+    event_types:
+      type: DeclarativeStream
+      name: event_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/event-types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - eventTypeGroups
+              - "*"
+              - eventTypes
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: take
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_types"
+    my_profile:
+      type: DeclarativeStream
+      name: my_profile
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/me
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/my_profile"
+    schedules:
+      type: DeclarativeStream
+      name: schedules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/schedules
+          http_method: GET
+          request_headers:
+            cal-api-version: "2024-06-11"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: take
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/schedules"
+    calendars:
+      type: DeclarativeStream
+      name: calendars
+      primary_key:
+        - externalId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/calendars
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - connectedCalendars
+              - "*"
+              - calendars
+              - "*"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calendars"
+    bookings:
+      type: DeclarativeStream
+      name: bookings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/bookings
+          http_method: GET
+          request_headers:
+            cal-api-version: "2024-08-13"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: skip
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bookings"
+    conferencing:
+      type: DeclarativeStream
+      name: conferencing
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/conferencing
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conferencing"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.cal.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/event_types"
+  - $ref: "#/definitions/streams/my_profile"
+  - $ref: "#/definitions/streams/schedules"
+  - $ref: "#/definitions/streams/calendars"
+  - $ref: "#/definitions/streams/bookings"
+  - $ref: "#/definitions/streams/conferencing"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - orgId
+      - api_key
+    properties:
+      orgId:
+        type: string
+        name: Organization ID
+        order: 0
+        title: orgId
+      api_key:
+        type: string
+        description: API key to use. Find it at https://cal.com/account
+        name: api_key
+        order: 1
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    event_types: true
+    my_profile: true
+    schedules: true
+    calendars: true
+    bookings: true
+    conferencing: true
+  testedStreams:
+    event_types:
+      streamHash: 5997ca432cb58db58d2d2b5730e65aeebb917cf0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    my_profile:
+      hasRecords: true
+      streamHash: f36b2ec021e76f2cce1d826a00fdb1cacb9ab4ea
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    schedules:
+      streamHash: 32f5be46fba85df1ddf3a67196729c9f3b152d98
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    calendars:
+      hasRecords: true
+      streamHash: 9cb1b9161f0deaf9644c05460bf8988a06f2d1ea
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bookings:
+      streamHash: 306e91dd4a043f11aaedb6da8a5acfe837128dd5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    conferencing:
+      streamHash: 3bf649057d4e6b8ea7e003ac70ec896ea49ef5c7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://cal.com/docs/api-reference/v2/introduction
+
+schemas:
+  event_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          apps:
+            type:
+              - object
+              - "null"
+            properties:
+              giphy:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  thankYouPage:
+                    type:
+                      - string
+                      - "null"
+          multipleDuration:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+      afterEventBuffer:
+        type:
+          - number
+          - "null"
+      assignAllTeamMembers:
+        type:
+          - boolean
+          - "null"
+      beforeEventBuffer:
+        type:
+          - number
+          - "null"
+      bookingFields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            defaultLabel:
+              type:
+                - string
+                - "null"
+            defaultPlaceholder:
+              type:
+                - string
+                - "null"
+            editable:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+            sources:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  label:
+                    type:
+                      - string
+                      - "null"
+            variant:
+              type:
+                - string
+                - "null"
+            variantsConfig:
+              type:
+                - object
+                - "null"
+              properties:
+                variants:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    fullName:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        fields:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              name:
+                                type:
+                                  - string
+                                  - "null"
+                              required:
+                                type:
+                                  - boolean
+                                  - "null"
+            views:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  label:
+                    type:
+                      - string
+                      - "null"
+      children:
+        type:
+          - array
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      disableGuests:
+        type:
+          - boolean
+          - "null"
+      hashedLink:
+        type:
+          - array
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      hideCalendarNotes:
+        type:
+          - boolean
+          - "null"
+      hosts:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      isInstantEvent:
+        type:
+          - boolean
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+      lockTimeZoneToggleOnBookingPage:
+        type:
+          - boolean
+          - "null"
+      minimumBookingNotice:
+        type:
+          - number
+          - "null"
+      offsetStart:
+        type:
+          - number
+          - "null"
+      onlyShowFirstAvailableSlot:
+        type:
+          - boolean
+          - "null"
+      periodType:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      requiresBookerEmailVerification:
+        type:
+          - boolean
+          - "null"
+      requiresConfirmation:
+        type:
+          - boolean
+          - "null"
+      seatsShowAttendees:
+        type:
+          - boolean
+          - "null"
+      seatsShowAvailabilityCount:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      useEventTypeDestinationCalendarEmail:
+        type:
+          - boolean
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+      userIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    required:
+      - id
+  my_profile:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      defaultScheduleId:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      timeFormat:
+        type:
+          - number
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      weekStart:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      availability:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            days:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            endTime:
+              type:
+                - string
+                - "null"
+            startTime:
+              type:
+                - string
+                - "null"
+      id:
+        type: number
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      overrides:
+        type:
+          - array
+          - "null"
+      ownerId:
+        type:
+          - number
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  calendars:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      credentialId:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      externalId:
+        type: string
+      integration:
+        type:
+          - string
+          - "null"
+      isSelected:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      readOnly:
+        type:
+          - boolean
+          - "null"
+    required:
+      - externalId
+  bookings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      absentHost:
+        type:
+          - boolean
+          - "null"
+      attendees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            absent:
+              type:
+                - boolean
+                - "null"
+            language:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+      bookingFieldsResponses:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          guests:
+            type:
+              - array
+              - "null"
+          location:
+            type:
+              - object
+              - "null"
+            properties:
+              optionValue:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      eventType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      eventTypeId:
+        type:
+          - number
+          - "null"
+      guests:
+        type:
+          - array
+          - "null"
+      hosts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+      id:
+        type: number
+      location:
+        type:
+          - string
+          - "null"
+      meetingUrl:
+        type:
+          - string
+          - "null"
+      rescheduledFromUid:
+        type:
+          - string
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      uid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  conferencing:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      appId:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      invalid:
+        type:
+          - boolean
+          - "null"
+      key:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id

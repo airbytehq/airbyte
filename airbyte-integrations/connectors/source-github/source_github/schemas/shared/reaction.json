@@ -1,0 +1,27 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "user": {
+      "$ref": "user.json"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "comment_id": {
+      "type": "integer"
+    }
+  }
+}

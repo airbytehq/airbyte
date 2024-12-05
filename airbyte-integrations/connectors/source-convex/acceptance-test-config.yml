@@ -1,0 +1,39 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-convex:dev
+test_strictness_level: low
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_convex/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.1"
+  # TODO: Need creds to run integration tests https://github.com/airbytehq/airbyte/issues/25571
+  # basic_read:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"
+  #       empty_streams:
+  #         - name: "users"
+  #           bypass_reason: "No records provided"
+  #         - name: "posts"
+  #           bypass_reason: "No records provided"
+  # incremental:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"
+  #       future_state:
+  #         future_state_path: "integration_tests/abnormal_state.json"
+  # full_refresh:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       configured_catalog_path: "integration_tests/configured_catalog.json"

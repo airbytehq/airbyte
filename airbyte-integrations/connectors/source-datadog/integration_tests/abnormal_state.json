@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "sync_date": "9999-04-12T18:13:36Z" },
+      "stream_descriptor": { "name": "logs" }
+    }
+  }
+]

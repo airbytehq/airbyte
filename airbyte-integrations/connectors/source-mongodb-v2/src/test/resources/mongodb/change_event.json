@@ -1,0 +1,23 @@
+{
+  "before": null,
+  "after": null,
+  "updateDescription": null,
+  "source": {
+    "version": "2.2.0.Final",
+    "connector": "mongodb",
+    "name": "test_db",
+    "ts_ms": 1692651270000,
+    "snapshot": "false",
+    "db": "test_db",
+    "sequence": null,
+    "rs": "atlas-abcdef-shard-0",
+    "collection": "test_collection",
+    "ord": 2,
+    "lsid": null,
+    "txnNumber": null,
+    "wallTime": null
+  },
+  "op": "r",
+  "ts_ms": 1692651277722,
+  "transaction": null
+}

@@ -1,96 +1,200 @@
+import com.gradle.scan.plugin.PublishedBuildScan
+
+pluginManagement {
+    repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Prefer repos controlled by Airbyte.
+        // TODO: add airbyte-controlled proxy repos here
+
+        // ## Look into other, public repos.
+        // Gradle plugin portal.
+        gradlePluginPortal()
+        // Maven Central has most of everything.
+        mavenCentral()
+    }
+}
+
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.4.1"
+    id "com.gradle.enterprise" version "3.15.1"
+    id 'com.github.burrunan.s3-build-cache' version "1.8.1"
+}
+
+final boolean isCI = System.getenv().containsKey("CI") || System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+
+dependencyResolutionManagement {
+    // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+
+    repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Prefer repos controlled by Airbyte.
+
+        maven {
+            // This repo hosts our public artifacts and can be referenced by anyone.
+            name 'airbyte-public-jars'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+            content {
+                // Whitelist artifacts served by this repo because it's slow.
+                includeGroup 'io.airbyte'
+                includeGroupByRegex 'io\\.airbyte\\..*'
+                includeGroup 'com.hadoop.gplcompression'
+                includeGroup 'com.therealvan'
+            }
+        }
+        // TODO: add airbyte-controlled proxy repos here
+
+        // ## Look into other, public repos.
+
+        // Maven Central has most of everything.
+        mavenCentral()
+        // Jitpack is used to pull dependencies directly from github.
+        maven {
+            name 'jitpack'
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex 'com\\.github\\..*'
+                includeGroup 'net.jimblackler.jsonschemafriend'
+            }
+        }
+        // Elastic Search repo.
+        maven {
+            name 'elastic-search-snapshots'
+            url 'https://snapshots.elastic.co/maven/'
+            content {
+                includeGroup 'co.elastic.clients'
+            }
+        }
+        // Redshift repo.
+        maven {
+            name 'redshift'
+            url 'https://s3.amazonaws.com/redshift-maven-repository/release'
+            content {
+                includeGroup 'com.amazon.redshift'
+            }
+        }
+        // Rockset repo.
+        maven {
+            name 'rockset'
+            url 'https://mvnrepository.com/artifact/com.rockset/rockset-java'
+            content {
+                includeGroup 'com.rockset'
+            }
+        }
+        // Awaitility repo.
+        maven {
+            name 'awaitility'
+            url 'https://mvnrepository.com/artifact/org.awaitility/awaitility'
+            content {
+                includeGroup 'org.awaitility'
+            }
+        }
+        // Confluent repo.
+        maven {
+            name 'confluent'
+            url "https://packages.confluent.io/maven"
+            content {
+                includeGroup 'io.confluent'
+                includeGroup 'org.apache.kafka'
+            }
+        }
+    }
 }
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
+        buildScanPublished { PublishedBuildScan scan ->
+            file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
+        }
+    }
+}
+
+if (isCI) {
+    buildCache {
+        local {
+            // Local build cache is dangerous as it might produce inconsistent results
+            // in case developer modifies files while the build is running
+            enabled = true
+            push = true
+        }
+        remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
+            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
+            push = true
+            // The 'us-west-2' region was chosen because it was close to our v0.6 dagger runners
+            // we used to maintain in AWS, prior to migrating to v0.9 and to github runners.
+            // This may in fact no longer be the best choice, who knows? It's not terrible, at least.
+            region = 'us-west-2'
+            bucket = 'ab-ci-cache'
+            prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
+        }
     }
 }
 
 rootProject.name = 'airbyte'
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
-if(!System.getenv().containsKey("SUB_BUILD")) {
-    println("Building all of Airbyte.")
-} else {
-    def subBuild = System.getenv().get("SUB_BUILD")
-    println("Building Airbyte Sub Build: " + subBuild)
-    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
-    }
-}
-
-// shared
-include ':airbyte-commons'
-include ':airbyte-commons-docker'
-include ':airbyte-json-validation'
-include ':airbyte-protocol:models'
-include ':airbyte-queue'
-include ':airbyte-workers' // reused by acceptance tests in connector base.
-include ':airbyte-config:models' // reused by acceptance tests in connector base.
-include ':airbyte-db' // reused by acceptance tests in connector base.
-include ':airbyte-test-utils'
-
-// platform
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    include ':airbyte-analytics'
-    include ':airbyte-api'
-    include ':airbyte-cli'
-    include ':airbyte-config:init'
-    include ':airbyte-config:persistence'
-    include ':airbyte-e2e-testing'
-    include ':airbyte-migration'
-    include ':airbyte-notification'
-    include ':airbyte-scheduler:app'
-    include ':airbyte-scheduler:client'
-    include ':airbyte-scheduler:models'
-    include ':airbyte-scheduler:persistence'
-    include ':airbyte-server'
-    include ':airbyte-webapp'
-    include ':airbyte-tests'
-}
-
-// connectors base
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
-    include ':airbyte-cdk:python'
-    include ':airbyte-integrations:bases:airbyte-protocol'
-    include ':airbyte-integrations:bases:base'
-    include ':airbyte-integrations:bases:base-java'
-    include ':airbyte-integrations:bases:base-normalization'
-    include ':airbyte-integrations:bases:base-python'
-    include ':airbyte-integrations:bases:base-python-test'
-    include ':airbyte-integrations:bases:base-singer'
-    include ':airbyte-integrations:bases:base-standard-source-test-file'
-    include ':airbyte-integrations:bases:source-acceptance-test'
-    include ':airbyte-integrations:bases:standard-destination-test'
-    include ':airbyte-integrations:bases:standard-source-test'
-    include ':airbyte-integrations:connector-templates:generator'
-    include ':airbyte-integrations:bases:debezium'
-    include ':tools:code-generator'
-
-    // Needed by normalization integration tests
-    include ':airbyte-integrations:connectors:destination-bigquery'
-    include ':airbyte-integrations:connectors:destination-jdbc'
-    include ':airbyte-integrations:connectors:destination-mysql'
-    include ':airbyte-integrations:connectors:destination-postgres'
-    include ':airbyte-integrations:connectors:destination-redshift'
-    include ':airbyte-integrations:connectors:destination-snowflake'
-}
-
-// connectors
-if(!System.getenv().containsKey("SUB_BUILD")) {
-    // include all connector projects
-    def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
-    println integrationsPath
-    integrationsPath.eachDir { dir ->
+// Include all java CDK modules.
+def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
+if (cdkPath.toFile().exists()) {
+    cdkPath.eachDir { dir ->
         def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-
         if (buildFiles.length == 1) {
-            include ":airbyte-integrations:connectors:${dir.getFileName()}"
+            def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+            include path
+            project(path).name = "airbyte-cdk-${dir.getFileName()}"
         }
     }
 }
+def bulkCdkCorePath = rootDir.toPath().resolve('airbyte-cdk/bulk/core')
+if (bulkCdkCorePath.toFile().exists()) {
+    bulkCdkCorePath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        if (buildFiles.length == 1) {
+            def path = ":airbyte-cdk:bulk:core:${dir.getFileName()}"
+            include path
+            project(path).name = "bulk-cdk-core-${dir.getFileName()}"
+        }
+    }
+}
+def bulkCdkToolkitPath = rootDir.toPath().resolve('airbyte-cdk/bulk/toolkits')
+if (bulkCdkToolkitPath.toFile().exists()) {
+    bulkCdkToolkitPath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        if (buildFiles.length == 1) {
+            def path = ":airbyte-cdk:bulk:toolkits:${dir.getFileName()}"
+            include path
+            project(path).name = "bulk-cdk-toolkit-${dir.getFileName()}"
+        }
+    }
+}
+
+// Include all java connector projects.
+def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
+integrationsPath.eachDir { dir ->
+    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+    if (buildFiles.length != 1) {
+        // Ignore python and other non-gradle connectors.
+        return
+    }
+    File metadataFile = dir.resolve("metadata.yaml").toFile()
+    if (!metadataFile.exists()) {
+        // Don't support connectors without metadata.
+        return
+    }
+    String metadataYaml = metadataFile.getText("UTF-8")
+    if (metadataYaml =~ /(?m)^\s+supportLevel:\s*["']?archived["']?\s*$/) {
+        // Ignore archived connectors.
+        return
+    }
+    include ":airbyte-integrations:connectors:${dir.getFileName()}"
+}
+
+// Include miscellaneous modules.
+include ':airbyte-integrations:connector-templates:generator'
+include ':airbyte-integrations:connectors-performance:source-harness'
+include ':airbyte-integrations:connectors-performance:destination-harness'

@@ -1,0 +1,1 @@
+{"stream": "pagespeed", "data": { "captchaResult": "CAPTCHA_NOT_NEEDED", "kind": "pagespeedonline#result", "lighthouseResult": { "configSettings": { "onlyCategories": ["pwa", "performance"] }, "categories": { "performance": { "id": "performance" }, "pwa": { "id": "pwa" } } }}, "emitted_at": 1626172757000}

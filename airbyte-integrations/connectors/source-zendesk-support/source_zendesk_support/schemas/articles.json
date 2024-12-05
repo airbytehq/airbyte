@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Articles",
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "description": "The unique identifier of the author who created the article.",
+      "type": ["null", "integer"]
+    },
+    "body": {
+      "description": "The main content or body of the article.",
+      "type": ["null", "string"]
+    },
+    "comments_disabled": {
+      "description": "Indicates whether comments are disabled for the article.",
+      "type": ["null", "boolean"]
+    },
+    "content_tag_ids": {
+      "description": "An array of unique identifiers of content tags associated with the article.",
+      "type": ["null", "array"]
+    },
+    "created_at": {
+      "description": "The date and time when the article was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "draft": {
+      "description": "Indicates whether the article is in draft mode.",
+      "type": ["null", "boolean"]
+    },
+    "edited_at": {
+      "description": "The date and time when the article was last edited.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "html_url": {
+      "description": "The URL of the article in HTML format.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the article.",
+      "type": ["null", "integer"]
+    },
+    "label_names": {
+      "description": "An array of label names associated with the article.",
+      "type": ["null", "array"]
+    },
+    "locale": {
+      "description": "The language locale of the article.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the article.",
+      "type": ["null", "string"]
+    },
+    "outdated": {
+      "description": "Indicates whether the article is outdated.",
+      "type": ["null", "boolean"]
+    },
+    "outdated_locales": {
+      "description": "An array of language locales in which the article is outdated.",
+      "type": ["null", "array"]
+    },
+    "permission_group_id": {
+      "description": "The unique identifier of the permission group for the article.",
+      "type": ["null", "integer"]
+    },
+    "position": {
+      "description": "The position order of the article within its section.",
+      "type": ["null", "integer"]
+    },
+    "promoted": {
+      "description": "Indicates whether the article is promoted.",
+      "type": ["null", "boolean"]
+    },
+    "section_id": {
+      "description": "The unique identifier of the section to which the article belongs.",
+      "type": ["null", "integer"]
+    },
+    "source_locale": {
+      "description": "The original language locale of the article.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title or heading of the article.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the article was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL of the article.",
+      "type": ["null", "string"]
+    },
+    "user_segment_id": {
+      "description": "The unique identifier of the user segment targeted by the article.",
+      "type": ["null", "integer"]
+    },
+    "vote_count": {
+      "description": "The total count of votes received for the article.",
+      "type": ["null", "integer"]
+    },
+    "vote_sum": {
+      "description": "The sum of votes received for the article (considering upvotes and downvotes).",
+      "type": ["null", "integer"]
+    }
+  }
+}

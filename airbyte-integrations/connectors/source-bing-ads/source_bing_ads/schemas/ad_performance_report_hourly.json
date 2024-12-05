@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "description": "The unique identifier for the account to which the ad belongs",
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier for the campaign to which the ad belongs",
+      "type": ["null", "integer"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier for the ad group to which the ad belongs",
+      "type": ["null", "integer"]
+    },
+    "AdId": {
+      "description": "The unique identifier for the ad",
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "description": "The time period to which the data corresponds",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "CurrencyCode": {
+      "description": "The currency code used for monetary values",
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "description": "The distribution channel for the ad (e.g., Search, Audience Network)",
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "description": "The type of device on which the ad was displayed (e.g., Desktop, Mobile)",
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "description": "The language targeting of the ad",
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "description": "The network where the ad was displayed (e.g., Bing, AOL)",
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "description": "The operating system of the device on which the ad was displayed",
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "description": "The performance comparison of top positions vs. other positions",
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "description": "The type of keyword match (e.g., Broad, Phrase, Exact) for the bid",
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "description": "The type of keyword match for which the ad has been delivered",
+      "type": ["null", "string"]
+    },
+    "AccountName": {
+      "description": "The name of the account to which the ad belongs",
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "description": "The name of the campaign to which the ad belongs",
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "description": "The type of the campaign (e.g., Search, Audience Network)",
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group to which the ad belongs",
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "description": "The total number of times the ad was shown",
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "description": "The total number of clicks on the ad",
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "description": "The click-through rate",
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "description": "The total amount spent on the ad campaign",
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "description": "The cost per specific conversion",
+      "type": ["null", "number"]
+    },
+    "DestinationUrl": {
+      "description": "The destination URL of the ad",
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "description": "The number of assists (when an ad indirectly results in a conversion)",
+      "type": ["null", "integer"]
+    },
+    "ReturnOnAdSpend": {
+      "description": "The return on ad spend for specific conversions",
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "description": "The cost per assist (indirect conversion)",
+      "type": ["null", "number"]
+    },
+    "CustomParameters": {
+      "description": "Any custom parameters set for the ad",
+      "type": ["null", "string"]
+    },
+    "FinalAppUrl": {
+      "description": "The final URL shown in the ad for app installations",
+      "type": ["null", "string"]
+    },
+    "AdDescription": {
+      "description": "The text of the first description line in the ad",
+      "type": ["null", "string"]
+    },
+    "AdDescription2": {
+      "description": "The text of the second description line in the ad",
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "description": "The total number of view-through conversions",
+      "type": ["null", "integer"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "The number of qualified view-through conversions",
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "description": "The cost per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions",
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "description": "The total number of specific conversions",
+      "type": ["null", "number"]
+    },
+    "ConversionRate": {
+      "description": "The conversion rate for specific conversions",
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "description": "The number of qualified conversions",
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "description": "The average cost per click",
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "description": "The average position of the ad on the search results page",
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "description": "The average cost per 1,000 impressions",
+      "type": ["null", "number"]
+    },
+    "AllConversions": {
+      "description": "The total number of all conversions",
+      "type": ["null", "integer"]
+    },
+    "AllConversionRate": {
+      "description": "The conversion rate for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllRevenue": {
+      "description": "The total revenue from all conversions",
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "description": "The revenue per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "description": "The total revenue generated by the ad",
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "description": "The revenue per specific conversion",
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "description": "The revenue per assist (indirect conversion)",
+      "type": ["null", "number"]
+    }
+  }
+}

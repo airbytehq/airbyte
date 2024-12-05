@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "assets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "created_at": { "type": ["null", "string"], "format": "date-time" },
+          "file_extension": { "type": ["null", "string"] },
+          "file_size": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "original_geometry": { "type": ["null", "string"] },
+          "public_url": { "type": ["null", "string"] },
+          "uploaded_by": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "string"] }
+            }
+          },
+          "url": { "type": ["null", "string"] },
+          "url_thumbnail": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "body": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "creator_id": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "item_id": { "type": ["null", "string"] },
+    "replies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "creator_id": { "type": ["null", "string"] },
+          "created_at": { "type": ["null", "string"], "format": "date-time" },
+          "text_body": { "type": ["null", "string"] },
+          "updated_at": { "type": ["null", "string"], "format": "date-time" },
+          "body": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "text_body": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"], "format": "date-time" }
+  }
+}

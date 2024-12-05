@@ -1,0 +1,57 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-zoom:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
+        empty_streams:
+          - name: "webinars"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_panelists"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_registrants"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_absentees"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_polls"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_poll_results"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_registration_questions"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_tracking_sources"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "webinar_qna_results"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "report_webinars"
+            bypass_reason: "Need paid Webinar license to populate data"
+          - name: "report_webinar_participants"
+            bypass_reason: "Need paid Webinar license to populate data"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          meetings:
+            - name: "start_url"
+              bypass_reason:
+                "Causes sequential_read test to fail as the value is unique
+                upon each read"
+        timeout_seconds: 3600

@@ -1,0 +1,114 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sparse_nested_stream",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "integer"
+            },
+            "obj_nest1": {
+              "type": "object",
+              "properties": {
+                "obj_nest2": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "arr_nest1": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "arr_nest2": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "sparse_nested_stream_empty",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "integer"
+            },
+            "obj_nest1": {
+              "type": "object",
+              "properties": {
+                "obj_nest2": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "arr_nest1": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "arr_nest2": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    }
+  ]
+}

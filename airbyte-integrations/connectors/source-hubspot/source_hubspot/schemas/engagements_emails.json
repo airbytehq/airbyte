@@ -1,0 +1,707 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the engagement email",
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "hs_all_assigned_business_unit_ids": {
+          "description": "The IDs of all business units assigned to this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_at_mentioned_owner_ids": {
+          "description": "The IDs of owners mentioned in this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_attachment_ids": {
+          "description": "The IDs of attachments included in this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview": {
+          "description": "Preview text of the email body",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_html": {
+          "description": "HTML version of the preview text of the email body",
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_is_truncated": {
+          "description": "Indicates if the body preview is truncated",
+          "type": ["null", "boolean"]
+        },
+        "hs_created_by": {
+          "description": "User who created the engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_created_by_user_id": {
+          "description": "User ID of the creator of the engagement email",
+          "type": ["null", "number"]
+        },
+        "hs_createdate": {
+          "description": "Date and time when the engagement email was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_direction_and_unique_id": {
+          "description": "Direction and unique ID of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_attached_video_id": {
+          "description": "ID of the attached video in the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_attached_video_name": {
+          "description": "Name of the attached video in the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_attached_video_opened": {
+          "description": "Indicates if the attached video was opened",
+          "type": ["null", "boolean"]
+        },
+        "hs_email_attached_video_watched": {
+          "description": "Indicates if the attached video was watched",
+          "type": ["null", "boolean"]
+        },
+        "hs_email_bcc_email": {
+          "description": "Email address in BCC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_bcc_firstname": {
+          "description": "First name in BCC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_bcc_lastname": {
+          "description": "Last name in BCC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_bcc_raw": {
+          "description": "Raw data of BCC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_cc_email": {
+          "description": "Email address in CC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_cc_firstname": {
+          "description": "First name in CC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_cc_lastname": {
+          "description": "Last name in CC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_cc_raw": {
+          "description": "Raw data of CC field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_direction": {
+          "description": "Direction of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_encoded_email_associations_request": {
+          "description": "Encoded email associations request",
+          "type": ["null", "string"]
+        },
+        "hs_email_error_message": {
+          "description": "Error message associated with the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_facsimile_send_id": {
+          "description": "ID associated with the facsimile send",
+          "type": ["null", "string"]
+        },
+        "hs_email_from_email": {
+          "description": "Email address of the sender",
+          "type": ["null", "string"]
+        },
+        "hs_email_from_firstname": {
+          "description": "First name of the sender",
+          "type": ["null", "string"]
+        },
+        "hs_email_from_lastname": {
+          "description": "Last name of the sender",
+          "type": ["null", "string"]
+        },
+        "hs_email_from_raw": {
+          "description": "Raw data of the sender's email",
+          "type": ["null", "string"]
+        },
+        "hs_email_headers": {
+          "description": "Headers of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_html": {
+          "description": "HTML content of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_logged_from": {
+          "description": "Origin of the logged email",
+          "type": ["null", "string"]
+        },
+        "hs_email_media_processing_status": {
+          "description": "Status of media processing in the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_member_of_forwarded_subthread": {
+          "description": "Indicates if the email is a member of a forwarded subthread",
+          "type": ["null", "boolean"]
+        },
+        "hs_email_message_id": {
+          "description": "Message ID of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_migrated_via_portal_data_migration": {
+          "description": "Indicates if the email was migrated via portal data migration",
+          "type": ["null", "string"]
+        },
+        "hs_email_pending_inline_image_ids": {
+          "description": "IDs of pending inline images in the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_post_send_status": {
+          "description": "Status after sending the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_recipient_drop_reasons": {
+          "description": "Reasons for dropping email recipients",
+          "type": ["null", "string"]
+        },
+        "hs_email_send_event_id": {
+          "description": "ID of the email send event",
+          "type": ["null", "string"]
+        },
+        "hs_email_send_event_id_created": {
+          "description": "Date and time when the email send event was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_email_sender_email": {
+          "description": "Email address of the sender of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_sender_firstname": {
+          "description": "First name of the sender of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_sender_lastname": {
+          "description": "Last name of the sender of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_sender_raw": {
+          "description": "Raw data of the sender of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_sent_via": {
+          "description": "Method through which the email was sent",
+          "type": ["null", "string"]
+        },
+        "hs_email_status": {
+          "description": "Status of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_subject": {
+          "description": "Subject of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_text": {
+          "description": "Text content of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_thread_id": {
+          "description": "Thread ID of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_to_email": {
+          "description": "Email address in 'To' field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_to_firstname": {
+          "description": "First name in 'To' field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_to_lastname": {
+          "description": "Last name in 'To' field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_to_raw": {
+          "description": "Raw data of 'To' field of the email",
+          "type": ["null", "string"]
+        },
+        "hs_email_tracker_key": {
+          "description": "Key associated with email tracking",
+          "type": ["null", "string"]
+        },
+        "hs_email_validation_skipped": {
+          "description": "Indicates if email validation was skipped",
+          "type": ["null", "string"]
+        },
+        "hs_engagement_source": {
+          "description": "Source of engagement",
+          "type": ["null", "string"]
+        },
+        "hs_engagement_source_id": {
+          "description": "ID of the engagement source",
+          "type": ["null", "string"]
+        },
+        "hs_follow_up_action": {
+          "description": "Follow-up action related to the engagement",
+          "type": ["null", "string"]
+        },
+        "hs_gdpr_deleted": {
+          "description": "Indicates if the email has been GDPR deleted",
+          "type": ["null", "boolean"]
+        },
+        "hs_lastmodifieddate": {
+          "description": "Date and time when the engagement email was last modified",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_merged_object_ids": {
+          "description": "IDs of merged objects related to the email",
+          "type": ["null", "string"]
+        },
+        "hs_modified_by": {
+          "description": "User who last modified the email",
+          "type": ["null", "string"]
+        },
+        "hs_object_id": {
+          "description": "ID of the engagement email object",
+          "type": ["null", "number"]
+        },
+        "hs_product_name": {
+          "description": "Name of the product associated with the engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_queue_membership_ids": {
+          "description": "IDs of queue memberships associated with this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_timestamp": {
+          "description": "Date and time of the timestamp for the engagement email",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_unique_creation_key": {
+          "description": "Unique key for the creation of the email",
+          "type": ["null", "string"]
+        },
+        "hs_unique_id": {
+          "description": "Unique ID of the engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_updated_by_user_id": {
+          "description": "User ID of the user who last updated the email",
+          "type": ["null", "number"]
+        },
+        "hs_user_ids_of_all_notification_followers": {
+          "description": "User IDs of all notification followers of the email",
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "User IDs of all notification unfollowers of the email",
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_owners": {
+          "description": "User IDs of all owners of the email",
+          "type": ["null", "string"]
+        },
+        "hubspot_owner_assigneddate": {
+          "description": "Date and time when the owner was assigned to the engagement email",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hubspot_owner_id": {
+          "description": "ID of the owner associated with the email",
+          "type": ["null", "string"]
+        },
+        "hubspot_team_id": {
+          "description": "ID of the team associated with the email",
+          "type": ["null", "string"]
+        },
+        "hs_all_owner_ids": {
+          "description": "The IDs of all owners associated with this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_all_team_ids": {
+          "description": "The IDs of all teams associated with this engagement email",
+          "type": ["null", "string"]
+        },
+        "hs_all_accessible_team_ids": {
+          "description": "The IDs of all the teams that have access to this engagement email",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "properties_hs_all_assigned_business_unit_ids": {
+      "description": "The IDs of all business units assigned to this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_at_mentioned_owner_ids": {
+      "description": "The IDs of owners mentioned in this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_attachment_ids": {
+      "description": "The IDs of attachments included in this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview": {
+      "description": "Preview text of the email body",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_html": {
+      "description": "HTML version of the preview text of the email body",
+      "type": ["null", "string"]
+    },
+    "properties_hs_body_preview_is_truncated": {
+      "description": "Indicates if the body preview is truncated",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_created_by": {
+      "description": "User who created the engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_created_by_user_id": {
+      "description": "User ID of the creator of the engagement email",
+      "type": ["null", "number"]
+    },
+    "properties_hs_createdate": {
+      "description": "Date and time when the engagement email was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_direction_and_unique_id": {
+      "description": "Direction and unique ID of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_attached_video_id": {
+      "description": "ID of the attached video in the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_attached_video_name": {
+      "description": "Name of the attached video in the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_attached_video_opened": {
+      "description": "Indicates if the attached video was opened",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_email_attached_video_watched": {
+      "description": "Indicates if the attached video was watched",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_email_bcc_email": {
+      "description": "Email address in BCC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_bcc_firstname": {
+      "description": "First name in BCC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_bcc_lastname": {
+      "description": "Last name in BCC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_bcc_raw": {
+      "description": "Raw data of BCC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_cc_email": {
+      "description": "Email address in CC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_cc_firstname": {
+      "description": "First name in CC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_cc_lastname": {
+      "description": "Last name in CC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_cc_raw": {
+      "description": "Raw data of CC field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_direction": {
+      "description": "Direction of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_encoded_email_associations_request": {
+      "description": "Encoded email associations request",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_error_message": {
+      "description": "Error message associated with the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_facsimile_send_id": {
+      "description": "ID associated with the facsimile send",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_from_email": {
+      "description": "Email address of the sender",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_from_firstname": {
+      "description": "First name of the sender",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_from_lastname": {
+      "description": "Last name of the sender",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_from_raw": {
+      "description": "Raw data of the sender's email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_headers": {
+      "description": "Headers of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_html": {
+      "description": "HTML content of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_logged_from": {
+      "description": "Origin of the logged email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_media_processing_status": {
+      "description": "Status of media processing in the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_member_of_forwarded_subthread": {
+      "description": "Indicates if the email is a member of a forwarded subthread",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_email_message_id": {
+      "description": "Message ID of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_migrated_via_portal_data_migration": {
+      "description": "Indicates if the email was migrated via portal data migration",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_pending_inline_image_ids": {
+      "description": "IDs of pending inline images in the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_post_send_status": {
+      "description": "Status after sending the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_recipient_drop_reasons": {
+      "description": "Reasons for dropping email recipients",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_send_event_id": {
+      "description": "ID of the email send event",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_send_event_id_created": {
+      "description": "Date and time when the email send event was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_email_sender_email": {
+      "description": "Email address of the sender of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_sender_firstname": {
+      "description": "First name of the sender of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_sender_lastname": {
+      "description": "Last name of the sender of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_sender_raw": {
+      "description": "Raw data of the sender of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_sent_via": {
+      "description": "Method through which the email was sent",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_status": {
+      "description": "Status of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_subject": {
+      "description": "Subject of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_text": {
+      "description": "Text content of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_thread_id": {
+      "description": "Thread ID of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_to_email": {
+      "description": "Email address in 'To' field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_to_firstname": {
+      "description": "First name in 'To' field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_to_lastname": {
+      "description": "Last name in 'To' field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_to_raw": {
+      "description": "Raw data of 'To' field of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_tracker_key": {
+      "description": "Key associated with email tracking",
+      "type": ["null", "string"]
+    },
+    "properties_hs_email_validation_skipped": {
+      "description": "Indicates if email validation was skipped",
+      "type": ["null", "string"]
+    },
+    "properties_hs_engagement_source": {
+      "description": "Source of engagement",
+      "type": ["null", "string"]
+    },
+    "properties_hs_engagement_source_id": {
+      "description": "ID of the engagement source",
+      "type": ["null", "string"]
+    },
+    "properties_hs_follow_up_action": {
+      "description": "Follow-up action related to the engagement",
+      "type": ["null", "string"]
+    },
+    "properties_hs_gdpr_deleted": {
+      "description": "Indicates if the email has been GDPR deleted",
+      "type": ["null", "boolean"]
+    },
+    "properties_hs_lastmodifieddate": {
+      "description": "Date and time when the engagement email was last modified",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_merged_object_ids": {
+      "description": "IDs of merged objects related to the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_modified_by": {
+      "description": "User who last modified the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_object_id": {
+      "description": "ID of the engagement email object",
+      "type": ["null", "number"]
+    },
+    "properties_hs_product_name": {
+      "description": "Name of the product associated with the engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_queue_membership_ids": {
+      "description": "IDs of queue memberships associated with this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_timestamp": {
+      "description": "Date and time of the timestamp for the engagement email",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_unique_creation_key": {
+      "description": "Unique key for the creation of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_unique_id": {
+      "description": "Unique ID of the engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_updated_by_user_id": {
+      "description": "User ID of the user who last updated the email",
+      "type": ["null", "number"]
+    },
+    "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "User IDs of all notification followers of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "User IDs of all notification unfollowers of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_user_ids_of_all_owners": {
+      "description": "User IDs of all owners of the email",
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_owner_assigneddate": {
+      "description": "Date and time when the owner was assigned to the engagement email",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hubspot_owner_id": {
+      "description": "ID of the owner associated with the email",
+      "type": ["null", "string"]
+    },
+    "properties_hubspot_team_id": {
+      "description": "ID of the team associated with the email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_owner_ids": {
+      "description": "The IDs of all owners associated with this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_team_ids": {
+      "description": "The IDs of all teams associated with this engagement email",
+      "type": ["null", "string"]
+    },
+    "properties_hs_all_accessible_team_ids": {
+      "description": "The IDs of all the teams that have access to this engagement email",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "Date and time when the engagement email was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "Date and time when the engagement email was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates if the engagement email is archived or not",
+      "type": ["null", "boolean"]
+    },
+    "contacts": {
+      "description": "List of contacts associated with the engagement email",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "deals": {
+      "description": "List of deals associated with the engagement email",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "companies": {
+      "description": "List of companies associated with the engagement email",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tickets": {
+      "description": "List of tickets associated with the engagement email",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

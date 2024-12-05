@@ -1,0 +1,71 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "code": {
+      "description": "ISO country code.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the country.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "Name of the country.",
+      "type": ["null", "string"]
+    },
+    "provinces": {
+      "description": "Array of provinces or states within the country.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "code": {
+            "description": "Province or state code.",
+            "type": ["null", "string"]
+          },
+          "country_id": {
+            "description": "Unique identifier of the country the province belongs to.",
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "description": "Unique identifier for the province.",
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "description": "Name of the province.",
+            "type": ["null", "string"]
+          },
+          "tax": {
+            "description": "Tax information for the province.",
+            "type": ["null", "number"]
+          },
+          "tax_name": {
+            "description": "Name of the tax applicable for the province.",
+            "type": ["null", "string"]
+          },
+          "tax_type": {
+            "description": "Type of tax (e.g., sales tax, VAT) applicable in the province.",
+            "type": ["null", "string"]
+          },
+          "tax_percentage": {
+            "description": "Percentage value of tax applicable in the province.",
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "tax": {
+      "description": "Overall tax information for the country.",
+      "type": ["null", "number"]
+    },
+    "tax_name": {
+      "description": "Name of the tax applicable for the country.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "URL for the shop related to this country.",
+      "type": ["null", "string"]
+    }
+  }
+}

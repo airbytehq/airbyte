@@ -1,0 +1,14 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "profile_picture_url": {
+      "type": ["string", "null"]
+    }
+  }
+}

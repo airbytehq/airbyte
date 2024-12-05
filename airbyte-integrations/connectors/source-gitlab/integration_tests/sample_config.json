@@ -3,8 +3,5 @@
   "private_token": "<user`s_private_token>",
   "groups": "new-group",
   "projects": "new-ci-test",
-  "start_date": "2021-01-01T00:00:00Z",
-  "ultimate_license": false,
-  "fetch_merge_request_commits": true,
-  "fetch_pipelines_extended": true
+  "start_date": "2021-01-01T00:00:00Z"
 }

@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "properties": {
+    "account": {
+      "description": "Details of the account associated with the cash balance",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Unique code identifier for the account",
+          "type": ["string", "null"]
+        },
+        "statementIdentifier": {
+          "description": "Identifier for the statement related to the account",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "Universally unique identifier for the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "cashBalance": {
+      "description": "Array of cash balance data",
+      "type": ["array", "null"],
+      "items": {
+        "description": "Details of a specific cash balance entry",
+        "type": ["object", "null"],
+        "properties": {
+          "amount": {
+            "description": "The amount of cash balance on the specified date",
+            "type": ["number", "null"]
+          },
+          "balanceDate": {
+            "description": "Date and type of the cash balance entry",
+            "type": ["object", "null"],
+            "properties": {
+              "date": {
+                "description": "The date of the cash balance entry",
+                "type": ["string", "null"]
+              },
+              "dateType": {
+                "description": "Type of date entry (e.g., actual, estimated)",
+                "type": ["string", "null"]
+              }
+            }
+          },
+          "currencyCode": {
+            "description": "The currency code of the cash balance amount",
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "cashFlowStatus": {
+      "description": "Status of the cash flow related to the account",
+      "type": ["object", "null"],
+      "properties": {
+        "actual": {
+          "description": "Status of actual cash flow",
+          "type": ["boolean", "null"]
+        },
+        "confirmedForecasts": {
+          "description": "Status of confirmed cash flow forecasts",
+          "type": ["boolean", "null"]
+        },
+        "estimatedForecasts": {
+          "description": "Status of estimated cash flow forecasts",
+          "type": ["boolean", "null"]
+        },
+        "intraday": {
+          "description": "Status of intraday cash flow",
+          "type": ["boolean", "null"]
+        }
+      }
+    }
+  },
+  "title": "BK-AccountCashBalanceModel",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,95 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_SALES_REPORT",
+    "reportOptions": {
+      "distributorView": "MANUFACTURING",
+      "reportPeriod": "WEEK",
+      "sellingProgram": "RETAIL"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "salesAggregate": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "customerReturns": 0,
+      "orderedRevenue": {
+        "amount": 1500.0,
+        "currencyCode": "USD"
+      },
+      "orderedUnits": 75,
+      "shippedCogs": {
+        "amount": 90.0,
+        "currencyCode": "USD"
+      },
+      "shippedRevenue": {
+        "amount": 200.0,
+        "currencyCode": "USD"
+      },
+      "shippedUnits": 10
+    },
+    {
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "customerReturns": 0,
+      "orderedRevenue": {
+        "amount": 0.0,
+        "currencyCode": "USD"
+      },
+      "orderedUnits": 0,
+      "shippedCogs": {
+        "amount": 0.0,
+        "currencyCode": "USD"
+      },
+      "shippedRevenue": {
+        "amount": 0.0,
+        "currencyCode": "USD"
+      },
+      "shippedUnits": 0
+    }
+  ],
+  "salesByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "customerReturns": 0,
+      "orderedRevenue": {
+        "amount": 1000.0,
+        "currencyCode": "USD"
+      },
+      "orderedUnits": 25,
+      "shippedCogs": {
+        "amount": 50.0,
+        "currencyCode": "USD"
+      },
+      "shippedRevenue": {
+        "amount": 150.0,
+        "currencyCode": "USD"
+      },
+      "shippedUnits": 5
+    },
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B987654321",
+      "customerReturns": 0,
+      "orderedRevenue": {
+        "amount": 500,
+        "currencyCode": "USD"
+      },
+      "orderedUnits": 50,
+      "shippedCogs": {
+        "amount": 40.0,
+        "currencyCode": "USD"
+      },
+      "shippedRevenue": {
+        "amount": 50.0,
+        "currencyCode": "USD"
+      },
+      "shippedUnits": 5
+    }
+  ]
+}

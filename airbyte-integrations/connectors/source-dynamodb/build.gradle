@@ -1,0 +1,25 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.dynamodb.DynamodbSource'
+}
+
+dependencies {
+
+    implementation platform('software.amazon.awssdk:bom:2.18.1')
+    // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
+    implementation 'software.amazon.awssdk:dynamodb'
+
+    testImplementation 'org.skyscreamer:jsonassert:1.5.1'
+    testImplementation "org.assertj:assertj-core:3.23.1"
+    testImplementation "org.testcontainers:localstack:1.19.4"
+
+}

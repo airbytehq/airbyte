@@ -1,0 +1,40 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-recurly:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "add_ons"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "billing_infos"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "credit_payments"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "shipping_methods"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+        skip_comprehensive_incremental_tests: true

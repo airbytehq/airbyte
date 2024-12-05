@@ -8,6 +8,15 @@
     "name": {
       "type": ["null", "string"]
     },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -15,6 +24,9 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "sort_order": {
+      "type": ["null", "string"]
     }
   }
 }

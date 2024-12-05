@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "id": {
+      "description": "A unique identifier for the metafield.",
+      "type": ["null", "integer"]
+    },
+    "namespace": {
+      "description": "The namespace for the metafield, used to group related metafields together.",
+      "type": ["null", "string"]
+    },
+    "key": {
+      "description": "The key or name of the metafield.",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The actual value stored in the metafield.",
+      "type": ["null", "string"]
+    },
+    "value_type": {
+      "description": "The data type of the value stored in the metafield (e.g., string, integer).",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description or purpose of the metafield.",
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "description": "The ID of the resource (e.g., product, order) that owns the metafield.",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the metafield was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the metafield was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "owner_resource": {
+      "description": "The type of resource (e.g., product, order) that owns the metafield.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The data type of the value stored in the metafield (e.g., string, integer).",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "A unique identifier for the metafield within Shopify's GraphQL Admin API.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the metafield is associated.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "type": ["null", "object"]
+}

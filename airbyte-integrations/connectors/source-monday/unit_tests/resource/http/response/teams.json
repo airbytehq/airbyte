@@ -1,0 +1,17 @@
+{
+  "data": {
+    "teams": [
+      {
+        "id": "520480",
+        "name": "Team1",
+        "picture_url": "https://cdn.monday.com/images/dapulse_team_default.png",
+        "users": [
+          {
+            "id": "25479561"
+          }
+        ]
+      }
+    ]
+  },
+  "account_id": 10239240
+}

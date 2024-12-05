@@ -1,0 +1,5 @@
+secrets
+.python-version
+.idea
+*.egg-info
+*/__pycache__

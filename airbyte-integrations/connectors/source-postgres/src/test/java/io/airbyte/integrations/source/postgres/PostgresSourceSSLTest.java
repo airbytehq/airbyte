@@ -1,29 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,38 +17,29 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceSSLTest {
 
@@ -74,112 +49,66 @@ class PostgresSourceSSLTest {
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaPrimitive.STRING),
-          Field.of("last_name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("first_name", JsonSchemaType.STRING),
+          Field.of("last_name", JsonSchemaType.STRING),
+          Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))
+          .withIsResumable(true)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
 
-  private static PostgreSQLContainer<?> PSQL_DB;
-
-  private String dbName;
-
-  @BeforeAll
-  static void init() {
-    PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
-        .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
-    PSQL_DB.start();
-  }
+  private PostgresTestDatabase testdb;
 
   @BeforeEach
   void setup() throws Exception {
-    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-      ctx.fetch("CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
-    database.close();
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL)
+        .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);")
+        .with("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
+        .with(
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));")
+        .with(
+            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s?sslmode=require",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+  @AfterEach
+  void tearDown() {
+    testdb.close();
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", true)
-        .build());
-  }
-
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb) {
-    return getConfig(psqlDb, psqlDb.getDatabaseName());
-  }
-
-  @AfterAll
-  static void cleanUp() {
-    PSQL_DB.close();
-  }
-
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
-      if (actualMessage.getRecord() != null) {
-        actualMessage.getRecord().setEmittedAt(null);
-      }
-    }
+  private JsonNode getConfig() {
+    return testdb.testConfigBuilder()
+        .withSchemas("public")
+        .withSsl(ImmutableMap.builder().put("mode", "require").build())
+        .build();
   }
 
   @Test
   void testDiscoverWithPk() throws Exception {
-    final AirbyteCatalog actual = new PostgresSource().discover(getConfig(PSQL_DB, dbName));
+    final AirbyteCatalog actual = new PostgresSource().discover(getConfig());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
           CATALOG.getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
@@ -194,43 +123,53 @@ class PostgresSourceSSLTest {
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME))
             .collect(Collectors.toList()));
 
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
-    assertEquals(ASCII_MESSAGES, actualMessages);
+    var actualRecordMessage = filterRecords(actualMessages);
+    assertEquals(ASCII_MESSAGES, actualRecordMessage);
   }
 
   @Test
   void testIsCdc() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final JsonNode config = getConfig();
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
 
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(SCHEMA_NAME));
+  @Test
+  void testAllowSSLWithCdcReplicationMethod() throws Exception {
+
+    JsonNode config = getCDCAndSslModeConfig("allow");
+
+    final AirbyteConnectionStatus actual = new PostgresSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'allow' is invalid"));
   }
 
-  private static Map<Object, Object> map(Object... entries) {
-    if (entries.length % 2 != 0) {
-      throw new IllegalArgumentException("Entries must have even length");
-    }
+  @Test
+  void testPreferSSLWithCdcReplicationMethod() throws Exception {
 
-    return new HashMap<>() {
+    JsonNode config = getCDCAndSslModeConfig("prefer");
 
-      {
-        for (int i = 0; i < entries.length; i++) {
-          put(entries[i++], entries[i]);
-        }
-      }
+    final AirbyteConnectionStatus actual = new PostgresSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
+  }
 
-    };
+  private JsonNode getCDCAndSslModeConfig(String sslMode) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.SSL_KEY, true)
+        .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))
+        .put("replication_method", Map.of("method", "CDC",
+            "replication_slot", "slot",
+            "publication", "ab_pub"))
+        .build());
   }
 
 }

@@ -1,0 +1,2 @@
+{"stream":"test","data":{"id":"row1","value":  12.345,"_ab_source_file_last_modified":"2023-08-06T18:05:00.000000Z","_ab_source_file_url":"parquet_tests/sample_decimal.parquet"},"emitted_at":1683668637642}
+{"stream":"test","data":{"id":"row2","value":  67.89,"_ab_source_file_last_modified":"2023-08-06T18:05:00.000000Z","_ab_source_file_url":"parquet_tests/sample_decimal.parquet"},"emitted_at":1683668637643}

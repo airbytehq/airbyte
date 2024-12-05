@@ -1,0 +1,7 @@
+{
+  "client_id": "fake-client-id",
+  "client_secret": "fake-client-secret",
+  "refresh_token": "fake-refresh-token",
+  "start_date": "2020-10-02T00:00:00Z",
+  "is_sandbox": false
+}

@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "name": "array_test_1",
+      "json_schema": {
+        "properties": {
+          "array_number": {
+            "type": ["array"],
+            "items": {
+              "type": "number"
+            }
+          },
+          "array_float": {
+            "type": ["array"],
+            "items": {
+              "type": "number",
+              "airbyte_type": "float"
+            }
+          },
+          "array_integer": {
+            "type": ["array"],
+            "items": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

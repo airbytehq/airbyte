@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -46,6 +26,7 @@ python3 main_dev_transform_catalog.py \
     """
 
     config: dict = {}
+    DBT_PROJECT = "dbt_project.yml"
 
     def __init__(self):
         self.config = {}
@@ -69,6 +50,7 @@ python3 main_dev_transform_catalog.py \
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
             "json_column": parsed_args.json_column,
+            "profile_config_dir": parsed_args.profile_config_dir,
         }
 
     def process_catalog(self) -> None:
@@ -80,6 +62,13 @@ python3 main_dev_transform_catalog.py \
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
+        self.update_dbt_project_vars(json_column=self.config["json_column"], models_to_source=processor.models_to_source)
+
+    def update_dbt_project_vars(self, **vars_config: Dict[str, Any]):
+        filename = os.path.join(self.config["profile_config_dir"], self.DBT_PROJECT)
+        config = read_yaml_config(filename)
+        config["vars"] = {**config.get("vars", {}), **vars_config}
+        write_yaml_config(config, filename)
 
 
 def read_profiles_yml(profile_dir: str) -> Any:
@@ -89,6 +78,19 @@ def read_profiles_yml(profile_dir: str) -> Any:
         return obj
 
 
+def read_yaml_config(filename: str) -> Dict[str, Any]:
+    with open(filename, "r") as fp:
+        config = yaml.safe_load(fp)
+    if not isinstance(config, dict):
+        raise RuntimeError("{} does not parse to a dictionary".format(os.path.basename(filename)))
+    return config
+
+
+def write_yaml_config(config: Dict[str, Any], filename: str):
+    with open(filename, "w") as fp:
+        fp.write(yaml.dump(config, sort_keys=False))
+
+
 def extract_schema(profiles_yml: Dict) -> str:
     if "dataset" in profiles_yml:
         return str(profiles_yml["dataset"])
@@ -96,6 +98,13 @@ def extract_schema(profiles_yml: Dict) -> str:
         return str(profiles_yml["schema"])
     else:
         raise KeyError("No Dataset/Schema defined in profiles.yml")
+
+
+def extract_path(profiles_yml: Dict) -> str:
+    if "path" in profiles_yml:
+        return str(profiles_yml["path"])
+    else:
+        raise KeyError("No destination_path defined in profiles.yml")
 
 
 def main(args=None):

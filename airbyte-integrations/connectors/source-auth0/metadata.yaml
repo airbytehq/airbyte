@@ -1,0 +1,47 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "*.auth0.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
+  dockerImageTag: 0.6.2
+  dockerRepository: airbyte/source-auth0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
+  githubIssueLabel: source-auth0
+  icon: auth0.svg
+  license: MIT
+  name: Auth0
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-auth0
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2023-08-10
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: auth0_config_dev_null
+          id: 1d14e305-c231-425f-9f99-6c37b7e4f45f
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AUTH0__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

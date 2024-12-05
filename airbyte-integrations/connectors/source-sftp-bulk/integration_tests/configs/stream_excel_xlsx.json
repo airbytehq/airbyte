@@ -1,0 +1,12 @@
+{
+  "streams": [
+    {
+      "name": "test_stream",
+      "file_type": "excel",
+      "globs": ["**/demo.xlsx", "**/demo1.xlsx"],
+      "format": {
+        "filetype": "excel"
+      }
+    }
+  ]
+}

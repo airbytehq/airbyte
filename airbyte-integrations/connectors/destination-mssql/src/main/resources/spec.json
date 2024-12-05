@@ -1,25 +1,24 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mssql",
   "supportsIncremental": true,
-  "supportsNormalization": false,
+  "supportsNormalization": true,
   "supportsDBT": true,
   "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Postgres Destination Spec",
+    "title": "MS SQL Server Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database", "schema"],
-    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Hostname of the database.",
+        "description": "The host name of the MSSQL database.",
         "type": "string",
         "order": 0
       },
       "port": {
         "title": "Port",
-        "description": "Port of the database.",
+        "description": "The port of the MSSQL database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -29,7 +28,7 @@
       },
       "database": {
         "title": "DB Name",
-        "description": "Name of the database.",
+        "description": "The name of the MSSQL database.",
         "type": "string",
         "order": 2
       },
@@ -43,32 +42,38 @@
       },
       "username": {
         "title": "User",
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
         "type": "string",
         "order": 4
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 5
       },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 6
+      },
       "ssl_method": {
         "title": "SSL Method",
         "type": "object",
-        "description": "Encryption method to use when communicating with the database",
-        "order": 6,
+        "description": "The encryption method which is used to communicate with the database.",
+        "order": 7,
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
-            "description": "Data transfer will not be encrypted.",
+            "description": "The data transfer will not be encrypted.",
             "required": ["ssl_method"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "unencrypted",
                 "enum": ["unencrypted"],
                 "default": "unencrypted"
               }
@@ -76,13 +81,13 @@
           },
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
-            "description": "Use the cert provided by the server without verification.  (For testing purposes only!)",
+            "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_trust_server_certificate",
                 "enum": ["encrypted_trust_server_certificate"],
                 "default": "encrypted_trust_server_certificate"
               }
@@ -90,13 +95,13 @@
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
-            "description": "Verify and use the cert provided by the server.",
+            "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_verify_certificate",
                 "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
@@ -104,11 +109,17 @@
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "order": 8
               }
             }
           }
         ]
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "order": 7
       }
     }
   }

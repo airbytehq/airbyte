@@ -1,41 +1,279 @@
-# Workers & Jobs
+# Workloads & Jobs
 
-In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Examples of workers are:
+In Airbyte, all connector operations are run as 'workloads' — a pod encapsulating the discrete invocation of one or more connectors' interface method(s) (READ, WRITE, CHECK, DISCOVER, SPEC). 
 
-* Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\)
-* Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync
-* Discovery worker: retrieves the schema of the source underlying a connector
-* Sync worker, used to sync data between a source and destination
+Generally, there are 2 types of workload pods:
 
-## Worker Responsibilities
+- Replication (SYNC) pods
+  - Calls READ on the source and WRITE on the destination docker images
+- Connector Job (CHECK, DISCOVER, SPEC) pods
+  - Calls the specified interface method on the connector image
 
-The worker has 4 main responsibilities in its lifecycle. 1. Spin up any connector docker containers that are needed for the job. 2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 3. Shut down any connector docker containers that it started. 4. Return the output of the job. \(See [Airbyte Specification](airbyte-specification.md) to understand the output of each worker type.\)
+|    ![](../.gitbook/assets/replication_mono_pod.png)     |                              ![](../.gitbook/assets/connector_pod.png)                               |
+|:-------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
+| <em>The source, destination and orchestrator all run in a single pod</em> | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em> |
 
-## Message Passing
+## Airbyte Middleware and Bookkeeping Containers
 
-There are 2 flavors of workers: 1. There are workers that interact with a single connector \(e.g. spec, check, discover\) 2. There are workers that interact with 2 connectors \(e.g. sync, reset\)
+Inside any connector operation pod, a special airbyte controlled container will run alongside the connector container(s) to process and interpret the results as well as perform necessary side effects.
 
-In the first case, the worker is generally extracting data from the connector and reporting it back to the scheduler. It does this by listening to STDOUT of the connector. In the second case, the worker is facilitating passing data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
+There are two types of middleware containers:
+* The Container Orchestrator
+* The Connector Sidecar
 
-For more information on the schema of the messages that are passed, refer to [Airbyte Specification](airbyte-specification.md).
+#### Container Orchestrator
 
-## Worker Lifecycle
+An airbyte controlled container that sits between the source and destination connector containers inside a Replication Pod.
 
-This section will depict the lifecycle of a worker. It will only show the 2 connector version. The since connector version is the same with one side removed.
+Responsibilities:
+* Hosts middleware capabilities such as scrubbing PPI, aggregating stats, transforming data, and checkpointing progress.
+* Interprets and records connector operation results
+* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
 
-Note: When a source has passed all of its messages, the docker process should automatically exit. After a destination has received all records, it should automatically shutdown. The worker gives each a grace period to shutdown on their own. If that grace period expires, then the worker will force shutdown.
+#### Connector Sidecar
 
-![Worker Lifecycle](../.gitbook/assets/worker-lifecycle.png)
+An airbyte controlled container that reads the output of a connector container inside a Connector Pod (CHECK, DISCOVER, SPEC).
 
-[Image Source](https://docs.google.com/drawings/d/1k4v_m2M5o2UUoNlYM7mwtZicRkQgoGLgb3eTOVH8QFo/edit)
+Responsibilities:
+* Interprets and records connector operation results
+* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
 
-See the [architecture overview](high-level-view.md) for more information about workers.
 
-## Job State Machine
+## Workload launching architecture
 
-Jobs in the worker follow the following state machine.
+Workloads is Airbyte's next generation architecture. It is designed to be more scalable, reliable and maintainable than the previous Worker architecture. It performs particularly
+well in low-resource environments.
 
-![Job state machine](../.gitbook/assets/job-state-machine.png)
+One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
+resource-constrained environments with spiky job scheduling.
 
-[Image Source](https://docs.google.com/drawings/d/1oMahOg1T8cssxiimV8u4lChbQP5D-wVrSjdMSgxdjiQ/edit)
+Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued
+until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
 
+Dumb workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
+
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles
+job creation based on available resources, minimising deadlock situations.
+
+With this set up, Airbyte now supports:
+- configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
+- configuring the maximum number of jobs that can be started at once via ``
+- differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
+
+This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage. See
+[this blogpost](https://airbyte.com/blog/introducing-workloads-how-airbyte-1-0-orchestrates-data-movement-jobs) for more detailed information.
+
+## Further configuring Jobs & Workloads
+
+Details on configuring jobs & workloads can be found [here](../operator-guides/configuring-airbyte.md).
+
+## Sync Jobs
+
+At a high level, a sync job is an individual invocation of the Airbyte pipeline to synchronize data from a source to a destination data store.
+
+### Sync Job State Machine
+
+Sync jobs have the following state machine.
+
+```mermaid
+---
+title: Job Status State Machine
+---
+stateDiagram-v2
+direction TB
+state NonTerminal {
+    [*] --> pending
+    pending
+    running
+    incomplete
+    note left of incomplete
+        When an attempt fails, the job status is transitioned to incomplete.
+        If this is the final attempt, then the job is transitioned to failed.
+        Otherwise it is transitioned back to running upon new attempt creation.
+
+    end note
+}
+note left of NonSuccess
+    All Non Terminal Statuses can be transitioned to cancelled or failed
+end note
+
+pending --> running
+running --> incomplete
+incomplete --> running
+running --> succeeded
+state NonSuccess {
+    cancelled
+    failed
+}
+NonTerminal --> NonSuccess
+```
+
+```mermaid
+---
+title: Attempt Status State Machine
+---
+stateDiagram-v2
+    direction LR
+    running --> succeeded
+    running --> failed
+```
+
+### Attempts and Retries
+
+In the event of a failure, the Airbyte platform will retry the pipeline. Each of these sub-invocations of a job is called an attempt.
+
+### Retry Rules
+
+Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
+
+- 5 subsequent attempts where no data was synchronized
+- 10 total attempts where no data was synchronized
+- 20 total attempts where some data was synchronized
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+### Retry Backoff
+
+After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+
+By default, Airbyte is configured to backoff with the following values:
+
+- 10 seconds after the first complete failure
+- 30 seconds after the second
+- 90 seconds after the third
+- 4 minutes and 30 seconds after the fourth
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
+
+### Retry examples
+
+To help illustrate what is possible, below are a couple examples of how the retry rules may play out under more elaborate circumstances.
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #1</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job succeeds — all data synced</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #2</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">90 second backoff</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">4 minute 30 second backoff</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job Fails — successive failure limit reached</td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Posts",
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "description": "The unique identifier of the author of the post.",
+      "type": ["null", "number"]
+    },
+    "closed": {
+      "description": "Indicates whether the post is closed or open for further comments.",
+      "type": ["null", "boolean"]
+    },
+    "comment_count": {
+      "description": "The total number of comments on the post.",
+      "type": ["null", "integer"]
+    },
+    "content_tag_ids": {
+      "description": "Array containing unique identifiers of tags associated with the post.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "number"]
+      }
+    },
+    "details": {
+      "description": "Additional details or content of the post.",
+      "type": ["null", "string"]
+    },
+    "featured": {
+      "description": "Indicates whether the post is featured or not.",
+      "type": ["null", "boolean"]
+    },
+    "follower_count": {
+      "description": "The number of users following the post for updates.",
+      "type": ["null", "integer"]
+    },
+    "frozen": {
+      "description": "Indicates whether the post content is frozen or editable.",
+      "type": ["null", "boolean"]
+    },
+    "html_url": {
+      "description": "The URL that directs to the HTML version of the post.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the post.",
+      "type": ["null", "number"]
+    },
+    "non_author_editor_id": {
+      "description": "The unique identifier of a user who is not the author but edited the post.",
+      "type": ["null", "integer"]
+    },
+    "non_author_updated_at": {
+      "description": "The date and time when a non-author user last updated the post.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "pinned": {
+      "description": "Indicates if the post is pinned to stay on top of the list.",
+      "type": ["null", "boolean"]
+    },
+    "status": {
+      "description": "The current status of the post, such as 'open', 'solved', 'archived', etc.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title or headline of the post.",
+      "type": ["null", "string"]
+    },
+    "topic_id": {
+      "description": "The identifier of the topic under which the post belongs.",
+      "type": ["null", "integer"]
+    },
+    "vote_count": {
+      "description": "The total count of votes the post has received.",
+      "type": ["null", "integer"]
+    },
+    "vote_sum": {
+      "description": "The sum of all votes received considering both upvotes and downvotes.",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the post was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL that points to the post details.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "A brief summary or overview of the post content.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time of the last update made to the post.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

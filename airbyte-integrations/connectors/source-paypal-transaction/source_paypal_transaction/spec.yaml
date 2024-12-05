@@ -1,0 +1,78 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transactions
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  type: object
+  additionalProperties: true
+  required:
+    - client_id
+    - client_secret
+    - start_date
+    - is_sandbox
+  properties:
+    client_id:
+      type: string
+      title: Client ID
+      description: "The Client ID of your Paypal developer application."
+      airbyte_secret: true
+      order: 0
+    client_secret:
+      type: string
+      title: Client secret
+      description: "The Client Secret of your Paypal developer application."
+      airbyte_secret: true
+      order: 1
+    start_date:
+      title: Start Date
+      description: >-
+        Start Date for data extraction in <a
+        href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO
+        format</a>. Date must be in range from 3 years till 12 hrs before
+        present time.
+      type: string
+      examples: ["2021-06-11T23:59:59Z", "2021-06-11T23:59:59+00:00"]
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$
+      format: "date-time"
+      order: 2
+    is_sandbox:
+      title: "Sandbox"
+      description: "Determines whether to use the sandbox or production environment."
+      type: "boolean"
+      default: false
+    dispute_start_date:
+      title: Dispute Start Date Range
+      description: >-
+        Start Date parameter for the list dispute endpoint in <a
+        href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO
+        format</a>. This Start Date must be in range within 180 days before
+        present time, and requires ONLY 3 miliseconds(mandatory).
+        If you don't use this option, it defaults to a start date set 180 days in the past.
+      type: string
+      examples: ["2021-06-11T23:59:59.000Z"]
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$
+      format: "date-time"
+      order: 3
+    end_date:
+      title: End Date
+      description: >-
+        End Date for data extraction in <a
+        href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO
+        format</a>. This can be help you select specific range of time, mainly for test purposes 
+        or data integrity tests. When this is not used, now_utc() is used by the streams.
+        This does not apply to Disputes and Product streams.
+      type: string
+      examples: ["2021-06-11T23:59:59Z", "2021-06-11T23:59:59+00:00"]
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$
+      format: "date-time"
+      order: 4
+    refresh_token:
+      type: "string"
+      title: "Refresh token"
+      description: "The key to refresh the expired access token."
+      airbyte_secret: true
+    time_window:
+      type: "integer"
+      title: "Number of days per request"
+      description: "The number of days per request. Must be a number between 1 and 31."
+      default: 7
+      minimum: 1
+      maximum: 31

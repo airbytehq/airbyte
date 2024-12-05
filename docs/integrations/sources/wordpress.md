@@ -1,15 +1,43 @@
 # Wordpress
 
-[Wordpress](https://wordpress.org/) is the most popular tool for creating websites worldwide.
+The WordPress connector enables seamless data synchronization between your WordPress site and various destinations. With this connector, you can effortlessly extract and integrate blog posts, pages, comments, and other WordPress data into your preferred analytics or storage platform, enabling streamlined data analysis and reporting.
 
-## Sync overview
+## Configuration
 
-Wordpress runs on a MySQL database. You can use Airbyte to sync your Wordpress instance by connecting to the underlying MySQL database and leveraging the [MySQL](./mysql.md) connector.  
+| Input        | Type     | Description                                                                                    | Default Value |
+| ------------ | -------- | ---------------------------------------------------------------------------------------------- | ------------- |
+| `domain`     | `string` | Domain. The domain of the WordPress site. Example: my-wordpress-website.host.com               |               |
+| `password`   | `string` | Placeholder Password. Placeholder for basic HTTP auth password - should be set to empty string | x             |
+| `username`   | `string` | Placeholder Username. Placeholder for basic HTTP auth username - should be set to empty string | x             |
+| `start_date` | `string` | Start Date. Minimal Date to Retrieve Records when stream allow incremental.                    |               |
 
-{% hint style="info" %}
-Reach out to your service representative or system admin to find the parameters required to connect to the underlying database 
-{% endhint %}
+## Streams
 
+| Stream Name    | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+| -------------- | ----------- | ---------------- | ------------------ | -------------------- |
+| users          | id          | DefaultPaginator | ✅                 | ❌                   |
+| posts          | id          | DefaultPaginator | ✅                 | ❌                   |
+| categories     | id          | DefaultPaginator | ✅                 | ❌                   |
+| plugins        | plugin      | No pagination    | ✅                 | ❌                   |
+| editor_blocks  | id          | DefaultPaginator | ✅                 | ✅                   |
+| comments       | id          | DefaultPaginator | ✅                 | ✅                   |
+| pages          | id          | DefaultPaginator | ✅                 | ✅                   |
+| tags           | id          | DefaultPaginator | ✅                 | ❌                   |
+| page_revisions | id          | DefaultPaginator | ✅                 | ❌                   |
+| media          | id          | DefaultPaginator | ✅                 | ✅                   |
+| taxonomies     | category    | No pagination    | ✅                 | ❌                   |
+| types          |             | No pagination    | ✅                 | ❌                   |
+| themes         | stylesheet  | No pagination    | ✅                 | ❌                   |
+| statuses       |             | No pagination    | ✅                 | ❌                   |
+| settings       |             | No pagination    | ✅                 | ❌                   |
 
-### Output schema
-The output schema is the same as that of the [Wordpress Database](https://codex.wordpress.org/Database_Description) described here. 
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request | Subject                                                                               |
+| ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
+| 0.0.1   | 2024-10-21 | 46378        | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
+
+</details>

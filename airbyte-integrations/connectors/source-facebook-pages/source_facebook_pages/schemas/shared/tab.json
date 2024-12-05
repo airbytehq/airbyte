@@ -1,0 +1,32 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "custom_image_url": {
+      "type": ["string", "null"]
+    },
+    "custom_name": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "image_url": {
+      "type": ["string", "null"]
+    },
+    "is_non_connection_landing_tab": {
+      "type": ["boolean", "null"]
+    },
+    "is_permanent": {
+      "type": ["boolean", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "position": {
+      "type": ["integer", "null"]
+    }
+  }
+}

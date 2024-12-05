@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "division": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "descriptions": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "dateCreated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "modifiedBy": {
+      "type": ["null", "string"]
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "modifiedByApp": {
+      "type": ["null", "string"]
+    },
+    "createdByApp": {
+      "type": ["null", "string"]
+    },
+    "phoneNumber": {
+      "type": ["null", "string"]
+    },
+    "didPool": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ownerType": {
+      "type": ["null", "string"]
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

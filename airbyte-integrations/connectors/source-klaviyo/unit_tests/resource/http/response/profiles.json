@@ -1,0 +1,94 @@
+{
+  "data": [
+    {
+      "type": "profile",
+      "id": "01G4CDTEP140TDXZ0692XSA61K",
+      "attributes": {
+        "email": "tracey.witting@developer-tools.shopifyapps.com",
+        "phone_number": "+13523772689",
+        "external_id": null,
+        "anonymous_id": null,
+        "first_name": "Tracey",
+        "last_name": "Witting",
+        "organization": null,
+        "locale": null,
+        "title": null,
+        "image": null,
+        "created": "2022-05-31T06:46:01+00:00",
+        "updated": "2022-05-31T06:46:01+00:00",
+        "last_event_date": null,
+        "location": {
+          "address1": "2088 Rempel Road",
+          "region": null,
+          "zip": null,
+          "country": "United States",
+          "address2": null,
+          "longitude": null,
+          "city": null,
+          "latitude": null,
+          "timezone": null,
+          "ip": null
+        },
+        "properties": {
+          "Accepts Marketing": false,
+          "Shopify Tags": ["developer-tools-generator"]
+        },
+        "subscriptions": {
+          "email": {
+            "marketing": {
+              "consent": "NEVER_SUBSCRIBED",
+              "timestamp": null,
+              "method": null,
+              "method_detail": null,
+              "custom_method_detail": null,
+              "double_optin": null,
+              "suppressions": [],
+              "list_suppressions": []
+            }
+          },
+          "sms": {
+            "marketing": {
+              "consent": "NEVER_SUBSCRIBED",
+              "timestamp": null,
+              "method": null,
+              "method_detail": null
+            }
+          }
+        },
+        "predictive_analytics": {
+          "historic_clv": null,
+          "predicted_clv": null,
+          "total_clv": null,
+          "historic_number_of_orders": null,
+          "predicted_number_of_orders": null,
+          "average_days_between_orders": null,
+          "average_order_value": null,
+          "churn_probability": null,
+          "expected_date_of_next_order": null
+        }
+      },
+      "relationships": {
+        "lists": {
+          "links": {
+            "self": "https://a.klaviyo.com/api/profiles/01G4CDTEP140TDXZ0692XSA61K/relationships/lists/",
+            "related": "https://a.klaviyo.com/api/profiles/01G4CDTEP140TDXZ0692XSA61K/lists/"
+          }
+        },
+        "segments": {
+          "links": {
+            "self": "https://a.klaviyo.com/api/profiles/01G4CDTEP140TDXZ0692XSA61K/relationships/segments/",
+            "related": "https://a.klaviyo.com/api/profiles/01G4CDTEP140TDXZ0692XSA61K/segments/"
+          }
+        }
+      },
+      "links": {
+        "self": "https://a.klaviyo.com/api/profiles/01G4CDTEP140TDXZ0692XSA61K/"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://a.klaviyo.com/api/profiles?additional-fields%5Bprofile%5D=predictive_analytics&page%5Bsize%5D=100&filter=greater-than%28updated%2C2021-01-01T00%3A00%3A00%2B0000%29&sort=updated&page%5Bcursor%5D=bmV4dDo6dXBkYXRlZDo6MjAyMi0wNS0zMSAwNjo0NjowMSswMDowMDo6aWQ6OjAxRzRDRFRFTTZKMjBHRzVRNU41Q0Q4V0pW",
+    "next": null,
+    "prev": null
+  }
+}

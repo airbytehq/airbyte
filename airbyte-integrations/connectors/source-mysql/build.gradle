@@ -1,32 +1,23 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-bulk-connector'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
+    mainClass = 'io.airbyte.integrations.source.mysql.MysqlSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+    cdk = 'local'
 }
 
 dependencies {
-    implementation project(':airbyte-db')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
+    implementation 'io.debezium:debezium-connector-mysql'
 
-    implementation 'mysql:mysql-connector-java:8.0.22'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:mysql:1.15.1'
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.2')
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation("io.mockk:mockk:1.12.0")
 }

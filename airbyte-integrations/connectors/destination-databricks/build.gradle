@@ -1,0 +1,57 @@
+// #############################################################################################
+// #                                                                                           #
+// #    _______________ _____  ______      _                  _     _                          #
+// #   |_  |  _  | ___ /  __ \ |  _  \    (_)                | |   (_)                         #
+// #     | | | | | |_/ | /  \/ | | | |_ __ ___   _____ _ __  | |    _  ___ ___ _ __  ___  ___  #
+// #     | | | | | ___ | |     | | | | '__| \ \ / / _ | '__| | |   | |/ __/ _ | '_ \/ __|/ _ \ #
+// # /\__/ | |/ /| |_/ | \__/\ | |/ /| |  | |\ V |  __| |    | |___| | (_|  __| | | \__ |  __/ #
+// # \____/|___/ \____/ \____/ |___/ |_|  |_| \_/ \___|_|    \_____|_|\___\___|_| |_|___/\___| #
+// #                                                                                           #
+// #           By building this connector, you agree to the JDBC ODBC driver license:          #
+// #                  https://databricks.com/jdbc-odbc-driver-license                          #
+// #                                                                                           #
+// #############################################################################################
+
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.46.0'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestinationKt'
+    // Adding ZGC with Generational enabled from Java 21 hotspotVM. NativeMemory tracking if any
+    // memory leaks outside heap. Add string dedup which is supported now in ZGC from Java 18
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UseZGC', '-XX:+ZGenerational',
+                                 '-XX:+UseStringDeduplication']
+}
+
+dependencies {
+    // Databricks JDBC driver
+    implementation 'com.databricks:databricks-jdbc:2.6.40'
+    implementation 'com.databricks:databricks-sdk-java:0.31.0'
+}
+
+test {
+    // Required for Databricks JDBC. There is a pending bug to fix Apache Arrow.
+    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true",
+               "--add-opens=java.base/java.nio=ALL-UNNAMED",
+               "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED",
+               "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
+               "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
+}

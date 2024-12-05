@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Defs": {
+      "description": "for the transaction itself, listed in customer's preferred display order",
+      "type": "array",
+      "items": {
+        "$ref": "saved_element_def.json"
+      }
+    },
+    "ItemDefs": {
+      "description": "for the transaction's line items, listed in customer's preferred display order",
+      "type": "array",
+      "items": {
+        "$ref": "saved_element_def.json"
+      }
+    }
+  }
+}

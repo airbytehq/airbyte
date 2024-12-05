@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -30,16 +31,15 @@
       "type": ["null", "string"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stage_change_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "active": {
       "type": ["null", "boolean"]
@@ -55,11 +55,10 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_id": {
       "type": ["null", "integer"]
@@ -69,7 +68,7 @@
     },
     "last_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "lost_reason": {
       "type": ["null", "string"]
@@ -78,23 +77,19 @@
       "type": ["null", "string"]
     },
     "close_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "pipeline_id": {
       "type": ["null", "integer"]
     },
     "won_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "first_won_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "lost_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "products_count": {
       "type": ["null", "integer"]
@@ -125,15 +120,13 @@
     },
     "expected_close_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "last_incoming_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_outgoing_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "label": {
       "type": ["null", "string"]
@@ -154,8 +147,7 @@
       "type": ["null", "string"]
     },
     "next_activity_duration": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "next_activity_note": {
       "type": ["null", "string"]
@@ -173,8 +165,7 @@
       "type": ["null", "string"]
     },
     "rotten_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "owner_name": {
       "type": ["null", "string"]

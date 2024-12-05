@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "description": "The API URL to fetch more details about this project column.",
+      "type": ["null", "string"]
+    },
+    "project_url": {
+      "description": "The URL to view the project associated with this column.",
+      "type": ["null", "string"]
+    },
+    "cards_url": {
+      "description": "The API URL to fetch the cards in this project column.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identification number of this project column.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The node ID of this project column used in the GraphQL API.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name given to this project column.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when this project column was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when this project column was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "repository": {
+      "description": "The repository to which this project column belongs.",
+      "type": "string"
+    },
+    "project_id": {
+      "description": "The ID of the project to which this column belongs.",
+      "type": "integer"
+    }
+  }
+}

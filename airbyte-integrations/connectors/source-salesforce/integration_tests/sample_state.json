@@ -1,0 +1,51 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "Account" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-08-22T05:08:29.000Z" },
+      "stream_descriptor": { "name": "ActiveFeatureLicenseMetric" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-08-22T05:03:27.000Z" },
+      "stream_descriptor": { "name": "ActivePermSetLicenseMetric" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-08-22T06:17:11.000Z" },
+      "stream_descriptor": { "name": "ActiveProfileMetric" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "ObjectPermissions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2021-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "PermissionSetTabSetting" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "CreatedDate": "2021-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "LeadHistory" }
+    }
+  }
+]

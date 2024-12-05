@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "af_prt": {
+      "type": ["null", "string"]
+    },
+    "media_source": {
+      "type": ["null", "string"]
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "type": ["null", "number"]
+    },
+    "conversions": {
+      "type": ["null", "number"]
+    },
+    "conversion_type": {
+      "type": ["null", "string"]
+    },
+    "conversion_rate": {
+      "type": ["null", "number"]
+    },
+    "sessions": {
+      "type": ["null", "number"]
+    },
+    "loyal_users": {
+      "type": ["null", "number"]
+    },
+    "loyal_users_rate": {
+      "type": ["null", "number"]
+    },
+    "total_cost": {
+      "type": ["null", "number"]
+    },
+    "average_ecpi": {
+      "type": ["null", "number"]
+    }
+  }
+}

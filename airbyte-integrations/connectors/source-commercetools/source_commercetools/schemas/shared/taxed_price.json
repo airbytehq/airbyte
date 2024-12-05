@@ -1,0 +1,28 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "totalNet": {
+      "$ref": "money.json"
+    },
+    "totalGross": {
+      "$ref": "money.json"
+    },
+    "taxPortions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "rate": {
+            "type": ["null", "number"]
+          },
+          "amount": {
+            "$ref": "money.json"
+          }
+        }
+      }
+    }
+  }
+}

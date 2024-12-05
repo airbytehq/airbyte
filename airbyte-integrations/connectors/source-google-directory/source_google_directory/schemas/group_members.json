@@ -3,19 +3,25 @@
   "type": "object",
   "properties": {
     "kind": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "role": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "etag": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
     }
   }
 }

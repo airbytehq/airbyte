@@ -1,0 +1,34 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.elasticsearch.ElasticsearchSource'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+
+    implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+
+    // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+    // https://eclipse-ee4j.github.io/jsonp/
+    implementation 'jakarta.json:jakarta.json-api:2.0.1'
+
+    // Needed even if using Jackson to have an implementation of the Jsonp object model
+    // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+    // https://github.com/eclipse-ee4j/jsonp
+    implementation 'org.glassfish:jakarta.json:2.0.1'
+
+    //  MIT
+    //  https://www.testcontainers.org/
+    testImplementation 'org.testcontainers:elasticsearch:1.19.4'
+}

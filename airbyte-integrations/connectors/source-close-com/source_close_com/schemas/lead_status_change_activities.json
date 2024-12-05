@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "created_by_name": {
+      "type": ["null", "string"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "new_status_label": {
+      "type": ["null", "string"]
+    },
+    "old_status_label": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "old_status_id": {
+      "type": ["null", "string"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "new_status_id": {
+      "type": ["null", "string"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    }
+  }
+}

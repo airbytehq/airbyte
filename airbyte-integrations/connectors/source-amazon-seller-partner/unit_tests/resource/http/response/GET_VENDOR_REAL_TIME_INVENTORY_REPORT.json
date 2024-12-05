@@ -1,0 +1,22 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+    "dataStartTime": "2022-10-01T00:00:00Z",
+    "dataEndTime": "2022-10-01T02:00:00Z",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "reportData": [
+    {
+      "startTime": "2022-10-01T00:00:00Z",
+      "endTime": "2022-10-01T01:00:00Z",
+      "asin": "B123456789",
+      "highlyAvailableInventory": 270
+    },
+    {
+      "startTime": "2022-10-01T00:00:00Z",
+      "endTime": "2022-10-01T01:00:00Z",
+      "asin": "B987654321",
+      "highlyAvailableInventory": 650
+    }
+  ]
+}

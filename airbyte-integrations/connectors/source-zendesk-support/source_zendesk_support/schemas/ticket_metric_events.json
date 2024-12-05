@@ -1,0 +1,29 @@
+{
+  "properties": {
+    "metric": {
+      "description": "Type of metric being tracked for the ticket",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the ticket metric event",
+      "type": ["null", "integer"]
+    },
+    "time": {
+      "description": "Timestamp when the metric event occurred",
+      "type": ["null", "string"]
+    },
+    "instance_id": {
+      "description": "Unique identifier for the specific instance of the metric event",
+      "type": ["null", "integer"]
+    },
+    "ticket_id": {
+      "description": "Unique identifier for the ticket associated with the metric event",
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "description": "Type of metric event (e.g., update, change, escalation)",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

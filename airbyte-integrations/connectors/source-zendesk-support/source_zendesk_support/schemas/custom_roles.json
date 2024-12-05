@@ -1,0 +1,267 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier of the custom role",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "Name of the custom role",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Brief description of the custom role",
+      "type": ["null", "string"]
+    },
+    "role_type": {
+      "description": "Type of the custom role (e.g., admin, agent, etc)",
+      "type": ["null", "integer"]
+    },
+    "team_member_count": {
+      "description": "Number of team members with this custom role",
+      "type": ["null", "integer"]
+    },
+    "configuration": {
+      "description": "This object contains custom configuration settings.",
+      "properties": {
+        "assign_tickets_to_any_group": {
+          "description": "Allows assigning tickets to any group within the organization",
+          "type": ["null", "boolean"]
+        },
+        "chat_access": {
+          "description": "Grants access to chat functionality",
+          "type": ["null", "boolean"]
+        },
+        "manage_automations": {
+          "description": "Permission to manage automations",
+          "type": ["null", "boolean"]
+        },
+        "manage_group_memberships": {
+          "description": "Ability to manage group memberships",
+          "type": ["null", "boolean"]
+        },
+        "manage_groups": {
+          "description": "Permission to manage groups",
+          "type": ["null", "boolean"]
+        },
+        "manage_macro_content_suggestions": {
+          "description": "Ability to manage macro content suggestions",
+          "type": ["null", "boolean"]
+        },
+        "manage_organizations": {
+          "description": "Ability to manage organizations",
+          "type": ["null", "boolean"]
+        },
+        "manage_skills": {
+          "description": "Ability to manage skills",
+          "type": ["null", "boolean"]
+        },
+        "manage_suspended_tickets": {
+          "description": "Ability to manage suspended tickets",
+          "type": ["null", "boolean"]
+        },
+        "manage_triggers": {
+          "description": "Ability to manage triggers",
+          "type": ["null", "boolean"]
+        },
+        "manage_slas": {
+          "description": "Permission to manage SLAs (Service Level Agreements)",
+          "type": ["null", "boolean"]
+        },
+        "read_macro_content_suggestions": {
+          "description": "Access for reading macro content suggestions",
+          "type": ["null", "boolean"]
+        },
+        "ticket_redaction": {
+          "description": "Ability to redact sensitive information from tickets",
+          "type": ["null", "boolean"]
+        },
+        "view_filter_tickets": {
+          "description": "Ability to filter and search through tickets",
+          "type": ["null", "boolean"]
+        },
+        "view_reduced_count": {
+          "description": "View reduced counts of specific data",
+          "type": ["null", "boolean"]
+        },
+        "manage_roles": {
+          "description": "Permissions related to managing roles",
+          "type": ["null", "string"]
+        },
+        "custom_objects": {
+          "description": "Custom objects configuration.",
+          "type": ["null", "object"],
+          "properties": {},
+          "additionalProperties": true
+        },
+        "manage_deletion_schedules": {
+          "description": "Ability to manage deletion schedules",
+          "type": ["null", "string"]
+        },
+        "end_user_list_access": {
+          "description": "Enables access to the end user list",
+          "type": ["null", "string"]
+        },
+        "end_user_profile_access": {
+          "description": "Allows viewing and editing end user profiles",
+          "type": ["null", "string"]
+        },
+        "explore_access": {
+          "description": "Grants access to explore functionality",
+          "type": ["null", "string"]
+        },
+        "forum_access": {
+          "description": "Provides access to forums",
+          "type": ["null", "string"]
+        },
+        "forum_access_restricted_content": {
+          "description": "Access to restricted forum content if applicable",
+          "type": ["null", "boolean"]
+        },
+        "group_access": {
+          "description": "Permissions related to accessing and managing groups",
+          "type": ["null", "boolean"]
+        },
+        "light_agent": {
+          "description": "Indicates if the role is a light agent with limited capabilities",
+          "type": ["null", "boolean"]
+        },
+        "macro_access": {
+          "description": "Allows usage of macros",
+          "type": ["null", "string"]
+        },
+        "manage_business_rules": {
+          "description": "Ability to manage business rules",
+          "type": ["null", "boolean"]
+        },
+        "manage_contextual_workspaces": {
+          "description": "Permissions to manage contextual workspaces",
+          "type": ["null", "boolean"]
+        },
+        "manage_dynamic_content": {
+          "description": "Permission to manage dynamic content",
+          "type": ["null", "boolean"]
+        },
+        "manage_extensions_and_channels": {
+          "description": "Access and control over extensions and communication channels",
+          "type": ["null", "boolean"]
+        },
+        "manage_facebook": {
+          "description": "Allows management of Facebook integration",
+          "type": ["null", "boolean"]
+        },
+        "manage_organization_fields": {
+          "description": "Permission to manage organization-specific fields",
+          "type": ["null", "boolean"]
+        },
+        "manage_ticket_fields": {
+          "description": "Allows managing ticket fields",
+          "type": ["null", "boolean"]
+        },
+        "manage_ticket_forms": {
+          "description": "Permissions for managing ticket forms",
+          "type": ["null", "boolean"]
+        },
+        "manage_user_fields": {
+          "description": "Permission to manage user-specific fields",
+          "type": ["null", "boolean"]
+        },
+        "manage_team_members": {
+          "description": "Permissions to manage team members and their roles",
+          "type": ["null", "string"]
+        },
+        "moderate_forums": {
+          "description": "Grants moderation abilities for forums",
+          "type": ["null", "boolean"]
+        },
+        "organization_editing": {
+          "description": "Allows editing organization details",
+          "type": ["null", "boolean"]
+        },
+        "organization_notes_editing": {
+          "description": "Permission to edit organization notes",
+          "type": ["null", "boolean"]
+        },
+        "report_access": {
+          "description": "Permission to access reporting features",
+          "type": ["null", "string"]
+        },
+        "side_conversation_create": {
+          "description": "Ability to initiate side conversations",
+          "type": ["null", "boolean"]
+        },
+        "ticket_access": {
+          "description": "Permissions related to accessing and managing tickets",
+          "type": ["null", "string"]
+        },
+        "ticket_bulk_edit": {
+          "description": "Ability to perform bulk editing of tickets",
+          "type": ["null", "boolean"]
+        },
+        "ticket_comment_access": {
+          "description": "Allows adding comments to tickets",
+          "type": ["null", "string"]
+        },
+        "ticket_deletion": {
+          "description": "Permission to delete tickets",
+          "type": ["null", "boolean"]
+        },
+        "ticket_editing": {
+          "description": "Ability to edit ticket details",
+          "type": ["null", "boolean"]
+        },
+        "ticket_merge": {
+          "description": "Permission to merge tickets",
+          "type": ["null", "boolean"]
+        },
+        "ticket_tag_editing": {
+          "description": "Access to editing ticket tags",
+          "type": ["null", "boolean"]
+        },
+        "twitter_search_access": {
+          "description": "Access to Twitter search functionality",
+          "type": ["null", "boolean"]
+        },
+        "user_view_access": {
+          "description": "Allows viewing user-related information",
+          "type": ["null", "string"]
+        },
+        "view_access": {
+          "description": "Permissions to view various resources",
+          "type": ["null", "string"]
+        },
+        "view_deleted_tickets": {
+          "description": "Access to view deleted tickets if applicable",
+          "type": ["null", "boolean"]
+        },
+        "voice_access": {
+          "description": "Permission to access voice-related features",
+          "type": ["null", "boolean"]
+        },
+        "voice_dashboard_access": {
+          "description": "Access to voice dashboards",
+          "type": ["null", "boolean"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "created_at": {
+      "description": "Date and time of the creation of the custom role",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Date and time of the last update of the custom role",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "manage_macro_content_suggestions": {
+      "description": "Ability to manage macro content suggestions",
+      "type": ["null", "boolean"]
+    },
+    "read_macro_content_suggestions": {
+      "description": "Access for reading macro content suggestions",
+      "type": ["null", "boolean"]
+    }
+  }
+}

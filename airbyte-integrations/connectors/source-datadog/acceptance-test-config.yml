@@ -1,0 +1,43 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-datadog:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.4.15" # Set default start and end date for incremental sync
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: audit_logs
+            bypass_reason: Sandbox account can't seed this stream
+          - name: incident_teams
+            bypass_reason: Sandbox account can't seed this stream
+          - name: service_level_objectives
+            bypass_reason: Sandbox account can't seed this stream
+          - name: logs
+            bypass_reason: Sandbox account can't seed this stream
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          logs:
+            - name: "attributes.timestamp"
+              bypass_reason: "Change everytime"
+            - name: "id"
+              bypass_reason: "Change everytime"

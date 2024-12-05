@@ -1,35 +1,48 @@
 {
   "properties": {
     "createdAt": {
+      "description": "Timestamp indicating when the email complaint was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "campaignId": {
+      "description": "Unique identifier for the campaign associated with the email complaint data",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Holds internal metadata related to the iterable data being accessed.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "Timestamp indicating when the internal document was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "Timestamp indicating when the internal document was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "messageId": {
+      "description": "Unique identifier for the email message associated with the complaint",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "Unique identifier for the email template used in the campaign",
       "type": ["null", "integer"]
     },
     "email": {
+      "description": "Email address of the recipient who lodged the complaint",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "Unique identifier for the user who lodged the email complaint",
       "type": ["null", "string"]
     },
     "recipientState": {
+      "description": "State or status of the recipient associated with the complaint",
       "type": ["null", "string"]
     }
   },

@@ -3,28 +3,40 @@
   "type": "object",
   "properties": {
     "kind": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "etag": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "directMembersCount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "adminCreated": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "aliases": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "nonEditableAliases": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

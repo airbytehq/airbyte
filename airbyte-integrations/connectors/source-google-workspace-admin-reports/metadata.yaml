@@ -1,0 +1,31 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
+  dockerImageTag: 0.1.8
+  dockerRepository: airbyte/source-google-workspace-admin-reports
+  githubIssueLabel: source-google-workspace-admin-reports
+  icon: googleworkpace.svg
+  license: MIT
+  name: Google Workspace Admin Reports
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `pyab validate` is passing.
+      packageName: airbyte-source-google-workspace-admin-reports
+  registryOverrides:
+    cloud:
+      dockerImageTag: 0.1.4
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
+metadataSpecVersion: "1.0"

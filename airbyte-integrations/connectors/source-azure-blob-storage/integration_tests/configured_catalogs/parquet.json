@@ -1,0 +1,74 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "airbyte-source-azure-blob-storage-test",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Payroll_Number": {
+              "type": ["null", "number"]
+            },
+            "Last_Name": {
+              "type": ["null", "string"]
+            },
+            "First_Name": {
+              "type": ["null", "string"]
+            },
+            "Mid_Init": {
+              "type": ["null", "string"]
+            },
+            "Agency_Start_Date": {
+              "type": ["null", "string"]
+            },
+            "Work_Location_Borough": {
+              "type": ["null", "number"]
+            },
+            "Title_Description": {
+              "type": ["null", "string"]
+            },
+            "Base_Salary": {
+              "type": ["null", "number"]
+            },
+            "Regular_Hours": {
+              "type": ["null", "number"]
+            },
+            "Regular_Gross_Paid": {
+              "type": ["null", "number"]
+            },
+            "OT_Hours": {
+              "type": ["null", "number"]
+            },
+            "Total_OT_Paid": {
+              "type": ["null", "number"]
+            },
+            "Total_Other_Pay": {
+              "type": ["null", "number"]
+            },
+            "Fiscal_Year": {
+              "type": ["null", "string"]
+            },
+            "Leave_Status_as_of_June_30": {
+              "type": ["null", "string"]
+            },
+            "Pay_Basis": {
+              "type": ["null", "string"]
+            },
+            "_ab_source_file_last_modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

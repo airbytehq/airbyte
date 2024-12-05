@@ -1,31 +1,12 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import os
 import random
+import shutil
 import socket
 import string
 import tempfile
@@ -93,7 +74,7 @@ def is_ssh_ready(ip, port):
                 ip,
                 port=port,
                 username="user1",
-                password="pass1",
+                password="abc123@456#",
             )
         return True
     except (SSHException, socket.error):
@@ -101,7 +82,17 @@ def is_ssh_ready(ip, port):
 
 
 @pytest.fixture(scope="session")
-def ssh_service(docker_ip, docker_services):
+def move_sample_files_to_tmp():
+    """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
+    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
+    sample_files = Path(HERE / "sample_files")
+    shutil.copytree(sample_files, "/tmp/s3_sample_files")
+    yield True
+    shutil.rmtree("/tmp/s3_sample_files")
+
+
+@pytest.fixture(scope="session")
+def ssh_service(move_sample_files_to_tmp, docker_ip, docker_services):
     """Ensure that SSH service is up and responsive."""
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
@@ -113,9 +104,9 @@ def ssh_service(docker_ip, docker_services):
 def provider_config(ssh_service):
     def lookup(name):
         providers = {
-            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="pass1", port=2222),
-            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="pass1", port=2222),
-            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
+            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="abc123@456#", port=100),
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
             "azure": dict(storage="AzBlob"),

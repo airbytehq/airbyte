@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "createdAt": {
+      "description": "The date and time when the product was created.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The product's description.",
+      "type": "string"
+    },
+    "descriptionHtml": {
+      "description": "The product's description in HTML format.",
+      "type": "string"
+    },
+    "handle": {
+      "description": "The unique URL-friendly handle of the product.",
+      "type": "string"
+    },
+    "id": {
+      "description": "The unique identifier of the product.",
+      "type": "string"
+    },
+    "isGiftCard": {
+      "description": "Indicates whether the product is a gift card.",
+      "type": "boolean"
+    },
+    "legacyResourceId": {
+      "description": "The legacy resource ID of the product.",
+      "type": "string"
+    },
+    "mediaCount": {
+      "description": "The total count of media (images/videos) associated with the product.",
+      "type": "integer"
+    },
+    "onlineStorePreviewUrl": {
+      "description": "The URL for previewing the product on the online store.",
+      "type": "string"
+    },
+    "onlineStoreUrl": {
+      "description": "The URL of the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "options": {
+      "description": "Represents various options available for the product",
+      "items": {
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the option.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the option.",
+            "type": "string"
+          },
+          "position": {
+            "description": "The position of the option.",
+            "type": "integer"
+          },
+          "values": {
+            "description": "Contains the different values for the options",
+            "items": {
+              "description": "The possible values for the option.",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "productType": {
+      "description": "The type or category of the product.",
+      "type": "string"
+    },
+    "publishedAt": {
+      "description": "The date and time when the product was published.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the product is listed.",
+      "type": "string"
+    },
+    "status": {
+      "description": "The status of the product.",
+      "type": "string"
+    },
+    "tags": {
+      "description": "Contains tags associated with the product",
+      "items": {
+        "description": "The tags associated with the product.",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "description": "The title or name of the product.",
+      "type": "string"
+    },
+    "totalInventory": {
+      "description": "The total inventory count of the product.",
+      "type": "integer"
+    },
+    "totalVariants": {
+      "description": "The total number of variants available for the product.",
+      "type": "integer"
+    },
+    "tracksInventory": {
+      "description": "Indicates whether inventory tracking is enabled for the product.",
+      "type": "boolean"
+    },
+    "updatedAt": {
+      "description": "The date and time when the product was last updated.",
+      "type": "string"
+    },
+    "vendor": {
+      "description": "The vendor or manufacturer of the product.",
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

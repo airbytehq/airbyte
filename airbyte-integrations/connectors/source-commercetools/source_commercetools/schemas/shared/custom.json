@@ -1,0 +1,30 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "type": {
+      "$ref": "reference.json"
+    },
+    "fields": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "$ref": "field_type.json"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "label": {
+          "$ref": "localized_string.json"
+        },
+        "required": {
+          "type": ["null", "boolean"]
+        },
+        "inputHint": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

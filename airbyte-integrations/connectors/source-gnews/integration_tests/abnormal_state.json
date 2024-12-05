@@ -1,0 +1,24 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "publishedAt": "2099-12-31T23:59:59Z"
+      },
+      "stream_descriptor": {
+        "name": "search"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "publishedAt": "2099-12-31T23:59:59Z"
+      },
+      "stream_descriptor": {
+        "name": "top_headlines"
+      }
+    }
+  }
+]

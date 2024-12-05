@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "site_url": {
+      "description": "The URL of the page on the site that is being reported.",
+      "type": ["null", "string"]
+    },
+    "search_type": {
+      "description": "The type of search query that led to the page being shown.",
+      "type": ["null", "string"]
+    },
+    "date": {
+      "description": "The date for which the data is being reported.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "country": {
+      "description": "The country from which the search traffic originated.",
+      "type": ["null", "string"]
+    },
+    "device": {
+      "description": "The type of device used by the searcher (e.g., desktop, mobile).",
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "description": "The total number of clicks received by the page from search results.",
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "description": "The total number of times the page appeared in search results.",
+      "type": ["null", "integer"]
+    },
+    "ctr": {
+      "description": "The click-through rate, i.e., the percentage of total impressions that resulted in clicks.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    },
+    "position": {
+      "description": "The average position at which the page appeared in search results.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    }
+  }
+}

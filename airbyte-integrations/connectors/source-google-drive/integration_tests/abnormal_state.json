@@ -1,0 +1,35 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test"
+      },
+      "stream_state": {
+        "history": {
+          "test.jsonl": "2023-10-16T06:16:06.000000Z",
+          "subfolder/test2.jsonl": "2023-10-19T01:43:56.000000Z"
+        },
+        "_ab_source_file_last_modified": "2023-10-19T01:43:56.000000Z_subfolder/test2.jsonl"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_unstructured"
+      },
+      "stream_state": {
+        "history": {
+          "testdoc_docx.docx": "2023-10-27T00:45:54.000000Z",
+          "testdoc_pdf.pdf": "2023-10-27T00:45:58.000000Z",
+          "testdoc_ocr_pdf.pdf": "2023-10-27T00:46:04.000000Z",
+          "testdoc_google": "2023-11-10T13:46:18.551000Z",
+          "testdoc_presentation": "2023-11-10T13:49:06.640000Z"
+        },
+        "_ab_source_file_last_modified": "2023-11-10T13:49:06.640000Z_testdoc_presentation"
+      }
+    }
+  }
+]

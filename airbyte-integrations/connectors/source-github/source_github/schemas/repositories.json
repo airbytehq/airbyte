@@ -1,0 +1,427 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier of the repository.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node ID of the repository.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "Name of the repository.",
+      "type": ["null", "string"]
+    },
+    "full_name": {
+      "description": "Full name of the repository.",
+      "type": ["null", "string"]
+    },
+    "owner": {
+      "description": "Owner of the repository.",
+      "$ref": "user.json"
+    },
+    "private": {
+      "description": "Indicates if the repository is private.",
+      "type": ["null", "boolean"]
+    },
+    "html_url": {
+      "description": "URL of the repository's GitHub page.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Brief description of the repository.",
+      "type": ["null", "string"]
+    },
+    "fork": {
+      "description": "Indicates if the repository is a fork.",
+      "type": ["null", "boolean"]
+    },
+    "url": {
+      "description": "URL of the repository.",
+      "type": ["null", "string"]
+    },
+    "archive_url": {
+      "description": "URL to archive the repository.",
+      "type": ["null", "string"]
+    },
+    "assignees_url": {
+      "description": "URL to fetch assignees for issues in the repository.",
+      "type": ["null", "string"]
+    },
+    "blobs_url": {
+      "description": "URL to fetch blobs within the repository.",
+      "type": ["null", "string"]
+    },
+    "branches_url": {
+      "description": "URL to fetch branches within the repository.",
+      "type": ["null", "string"]
+    },
+    "collaborators_url": {
+      "description": "URL to fetch collaborators of the repository.",
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "description": "URL to fetch comments within the repository.",
+      "type": ["null", "string"]
+    },
+    "commits_url": {
+      "description": "URL to fetch commits within the repository.",
+      "type": ["null", "string"]
+    },
+    "compare_url": {
+      "description": "URL to compare references within the repository.",
+      "type": ["null", "string"]
+    },
+    "contents_url": {
+      "description": "URL to fetch contents within the repository.",
+      "type": ["null", "string"]
+    },
+    "contributors_url": {
+      "description": "URL to fetch contributors to the repository.",
+      "type": ["null", "string"]
+    },
+    "deployments_url": {
+      "description": "URL to fetch deployments related to the repository.",
+      "type": ["null", "string"]
+    },
+    "downloads_url": {
+      "description": "URL to fetch downloads linked to the repository.",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL to fetch events related to the repository.",
+      "type": ["null", "string"]
+    },
+    "forks_url": {
+      "description": "URL to fetch forks of the repository.",
+      "type": ["null", "string"]
+    },
+    "git_commits_url": {
+      "description": "URL to fetch git commits within the repository.",
+      "type": ["null", "string"]
+    },
+    "git_refs_url": {
+      "description": "URL to fetch git references within the repository.",
+      "type": ["null", "string"]
+    },
+    "git_tags_url": {
+      "description": "URL to fetch git tags within the repository.",
+      "type": ["null", "string"]
+    },
+    "git_url": {
+      "description": "URL for Git protocol to interact with the repository.",
+      "type": ["null", "string"]
+    },
+    "issue_comment_url": {
+      "description": "URL to fetch issue comments within the repository.",
+      "type": ["null", "string"]
+    },
+    "issue_events_url": {
+      "description": "URL to fetch issue events within the repository.",
+      "type": ["null", "string"]
+    },
+    "issues_url": {
+      "description": "URL to fetch issues within the repository.",
+      "type": ["null", "string"]
+    },
+    "keys_url": {
+      "description": "URL to fetch keys associated with the repository.",
+      "type": ["null", "string"]
+    },
+    "labels_url": {
+      "description": "URL to fetch labels associated with the repository.",
+      "type": ["null", "string"]
+    },
+    "languages_url": {
+      "description": "URL to fetch languages used in the repository.",
+      "type": ["null", "string"]
+    },
+    "merges_url": {
+      "description": "URL to fetch merges related to the repository.",
+      "type": ["null", "string"]
+    },
+    "milestones_url": {
+      "description": "URL to fetch milestones within the repository.",
+      "type": ["null", "string"]
+    },
+    "notifications_url": {
+      "description": "URL to manage notifications for the repository.",
+      "type": ["null", "string"]
+    },
+    "pulls_url": {
+      "description": "URL to fetch pull requests within the repository.",
+      "type": ["null", "string"]
+    },
+    "releases_url": {
+      "description": "URL to fetch releases related to the repository.",
+      "type": ["null", "string"]
+    },
+    "ssh_url": {
+      "description": "SSH URL of the repository.",
+      "type": ["null", "string"]
+    },
+    "stargazers_url": {
+      "description": "URL to fetch users who starred the repository.",
+      "type": ["null", "string"]
+    },
+    "statuses_url": {
+      "description": "URL to fetch commit statuses within the repository.",
+      "type": ["null", "string"]
+    },
+    "subscribers_url": {
+      "description": "URL to fetch subscribers of the repository.",
+      "type": ["null", "string"]
+    },
+    "subscription_url": {
+      "description": "URL to manage subscriptions to notifications for the repository.",
+      "type": ["null", "string"]
+    },
+    "tags_url": {
+      "description": "URL to fetch tags within the repository.",
+      "type": ["null", "string"]
+    },
+    "teams_url": {
+      "description": "URL to manage repository teams.",
+      "type": ["null", "string"]
+    },
+    "trees_url": {
+      "description": "URL to fetch trees within the repository.",
+      "type": ["null", "string"]
+    },
+    "clone_url": {
+      "description": "URL to clone the repository.",
+      "type": ["null", "string"]
+    },
+    "mirror_url": {
+      "description": "URL of the mirror repository.",
+      "type": ["null", "string"]
+    },
+    "hooks_url": {
+      "description": "URL to manage webhooks for the repository.",
+      "type": ["null", "string"]
+    },
+    "svn_url": {
+      "description": "SVN URL of the repository.",
+      "type": ["null", "string"]
+    },
+    "homepage": {
+      "description": "URL of the repository's homepage.",
+      "type": ["null", "string"]
+    },
+    "language": {
+      "description": "Main programming language used in the repository.",
+      "type": ["null", "string"]
+    },
+    "forks_count": {
+      "description": "Count of forks for the repository.",
+      "type": ["null", "integer"]
+    },
+    "stargazers_count": {
+      "description": "Number of stars the repository has received.",
+      "type": ["null", "integer"]
+    },
+    "watchers_count": {
+      "description": "Count of watchers for the repository.",
+      "type": ["null", "integer"]
+    },
+    "size": {
+      "description": "Size of the repository in kilobytes.",
+      "type": ["null", "integer"]
+    },
+    "default_branch": {
+      "description": "Default branch of the repository.",
+      "type": ["null", "string"]
+    },
+    "open_issues_count": {
+      "description": "Count of open issues in the repository.",
+      "type": ["null", "integer"]
+    },
+    "is_template": {
+      "description": "Indicates if the repository is a template.",
+      "type": ["null", "boolean"]
+    },
+    "topics": {
+      "description": "Topics associated with the repository.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Individual topic related to the repository.",
+        "type": ["null", "string"]
+      }
+    },
+    "license": {
+      "description": "License information of the repository.",
+      "type": ["null", "object"],
+      "properties": {
+        "key": {
+          "description": "Key identifier of the license.",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Name of the license.",
+          "type": ["null", "string"]
+        },
+        "url": {
+          "description": "URL to access license details.",
+          "type": ["null", "string"]
+        },
+        "spdx_id": {
+          "description": "SPDX identifier of the license.",
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "description": "Node ID of the license.",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "URL to view license details on the web.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "has_issues": {
+      "description": "Indicates if the repository has issues enabled.",
+      "type": ["null", "boolean"]
+    },
+    "has_projects": {
+      "description": "Indicates if the repository has projects enabled.",
+      "type": ["null", "boolean"]
+    },
+    "has_wiki": {
+      "description": "Indicates if the repository has a wiki enabled.",
+      "type": ["null", "boolean"]
+    },
+    "has_pages": {
+      "description": "Indicates if the repository has GitHub Pages enabled.",
+      "type": ["null", "boolean"]
+    },
+    "has_downloads": {
+      "description": "Indicates if the repository has downloads available.",
+      "type": ["null", "boolean"]
+    },
+    "archived": {
+      "description": "Indicates if the repository is archived.",
+      "type": ["null", "boolean"]
+    },
+    "disabled": {
+      "description": "Indicates if the repository is disabled.",
+      "type": ["null", "boolean"]
+    },
+    "visibility": {
+      "description": "Visibility status of the repository.",
+      "type": ["null", "string"]
+    },
+    "pushed_at": {
+      "description": "Date and time when the repository was last pushed to.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "description": "Date and time when the repository was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Date and time when the repository was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "permissions": {
+      "description": "Permissions granted to different roles for the repository.",
+      "type": ["null", "object"],
+      "properties": {
+        "admin": {
+          "description": "Admin permission level.",
+          "type": ["null", "boolean"]
+        },
+        "push": {
+          "description": "Push permission level.",
+          "type": ["null", "boolean"]
+        },
+        "pull": {
+          "description": "Pull permission level.",
+          "type": ["null", "boolean"]
+        },
+        "maintain": {
+          "description": "Maintain permission level.",
+          "type": ["null", "boolean"]
+        },
+        "triage": {
+          "description": "Triage permission level.",
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "allow_forking": {
+      "description": "Indicates if forking is allowed for the repository.",
+      "type": ["null", "boolean"]
+    },
+    "forks": {
+      "description": "Forks information related to the repository.",
+      "type": ["null", "integer"]
+    },
+    "has_discussions": {
+      "description": "Indicates if the repository has discussions.",
+      "type": ["null", "boolean"]
+    },
+    "open_issues": {
+      "description": "Number of open issues in the repository.",
+      "type": ["null", "integer"]
+    },
+    "organization": {
+      "description": "Organization the repository belongs to.",
+      "type": ["null", "string"]
+    },
+    "watchers": {
+      "description": "Watchers of the repository.",
+      "type": ["null", "integer"]
+    },
+    "web_commit_signoff_required": {
+      "description": "Indicates if web commit sign-off is required for contributions.",
+      "type": ["null", "boolean"]
+    },
+    "security_and_analysis": {
+      "description": "Security and analysis settings of the repository.",
+      "type": ["null", "object"],
+      "properties": {
+        "secret_scanning": {
+          "description": "Secret scanning status.",
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "secret_scanning_push_protection": {
+          "description": "Secret scanning push protection status.",
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "secret_scanning_validity_checks": {
+          "description": "Secret scanning validity checks status.",
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "dependabot_security_updates": {
+          "description": "Dependabot security updates status.",
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

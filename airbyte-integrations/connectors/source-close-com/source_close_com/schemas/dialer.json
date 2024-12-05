@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "status": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"]
+    },
+    "source_value": {
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "caller_id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "ring_mode": {
+      "type": ["null", "string"]
+    },
+    "is_user_dependent": {
+      "type": ["null", "boolean"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "music_preference": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "visibility_mode": {
+      "type": ["null", "string"]
+    }
+  }
+}

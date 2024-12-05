@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "phones": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "phone_formatted": {
+            "type": ["null", "string"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "phone": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "emails": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "urls": {
+      "type": ["null", "array"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "integration_links": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    }
+  }
+}

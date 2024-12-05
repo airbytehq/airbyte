@@ -1,0 +1,34 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Azure Data Table Spec",
+    "type": "object",
+    "required": ["storage_account_name", "storage_access_key"],
+    "properties": {
+      "storage_account_name": {
+        "title": "Account Name",
+        "type": "string",
+        "description": "The name of your storage account.",
+        "order": 0,
+        "airbyte_secret": false
+      },
+      "storage_access_key": {
+        "title": "Access Key",
+        "type": "string",
+        "description": "Azure Table Storage Access Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/azure-table\">docs</a> for more information on how to obtain this key.",
+        "order": 1,
+        "airbyte_secret": true
+      },
+      "storage_endpoint_suffix": {
+        "title": "Endpoint Suffix",
+        "type": "string",
+        "description": "Azure Table Storage service account URL suffix. See the <a href=\"https://docs.airbyte.com/integrations/sources/azure-table\">docs</a> for more information on how to obtain endpoint suffix",
+        "order": 2,
+        "default": "core.windows.net",
+        "examples": ["core.windows.net", "core.chinacloudapi.cn"],
+        "airbyte_secret": false
+      }
+    }
+  }
+}

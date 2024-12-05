@@ -1,29 +1,11 @@
-area/frontend:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
-
+# Union of api, connectors, documentation, octavia-cli, CDK and normalization.
 area/api:
   - airbyte-api/*
   - airbyte-api/**/*
 
-area/core:
-  - airbyte-server/*
-  - airbyte-server/**/*
-  - airbyte-scheduler/*
-  - airbyte-scheduler/**/*
-
-area/protocol:
-  - airbyte-protocol/*
-  - airbyte-protocol/**/*
-
-area/worker:
-  - airbyte-workers/*
-  - airbyte-workers/**/*
-
 area/connectors:
   - airbyte-integrations/connectors/*
   - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
 
 area/documentation:
   - docs/*

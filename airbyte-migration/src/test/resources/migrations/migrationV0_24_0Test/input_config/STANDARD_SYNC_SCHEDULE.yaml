@@ -1,8 +1,0 @@
----
-- connectionId: "440af383-7aa4-491c-ae54-c665463a94f7"
-  schedule:
-    timeUnit: "minutes"
-    units: 5
-  manual: false
-- connectionId: "473fea2c-b12a-483a-a072-abc314232e24"
-  manual: true

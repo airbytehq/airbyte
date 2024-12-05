@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="250px" height="250px" viewBox="0 0 250 250" version="1.1">
+<defs>
+<linearGradient id="linear0" gradientUnits="userSpaceOnUse" x1="0.12519" y1="0.852129" x2="0.882283" y2="0.100225" gradientTransform="matrix(0.000000000000006608,107.917969,-107.914063,0.000000000000006608,191.945312,46.460937)">
+<stop offset="0" style="stop-color:rgb(100%,0%,34.117647%);stop-opacity:0.160784;"/>
+<stop offset="0.861354" style="stop-color:rgb(100%,0%,34.117647%);stop-opacity:1;"/>
+</linearGradient>
+<filter id="alpha" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
+  <feColorMatrix type="matrix" in="SourceGraphic" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+</filter>
+<mask id="mask0">
+  <g filter="url(#alpha)">
+<rect x="0" y="0" width="250" height="250" style="fill:rgb(0%,0%,0%);fill-opacity:0.501961;stroke:none;"/>
+  </g>
+</mask>
+<linearGradient id="linear1" gradientUnits="userSpaceOnUse" x1="0.12519" y1="0.852129" x2="0.882283" y2="0.100225" gradientTransform="matrix(0.000000000000006608,107.917969,-107.914063,0.000000000000006608,191.945312,46.460937)">
+<stop offset="0" style="stop-color:rgb(100%,0%,34.117647%);stop-opacity:0.160784;"/>
+<stop offset="0.861354" style="stop-color:rgb(100%,0%,34.117647%);stop-opacity:1;"/>
+</linearGradient>
+<clipPath id="clip1">
+  <rect x="0" y="0" width="250" height="250"/>
+</clipPath>
+<g id="surface5" clip-path="url(#clip1)">
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#linear1);" d="M 137.988281 154.378906 C 108.1875 154.378906 84.03125 130.21875 84.03125 100.417969 C 84.03125 70.621094 108.1875 46.460938 137.988281 46.460938 C 167.785156 46.460938 191.945312 70.621094 191.945312 100.417969 C 191.945312 130.21875 167.785156 154.378906 137.988281 154.378906 Z M 137.988281 154.378906 "/>
+</g>
+</defs>
+<g id="surface1">
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,10.588235%,21.960784%);fill-opacity:1;" d="M 37.566406 41.566406 C 37.566406 18.609375 56.179688 0 79.136719 0 L 212.429688 0 L 212.429688 59.152344 C 212.429688 70.632812 203.125 79.9375 191.644531 79.9375 L 137.164062 79.9375 C 126.367188 80.109375 117.652344 88.839844 117.503906 99.640625 L 117.503906 229.019531 C 117.503906 240.496094 108.199219 249.800781 96.722656 249.800781 L 37.566406 249.800781 Z M 37.566406 41.566406 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#linear0);" d="M 137.988281 154.378906 C 108.1875 154.378906 84.03125 130.21875 84.03125 100.417969 C 84.03125 70.621094 108.1875 46.460938 137.988281 46.460938 C 167.785156 46.460938 191.945312 70.621094 191.945312 100.417969 C 191.945312 130.21875 167.785156 154.378906 137.988281 154.378906 Z M 137.988281 154.378906 "/>
+<use xlink:href="#surface5" mask="url(#mask0)"/>
+</g>
+</svg>

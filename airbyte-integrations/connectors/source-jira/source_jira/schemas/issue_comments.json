@@ -1,143 +1,79 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "author": {
-      "properties": {
-        "accountId": {
-          "type": "string"
-        },
-        "accountType": {
-          "type": "string"
-        },
-        "active": {
-          "type": "boolean"
-        },
-        "avatarUrls": {
-          "properties": {
-            "16x16": {
-              "type": "string"
-            },
-            "24x24": {
-              "type": "string"
-            },
-            "32x32": {
-              "type": "string"
-            },
-            "48x48": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "emailAddress": {
-          "type": "string"
-        },
-        "self": {
-          "type": "string"
-        },
-        "timeZone": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "body": {
-      "properties": {
-        "content": {
-          "items": {
-            "properties": {
-              "content": {
-                "items": {
-                  "properties": {
-                    "text": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "type": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "type": {
-          "type": "string"
-        },
-        "version": {
-          "type": "integer"
-        }
-      },
-      "type": "object"
-    },
-    "created": {
-      "type": "string"
+    "self": {
+      "description": "The URL of the comment.",
+      "type": "string",
+      "readOnly": true
     },
     "id": {
-      "type": "string"
+      "description": "The ID of the comment.",
+      "type": "string",
+      "readOnly": true
     },
-    "jsdPublic": {
-      "type": "boolean"
+    "issueId": {
+      "description": "Id of the related issue.",
+      "type": ["null", "string"],
+      "readOnly": true
     },
-    "self": {
-      "type": "string"
+    "author": {
+      "description": "The ID of the user who created the comment.",
+      "readOnly": true
+    },
+    "body": {
+      "description": "The comment text in Atlassian Document Format.",
+      "type": "object"
+    },
+    "renderedBody": {
+      "description": "The rendered version of the comment.",
+      "type": "string",
+      "readOnly": true
     },
     "updateAuthor": {
+      "description": "The ID of the user who updated the comment last.",
+      "type": "object",
+      "additionalProperties": true,
+      "readOnly": true
+    },
+    "created": {
+      "description": "The date and time at which the comment was created.",
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    },
+    "updated": {
+      "description": "The date and time at which the comment was updated last.",
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    },
+    "visibility": {
+      "description": "The group or role to which this item is visible.",
+      "type": ["object", "null"],
       "properties": {
-        "accountId": {
-          "type": "string"
+        "type": {
+          "description": "Whether visibility of this item is restricted to a group or role.",
+          "type": "string",
+          "enum": ["group", "role"]
         },
-        "accountType": {
-          "type": "string"
-        },
-        "active": {
-          "type": "boolean"
-        },
-        "avatarUrls": {
-          "properties": {
-            "16x16": {
-              "type": "string"
-            },
-            "24x24": {
-              "type": "string"
-            },
-            "32x32": {
-              "type": "string"
-            },
-            "48x48": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "emailAddress": {
-          "type": "string"
-        },
-        "self": {
-          "type": "string"
-        },
-        "timeZone": {
+        "value": {
+          "description": "The name of the group or role to which visibility of this item is restricted.",
           "type": "string"
         }
       },
-      "type": "object"
+      "additionalProperties": true
     },
-    "updated": {
-      "type": "string"
+    "jsdPublic": {
+      "description": "Whether the comment is visible in Jira Service Desk. Defaults to true when comments are created in the Jira Cloud Platform.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "properties": {
+      "description": "A list of comment properties. Optional on create and update.",
+      "type": "array"
     }
   },
-  "type": "object"
+  "additionalProperties": true,
+  "description": "A comment."
 }

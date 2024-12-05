@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "properties": {
+    "account": {
+      "description": "Details of the account associated with the bank balance",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "The unique code identifying the account",
+          "type": ["string", "null"]
+        },
+        "statementIdentifier": {
+          "description": "Identifier for the statement associated with the account",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID (Universally Unique Identifier) of the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "bankBalance": {
+      "description": "The end-of-day bank balance for the account",
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "description": "The balance amount of the account",
+          "type": ["number", "null"]
+        },
+        "balanceDate": {
+          "description": "The date when the balance was recorded",
+          "type": ["string", "null"]
+        },
+        "currencyCode": {
+          "description": "The currency code of the balance amount",
+          "type": ["string", "null"]
+        },
+        "lastKnownBalanceDate": {
+          "description": "The date of the last known balance for the account",
+          "type": ["null", "string"]
+        }
+      }
+    }
+  },
+  "title": "BK-BankStatementBalanceModel",
+  "description": "Bank statement balance.",
+  "$schema": "http://json-schema.org/schema#"
+}

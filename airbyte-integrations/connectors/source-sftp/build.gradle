@@ -1,0 +1,20 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.sftp.SftpSource'
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
+    implementation 'com.jcraft:jsch:0.1.55'
+
+    testImplementation 'org.testcontainers:testcontainers:1.19.4'
+}

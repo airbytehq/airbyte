@@ -1,0 +1,25 @@
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
+
+dependencies {
+    api 'org.apache.commons:commons-csv:1.11.0'
+
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+
+    implementation 'io.aesy:datasize:1.0.0'
+
+    testFixturesCompileOnly 'org.projectlombok:lombok:1.18.34'
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
+
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
+
+}

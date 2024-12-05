@@ -1,0 +1,20 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last_active": "2598826148"
+      },
+      "stream_descriptor": { "name": "devices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "queued_at": "2598826148"
+      },
+      "stream_descriptor": { "name": "notifications" }
+    }
+  }
+]

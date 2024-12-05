@@ -1,0 +1,5 @@
+{
+  "client_id": "client_id",
+  "client_secret": "client_secret",
+  "authorization_endpoint": "https://zoom.us/oauth/token"
+}

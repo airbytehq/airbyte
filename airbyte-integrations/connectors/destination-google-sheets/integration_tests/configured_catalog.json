@@ -1,0 +1,150 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stream_1",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "str": {
+              "type": ["null", "string"]
+            },
+            "num": {
+              "type": ["null", "number"]
+            },
+            "list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "dict": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": ["null", "string"]
+              }
+            },
+            "double_list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": [
+          "overwrite",
+          "append",
+          "append_dedup"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "stream_2",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "str": {
+              "type": ["null", "string"]
+            },
+            "num": {
+              "type": ["null", "number"]
+            },
+            "list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "dict": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": ["null", "string"]
+              }
+            },
+            "double_list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": [
+          "overwrite",
+          "append",
+          "append_dedup"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "stream_3",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "str": {
+              "type": ["null", "string"]
+            },
+            "num": {
+              "type": ["null", "number"]
+            },
+            "list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "dict": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": ["null", "string"]
+              }
+            },
+            "double_list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
+    }
+  ]
+}

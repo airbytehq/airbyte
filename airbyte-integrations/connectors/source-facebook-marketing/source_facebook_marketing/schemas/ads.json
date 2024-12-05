@@ -2,33 +2,42 @@
   "type": ["null", "object"],
   "properties": {
     "bid_type": {
+      "description": "The type of bid strategy used for the ad.",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "The unique identifier for the Facebook ad account.",
       "type": ["null", "string"]
     },
     "campaign_id": {
+      "description": "The unique identifier for the campaign associated with the ad.",
       "type": ["null", "string"]
     },
     "adset_id": {
+      "description": "The unique identifier for the ad set associated with the ad.",
       "type": ["null", "string"]
     },
     "adlabels": {
+      "description": "Ad labels associated with the ad",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier for the ad label.",
             "type": "string"
           },
           "created_time": {
+            "description": "The date and time when the ad label was created.",
             "type": "string",
             "format": "date-time"
           },
           "name": {
+            "description": "The name of the ad label.",
             "type": "string"
           },
           "updated_time": {
+            "description": "The date and time when the ad label was last updated.",
             "type": "string",
             "format": "date-time"
           }
@@ -36,248 +45,303 @@
       }
     },
     "bid_amount": {
+      "description": "The bid amount set for the ad.",
       "type": ["null", "integer"]
     },
     "bid_info": {
+      "description": "Bid information for the ad",
       "type": ["null", "object"],
       "properties": {
         "CLICKS": {
+          "description": "The bid amount set for clicks.",
           "type": ["null", "integer"]
         },
         "ACTIONS": {
+          "description": "The bid amount set for actions.",
           "type": ["null", "integer"]
         },
         "REACH": {
+          "description": "The bid amount set for reach.",
           "type": ["null", "integer"]
         },
         "IMPRESSIONS": {
+          "description": "The bid amount set for impressions.",
           "type": ["null", "integer"]
         },
         "SOCIAL": {
+          "description": "The bid amount set for social interactions.",
           "type": ["null", "integer"]
         }
       }
     },
     "status": {
+      "description": "The current status of the ad.",
       "type": ["null", "string"]
     },
     "creative": {
+      "description": "Details of the creative used in the ad",
       "type": ["null", "object"],
       "properties": {
         "creative_id": {
+          "description": "The unique identifier for the creative used in the ad.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The unique identifier for the creative.",
           "type": ["null", "string"]
         }
       }
     },
     "id": {
+      "description": "The unique identifier for the ad.",
       "type": ["null", "string"]
     },
     "updated_time": {
+      "description": "The date and time when the ad was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_time": {
+      "description": "The date and time when the ad was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name of the ad.",
       "type": ["null", "string"]
     },
-    "targeting": { "$ref": "targeting.json" },
+    "targeting": {
+      "description": "The targeting details set for the ad.",
+      "$ref": "targeting.json"
+    },
     "effective_status": {
+      "description": "The current effectiveness status of the ad.",
       "type": ["null", "string"]
     },
     "last_updated_by_app_id": {
+      "description": "The unique identifier for the last app that updated the ad.",
       "type": ["null", "string"]
     },
     "recommendations": {
+      "description": "Recommended actions or strategies for the ad",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "blame_field": {
+            "description": "The field responsible for the recommendation.",
             "type": ["null", "string"]
           },
           "code": {
+            "description": "The code associated with the recommendation.",
             "type": "integer"
           },
           "confidence": {
+            "description": "The confidence level of the recommendation.",
             "type": "string"
           },
           "importance": {
+            "description": "The importance level of the recommendation.",
             "type": "string"
           },
           "message": {
+            "description": "The recommendation message.",
             "type": "string"
           },
           "title": {
+            "description": "The title of the recommendation.",
             "type": "string"
           }
         }
       }
     },
     "source_ad_id": {
+      "description": "The source ad identifier, if the ad was copied from another ad.",
       "type": ["null", "string"]
     },
     "tracking_specs": {
+      "description": "Specifications for tracking ad performance",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "application": {
+            "description": "The application associated with tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post": {
+            "description": "The post associated with tracking.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "conversion_id": {
+            "description": "The conversion identifier for tracking.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "action.type": {
+            "description": "The type of action for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.wall": {
+            "description": "The wall post details for tracking.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "page": {
+            "description": "The Facebook page associated with tracking.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "creative": {
+            "description": "The creative details for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "dataset": {
+            "description": "The dataset used for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event": {
+            "description": "The event associated with tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event.creator": {
+            "description": "The event creator for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event_type": {
+            "description": "The type of event for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "fb_pixel": {
+            "description": "The Facebook pixel information for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "fb_pixel_event": {
+            "description": "The Facebook pixel event for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "leadgen": {
+            "description": "The lead generation details for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "object": {
+            "description": "The object associated with tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "object.domain": {
+            "description": "The domain of the object for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offer": {
+            "description": "The offer details for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offer.creator": {
+            "description": "The creator of the offer for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offsite_pixel": {
+            "description": "The offsite pixel information for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "page.parent": {
+            "description": "The parent page of the Facebook page for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.object": {
+            "description": "The object of the post for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.object.wall": {
+            "description": "The wall object of the post for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "question": {
+            "description": "The question details for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "question.creator": {
+            "description": "The creator of the question for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "response": {
+            "description": "The response details for tracking.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "subtype": {
+            "description": "The subtype of the tracking action.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
@@ -287,161 +351,188 @@
       }
     },
     "conversion_specs": {
+      "description": "Specifications for tracking conversions",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "application": {
+            "description": "The application associated with conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post": {
+            "description": "The post associated with conversions.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "conversion_id": {
+            "description": "The conversion identifier.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "action.type": {
+            "description": "The type of action for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.wall": {
+            "description": "The wall post details for conversions.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "page": {
+            "description": "The Facebook page associated with conversions.",
             "items": {
               "type": ["null", "string"]
             },
             "type": ["null", "array"]
           },
           "creative": {
+            "description": "The creative details for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "dataset": {
+            "description": "The dataset used for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event": {
+            "description": "The event associated with conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event.creator": {
+            "description": "The event creator for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "event_type": {
+            "description": "The type of event for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "fb_pixel": {
+            "description": "The Facebook pixel information for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "fb_pixel_event": {
+            "description": "The Facebook pixel event for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "leadgen": {
+            "description": "The lead generation details for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "object": {
+            "description": "The object associated with conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "object.domain": {
+            "description": "The domain of the object for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offer": {
+            "description": "The offer details for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offer.creator": {
+            "description": "The creator of the offer for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "offsite_pixel": {
+            "description": "The offsite pixel information for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "page.parent": {
+            "description": "The parent page of the Facebook page for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.object": {
+            "description": "The object of the post for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "post.object.wall": {
+            "description": "The wall object of the post for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "question": {
+            "description": "The question details for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "question.creator": {
+            "description": "The creator of the question for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "response": {
+            "description": "The response details for conversions.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]
             }
           },
           "subtype": {
+            "description": "The subtype of the conversion.",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "string"]

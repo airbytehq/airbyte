@@ -1,0 +1,36 @@
+{
+  "title": "Net Pure Product Margin Report",
+  "description": "The Net Pure Product Margin report shares data with vendors on Amazon's profit margin selling the vendor's items both at an aggregated level (across the vendor's entire catalog of items) and at a per-ASIN level. Data is available at different date range aggregation levels: DAY, WEEK, MONTH, QUARTER, YEAR. Requests can span multiple date range periods.",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "startDate": {
+      "description": "The date representing the start date of the report period",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "endDate": {
+      "description": "The date representing the end date of the report period",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "asin": {
+      "description": "The unique identifier for the Amazon Standard Identification Number (ASIN) of the product",
+      "type": ["null", "string"]
+    },
+    "netPureProductMargin": {
+      "description": "The net profit margin of the product after deducting all costs associated with production",
+      "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "The timestamp indicating the end time of the data collection period",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "description": "The date of the query end date used for fetching the report data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

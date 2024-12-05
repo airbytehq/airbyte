@@ -1,0 +1,6 @@
+{
+  "api_token": "<api_token>",
+  "domain": "<your_domain.atlassian.net>",
+  "email": "<email>",
+  "projects": []
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the survey.",
+      "type": ["string", "null"]
+    },
+    "title": {
+      "description": "Title of the survey.",
+      "type": ["string", "null"]
+    },
+    "nickname": {
+      "description": "User-assigned nickname for the survey to easily identify it.",
+      "type": ["string", "null"]
+    },
+    "href": {
+      "description": "URL for fetching detailed information about the survey.",
+      "type": ["string", "null"]
+    }
+  }
+}

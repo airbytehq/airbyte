@@ -1,0 +1,9 @@
+{
+  "dataset_name": "test",
+  "format": "csv",
+  "reader_options": "{\"bla\": \",\", \"nrows\": 20}",
+  "url": "file:///tmp/fake_file.csv",
+  "provider": {
+    "storage": "local"
+  }
+}

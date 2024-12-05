@@ -2,21 +2,21 @@
 
 ## Overview
 
-The goal of this article is to make the `AirbyteCatalog` approachable to someone contributing to Airbyte for the first time. If you are looking to get deeper into the details of the catalog, you can read our technical specification on it [here](catalog.md).
+The goal of this article is to make the `AirbyteCatalog` approachable to someone contributing to Airbyte for the first time. If you are looking to get deeper into the details of the catalog, you can read our technical specification on it [here](airbyte-protocol.md#catalog).
 
 The goal of the `AirbyteCatalog` is to describe _what_ data is available in a source. The goal of the `ConfiguredAirbyteCatalog` is to, based on an `AirbyteCatalog`, specify _how_ data from the source is replicated.
 
 ## Contents
 
-This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](beginners-guide-to-catalog.md#Database-Example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
+This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](#database-example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
 
-* [Postgres Example](beginners-guide-to-catalog.md#Database-Example)
-* [API Example](beginners-guide-to-catalog.md#API-Examples)
-  * [Static Streams Example](beginners-guide-to-catalog.md#Static-Streams-Example)
-  * [Dynamic Streams Example](beginners-guide-to-catalog.md#Dynamic-Streams-Example)
-* [Nested Schema Example](beginners-guide-to-catalog.md#Nested-Schema-Example)
+- [Postgres Example](#database-example)
+- [API Example](#api-examples)
+  - [Static Streams Example](#static-streams-example)
+  - [Dynamic Streams Example](#dynamic-streams-example)
+- [Nested Schema Example](#nested-schema-example)
 
-In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](connections/incremental-append.md).
+In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ## Database Example
 
@@ -31,7 +31,7 @@ CREATE TABLE "airlines" (
 CREATE TABLE "pilots" (
     "id"   INTEGER,
     "airline_id" INTEGER,
-    "name" INTEGER
+    "name" VARCHAR
 );
 ```
 
@@ -91,10 +91,10 @@ The catalog is structured as a list of `AirbyteStream`. In the case of a databas
 
 Let's walk through what each field in a stream means.
 
-* `name` - The name of the stream.
-* `supported_sync_modes` - This field lists the type of data replication that this source supports. The possible values in this array include `FULL_REFRESH` \([docs](connections/full-refresh-overwrite.md)\) and `INCREMENTAL` \([docs](connections/incremental-append.md)\).
-* `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signal whether the source can figure out how to detect new records on its own or not.
-* `json_schema` - This field is a [JsonSchema](https://json-schema.org/understanding-json-schema) object that describes the structure of the data. Notice that each key in the `properties` object corresponds to a column name in our database table.
+- `name` - The name of the stream.
+- `supported_sync_modes` - This field lists the type of data replication that this source supports. The possible values in this array include `FULL_REFRESH` \([docs](/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite.md)\) and `INCREMENTAL` \([docs](/using-airbyte/core-concepts/sync-modes/incremental-append.md)\).
+- `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signals whether the source can figure out how to detect new records on its own or not.
+- `json_schema` - This field is a [JsonSchema](https://json-schema.org/understanding-json-schema) object that describes the structure of the data. Notice that each key in the `properties` object corresponds to a column name in our database table.
 
 Now we understand _what_ data is available from this source. Next we will configure _how_ we want to replicate that data.
 
@@ -135,9 +135,9 @@ Just as with the `AirbyteCatalog` the `ConfiguredAirbyteCatalog` contains a list
 
 Let's walk through each field in the `ConfiguredAirbyteStream`:
 
-* `sync_mode` - This field must be one of the values that was in `supported_sync_modes` in the `AirbyteStream` - Configures which sync mode will be used when data is replicated.
-* `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ the one we saw in the `AirbyteCatalog`.
-* `cursor_field` - When `sync_mode` is `INCREMENTAL` and `source_defined_cursor = false`, this field configures which field in the stream will be used to determine if a record should be replicated or not. Read more about this concept in our [documentation of incremental replication](connections/incremental-append.md).
+- `sync_mode` - This field must be one of the values that was in `supported_sync_modes` in the `AirbyteStream` - Configures which sync mode will be used when data is replicated.
+- `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ to the one we saw in the `AirbyteCatalog`.
+- `cursor_field` - When `sync_mode` is `INCREMENTAL` and `source_defined_cursor = false`, this field configures which field in the stream will be used to determine if a record should be replicated or not. Read more about this concept in our [documentation of incremental replication](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ### Summary of the Postgres Example
 
@@ -145,7 +145,7 @@ When thinking about `AirbyteCatalog` and `ConfiguredAirbyteCatalog`, remember th
 
 ## API Examples
 
-The `AirbyteCatalog` offers the flexibility in how to model the data for an API. In the next two example, we will model data from the same API--a stock ticker--in two different ways. In the first, the source will return a single stream called `ticker`, and in the second, the source with return a stream for each stock symbol it is configured to retrieve data for. Each stream's name will be a stock symbol.
+The `AirbyteCatalog` offers the flexibility in how to model the data for an API. In the next two examples, we will model data from the same API--a stock ticker--in two different ways. In the first, the source will return a single stream called `ticker`, and in the second, the source with return a stream for each stock symbol it is configured to retrieve data for. Each stream's name will be a stock symbol.
 
 ### Static Streams Example
 
@@ -190,7 +190,7 @@ This catalog looks pretty similar to the `AirbyteCatalog` that we created for th
 
 The `ConfiguredAirbyteCatalog` follows the same rules as we described in the [Database Example](beginners-guide-to-catalog.md#Database-Example). It just wraps the `AirbyteCatalog` described above.
 
-## Dynamic Streams Example
+### Dynamic Streams Example
 
 Now let's build a stock ticker source that handles returning ticker data for _multiple_ stocks. The name of each stream will be the stock symbol that it represents.
 
@@ -251,7 +251,7 @@ This example provides another way of thinking about exposing data in a source. A
 
 ## Nested Schema Example
 
-Often, a data source contains "nested" data. In other words this is data that where each record contains other objects nested inside it. Cases like this are cannot be easily modeled just as tables / columns. This is why Airbyte uses JsonSchema to model the schema of its streams.
+Often, a data source contains "nested" data. In other words this is data where each record contains other objects nested inside it. Cases like this cannot be easily modeled just as tables / columns. This is why Airbyte uses JsonSchema to model the schema of its streams.
 
 Let's imagine we are modeling a flight object. A flight object might look like this:
 
@@ -324,4 +324,3 @@ The `AirbyteCatalog` would look like this:
 ```
 
 Because Airbyte uses JsonSchema to model the schema of streams, it is able to handle arbitrary nesting of data in a way that a table / column based model cannot.
-
