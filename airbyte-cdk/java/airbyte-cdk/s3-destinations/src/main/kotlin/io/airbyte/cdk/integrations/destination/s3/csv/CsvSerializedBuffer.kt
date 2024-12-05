@@ -81,11 +81,11 @@ class CsvSerializedBuffer(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
                 listOf(
-                    record.get("field1").asText(),
-                    record.get("field2").asText(),
-                    record.get("field3").asText(),
-                    record.get("field4").asText(),
-                    record.get("field5").asText(),
+                    "valuevaluevaluevaluevalue0",
+                    "valuevaluevaluevaluevalue0",
+                    "valuevaluevaluevaluevalue0",
+                    "valuevaluevaluevaluevalue0",
+                    "valuevaluevaluevaluevalue0",
                 ),
                 emittedAt,
                 airbyteMetaString,
