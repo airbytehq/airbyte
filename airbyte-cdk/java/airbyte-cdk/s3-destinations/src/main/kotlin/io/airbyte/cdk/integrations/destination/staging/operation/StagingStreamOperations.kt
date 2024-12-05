@@ -49,6 +49,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
                     streamConfig.generationId,
                     record.record!!.emittedAt
                 )
+                record.record?.data = null
             }
             it.flush()
             log.info {
