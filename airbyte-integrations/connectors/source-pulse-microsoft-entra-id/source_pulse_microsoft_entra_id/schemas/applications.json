@@ -1,0 +1,78 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "addIns": {
+      "type": ["array", "null"]
+    },
+    "api": {
+      "type": ["object", "null"],
+      "properties": {
+        "knownClientApplications": {
+          "type": ["array", "null"]
+        },
+        "oauth2PermissionScopes": {
+          "type": ["array", "null"]
+        },
+        "preAuthorizedApplications": {
+          "type": ["array", "null"]
+        }
+      }
+    },
+    "appId": {
+      "type": ["string", "null"]
+    },
+    "appRoles": {
+      "type": ["array", "null"]
+    },
+    "createdDateTime": {
+      "type": ["string", "null"]
+    },
+    "displayName": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "identifierUris": {
+      "type": ["array", "null"]
+    },
+    "keyCredentials": {
+      "type": ["array", "null"]
+    },
+    "passwordCredentials": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "displayName": {
+            "type": ["string", "null"]
+          },
+          "endDateTime": {
+            "type": ["string", "null"]
+          },
+          "hint": {
+            "type": ["string", "null"]
+          },
+          "keyId": {
+            "type": ["string", "null"]
+          },
+          "startDateTime": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "publisherDomain": {
+      "type": ["string", "null"]
+    },
+    "signInAudience": {
+      "type": ["string", "null"]
+    },
+    "_ab_cdc_deleted_at": {
+      "type": ["boolean", "null"]
+    }
+  },
+  "required": ["id"]
+}

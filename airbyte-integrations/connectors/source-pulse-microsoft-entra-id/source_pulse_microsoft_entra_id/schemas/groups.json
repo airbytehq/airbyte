@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "description": {
+      "type": ["string", "null"]
+    },
+    "createdDateTime": {
+      "type": ["string", "null"]
+    },
+    "creationOptions": {
+      "type": ["array", "null"]
+    },
+    "displayName": {
+      "type": ["string", "null"]
+    },
+    "groupTypes": {
+      "type": ["array", "null"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "mailEnabled": {
+      "type": ["boolean", "null"]
+    },
+    "mailNickname": {
+      "type": ["string", "null"]
+    },
+    "onPremisesProvisioningErrors": {
+      "type": ["array", "null"]
+    },
+    "proxyAddresses": {
+      "type": ["array", "null"]
+    },
+    "renewedDateTime": {
+      "type": ["string", "null"]
+    },
+    "resourceBehaviorOptions": {
+      "type": ["array", "null"]
+    },
+    "resourceProvisioningOptions": {
+      "type": ["array", "null"]
+    },
+    "securityEnabled": {
+      "type": ["boolean", "null"]
+    },
+    "securityIdentifier": {
+      "type": ["string", "null"]
+    },
+    "serviceProvisioningErrors": {
+      "type": ["array", "null"]
+    },
+    "_ab_cdc_deleted_at": {
+      "type": ["boolean", "null"]
+    }
+  },
+  "required": ["id"]
+}

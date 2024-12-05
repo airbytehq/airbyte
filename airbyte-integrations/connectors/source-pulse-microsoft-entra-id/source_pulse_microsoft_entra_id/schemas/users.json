@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "businessPhones": {
+      "type": ["array", "null"]
+    },
+    "displayName": {
+      "type": ["string", "null"]
+    },
+    "givenName": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "jobTitle": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preferredLanguage": {
+      "type": ["string", "null"]
+    },
+    "surname": {
+      "type": ["string", "null"]
+    },
+    "userPrincipalName": {
+      "type": ["string", "null"]
+    },
+    "entity_deleted": {
+      "type": ["boolean", "null"]
+    }
+  },
+  "required": ["id"]
+}

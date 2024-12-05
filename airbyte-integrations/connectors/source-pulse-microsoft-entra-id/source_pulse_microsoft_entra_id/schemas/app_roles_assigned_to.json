@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "appRoleId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdDateTime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "principalDisplayName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "principalId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "principalType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resourceDisplayName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resourceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}

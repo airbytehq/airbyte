@@ -1,0 +1,31 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-entra-id
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Microsoft Entra ID Spec
+  type: object
+  required:
+    - client_id
+    - client_secret
+    - tenant_id
+    - user_id
+  properties:
+    client_id:
+      type: string
+      title: Client ID
+      description: The Client ID of your Microsoft Entra ID application
+      airbyte_secret: true
+    client_secret:
+      type: string
+      title: Client Secret
+      description: The Client Secret of your Microsoft Entra ID application
+      airbyte_secret: true
+    tenant_id:
+      type: string
+      title: Tenant ID
+      description: The Tenant ID of your Microsoft Entra ID
+      airbyte_secret: true
+    user_id:
+      type: string
+      title: User ID
+      description: The User ID for accessing deleted items
+      airbyte_secret: true

@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "@odata.type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdDateTime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "creationOptions": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "displayName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "groupTypes": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "isAssignableToRole": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "mail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mailEnabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "mailNickname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "onPremisesProvisioningErrors": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "proxyAddresses": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "renewedDateTime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resourceBehaviorOptions": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "resourceProvisioningOptions": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "roleTemplateId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "securityEnabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "securityIdentifier": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "serviceProvisioningErrors": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "userId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visibility": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "type": "object"
+}
