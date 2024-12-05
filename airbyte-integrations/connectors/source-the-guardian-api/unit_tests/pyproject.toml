@@ -1,0 +1,10 @@
+[tool.poetry]
+name = "source-the-guardian-api-tests"
+version = "0.0.0"
+description = "Unit tests for source-the-guardian-api"
+authors = ["Airbyte <contact@airbyte.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+airbyte-cdk = "5.17.0"
+pytest = "^8"
