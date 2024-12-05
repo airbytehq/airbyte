@@ -61,12 +61,7 @@ class S3V2WriteTestJsonUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    ) {
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-}
+    )
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -75,12 +70,7 @@ class S3V2WriteTestJsonRootLevelFlattening :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    ) {
-    @Test
-    override fun testInterruptedTruncateWithPriorData() {
-        super.testInterruptedTruncateWithPriorData()
-    }
-}
+    )
 
 @Disabled("Un-disable once staging is re-enabled")
 class S3V2WriteTestJsonStaging :
@@ -113,7 +103,12 @@ class S3V2WriteTestCsvUncompressed :
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(

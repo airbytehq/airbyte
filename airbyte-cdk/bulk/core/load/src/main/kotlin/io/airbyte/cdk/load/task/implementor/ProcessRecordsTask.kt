@@ -19,12 +19,16 @@ import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
+import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 interface ProcessRecordsTask : StreamLevel, ImplementorScope
 
@@ -43,45 +47,57 @@ class DefaultProcessRecordsTask(
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     private val diskManager: ReservationManager,
+    private val accumulators: ConcurrentHashMap<DestinationStream.Descriptor, LockedAccumulator>,
 ) : ProcessRecordsTask {
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
 
         log.info { "Fetching stream loader for $streamDescriptor" }
+
+        // TODO: Change when we migrate to a fixed number of process records tasks.
+        // For now, this is just to enforce that only one of these ever processes at a time.
         val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
-
-        log.info { "Processing records from $file" }
-        val batch =
-            try {
-                file.localFile.inputStream().use { inputStream ->
-                    val records =
-                        inputStream
-                            .lineSequence()
-                            .map {
-                                when (val message = deserializer.deserialize(it)) {
-                                    is DestinationStreamAffinedMessage -> message
-                                    else ->
-                                        throw IllegalStateException(
-                                            "Expected record message, got ${message::class}"
-                                        )
-                                }
-                            }
-                            .takeWhile {
-                                it !is DestinationRecordStreamComplete &&
-                                    it !is DestinationRecordStreamIncomplete
-                            }
-                            .map { it as DestinationRecord }
-                            .iterator()
-                    streamLoader.processRecords(records, file.totalSizeBytes)
-                }
-            } finally {
-                log.info { "Processing completed, deleting $file" }
-                file.localFile.toFile().delete()
-                diskManager.release(file.totalSizeBytes)
+        val (accumulator, processLock) =
+            accumulators.getOrPut(streamDescriptor) {
+                LockedAccumulator(streamLoader.createBatchAccumulator(), Mutex())
             }
+        // TODO: This lock can go away once we have a fixed number of process records
+        // tasks AND a flow between processRecords and processBatch AND the accumulator
+        // is converted to a flow transformer.
+        processLock.withLock {
+            log.info { "Processing records from $file" }
+            val batch =
+                try {
+                    file.localFile.inputStream().use { inputStream ->
+                        val records =
+                            inputStream
+                                .lineSequence()
+                                .map {
+                                    when (val message = deserializer.deserialize(it)) {
+                                        is DestinationStreamAffinedMessage -> message
+                                        else ->
+                                            throw IllegalStateException(
+                                                "Expected record message, got ${message::class}"
+                                            )
+                                    }
+                                }
+                                .takeWhile {
+                                    it !is DestinationRecordStreamComplete &&
+                                        it !is DestinationRecordStreamIncomplete
+                                }
+                                .map { it as DestinationRecord }
+                                .iterator()
+                        accumulator.processRecords(records, file.totalSizeBytes, file.endOfStream)
+                    }
+                } finally {
+                    log.info { "Processing completed, deleting $file" }
+                    file.localFile.toFile().delete()
+                    diskManager.release(file.totalSizeBytes)
+                }
 
-        val wrapped = BatchEnvelope(batch, file.indexRange)
-        taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+            val wrapped = BatchEnvelope(batch, file.indexRange)
+            taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+        }
     }
 }
 
@@ -93,6 +109,11 @@ interface ProcessRecordsTaskFactory {
     ): ProcessRecordsTask
 }
 
+data class LockedAccumulator(
+    val accumulator: BatchAccumulator,
+    val lock: Mutex,
+)
+
 @Singleton
 @Secondary
 class DefaultProcessRecordsTaskFactory(
@@ -100,6 +121,8 @@ class DefaultProcessRecordsTaskFactory(
     private val syncManager: SyncManager,
     @Named("diskManager") private val diskManager: ReservationManager,
 ) : ProcessRecordsTaskFactory {
+    private val accumulators = ConcurrentHashMap<DestinationStream.Descriptor, LockedAccumulator>()
+
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor,
@@ -112,6 +135,7 @@ class DefaultProcessRecordsTaskFactory(
             deserializer,
             syncManager,
             diskManager,
+            accumulators,
         )
     }
 }
