@@ -18,7 +18,6 @@ from .custom_http_mocker import CustomHttpMocker
 from .google_credentials import service_account_credentials
 from .request_builder import RequestBuilder
 
-
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
 _STREAM_NAME = "a_stream_name"

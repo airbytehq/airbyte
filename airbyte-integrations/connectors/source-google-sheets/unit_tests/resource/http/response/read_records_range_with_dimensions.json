@@ -5,14 +5,8 @@
       "range": "a_stream_name!A2:B3",
       "majorDimension": "ROWS",
       "values": [
-        [
-          "value_11",
-          "value_12"
-        ],
-        [
-          "value_21",
-          "value_22"
-        ]
+        ["value_11", "value_12"],
+        ["value_21", "value_22"]
       ]
     }
   ]
