@@ -16,7 +16,7 @@ packages = [ { include = "source_asana" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "6.7.1.dev0"
+airbyte-cdk = "6.8.1rc10"
 
 [tool.poetry.scripts]
 source-asana = "source_asana.run:run"
