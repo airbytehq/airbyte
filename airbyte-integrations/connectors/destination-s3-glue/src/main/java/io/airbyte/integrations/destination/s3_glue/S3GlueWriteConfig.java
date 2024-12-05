@@ -19,12 +19,10 @@ public class S3GlueWriteConfig extends WriteConfig {
                            String outputBucketPath,
                            String pathFormat,
                            String fullOutputPath,
-                           long generationId,
-                           long minimumGenerationId,
                            DestinationSyncMode syncMode,
                            JsonNode jsonSchema,
                            String location) {
-    super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode, generationId, minimumGenerationId);
+    super(namespace, streamName, outputBucketPath, pathFormat, fullOutputPath, syncMode);
     this.jsonSchema = jsonSchema;
     this.location = location;
   }
