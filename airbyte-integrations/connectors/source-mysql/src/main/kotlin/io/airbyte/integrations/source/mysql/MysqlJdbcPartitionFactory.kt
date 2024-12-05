@@ -29,7 +29,6 @@ import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
-import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -158,11 +157,22 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            when (streamFeedBootstrap.currentState?.isEmpty) {
-                false -> streamFeedBootstrap.currentState!!
-                else -> return coldStart(streamState)
-            }
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (streamFeedBootstrap.currentState?.isNull == true) {
+            return null
+        }
+
+        // A legacy saved state may be null for an empty table. We will attempt to read it again
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
+            return coldStart(streamState)
+        }
+
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -281,6 +291,10 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
+            if (cursorCheckpoint.isNull) {
+                return coldStart(streamState)
+            }
+
             if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
@@ -307,8 +321,12 @@ class MysqlJdbcPartitionFactory(
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
                     LeafAirbyteSchemaType.BINARY -> {
-                        val ba = Base64.getDecoder().decode(stateValue!!)
-                        Jsons.valueToTree<BinaryNode>(ba)
+                        try {
+                            val ba = Base64.getDecoder().decode(stateValue!!)
+                            Jsons.valueToTree<BinaryNode>(ba)
+                        } catch (_: RuntimeException) {
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
@@ -325,9 +343,9 @@ class MysqlJdbcPartitionFactory(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
                             )
-                        } catch (_: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
@@ -341,12 +359,12 @@ class MysqlJdbcPartitionFactory(
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )
-                        } catch (_: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
-                    else -> Jsons.valueToTree(stateValue)
+                    else -> Jsons.valueToTree<JsonNode>(stateValue)
                 }
             else ->
                 throw IllegalStateException(

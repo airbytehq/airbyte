@@ -34,7 +34,6 @@ looking to scale efficiently. For more details, talk to our Sales team. " ctaTex
 
 <CardWithIcon title="pyAirbyte" description="Quickly sync data using Python in your local notebook." ctaText="pyAirbyte" ctaLink="../pyairbyte/getting-started" icon="fa-download" />
 
-
 </Grid>
 
 

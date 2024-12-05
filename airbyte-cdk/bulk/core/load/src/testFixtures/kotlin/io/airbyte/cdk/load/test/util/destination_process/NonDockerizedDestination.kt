@@ -8,9 +8,11 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
@@ -19,11 +21,13 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.junit.jupiter.api.Assertions.assertFalse
 
 class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
+    useFileTransfer: Boolean,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -34,8 +38,16 @@ class NonDockerizedDestination(
     // So we start our own thread pool, which we can forcibly kill if needed.
     private val executor = Executors.newSingleThreadExecutor()
     private val coroutineDispatcher = executor.asCoroutineDispatcher()
+    private val file = File("/tmp/test_file")
 
     init {
+        if (useFileTransfer) {
+            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
+            val fileContentStr = "123"
+            file.writeText(fileContentStr)
+        } else {
+            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
+        }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
         // it's easier to just use the pipe stuff.
@@ -94,6 +106,10 @@ class NonDockerizedDestination(
         // Coroutines interpret this as a cancellation.
         executor.shutdownNow()
     }
+
+    override fun verifyFileDeleted() {
+        assertFalse(file.exists())
+    }
 }
 
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
@@ -101,9 +117,16 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, configContents, catalog, *featureFlags)
+        return NonDockerizedDestination(
+            command,
+            configContents,
+            catalog,
+            useFileTransfer,
+            *featureFlags
+        )
     }
 }
