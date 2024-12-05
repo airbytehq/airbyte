@@ -46,7 +46,7 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 8. **Start Date (Optional)** is the earliest date for data that will be synced. If a date is not specified, all data from the last 2 years will be synced.
 9. Click Set up source.
 
-![REST Setup](../../enterprise-setup/assets/enterprise-connectors/workday-rest.png)
+![REST Setup](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/workday-rest.png)
 
 
 ### For RaaS streams
@@ -61,7 +61,7 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 8. Enter the Report IDs for the reports you want to sync with this connector.
 9. Click **Set up source**.
 
-![RaaS Setup](../../enterprise-setup/assets/enterprise-connectors/workday-raas.png)
+![RaaS Setup](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/workday-raas.png)
 
 ## Supported sync modes
 
