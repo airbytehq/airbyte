@@ -59,7 +59,7 @@ internal class AsyncFlush(
                     // and create a default
                     // impl that maintains backwards compatible behavior.
                     writer.accept(
-                        Jsons.`object`(record.record?.data!!, mapOf<String, String>()::class.java)!!,
+                        Jsons.`object`(record.record?.data!!, mutableMapOf<String, String>()::class.java)!!,
                         Jsons.serialize(record.record!!.meta),
                         // Destinations that want to use generations should switch to the new
                         // structure (e.g. StagingStreamOperations)
