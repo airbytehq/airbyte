@@ -44,11 +44,11 @@ constructor(
         return getDataRow(
             id,
             listOf(
-                "valuevaluevaluevaluevalue0",
-                "valuevaluevaluevaluevalue0",
-                "valuevaluevaluevaluevalue0",
-                "valuevaluevaluevaluevalue0",
-                "valuevaluevaluevaluevalue0",
+                recordMessage.data.get("field1").asText(),
+                recordMessage.data.get("field2").asText(),
+                recordMessage.data.get("field3").asText(),
+                recordMessage.data.get("field4").asText(),
+                recordMessage.data.get("field5").asText(),
             ),
             recordMessage.emittedAt,
             Jsons.serialize(recordMessage.meta),
