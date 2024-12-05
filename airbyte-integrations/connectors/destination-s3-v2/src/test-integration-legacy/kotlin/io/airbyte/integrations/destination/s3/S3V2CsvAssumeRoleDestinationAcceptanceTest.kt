@@ -19,7 +19,6 @@ class S3V2CsvAssumeRoleDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanc
     }
 
     @Test
-    @Disabled("Pending FILE TRANSFER S3V2")
     override fun testFakeFileTransfer() {
         super.testFakeFileTransfer()
     }
