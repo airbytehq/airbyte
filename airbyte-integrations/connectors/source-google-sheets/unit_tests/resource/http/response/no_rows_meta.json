@@ -1,10 +1,10 @@
 {
-  "spreadsheetId": "a_spreadsheet_id",
+  "spreadsheetId": "19gOzIckDX7AB8E7Ikts6KAxNrk3ZGSjLbnkYxxM_HLw",
   "properties": {
-    "title": "Airbyte Test Spreadsheet",
+    "title": "a_spreadsheet_id",
     "locale": "en_US",
     "autoRecalc": "ON_CHANGE",
-    "timeZone": "Europe/Istanbul",
+    "timeZone": "America/Mexico_City",
     "defaultFormat": {
       "backgroundColor": {
         "red": 1,
@@ -135,98 +135,15 @@
     {
       "properties": {
         "sheetId": 0,
-        "title": "Sheet1-one-col",
+        "title": "a_stream_name",
         "index": 0,
         "sheetType": "GRID",
         "gridProperties": {
-          "rowCount": 1000,
-          "columnCount": 26
-        }
-      }
-    },
-    {
-      "properties": {
-        "sheetId": 320525987,
-        "title": "Sheet2-two-cols",
-        "index": 1,
-        "sheetType": "GRID",
-        "gridProperties": {
-          "rowCount": 1000,
-          "columnCount": 26
-        }
-      }
-    },
-    {
-      "properties": {
-        "sheetId": 1586024628,
-        "title": "Sheet3-two-cols-with-diagram",
-        "index": 2,
-        "sheetType": "GRID",
-        "gridProperties": {
-          "rowCount": 1000,
-          "columnCount": 26
-        }
-      },
-      "charts": [
-        {
-          "chartId": 1121909184,
-          "spec": {
-            "basicChart": {
-              "chartType": "COLUMN",
-              "axis": [
-                {
-                  "position": "BOTTOM_AXIS",
-                  "viewWindowOptions": {}
-                },
-                {
-                  "position": "LEFT_AXIS",
-                  "viewWindowOptions": {}
-                }
-              ]
-            },
-            "hiddenDimensionStrategy": "SKIP_HIDDEN_ROWS_AND_COLUMNS",
-            "fontName": "Roboto"
-          },
-          "position": {
-            "overlayPosition": {
-              "anchorCell": {
-                "sheetId": 1586024628,
-                "rowIndex": 5,
-                "columnIndex": 2
-              },
-              "offsetXPixels": 99,
-              "offsetYPixels": 18,
-              "widthPixels": 600,
-              "heightPixels": 371
-            }
-          }
-        }
-      ]
-    },
-    {
-      "properties": {
-        "sheetId": 2113121216,
-        "title": "Sheet4-two-cols-no-header",
-        "index": 3,
-        "sheetType": "GRID",
-        "gridProperties": {
-          "rowCount": 1000,
-          "columnCount": 26
-        }
-      }
-    },
-    {
-      "properties": {
-        "sheetId": 38184841,
-        "title": "Sheet6-4000-rows",
-        "index": 4,
-        "sheetType": "GRID",
-        "gridProperties": {
-          "rowCount": 4001,
-          "columnCount": 26
+          "rowCount": 0,
+          "columnCount": 0
         }
       }
     }
   ],
-  "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/12MI0w4JwM8f1uwC0qhDJedh2zwKSK4pNJcMl2quQykg/edit"
+  "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/19gOzIckDX7AB8E7Ikts6KAxNrk3ZGSjLbnkYxxM_HLw/edit?ouid=106175843115957165976"
 }

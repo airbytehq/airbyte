@@ -1,9 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
-import re
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -19,8 +17,7 @@ from source_google_sheets import SourceGoogleSheets
 from .custom_http_mocker import CustomHttpMocker
 from .google_credentials import service_account_credentials
 from .request_builder import RequestBuilder
-from .sheet_builder import SheetBuilder
-from .spreadsheet_builder import SpreadsheetBuilder
+
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
@@ -55,43 +52,19 @@ class GoogleSheetSourceTest(TestCase):
         self._config = deepcopy(_CONFIG)
         self._source = SourceGoogleSheets()
 
-    @staticmethod
-    def _get_discovery_ranges_response(spreadsheet):
-        # this is for schema discovery so only return the first row
-        return_value = deepcopy(spreadsheet)
-        sheet_has_data = "data" in return_value["sheets"][0]
-        if sheet_has_data:
-            if not return_value["sheets"][0]["data"]:
-                return_value["sheets"][0]["data"][0]["rowData"] = [{"columnMetadata": [],
-                                                                    "rowMetatada": []}]  # there should be data in "rowMetadata" and "columnMetadata" here but it is not useful for the tests
-            return_value["sheets"][0]["data"][0]["rowData"] = return_value["sheets"][0]["data"][0]["rowData"][:1]
-
-        return return_value
-
-    @staticmethod
-    def _batch_get_response(spreadsheet, ranges=""):
-        range_search = re.search(r".*!([0-9]*):([0-9]*)", ranges)
-        range_lower_index = int(range_search.group(1)) - 1
-        range_upper_index = int(range_search.group(2)) - 1
-        return_value = deepcopy(spreadsheet)
-        for sheet in spreadsheet["sheets"]:
-            if sheet["properties"]["title"] in ranges:
-                return_value = {
-                    "spreadsheetId": spreadsheet["spreadsheetId"],
-                    "valueRanges": [{"values": [list(map(lambda row: row["formattedValue"], _range["values"])) for _range in
-                                                sheet["data"][0]["rowData"][range_lower_index:range_upper_index]]}]
-                }
-                break
-
-        return return_value
-
     @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_spreadsheet_when_check_then_status_is_succeeded(self) -> None:
         http_mocker = CustomHttpMocker()
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_response", __file__)), 200)
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
         )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_range", __file__)), 200)
+        )
+
         with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
             connection_status = self._source.check(Mock(), self._config)
             assert connection_status.status == Status.SUCCEEDED
@@ -101,23 +74,19 @@ class GoogleSheetSourceTest(TestCase):
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.FAILED
 
-
     @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self) -> None:
-        current_spreadsheet = SpreadsheetBuilder(_SPREADSHEET_ID).with_sheet(
-            SheetBuilder(_STREAM_NAME).with_sheet_type("GRID").with_data([["header1", "header2"]])).build()
-
         # spreadsheet_metadata request
         http_mocker = CustomHttpMocker()
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(current_spreadsheet), 200)
+            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
         )
 
-        # discovery response
+        # range 1:1 (headers)
         http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{current_spreadsheet['sheets'][0]['properties']['title']}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(self._get_discovery_ranges_response(current_spreadsheet)), 200)
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("only_headers_range", __file__)), 200)
         )
 
         with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
@@ -128,17 +97,15 @@ class GoogleSheetSourceTest(TestCase):
 
     @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self) -> None:
-        # todo: are we reproducing correct response data for this? maybe is worth to set and empty sheet and catch response
-        current_spreadsheet = SpreadsheetBuilder(_SPREADSHEET_ID).with_sheet(SheetBuilder.empty(_STREAM_NAME).with_sheet_type("GRID")).build()
         http_mocker = CustomHttpMocker()
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(current_spreadsheet), 200)
+            HttpResponse(json.dumps(find_template("no_rows_meta", __file__)), 200)
         )
 
         http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{current_spreadsheet['sheets'][0]['properties']['title']}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(self._get_discovery_ranges_response(current_spreadsheet)), 200)
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("no_rows_range", __file__)), 200)
         )
 
         with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
@@ -147,41 +114,40 @@ class GoogleSheetSourceTest(TestCase):
 
     @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_not_grid_sheet_type_when_discover_then_ignore_stream(self) -> None:
-        current_spreadsheet = SpreadsheetBuilder(_SPREADSHEET_ID).with_sheet(SheetBuilder(_STREAM_NAME).with_sheet_type("potato").with_data([["header1", "header2"]])).build()
         http_mocker = CustomHttpMocker()
+        # meta data request
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(current_spreadsheet), 200)
+            HttpResponse(json.dumps(find_template("non_grid_sheet_meta", __file__)), 200)
         )
 
         with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
             discovered_catalog = self._source.discover(Mock(), self._config)
             assert len(discovered_catalog.streams) == 0
 
-
     @pytest.mark.usefixtures("mock_google_credentials")
     def test_when_read_then_return_records(self) -> None:
-        current_spreadsheet = SpreadsheetBuilder.from_list_of_records(_SPREADSHEET_ID, _STREAM_NAME, [{"header_1": "value_11", "header_2": "value_12"}, {"header_1": "value_21", "header_2": "value_22"}]).build()
         http_mocker = CustomHttpMocker()
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(current_spreadsheet), 200)
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
         )
 
         # discovery response
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{current_spreadsheet['sheets'][0]['properties']['title']}!1:1").with_alt("json").build(),
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
 
-            HttpResponse(json.dumps(self._get_discovery_ranges_response(current_spreadsheet)), 200)
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
         )
 
         # batch response
-        batch_request_ranges = f"{current_spreadsheet['sheets'][0]['properties']['title']}!2:202"
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
         http_mocker.get(
             RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(self._batch_get_response(current_spreadsheet, batch_request_ranges)), 200)
+            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions", __file__)), 200)
         )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
         with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
-            output = read(self._source, self._config, CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build())
+            output = read(self._source, self._config, configured_catalog)
             assert len(output.records) == 2
