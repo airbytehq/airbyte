@@ -1,10 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from unittest.mock import MagicMock
-from airbyte_cdk.test.utils.manifest_only_fixtures import components_module, connector_dir
 
 import pytest
 import requests
+from airbyte_cdk.test.utils.manifest_only_fixtures import components_module, connector_dir
 
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
