@@ -246,7 +246,7 @@ class DefaultDestinationTaskLauncher(
                 enqueue(task)
             } else if (streamManager.isBatchProcessingComplete()) {
                 log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for ${stream}"
+                    "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
                 }
 
                 val task = closeStreamTaskFactory.make(this, stream)

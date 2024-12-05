@@ -59,6 +59,7 @@ class ProcessRecordsTaskTest {
         val reportedByteSize: Long,
         val recordCount: Long,
         val pmChecksum: Long,
+        override val groupId: String? = null
     ) : Batch
 
     class MockStreamLoader : StreamLoader {
