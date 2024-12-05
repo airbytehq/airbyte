@@ -583,8 +583,6 @@ definitions:
           path: /people
           http_method: GET
           request_parameters:
-            created_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -620,6 +618,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -637,7 +647,6 @@ definitions:
           path: /cadences
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -673,6 +682,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -690,8 +711,6 @@ definitions:
           path: /cadence_memberships
           http_method: GET
           request_parameters:
-            created_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -727,6 +746,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -744,8 +775,6 @@ definitions:
           path: /activities/emails
           http_method: GET
           request_parameters:
-            sent_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -781,6 +810,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -798,8 +839,6 @@ definitions:
           path: /activities/calls
           http_method: GET
           request_parameters:
-            created_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -835,6 +874,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -852,8 +903,6 @@ definitions:
           path: /accounts
           http_method: GET
           request_parameters:
-            created_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -889,6 +938,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -906,7 +967,6 @@ definitions:
           path: /account_stages
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -942,6 +1002,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -959,7 +1031,6 @@ definitions:
           path: /actions
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -995,6 +1066,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1012,7 +1095,6 @@ definitions:
           path: /email_templates
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1048,6 +1130,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1065,7 +1159,6 @@ definitions:
           path: /notes
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1101,6 +1194,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1118,7 +1223,6 @@ definitions:
           path: /team_templates
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1154,6 +1258,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1171,7 +1287,6 @@ definitions:
           path: /crm_activities
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1208,6 +1323,18 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1224,7 +1351,6 @@ definitions:
           path: /successes
           http_method: GET
           request_parameters:
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1260,6 +1386,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1330,8 +1468,6 @@ definitions:
           path: /meetings/settings/searches
           http_method: POST
           request_parameters:
-            created_at[gt]: "{{ config['start_date'] }}"
-            updated_at[gt]: "{{ config['start_date'] }}"
             sort_direction: ASC
         record_selector:
           type: RecordSelector
@@ -1367,6 +1503,18 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
