@@ -2,18 +2,18 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import hashlib
 import hmac
 from dataclasses import dataclass
-import datetime
-from typing import Any, Mapping
-from urllib.parse import urlencode
 from typing import Any, Mapping, Union
+from urllib.parse import urlencode
+
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.types import Config
+
 
 @dataclass
 class CustomAuthenticator(NoAuth):
@@ -48,11 +48,7 @@ class CustomAuthenticator(NoAuth):
         query_params = {}
         if query_string:
             try:
-                query_params = {
-                    item.split('=')[0]: item.split('=')[1] 
-                    for item in query_string.split('&') 
-                    if '=' in item
-                }
+                query_params = {item.split("=")[0]: item.split("=")[1] for item in query_string.split("&") if "=" in item}
             except Exception as e:
                 # Log the error or handle it appropriately
                 print(f"Error parsing query string: {e}")
