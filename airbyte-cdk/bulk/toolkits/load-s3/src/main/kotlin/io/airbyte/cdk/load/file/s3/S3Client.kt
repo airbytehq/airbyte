@@ -18,6 +18,7 @@ import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
+import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
@@ -234,6 +235,7 @@ class S3ClientFactory(
             aws.sdk.kotlin.services.s3.S3Client {
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
+                endpointUrl = bucketConfig.s3BucketConfiguration.s3Endpoint?.let { Url.parse(it) }
             }
 
         return S3Client(

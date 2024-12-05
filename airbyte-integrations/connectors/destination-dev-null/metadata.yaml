@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.7.12-rc.1
+  dockerImageTag: 0.7.12
   dockerRepository: airbyte/destination-dev-null
   githubIssueLabel: destination-dev-null
   icon: airbyte.svg
@@ -16,7 +16,7 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
   tags:
     - language:java
