@@ -1,5 +1,6 @@
 # Hugging Face - Datasets
 Imports datasets from Hugging Face ([https://huggingface.co/datasets](https://huggingface.co/datasets))
+
 Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/en/parquet) can be imported with this connector.
 ## Configuration
 
