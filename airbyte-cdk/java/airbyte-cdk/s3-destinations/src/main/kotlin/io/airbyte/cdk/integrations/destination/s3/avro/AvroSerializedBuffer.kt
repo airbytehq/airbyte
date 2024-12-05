@@ -73,7 +73,7 @@ class AvroSerializedBuffer(
     @Throws(IOException::class)
     @Suppress("DEPRECATION")
     override fun writeRecord(
-        record: JsonNode,
+        record: Map<String, String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long

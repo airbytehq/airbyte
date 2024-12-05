@@ -72,7 +72,7 @@ class CsvSerializedBuffer(
 
     @Throws(IOException::class)
     override fun writeRecord(
-        record: JsonNode,
+        record: Map<String, String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
@@ -81,11 +81,11 @@ class CsvSerializedBuffer(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
                 listOf(
-                    "valuevaluevaluevaluevalue0",
-                    "valuevaluevaluevaluevalue0",
-                    "valuevaluevaluevaluevalue0",
-                    "valuevaluevaluevaluevalue0",
-                    "valuevaluevaluevaluevalue0",
+                    record["field1"]!!,
+                    record["field2"]!!,
+                    record["field3"]!!,
+                    record["field4"]!!,
+                    record["field5"]!!,
                 ),
                 emittedAt,
                 airbyteMetaString,

@@ -44,11 +44,12 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
         writeBuffer.use {
             stream.forEach { record: PartialAirbyteMessage ->
                 it.accept(
-                    record.record?.data!!,
+                    Jsons.`object`(record.record?.data!!, mapOf<String, String>()::class.java)!!,
                     Jsons.serialize(record.record!!.meta),
                     streamConfig.generationId,
                     record.record!!.emittedAt
                 )
+                record.record?.data = null
             }
             it.flush()
             log.info {

@@ -110,8 +110,8 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(Jsons.emptyObject(), "", System.currentTimeMillis(), 0)
-            it.accept(Jsons.emptyObject(), "", System.currentTimeMillis(), 0)
+            it.accept(mapOf(), "", System.currentTimeMillis(), 0)
+            it.accept(mapOf(), "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             stagingClient.copyIntoTableFromStage(stageName, stagingPath, listOf(fileName), streamId)
@@ -171,7 +171,7 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(Jsons.emptyObject(), "", System.currentTimeMillis(), 0)
+            it.accept(mapOf(), "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             assertThrows(Exception::class.java) {

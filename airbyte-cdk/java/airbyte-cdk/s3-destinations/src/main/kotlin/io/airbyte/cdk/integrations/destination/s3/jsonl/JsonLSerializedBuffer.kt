@@ -87,7 +87,7 @@ class JsonLSerializedBuffer(
 
     @Suppress("DEPRECATION")
     override fun writeRecord(
-        record: JsonNode,
+        record: Map<String, String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long

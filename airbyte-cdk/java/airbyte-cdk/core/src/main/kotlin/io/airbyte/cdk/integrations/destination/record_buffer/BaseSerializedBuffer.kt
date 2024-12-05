@@ -60,7 +60,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
      */
     @Throws(IOException::class)
     protected abstract fun writeRecord(
-        record: JsonNode,
+        record: Map<String, String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long,
@@ -106,7 +106,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
 
     @Throws(Exception::class)
     override fun accept(
-        record: JsonNode,
+        record: Map<String, String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long

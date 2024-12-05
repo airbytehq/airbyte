@@ -109,7 +109,7 @@ class SnowflakeStorageOperationIntegrationTest {
             )
         csvBuffer.use {
             it.accept(
-                partialAirbyteMessage.record?.data!!,
+                Jsons.`object`(partialAirbyteMessage.record?.data!!, mapOf<String, String>()::class.java)!!,
                 Jsons.serialize(partialAirbyteMessage.record!!.meta),
                 streamConfig.generationId,
                 partialAirbyteMessage.record!!.emittedAt
