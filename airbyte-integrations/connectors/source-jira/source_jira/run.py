@@ -14,6 +14,10 @@ from orjson import orjson
 from source_jira import SourceJira
 
 
+from ddtrace import patch
+patch(sqlite=False)
+
+
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
