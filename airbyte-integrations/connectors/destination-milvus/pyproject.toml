@@ -16,9 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
 include = "destination_milvus"
 
+[tool.poetry.dependencies.airbyte-cdk]
+# Version cnstrained by PyAirbyte (`airbyte`) version
+version = ">=1.0"
+extras = ["vector-db-based"]
+
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 pymilvus = "2.3.0"
 
 [tool.poetry.group.dev.dependencies]
