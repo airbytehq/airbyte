@@ -86,7 +86,13 @@ class AirbyteMessageDeserializer(
             // drop the json
             // object. Having this data stored as a string is slightly more optimal for the memory
             // usage.
-            partial.data = Jsons.`object`(transformedData.first, mutableMapOf<String, String>()::class.java)
+            partial.data = listOf(
+                transformedData.first!!.get("field1").toString(),
+                transformedData.first!!.get("field2").toString(),
+                transformedData.first!!.get("field3").toString(),
+                transformedData.first!!.get("field4").toString(),
+                transformedData.first!!.get("field5").toString(),
+            )
             partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
             partial.withSerialized(message)

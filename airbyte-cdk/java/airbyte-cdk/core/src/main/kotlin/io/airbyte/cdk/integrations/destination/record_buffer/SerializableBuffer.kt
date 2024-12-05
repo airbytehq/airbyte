@@ -41,7 +41,7 @@ interface SerializableBuffer : AutoCloseable {
      */
     @Throws(Exception::class)
     fun accept(
-        record: Map<String, String>,
+        record: List<String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
