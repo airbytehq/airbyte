@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
@@ -15,7 +16,6 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
-import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -30,7 +30,6 @@ import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -46,10 +45,6 @@ import kotlinx.coroutines.sync.withLock
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
     suspend fun handleStreamStarted(stream: DestinationStream.Descriptor)
-    suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile
-    )
     suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream.Descriptor)
     suspend fun handleTeardownComplete()
@@ -95,6 +90,7 @@ interface DestinationTaskLauncher : TaskLauncher {
 class DefaultDestinationTaskLauncher(
     private val taskScopeProvider: TaskScopeProvider<WrappedTask<ScopedTask>>,
     private val catalog: DestinationCatalog,
+    private val config: DestinationConfiguration,
     private val syncManager: SyncManager,
 
     // Internal Tasks
@@ -166,6 +162,12 @@ class DefaultDestinationTaskLauncher(
             }
         }
 
+        (0 until config.numProcessRecordsWorkers).forEach {
+            log.info { "Launching process records task $it" }
+            val task = processRecordsTaskFactory.make(this)
+            enqueue(task)
+        }
+
         // Start flush task
         log.info { "Starting timed file aggregate flush task " }
         enqueue(flushTickTask)
@@ -198,27 +200,6 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         // Nothing to do because the SpillToDiskTask will trigger the next calls
         log.info { "Stream $stream successfully opened for writing." }
-    }
-
-    /** Called for each new spilled file. */
-    override suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile
-    ) {
-        if (file.totalSizeBytes > 0L) {
-            log.info { "Starting process records task for ${stream}, file $file" }
-            val task = processRecordsTaskFactory.make(this, stream, file)
-            enqueue(task)
-        } else {
-            log.info { "No records to process in $file, skipping process records" }
-            // TODO: Make this `maybeCloseStream` or something
-            handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
-        }
-        if (!file.endOfStream) {
-            log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
-            val spillTask = spillToDiskTaskFactory.make(this, stream)
-            enqueue(spillTask)
-        }
     }
 
     /**
