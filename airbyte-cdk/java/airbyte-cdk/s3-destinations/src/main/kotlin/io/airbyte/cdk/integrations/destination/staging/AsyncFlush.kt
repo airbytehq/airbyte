@@ -59,14 +59,13 @@ internal class AsyncFlush(
                     // and create a default
                     // impl that maintains backwards compatible behavior.
                     writer.accept(
-                        Jsons.`object`(record.record?.data!!, mutableMapOf<String, String>()::class.java)!!,
+                        record.data!!,
                         Jsons.serialize(record.record!!.meta),
                         // Destinations that want to use generations should switch to the new
                         // structure (e.g. StagingStreamOperations)
                         0,
                         record.record!!.emittedAt
                     )
-                    record.record?.data = null
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
