@@ -191,9 +191,9 @@ abctl version
     If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation will complete anyway. See [Suggested resources](#suggested-resources).
     :::
 
-Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000).
+    Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 
-As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running again, you can access Airbyte normally.
+3. Enter your **Email** and **Organization name**, then click **Get Started**. Airbyte asks you to log in with a password.
 
 ## Part 3: Set up authentication
 
@@ -209,28 +209,22 @@ To access your Airbyte instance, you need a password.
 
     ```shell
     Credentials:
-    Email: user@company.example
+    Email: user@example.com
     // highlight-next-line
     Password: random_password
     Client-Id: 03ef466c-5558-4ca5-856b-4960ba7c161b
     Client-Secret: m2UjnDO4iyBQ3IsRiy5GG3LaZWP6xs9I
     ```
 
-    You can use that password to log into Airbyte, but you probably want to use your own email and password.
+2. Return to your browser and use that password to log into Airbyte.
 
-3. Set an email.
-
-    ```bash
-    abctl local credentials --email your.name@example.com
-    ```
-
-4. Set a new password.
+3. Optional: Since you probably want to set your own password, you can change it any time.
 
     ```bash
     abctl local credentials --password YourStrongPasswordExample
     ```
 
-Use this email and password to log into Airbyte in the future.
+    Your Airbyte server restarts. Once it finishes, use your new password to log into Airbyte again.
 
 ## What's next
 
