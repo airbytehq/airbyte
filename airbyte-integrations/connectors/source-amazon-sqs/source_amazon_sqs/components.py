@@ -5,92 +5,123 @@
 import hashlib
 import hmac
 from dataclasses import dataclass
-from datetime import datetime, timezone
+import datetime
 from typing import Any, Mapping
 from urllib.parse import urlencode
-
+from typing import Any, Mapping, Union
+import requests
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
-
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 
 @dataclass
-class AmazonSQSAuthenticator(DeclarativeAuthenticator):
+class CustomAuthenticator(NoAuth):
     config: Config
+    access_key: Union[InterpolatedString, str]
+    secret_key: Union[InterpolatedString, str]
+    region: Union[InterpolatedString, str]
+    attributes_to_return: Union[InterpolatedString, str]
+    queue_url: Union[InterpolatedString, str]
+    visibility_timeout: Union[InterpolatedString, str]
+    max_wait_time: Union[InterpolatedString, str]
 
-    def __post_init__(self):
-
-        self.AWS_ACCESS_KEY_ID = self.config.get("access_key")
-        self.AWS_SECRET_ACCESS_KEY = self.config.get("secret_key")
-        self.REGION_NAME = self.config.get("region")
-        self.QUEUE_URL = self.config.get("queue_url")
-
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._access_key = InterpolatedString.create(self.access_key, parameters=parameters).eval(self.config)
+        self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters).eval(self.config)
+        self._region = InterpolatedString.create(self.region, parameters=parameters).eval(self.config)
+        self._attributes_to_return = InterpolatedString.create(self.attributes_to_return, parameters=parameters).eval(self.config)
+        self._queue_url = InterpolatedString.create(self.queue_url, parameters=parameters).eval(self.config)
+        self._visibility_timeout = InterpolatedString.create(self.visibility_timeout, parameters=parameters).eval(self.config)
+        self._max_wait_time = InterpolatedString.create(self.max_wait_time, parameters=parameters).eval(self.config)
         self.service = "sqs"
-        self.service_url = f"sqs.{self.REGION_NAME}.amazonaws.com"
-        self.path = "/"
 
-        self.algorithm = "AWS4-HMAC-SHA256"
-        self.signed_headers = "host;x-amz-date"
-
-        self.params = {
-            "Action": "ReceiveMessage",
-            "MessageAttributeNames": self.config.get("attributes_to_return").split(","),
-            "QueueUrl": self.config.get("queue_url"),
-            "VisibilityTimeout": self.config.get("visibility_timeout"),
-            "WaitTimeSeconds": self.config.get("max_wait_time"),
-        }
-        self.query_string = urlencode(self.params)
-
+    def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
+        """Attach the HTTP headers and sign the SQS request."""
         self.headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/x-amz-json-1.1",
-            "Host": f"sqs.{self.REGION_NAME}.amazonaws.com",
+            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+            "Host": f"sqs.{self._region}.amazonaws.com",
         }
 
-        self.payload_hash = hashlib.sha256(("").encode()).hexdigest()
+        # Parse the query string from the URL
+        query_string = request.body.decode("utf-8") if request.body else ""
+        query_params = {}
+        if query_string:
+            try:
+                query_params = {
+                    item.split('=')[0]: item.split('=')[1] 
+                    for item in query_string.split('&') 
+                    if '=' in item
+                }
+            except Exception as e:
+                # Log the error or handle it appropriately
+                print(f"Error parsing query string: {e}")
 
-    def get_auth_header(self) -> Mapping[str, Any]:
-        """The header to set on outgoing HTTP requests"""
+        new_params = {
+            "Action": "ReceiveMessage",
+            "MessageAttributeNames": self._attributes_to_return.split(",") if self._attributes_to_return else [],
+            "QueueUrl": self._queue_url,
+            "VisibilityTimeout": self._visibility_timeout,
+            "WaitTimeSeconds": self._max_wait_time,
+        }
 
-        date_time_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        # Update query_params with new_params, overwriting where necessary
+        query_params.update(new_params)
 
-        canonical_headers = f"host:{self.service_url}\nx-amz-date:{date_time_stamp}\n"
-        canonical_request = (
-            "GET" + "\n" + "/" + "\n" + self.query_string + "\n" + canonical_headers + "\n" + self.signed_headers + "\n" + self.payload_hash
+        # Sign the AWS request
+        authorization_header, amz_date = self.sign_aws_request(
+            self.service,
+            self._region,
+            request.method,
+            request.url,
+            self.headers,
+            query_params,
+            self._access_key,
+            self._secret_key,
         )
+        self.headers["X-Amz-Date"] = amz_date
+        self.headers["Authorization"] = authorization_header
+        request.headers.update(self.headers)
+        return request
 
-        date_stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
-        credential_scope = f"{date_stamp}/{self.REGION_NAME}/{self.service}/aws4_request"
-        string_to_sign = (
-            self.algorithm
-            + "\n"
-            + date_time_stamp
-            + "\n"
-            + credential_scope
-            + "\n"
-            + hashlib.sha256(canonical_request.encode()).hexdigest()
-        )
+    @property
+    def auth_header(self) -> str:
+        return None
 
-        signing_key = self.get_signature_key(date_stamp)
-        signature = hmac.new(signing_key, string_to_sign.encode(), hashlib.sha256).hexdigest()
+    @property
+    def token(self):
+        return None
 
+    def sign_aws_request(self, service, region, method, url, headers, query_params, aws_access_key, aws_secret_key):
+        # Generate timestamps
+        amz_date = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        date_stamp = datetime.datetime.utcnow().strftime("%Y%m%d")
+
+        # Create canonical request
+        canonical_uri = "/"
+        canonical_querystring = "&".join(f"{key}={value}" for key, value in sorted(query_params.items()))
+        canonical_headers = "".join([f"{key.lower()}:{value.strip()}\n" for key, value in sorted(headers.items())])
+        signed_headers = ";".join(sorted(key.lower() for key in headers))
+        payload_hash = hashlib.sha256("".encode()).hexdigest()  # SQS uses an empty payload
+        canonical_request = f"{method}\n{canonical_uri}\n{canonical_querystring}\n{canonical_headers}\n{signed_headers}\n{payload_hash}"
+
+        # String to sign
+        algorithm = "AWS4-HMAC-SHA256"
+        credential_scope = f"{date_stamp}/{region}/{service}/aws4_request"
+        string_to_sign = f"{algorithm}\n{amz_date}\n{credential_scope}\n" + hashlib.sha256(canonical_request.encode()).hexdigest()
+
+        # Generate signing key
+        secret = ("AWS4" + aws_secret_key).encode()
+        k_date = hmac.new(secret, date_stamp.encode(), hashlib.sha256).digest()
+        k_region = hmac.new(k_date, region.encode(), hashlib.sha256).digest()
+        k_service = hmac.new(k_region, service.encode(), hashlib.sha256).digest()
+        k_signing = hmac.new(k_service, b"aws4_request", hashlib.sha256).digest()
+
+        # Generate signature
+        signature = hmac.new(k_signing, string_to_sign.encode(), hashlib.sha256).hexdigest()
+
+        # Authorization header
         authorization_header = (
-            self.algorithm + f" Credential={self.AWS_ACCESS_KEY_ID}/{credential_scope}," + f" SignedHeaders={self.signed_headers},"
-            f" Signature={signature}"
+            f"{algorithm} Credential={aws_access_key}/{credential_scope}, " f"SignedHeaders={signed_headers}, Signature={signature}"
         )
-
-        self.headers.update({"x-amz-date": date_time_stamp, "Authorization": authorization_header})
-        return self.headers
-
-    def get_signature_key(self, date_stamp):
-        k_date = self.sign((f"AWS4{self.AWS_SECRET_ACCESS_KEY}").encode(), date_stamp)
-        k_region = self.sign(k_date, self.REGION_NAME)
-        k_service = self.sign(k_region, self.service)
-        k_signing = self.sign(k_service, "aws4_request")
-        return k_signing
-
-    def sign(self, key, msg):
-        return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
-
-    def get_request_params(self) -> Mapping[str, Any]:
-        """HTTP request parameter to add to the requests"""
-        return self.params
+        return authorization_header, amz_date

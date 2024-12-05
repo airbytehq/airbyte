@@ -17,12 +17,20 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
           path: /
           http_method: POST
           authenticator:
             type: CustomAuthenticator
-            class_name: source_amazon_sqs.components.AmazonSQSAuthenticator
+            class_name: source_amazon_sqs.components.CustomAuthenticator
+            access_key: "{{config['access_key']}}"
+            secret_key: "{{config['secret_key']}}"
+            region: "{{config['region']}}"
+            attributes_to_return: "{{config['attributes_to_return']}}"
+            queue_url: "{{config['queue_url']}}"
+            visibility_timeout: "{{config['visibility_timeout']}}"
+            max_wait_time: "{{config['max_wait_time']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,9 +62,6 @@ definitions:
             - path:
                 - attributes
               value: "{{ record['MessageAttributes'] }}"
-  base_requester:
-    type: HttpRequester
-    url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
 
 streams:
   - $ref: "#/definitions/streams/QueueMessages"
