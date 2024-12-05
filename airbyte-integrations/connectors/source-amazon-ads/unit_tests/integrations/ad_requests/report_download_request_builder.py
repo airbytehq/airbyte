@@ -13,10 +13,7 @@ class ReportDownloadRequestBuilder(AmazonAdsRequestBuilder):
 
     @property
     def url(self):
-        return (
-            f"https://offline-report-storage-us-east-1-prod.s3.amazonaws.com"
-            f"/{self._report_id}/{self._report_id}.json"
-        )
+        return f"https://offline-report-storage-us-east-1-prod.s3.amazonaws.com" f"/{self._report_id}/{self._report_id}.json"
 
     @property
     def headers(self):

@@ -5,12 +5,16 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.BinaryNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -22,6 +26,11 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
@@ -56,8 +65,8 @@ class MysqlJdbcPartitionFactory(
             val rs = stmt.executeQuery()
 
             if (rs.next()) {
-                val pkUpperBound: JsonNode =
-                    stateValueToJsonNode(pkChosenFromCatalog.first(), rs.getString(1))
+                val jdbcFieldType = pkChosenFromCatalog[0].type as JdbcFieldType<*>
+                val pkUpperBound: JsonNode = jdbcFieldType.get(rs, 1)
                 return pkUpperBound
             } else {
                 // Table might be empty thus there is no max PK value.
@@ -79,7 +88,6 @@ class MysqlJdbcPartitionFactory(
             }
 
             val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-
             if (sharedState.configuration.global) {
                 return MysqlJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
@@ -149,8 +157,22 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            streamFeedBootstrap.currentState ?: return coldStart(streamState)
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (streamFeedBootstrap.currentState?.isNull == true) {
+            return null
+        }
+
+        // A legacy saved state may be null for an empty table. We will attempt to read it again
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
+            return coldStart(streamState)
+        }
+
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -269,7 +291,11 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint == streamState.cursorUpperBound) {
+            if (cursorCheckpoint.isNull) {
+                return coldStart(streamState)
+            }
+
+            if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
             }
@@ -289,12 +315,56 @@ class MysqlJdbcPartitionFactory(
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                     LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toInt())
+                        Jsons.valueToTree(stateValue?.toBigInteger())
                     }
                     LeafAirbyteSchemaType.NUMBER -> {
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
-                    else -> Jsons.valueToTree(stateValue)
+                    LeafAirbyteSchemaType.BINARY -> {
+                        try {
+                            val ba = Base64.getDecoder().decode(stateValue!!)
+                            Jsons.valueToTree<BinaryNode>(ba)
+                        } catch (_: RuntimeException) {
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
+                    }
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                        try {
+                            val formatter: DateTimeFormatter =
+                                DateTimeFormatterBuilder()
+                                    .appendPattern(timestampInStatePattern)
+                                    .optionalStart()
+                                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+                                    .optionalEnd()
+                                    .toFormatter()
+
+                            Jsons.textNode(
+                                LocalDateTime.parse(stateValue, formatter)
+                                    .format(LocalDateTimeCodec.formatter)
+                            )
+                        } catch (_: RuntimeException) {
+                            // Resolve to use the new format.
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
+                    }
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
+                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                        try {
+                            val formatter: DateTimeFormatter =
+                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                            Jsons.valueToTree(
+                                LocalDateTime.parse(stateValue, formatter)
+                                    .minusDays(1)
+                                    .atOffset(java.time.ZoneOffset.UTC)
+                                    .format(OffsetDateTimeCodec.formatter)
+                            )
+                        } catch (_: RuntimeException) {
+                            // Resolve to use the new format.
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
+                    }
+                    else -> Jsons.valueToTree<JsonNode>(stateValue)
                 }
             else ->
                 throw IllegalStateException(

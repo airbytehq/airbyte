@@ -31,7 +31,6 @@ class DefaultTeardownTask(
 
     override suspend fun execute() {
         syncManager.awaitInputProcessingComplete()
-        checkpointManager.awaitAllCheckpointsFlushed()
 
         log.info { "Teardown task awaiting stream completion" }
         if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
@@ -39,6 +38,7 @@ class DefaultTeardownTask(
             return
         }
 
+        checkpointManager.awaitAllCheckpointsFlushed()
         log.info { "Starting teardown task" }
         destination.teardown()
         log.info { "Teardown task complete, marking sync succeeded." }
