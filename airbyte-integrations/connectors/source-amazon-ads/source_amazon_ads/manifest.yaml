@@ -1194,6 +1194,16 @@ definitions:
         end_time_option:
           field_name: endDate
           inject_into: body_json
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["reportDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
+        - type: AddFields
+          fields:
+            - path: ["profileId"]
+              value: "{{ stream_slice['profileId'] }}"
+
       retriever:
         type: AsyncRetriever
         partition_router:
@@ -1221,7 +1231,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
+
         status_extractor:
           type: DpathExtractor
           field_path:
@@ -1242,31 +1253,31 @@ definitions:
             Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
-#            name: "purchasedAsin report 2024-11-13" # TODO: make configurable
             name: "purchasedAsin report {{ stream_slice.cursor_slice.start_time }}" # TODO: make configurable
             startDate: "{{ stream_slice.cursor_slice.start_time }}" # TODO: set today via datetimebased cursor ???
             endDate: "{{ stream_slice.cursor_slice.end_time }}" # TODO: set today via datetimebased cursor ???
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
-              columns: [ # TODO: make configurable
-                "campaignBudgetCurrencyCode",
-                "campaignName",
-                "adGroupName",
-                "attributionType",
-                "purchasedAsin",
-                "productName",
-                "productCategory",
-                "sales14d",
-                "orders14d",
-                "unitsSold14d",
-                "newToBrandSales14d",
-                "newToBrandPurchases14d",
-                "newToBrandUnitsSold14d",
-                "newToBrandSalesPercentage14d",
-                "newToBrandPurchasesPercentage14d",
-                "newToBrandUnitsSoldPercentage14d",
-              ]
+              columns: # TODO: make configurable
+                [
+                  "campaignBudgetCurrencyCode",
+                  "campaignName",
+                  "adGroupName",
+                  "attributionType",
+                  "purchasedAsin",
+                  "productName",
+                  "productCategory",
+                  "sales14d",
+                  "orders14d",
+                  "unitsSold14d",
+                  "newToBrandSales14d",
+                  "newToBrandPurchases14d",
+                  "newToBrandUnitsSold14d",
+                  "newToBrandSalesPercentage14d",
+                  "newToBrandPurchasesPercentage14d",
+                  "newToBrandUnitsSoldPercentage14d",
+                ]
               reportTypeId: sbPurchasedProduct
               filters: []
               timeUnit: SUMMARY
@@ -1301,8 +1312,7 @@ definitions:
           encoding: utf
         download_extractor:
           type: DpathExtractor
-          field_path: [ ]
-
+          field_path: []
 
 streams:
   - $ref: "#/definitions/streams/profiles"
@@ -1334,6 +1344,8 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_adgroup"
   - $ref: "#/definitions/streams/attribution_report_performance_campaign"
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
+
+  - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
