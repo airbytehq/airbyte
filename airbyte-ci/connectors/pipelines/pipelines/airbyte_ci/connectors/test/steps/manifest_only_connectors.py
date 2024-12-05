@@ -11,7 +11,6 @@ from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, I
 from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
-from pipelines.models.steps import STEP_PARAMS
 
 
 def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
@@ -64,9 +63,3 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
     # No coverage reporting needed since we're just testing components.py
     common_test_dependencies = ["pytest"]
-
-    @property
-    def default_params(self) -> STEP_PARAMS:
-        """Default pytest options without coverage computation"""
-
-        return super().default_params
