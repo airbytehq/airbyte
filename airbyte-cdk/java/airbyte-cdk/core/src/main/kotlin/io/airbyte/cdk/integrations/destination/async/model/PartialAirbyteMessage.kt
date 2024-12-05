@@ -47,9 +47,9 @@ class PartialAirbyteMessage {
     @JsonProperty("serialized")
     var serialized: String? = null
 
-    @get:JsonProperty("serialized")
-    @set:JsonProperty("serialized")
-    @JsonProperty("serialized")
+    @get:JsonProperty("data")
+    @set:JsonProperty("data")
+    @JsonProperty("data")
     var data: List<String>? = null
 
     fun withType(type: AirbyteMessage.Type?): PartialAirbyteMessage {
