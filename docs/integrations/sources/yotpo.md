@@ -1,16 +1,16 @@
 # Yotpo
 
-This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/reference/welcome) source
+This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/reference/welcome) source.
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be generated from the auth token call (ref - https://apidocs.yotpo.com/reference/yotpo-authentication).
+An Access Token, which acts as bearer token, is required for this connector to work. You can generate it from the [authentication endpoint](https://apidocs.yotpo.com/reference/yotpo-authentication).
 
 ## Setup guide
 
 ### Step 1: Set up Yotpo connection
 
-- Generate an Yotpo access token via auth endpoint (ref - https://apidocs.yotpo.com/reference/yotpo-authentication)
+- Generate an Yotpo access token using the [authentication endpoint](https://apidocs.yotpo.com/reference/yotpo-authentication).
 - Setup params (All params are required)
 - Available params
   - access_token: The generated access token
@@ -62,7 +62,7 @@ GET https://api.yotpo.com/v1/apps/APPAAAAAATTTTTTDDDDDD/reviews?utoken=abcdefghi
 
 ## Performance considerations
 
-Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connector as default uses v1 and changed according to different endpoints.
+The Yotpo [API reference](https://apidocs.yotpo.com/) is at v1. The connector uses v1 by default.
 
 ## Changelog
 
