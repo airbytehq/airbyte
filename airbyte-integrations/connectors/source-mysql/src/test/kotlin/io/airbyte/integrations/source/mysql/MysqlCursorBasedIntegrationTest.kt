@@ -25,12 +25,27 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Statement
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
 
 class MysqlCursorBasedIntegrationTest {
+
+    @BeforeEach
+    fun resetTable() {
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("DELETE FROM test.$tableName")
+            }
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (10, 'foo'), (20, 'bar')")
+            }
+        }
+    }
 
     @Test
     fun testCursorBasedRead() {
@@ -74,6 +89,16 @@ class MysqlCursorBasedIntegrationTest {
     }
 
     @Test
+    fun testWithV1StateEmptyCursor() {
+        var state: AirbyteStateMessage =
+            Jsons.readValue(V1_STATE_EMPTY_CURSOR, AirbyteStateMessage::class.java)
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
+        val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
+        assertEquals(recordMessageFromRun1.size, 2)
+    }
+
+    @Test
     fun testWithFullRefresh() {
         val fullRefreshCatalog =
             getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
@@ -88,6 +113,50 @@ class MysqlCursorBasedIntegrationTest {
                 .run()
         val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
         assertEquals(recordMessageFromRun2.size, 0)
+    }
+
+    @Test
+    fun testWithFullRefreshWithEmptyTable() {
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("DELETE FROM test.$tableName")
+            }
+        }
+
+        val fullRefreshCatalog =
+            getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog).run()
+
+        assertTrue(run1.states().isEmpty())
+        assertTrue(run1.records().isEmpty())
+
+        val run2: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog).run()
+        assertTrue(run2.states().isEmpty())
+        assertTrue(run2.records().isEmpty())
+    }
+
+    @Test
+    fun testCursorBasedReadWithEmptyTable() {
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt: Statement ->
+                stmt.execute("DELETE FROM test.$tableName")
+            }
+        }
+
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, getConfiguredCatalog()).run()
+
+        assertTrue(run1.states().isEmpty())
+        assertTrue(run1.records().isEmpty())
+
+        val run2: BufferingOutputConsumer =
+            CliRunner.source("read", config, getConfiguredCatalog()).run()
+        assertTrue(run2.states().isEmpty())
+        assertTrue(run2.records().isEmpty())
     }
 
     companion object {
@@ -135,11 +204,6 @@ class MysqlCursorBasedIntegrationTest {
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
                 }
-                connection.createStatement().use { stmt: Statement ->
-                    stmt.execute(
-                        "INSERT INTO test.$tableName (k, v) VALUES (10, 'foo'), (20, 'bar')"
-                    )
-                }
             }
         }
     }
@@ -154,6 +218,30 @@ class MysqlCursorBasedIntegrationTest {
             },
             "stream_state": {
               "cursor": "10",
+              "version": 2,
+              "state_type": "cursor_based",
+              "stream_name": "${tableName}",
+              "cursor_field": [
+                "k"
+              ],
+              "stream_namespace": "test",
+              "cursor_record_count": 1
+            }
+        }
+    }
+    """
+
+    // Legacy mysql connector saved the following state for an empty table in user cursor mode
+    val V1_STATE_EMPTY_CURSOR: String =
+        """  
+      {
+        "type": "STREAM",
+        "stream": {
+            "stream_descriptor": {
+              "name": "${tableName}",
+              "namespace": "test"
+            },
+            "stream_state": {
               "version": 2,
               "state_type": "cursor_based",
               "stream_name": "${tableName}",

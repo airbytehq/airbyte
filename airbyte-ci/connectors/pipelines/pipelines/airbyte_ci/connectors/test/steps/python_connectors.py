@@ -23,7 +23,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.18.1"
+PYAIRBYTE_VERSION = "0.20.2"
 
 
 class PytestStep(Step, ABC):
@@ -195,9 +195,16 @@ class UnitTests(PytestStep):
 
 
 class PyAirbyteValidation(Step):
-    """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
+    """Validate the connector can be installed and invoked via Python, using PyAirbyte.
 
-    title = "PyAirbyte validation tests"
+    When this fails, it generally signals that the connector is not installable or not
+    runnable in a Python environment. The most common reasons for this are:
+    1. Conflicting dependencies.
+    2. Missing dependency declarations.
+    3. Incorrect or invalid CLI entrypoints.
+    """
+
+    title = "Python CLI smoke test using PyAirbyte"
 
     context: ConnectorTestContext
 
@@ -209,7 +216,7 @@ class PyAirbyteValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping PyAirbyte validation.")
+            return self.skip("Connector is not flagged for PyPI publish, skipping Python CLI validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
@@ -270,7 +277,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                id=CONNECTOR_TEST_STEP_ID.PYTHON_CLI_VALIDATION,
                 step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
