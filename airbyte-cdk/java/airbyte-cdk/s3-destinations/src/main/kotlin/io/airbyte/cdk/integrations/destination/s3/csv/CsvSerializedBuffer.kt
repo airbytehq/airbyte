@@ -36,7 +36,7 @@ class CsvSerializedBuffer(
     private var csvFormat: CSVFormat
 
     init {
-        csvFormat = CSVFormat.Builder.create().setQuoteMode(QuoteMode.NONE).setEscape('?').build()
+        csvFormat = CSVFormat.Builder.create().setQuoteMode(QuoteMode.NONE).setEscape('\\').build()
         // we always want to compress csv files
         withCompression(compression)
     }
