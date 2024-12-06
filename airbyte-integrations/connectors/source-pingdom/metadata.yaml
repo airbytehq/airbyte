@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "https://api.pingdom.com/api"
   registryOverrides:
     oss:
       enabled: true
