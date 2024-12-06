@@ -76,7 +76,7 @@ class GoogleSheetSourceTest(TestCase):
         connection_status = self._source.check(Mock(), wrong_service_account_credentials)
         assert connection_status.status == Status.FAILED
 
-    def test_given_authentication_error_when_invalid_client(self) -> None:
+    def test_invalid_credentials_error_message_when_check(self) -> None:
         http_mocker = CustomHttpMocker()
         http_mocker.post(
             AuthBuilder.get_token_endpoint().build(),
@@ -89,6 +89,67 @@ class GoogleSheetSourceTest(TestCase):
             "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
         )
 
+    def test_invalid_link_error_message_when_check(self) -> None:
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
+        )
+
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request), pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+        assert str(exc_info.value) == (
+            "Config error: The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync."
+        )
+
+    def test_check_invalid_creds_json_file(self) -> None:
+        connection_status = self._source.check(Mock(), "")
+        assert "Please use valid credentials json file" in connection_status.message
+        assert connection_status.status == Status.FAILED
+
+    def test_check_access_expired(self) -> None:
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request), pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+        assert str(exc_info.value) == (
+            "Config error: "
+        )
+
+    def test_check_expected_to_read_data_from_1_sheet(self) -> None:
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_wrong_range", __file__)), 200)
+        )
+
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
+            connection_status = self._source.check(Mock(), self._config)
+            assert connection_status.status == Status.FAILED
+            assert connection_status.message == f'Unable to read the schema of sheet a_stream_name. Error: Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. '
 
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self) -> None:
         # spreadsheet_metadata request
@@ -113,6 +174,50 @@ class GoogleSheetSourceTest(TestCase):
             discovered_catalog = self._source.discover(Mock(), self._config)
             assert len(discovered_catalog.streams) == 1
             assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
+
+    def test_discover_404_error(self) -> None:
+        # spreadsheet_metadata request
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
+        )
+
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request), pytest.raises(AirbyteTracedException) as exc_info:
+
+            discovered_catalog = self._source.discover(Mock(), self._config)
+        expected_message = (
+            f"The requested Google Sheets spreadsheet with id {_SPREADSHEET_ID} does not exist."
+            " Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support. Requested entity was not found.."
+        )
+        assert str(exc_info.value) == expected_message
+
+    def test_discover_403_error(self) -> None:
+        # spreadsheet_metadata request
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request), pytest.raises(AirbyteTracedException) as exc_info:
+
+            discovered_catalog = self._source.discover(Mock(), self._config)
+        expected_message = (
+            "The authenticated Google Sheets user does not have permissions to view the "
+            f"spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access"
+            " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
+            "The caller does not have right permissions."
+        )
+        assert str(exc_info.value) == expected_message
 
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self) -> None:
         http_mocker = CustomHttpMocker()
