@@ -101,7 +101,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte
@@ -169,7 +169,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte

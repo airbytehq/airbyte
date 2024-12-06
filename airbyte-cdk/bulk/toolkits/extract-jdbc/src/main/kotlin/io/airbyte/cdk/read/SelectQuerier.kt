@@ -3,6 +3,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.util.Jsons
@@ -27,7 +28,9 @@ interface SelectQuerier {
         val fetchSize: Int? = null,
     )
 
-    interface Result : Iterator<ObjectNode>, AutoCloseable
+    interface Result : Iterator<ObjectNode>, AutoCloseable {
+        val changes: Map<Field, FieldValueChange>?
+    }
 }
 
 /** Default implementation of [SelectQuerier]. */
@@ -50,6 +53,9 @@ class JdbcSelectQuerier(
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
         val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
+        val metaChanges: MutableMap<Field, FieldValueChange> = mutableMapOf()
+        override val changes: Map<Field, FieldValueChange>?
+            get() = metaChanges
 
         init {
             log.info { "Querying ${q.sql}" }
@@ -94,6 +100,7 @@ class JdbcSelectQuerier(
         }
 
         override fun next(): ObjectNode {
+            metaChanges.clear()
             // Ensure that the current row in the ResultSet hasn't been read yet; advance if
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
@@ -103,7 +110,15 @@ class JdbcSelectQuerier(
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
-                record.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                try {
+                    record.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                } catch (e: Exception) {
+                    record.set<JsonNode>(column.id, Jsons.nullNode())
+                    log.info {
+                        "Failed to serialize column: ${column.id}, of type ${column.type}, with error ${e.message}"
+                    }
+                    metaChanges.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                }
                 colIdx++
             }
             // Flag that the current row has been read before returning.

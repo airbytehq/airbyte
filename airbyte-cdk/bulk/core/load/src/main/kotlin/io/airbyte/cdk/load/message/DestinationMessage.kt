@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.json.AirbyteValueToJson
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
@@ -407,7 +408,11 @@ class DestinationMessageFactory(
                 } else {
                     DestinationRecord(
                         stream = stream.descriptor,
-                        data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
+                        data =
+                            message.record.data?.let {
+                                JsonToAirbyteValue().convert(it, stream.schema)
+                            }
+                                ?: ObjectValue(linkedMapOf()),
                         emittedAtMs = message.record.emittedAt,
                         meta =
                             DestinationRecord.Meta(

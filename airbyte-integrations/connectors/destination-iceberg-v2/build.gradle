@@ -24,6 +24,11 @@ ext {
     junitVersion = '5.11.3'
 }
 
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude group:"org.slf4j", module:"slf4j-reload4j"
+}
+
 // Uncomment to run locally
 //run {
 //    standardInput = System.in

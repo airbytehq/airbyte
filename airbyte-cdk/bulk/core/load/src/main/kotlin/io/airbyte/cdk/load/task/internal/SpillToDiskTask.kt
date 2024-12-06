@@ -76,7 +76,6 @@ class DefaultSpillToDiskTask(
 
                                     // reserve enough room for the record
                                     diskManager.reserve(wrapped.sizeBytes)
-
                                     // calculate whether we should flush
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
                                     val bytesProcessed = sizeBytes + wrapped.sizeBytes

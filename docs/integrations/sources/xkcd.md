@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-XKCD is an open API, so no credentials are needed to set up the surce.
+XKCD is an open API, so no credentials are needed to set up the source.
 
 ## Supported sync modes
 

@@ -213,7 +213,7 @@ class PipelineContext:
 
     @property
     def remote_storage_enabled(self) -> bool:
-        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
+        return bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
 
     def _should_send_status_check(self) -> bool:
         should_send = self.is_pr or any(
