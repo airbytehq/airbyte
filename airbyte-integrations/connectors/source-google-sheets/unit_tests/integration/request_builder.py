@@ -6,7 +6,7 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 
 #  todo: this should be picked from manifest in the future
 GOOGLE_SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets"
-
+OAUTH_AUTHORIZATION_ENDPOINT = "https://oauth2.googleapis.com"
 
 class RequestBuilder:
     @classmethod
@@ -44,6 +44,29 @@ class RequestBuilder:
         endpoint = f"/{self.resource}" if self.resource else ""
         return HttpRequest(
             url=f"{GOOGLE_SHEETS_BASE_URL}/{self._spreadsheet_id}{endpoint}",
+            query_params=self._query_params,
+            body=self._body,
+        )
+
+
+class AuthBuilder:
+    @classmethod
+    def get_token_endpoint(cls) -> AuthBuilder:
+        return cls(resource="token")
+
+    def __init__(self, resource):
+        self._body = ""
+        self._resource = resource
+        self._query_params = ""
+
+    def with_body(self, body: str):
+        self._body = body
+        return self
+
+    def build(self) -> HttpRequest:
+        endpoint = f"/{self._resource}" if self._resource else ""
+        return HttpRequest(
+            url=f"{OAUTH_AUTHORIZATION_ENDPOINT}{endpoint}",
             query_params=self._query_params,
             body=self._body,
         )

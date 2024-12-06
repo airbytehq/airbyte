@@ -11,12 +11,12 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteSt
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from google.auth.credentials import AnonymousCredentials
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_sheets import SourceGoogleSheets
 
 from .custom_http_mocker import CustomHttpMocker
-from .google_credentials import service_account_credentials
-from .request_builder import RequestBuilder
+from .request_builder import AuthBuilder, RequestBuilder
+from .test_credentials import oauth_credentials, service_account_credentials, service_account_info
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
@@ -24,36 +24,28 @@ _STREAM_NAME = "a_stream_name"
 
 _CONFIG = {
   "spreadsheet_id": _SPREADSHEET_ID,
+  "credentials": oauth_credentials
+}
+
+_SERVICE_CONFIG = {
+  "spreadsheet_id": _SPREADSHEET_ID,
   "credentials": service_account_credentials
 }
 
-@pytest.fixture
-def mock_google_credentials():
-    with patch("google.oauth2.service_account.Credentials.from_service_account_info", return_value=AnonymousCredentials()):
-        with patch("google.oauth2.credentials.Credentials.from_authorized_user_info", return_value=AnonymousCredentials()):
-            yield
-
-@pytest.fixture
-def mock_google_credentials_with_error():
-    # todo: mock "https://oauth2.googleapis.com/token" instead
-    with patch(
-        "google.oauth2.service_account.Credentials.from_service_account_info",
-        side_effect=ValueError("Mocked ValueError for service account credentials"),
-    ):
-        with patch(
-            "google.oauth2.credentials.Credentials.from_authorized_user_info",
-            side_effect=ValueError("Mocked ValueError for user credentials"),
-        ):
-            yield
 
 class GoogleSheetSourceTest(TestCase):
     def setUp(self) -> None:
         self._config = deepcopy(_CONFIG)
+        self._service_config = deepcopy(_SERVICE_CONFIG)
         self._source = SourceGoogleSheets()
 
-    @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_spreadsheet_when_check_then_status_is_succeeded(self) -> None:
         http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
             HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
@@ -68,15 +60,43 @@ class GoogleSheetSourceTest(TestCase):
             connection_status = self._source.check(Mock(), self._config)
             assert connection_status.status == Status.SUCCEEDED
 
-    @pytest.mark.usefixtures("mock_google_credentials_with_error")
     def test_given_authentication_error_when_check_then_status_is_failed(self) -> None:
+        del self._config["credentials"]["client_secret"]
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.FAILED
 
-    @pytest.mark.usefixtures("mock_google_credentials")
+    def test_given_service_authentication_error_when_check_then_status_is_failed(self) -> None:
+        wrong_service_account_info = deepcopy(service_account_info)
+        del wrong_service_account_info["client_email"]
+        wrong_service_account_info_encoded = json.dumps(service_account_info).encode("utf-8")
+        wrong_service_account_credentials = {
+            "auth_type": "Service",
+            "service_account_info": wrong_service_account_info_encoded,
+        }
+        connection_status = self._source.check(Mock(), wrong_service_account_credentials)
+        assert connection_status.status == Status.FAILED
+
+    def test_given_authentication_error_when_invalid_client(self) -> None:
+        http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 200)
+        )
+        with patch("httplib2.Http.request", side_effect=http_mocker.mock_request), pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+
+        assert str(exc_info.value) == (
+            "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
+        )
+
+
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self) -> None:
         # spreadsheet_metadata request
         http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
             HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
@@ -94,9 +114,12 @@ class GoogleSheetSourceTest(TestCase):
             assert len(discovered_catalog.streams) == 1
             assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
 
-    @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self) -> None:
         http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
             HttpResponse(json.dumps(find_template("no_rows_meta", __file__)), 200)
@@ -111,9 +134,12 @@ class GoogleSheetSourceTest(TestCase):
             discovered_catalog = self._source.discover(Mock(), self._config)
             assert len(discovered_catalog.streams) == 0
 
-    @pytest.mark.usefixtures("mock_google_credentials")
     def test_given_not_grid_sheet_type_when_discover_then_ignore_stream(self) -> None:
         http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
         # meta data request
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
@@ -124,9 +150,12 @@ class GoogleSheetSourceTest(TestCase):
             discovered_catalog = self._source.discover(Mock(), self._config)
             assert len(discovered_catalog.streams) == 0
 
-    @pytest.mark.usefixtures("mock_google_credentials")
     def test_when_read_then_return_records(self) -> None:
         http_mocker = CustomHttpMocker()
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
             HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)

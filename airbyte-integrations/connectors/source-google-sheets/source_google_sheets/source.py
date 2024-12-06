@@ -55,7 +55,6 @@ class SourceGoogleSheets(Source):
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         try:
-            # 'https://sheets.googleapis.com/v4/spreadsheets/a_spreadsheet_id?includeGridData=false&alt=json'
             spreadsheet = client.get(spreadsheetId=spreadsheet_id, includeGridData=False)
         except errors.HttpError as err:
             message = "Config error: "

@@ -59,9 +59,15 @@ class CustomHttpMocker:
 
             ... the rest of your implementation
 
-    Note: there is only support for get method and url matching ignoring the body but this is enough for the current test set.
+    Note: there is only support for get and post method and url matching ignoring the body but this is enough for the current test set.
     """
     requests_mapper: Dict = {}
+
+    def post(self, request: HttpRequest, response: HttpResponse):
+        custom_response = (Response({"status": response.status_code}), response.body.encode("utf-8"))
+        uri = parse_and_transform(str(request))
+        decoded_url = unquote(uri)
+        self.requests_mapper[("POST", decoded_url)] = custom_response
 
     def get(self, request: HttpRequest, response: HttpResponse):
         custom_response = (Response({"status": response.status_code}), response.body.encode("utf-8"))
