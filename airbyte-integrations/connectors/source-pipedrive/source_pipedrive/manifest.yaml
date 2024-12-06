@@ -411,3 +411,15 @@ spec:
         examples:
           - "2017-01-25 00:00:00Z"
         type: string
+      num_workers:
+        title: Number of concurrent workers
+        description: Number of concurrent workers to be used in the sync
+        type: integer
+        minimum: 1
+        maximum: 40
+
+# rate limiting https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10)}}"
+  max_concurrency: 40
