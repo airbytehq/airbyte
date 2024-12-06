@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http import HttpStream
 from freezegun import freeze_time
 from source_twilio.auth import HttpBasicAuthenticator
@@ -168,7 +169,7 @@ class TestIncrementalTwilioStream:
         [
             (
                 Calls,
-                {"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"},
+                StreamSlice(partition={}, cursor_slice={"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"}),
                 {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
                 {
                     "EndTime>": "2022-01-01",
@@ -279,13 +280,13 @@ class TestTwilioNestedStream:
                 Addresses,
                 Accounts,
                 [{"subresource_uris": {"addresses": "123"}}],
-                [{"subresource_uri": "123"}],
+                [StreamSlice(partition={"subresource_uri": "123"}, cursor_slice={})],
             ),
             (
                 DependentPhoneNumbers,
                 Addresses,
                 [{"subresource_uris": {"addresses": "123"}, "sid": "123", "account_sid": "456"}],
-                [{"sid": "123", "account_sid": "456"}],
+                [StreamSlice(partition={"sid": "123", "account_sid": "456"}, cursor_slice={})],
             ),
         ],
     )
@@ -319,8 +320,8 @@ class TestUsageNestedStream:
             (
                 UsageTriggers,
                 Accounts,
-                [{"sid": "234", "account_sid": "678"}],
-                [{"account_sid": "234"}],
+                [{"sid": "234", "account_sid": "678", "date_created": "2022-11-16 00:00:00"}],
+                [StreamSlice(partition={"account_sid": "234", "date_created": "2022-11-16 00:00:00"}, cursor_slice={})],
             ),
         ],
     )

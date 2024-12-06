@@ -11,6 +11,7 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -199,19 +200,17 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for dt_range in self.generate_date_ranges():
-                slice_ = copy.deepcopy(super_slice) if super_slice else {}
-                slice_.update(dt_range)
-                yield slice_
+                yield StreamSlice(partition=super_slice.partition if super_slice else {}, cursor_slice=dt_range)
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: StreamSlice = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        lower_bound = stream_slice and stream_slice.get(self.lower_boundary_filter_field)
-        upper_bound = stream_slice and stream_slice.get(self.upper_boundary_filter_field)
+        lower_bound = stream_slice and stream_slice.cursor_slice.get(self.lower_boundary_filter_field)
+        upper_bound = stream_slice and stream_slice.cursor_slice.get(self.upper_boundary_filter_field)
         if lower_bound:
             params[self.lower_boundary_filter_field] = lower_bound
         if upper_bound:
@@ -260,7 +259,7 @@ class TwilioNestedStream(TwilioStream):
         return self.parent_stream(authenticator=self._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}
+        return StreamSlice(partition={"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}, cursor_slice={})
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_instance = self.parent_stream_instance
@@ -304,7 +303,7 @@ class DependentPhoneNumbers(TwilioNestedStream):
         return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"sid": record["sid"], "account_sid": record["account_sid"]}
+        return StreamSlice(partition={"sid": record["sid"], "account_sid": record["account_sid"]}, cursor_slice={})
 
 
 class Applications(TwilioNestedStream):
@@ -425,7 +424,7 @@ class Executions(TwilioNestedStream):
         return f"Flows/{ stream_slice['flow_sid'] }/Executions"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"flow_sid": record["sid"]}
+        return StreamSlice(partition={"flow_sid": record["sid"]}, cursor_slice={})
 
 
 class Step(TwilioNestedStream):
@@ -442,7 +441,7 @@ class Step(TwilioNestedStream):
         return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+        return StreamSlice(partition={"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}, cursor_slice={})
 
 
 class OutgoingCallerIds(TwilioNestedStream):
@@ -498,7 +497,7 @@ class Roles(TwilioNestedStream):
         return f"Services/{ stream_slice['service_sid'] }/Roles"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"service_sid": record["sid"]}
+        return StreamSlice(partition={"service_sid": record["sid"]}, cursor_slice={})
 
 
 class Transcriptions(TwilioNestedStream):
@@ -565,7 +564,7 @@ class UsageNestedStream(TwilioNestedStream):
         return f"Accounts/{stream_slice['account_sid']}/Usage/{self.path_name}.json"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"account_sid": record["sid"]}
+        return StreamSlice(partition={"account_sid": record["sid"]}, cursor_slice={})
 
 
 class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
@@ -623,7 +622,7 @@ class ConversationParticipants(TwilioNestedStream):
         return f"Conversations/{stream_slice['conversation_sid']}/Participants"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["sid"]}
+        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
 
 
 class ConversationMessages(TwilioNestedStream):
@@ -638,7 +637,7 @@ class ConversationMessages(TwilioNestedStream):
         return f"Conversations/{stream_slice['conversation_sid']}/Messages"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"conversation_sid": record["sid"]}
+        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
 
 
 class Users(TwilioStream):
@@ -663,4 +662,4 @@ class UserConversations(TwilioNestedStream):
         return f"Users/{stream_slice['user_sid']}/Conversations"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {"user_sid": record["sid"]}
+        return StreamSlice(partition={"user_sid": record["sid"]}, cursor_slice={})
