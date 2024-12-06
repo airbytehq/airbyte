@@ -1,0 +1,12 @@
+---
+airbyte:
+  connector:
+    extract:
+      jdbc:
+        mode: sequential
+        namespace-kind: SCHEMA
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 1 where 1 = 0;

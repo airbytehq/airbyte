@@ -154,7 +154,7 @@
         ],
         "order": 8,
         "title": "Encryption",
-        "description": "The encryption method with is used when communicating with the database."
+        "description": "The encryption method which is used when communicating with the database."
       },
       "username": {
         "type": "string",
@@ -365,7 +365,7 @@
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
               }
             },
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
             "additionalProperties": true
           }
         ],

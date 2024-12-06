@@ -58,7 +58,7 @@ class JdbcSelectQuerier(
             get() = metaChanges
 
         init {
-            log.info { "Querying ${q.sql}" }
+            log.info { "Querying ${q.sql} with parameters ${q.bindings.map { it.value }}" }
             try {
                 conn = jdbcConnectionFactory.get()
                 stmt = conn!!.prepareStatement(q.sql)
