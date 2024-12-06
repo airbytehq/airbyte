@@ -364,7 +364,7 @@ class SnowflakeSqlGenerator(
                 listOf(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.quoted(),
                     adjustedExtractedAt,
-                    JavaBaseConstants.COLUMN_NAME_AB_META.quoted(),
+//                    JavaBaseConstants.COLUMN_NAME_AB_META.quoted(),
                     JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.quoted(),
                 )
 
@@ -480,7 +480,6 @@ class SnowflakeSqlGenerator(
                 |)
                 |SELECT 
                 |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")}, 
-                |  "_AIRBYTE_META"
                 |FROM 
                 |  new_records
                 |WHERE row_number = 1
