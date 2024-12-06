@@ -109,9 +109,6 @@ class DuckDBConfig(SqlConfig):
                 "schema_translate_map": {None: self.schema_name},
             },
             future=True,
-            connect_args={
-                "config": self.get_duckdb_config(),
-            },
         )
 
 

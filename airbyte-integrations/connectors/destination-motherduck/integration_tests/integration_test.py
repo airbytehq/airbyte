@@ -296,7 +296,7 @@ def test_check_succeeds(
 ):
     destination = DestinationMotherDuck()
     status = destination.check(logger=MagicMock(), config=config)
-    assert status.status == Status.SUCCEEDED
+    assert status.status == Status.SUCCEEDED, status.message
 
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
