@@ -25,7 +25,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.models import FailureType
 from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
 
 REPORTS_API_VERSION = "2021-06-30"
@@ -304,7 +304,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self.http_method = "POST"
         create_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers),
             data=json.dumps(report_data),
         )
         report_response = self._send_request(create_report_request, {})
@@ -315,7 +315,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         retrieve_report_request = self._create_prepared_request(
             path=f"{self.path_prefix}/reports/{report_id}",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers),
         )
         retrieve_report_response = self._send_request(retrieve_report_request, {})
         report_payload = retrieve_report_response.json()
@@ -326,7 +326,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         request = self._create_prepared_request(
             path=self.path(document_id=report_document_id),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers),
             params=self.request_params(),
         )
         return self._send_request(request, {})
@@ -340,7 +340,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         download_report_request = self._create_prepared_request(path=payload.get("url"))
         report = self._send_request(download_report_request, {})
         if "compressionAlgorithm" in payload:
-            return gzip.decompress(report.content).decode("iso-8859-1")
+            return gzip.decompress(reporst.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
 
     def parse_response(
@@ -1587,7 +1587,7 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
             request_headers = self.request_headers()
             get_reports = self._create_prepared_request(
                 path=f"{self.path_prefix}/reports",
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                headers=dict(request_headers),
                 params=params,
             )
             report_response = self._send_request(get_reports, {})

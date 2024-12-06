@@ -12,7 +12,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 
 from .config import ACCESS_TOKEN, ConfigBuilder
