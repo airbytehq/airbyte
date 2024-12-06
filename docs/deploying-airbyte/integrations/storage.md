@@ -41,7 +41,7 @@ metadata:
 type: Opaque
 stringData:
   gcp.json: |
-  {
+   {
     "type": "service_account",
     "project_id": "cloud-proj",
     "private_key_id": "2f3b9c8e7d5a1b4f23e697c0d84af6e1",
@@ -53,20 +53,6 @@ stringData:
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
   }
-```
-</TabItem>
-
-<TabItem value="Azure Blob" label="Azure" default>
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: airbyte-config-secrets
-type: Opaque
-stringData:
-  # Azure Secrets
-  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
 ```
 
 </TabItem>
