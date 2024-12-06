@@ -108,3 +108,7 @@ scan-journal.log
 
 # mvn
 target/
+
+# CDK load artifacts
+airbyte-cdk/bulk/core/load/airbyte-cdk-load/
+airbyte-integrations/connectors/**/airbyte-cdk-load/

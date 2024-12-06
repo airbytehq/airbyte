@@ -10,6 +10,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps import build_customizatio
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import COMPONENTS_FILE_PATH, MANIFEST_FILE_PATH
+from pipelines.dagger.actions.python.common import apply_python_development_overrides
 from pipelines.models.steps import StepResult
 from pydash.objects import get  # type: ignore
 
@@ -56,8 +57,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
                 f"source_declarative_manifest/{COMPONENTS_FILE_PATH}",
                 (await self.context.get_connector_dir(include=[COMPONENTS_FILE_PATH])).file(COMPONENTS_FILE_PATH),
             )
-
         connector_container = build_customization.apply_airbyte_entrypoint(base_container, self.context.connector)
+        connector_container = await apply_python_development_overrides(self.context, connector_container)
         return connector_container
 
 
