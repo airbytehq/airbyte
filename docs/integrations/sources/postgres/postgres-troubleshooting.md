@@ -155,11 +155,11 @@ If you know there are database changes to be synced, but the connector cannot re
 
 When using the `Read Changes using Write-Ahead Log (CDC)` update method, you might encounter a situation where your initial sync is successful, but further syncs fail. You may also notice that the `confirmed_flush_lsn` column of the server's `pg_replication_slots` view doesn't advance as expected.
 
-This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector when dealing with low volumes. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
+This is a general issue that affects databases, schemas, and tables with small transaction volumes. There are complexities in the way PostgreSQL disk space can be consumed by WAL files, and these can cause issues for the connector when dealing with low transaction volumes. Airbyte's connector depends on Debezium. These complexities are outlined in [their documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-wal-disk-space), if you want to learn more.
 
 #### Simple fix (read-only)
 
-The easiest way to fix this issue is to add one or more high-volume tables to the Airbyte publication. You do not need to actually sync these tables, but adding them to the publication will advance the log sequence number (LSN), ensuring the sync can succeed without you giving Airbyte write access to the database. However, this may greatly increase disk consumption.
+The easiest way to fix this issue is to add one or more tables with high transaction volumes to the Airbyte publication. You do not need to actually sync these tables, but adding them to the publication will advance the log sequence number (LSN), ensuring the sync can succeed without you giving Airbyte write access to the database. However, this may greatly increase disk consumption.
 
 ```sql
 ALTER PUBLICATION <publicationName> ADD TABLE <high_volume_table>;
