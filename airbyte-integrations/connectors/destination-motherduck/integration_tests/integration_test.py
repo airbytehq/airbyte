@@ -26,6 +26,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from airbyte_cdk.sql.secrets import SecretString
 from destination_motherduck import DestinationMotherDuck
 from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY
 from faker import Faker
@@ -69,6 +70,9 @@ def config(request, test_schema_name: str) -> Generator[Any, Any, Any]:
     elif request.param == "motherduck_config":
         config_dict = json.loads(Path(SECRETS_CONFIG_PATH).read_text())
         config_dict["schema"] = test_schema_name
+        if CONFIG_MOTHERDUCK_API_KEY in config_dict:
+            # Prevent accidentally printing API Key if `config_dict` is printed.
+            config_dict[CONFIG_MOTHERDUCK_API_KEY] = SecretString(config_dict[CONFIG_MOTHERDUCK_API_KEY])
         yield config_dict
 
     else:
