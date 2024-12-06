@@ -31,21 +31,22 @@ definitions:
             queue_url: "{{config['queue_url']}}"
             visibility_timeout: "{{config['visibility_timeout']}}"
             max_wait_time: "{{config['max_wait_time']}}"
+            target: "{{ config['target']}}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - Messages
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: MaxNumberOfMessages
-          pagination_strategy:
-            type: PageIncrement
-            page_size: "{{ config['max_batch_size'] }}"
+        # paginator:
+        #   type: DefaultPaginator
+        #   page_size_option:
+        #     type: RequestOption
+        #     inject_into: body_json
+        #     field_name: MaxNumberOfMessages
+        #   pagination_strategy:
+        #     type: PageIncrement
+        #     page_size: "{{ config['max_batch_size'] }}"
       transformations:
         - type: AddFields
           fields:
@@ -61,7 +62,7 @@ definitions:
           fields:
             - path:
                 - attributes
-              value: "{{ record['MessageAttributes'] }}"
+              value: "{{ record['MessageAttributes'] or record['Attributes'] }}"
 
 streams:
   - $ref: "#/definitions/streams/QueueMessages"
@@ -72,9 +73,11 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
+      - access_key
+      - secret_key
       - queue_url
       - region
-      - delete_messages
+      - target
     properties:
       queue_url:
         type: string
@@ -137,15 +140,17 @@ spec:
         type: integer
         order: 3
         title: Max Batch Size
+        default: 10
         examples:
-          - "5"
+          - 5
         description: Max amount of messages to get in one batch (10 max)
       max_wait_time:
         type: integer
         order: 4
         title: Max Wait Time
         examples:
-          - "5"
+          - 5
+        default: 20
         description: >-
           Max amount of time in seconds to wait for messages in a single poll
           (20 max)
@@ -155,13 +160,15 @@ spec:
         title: Message Attributes To Return
         examples:
           - attr1,attr2
+        default: "All"
         description: Comma separated list of Mesage Attribute names to return
       visibility_timeout:
         type: integer
         order: 6
         title: Message Visibility Timeout
         examples:
-          - "15"
+          - 20
+        default: 20
         description: >-
           Modify the Visibility Timeout of the individual message from the
           Queue's default (seconds).
@@ -181,4 +188,13 @@ spec:
           - hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz
         description: The Secret Key of the AWS IAM Role to use for pulling messages
         airbyte_secret: true
+      target:
+        type: string
+        title: The targeted resource for fetching
+        enum:
+          - GetQueueAttributes
+          - ReceiveMessage
+        default: ReceiveMessage
+        description: Note - Different targets have different attribute enum requirements, please refer actions sections in https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/Welcome.html
+        order: 9
     additionalProperties: true
