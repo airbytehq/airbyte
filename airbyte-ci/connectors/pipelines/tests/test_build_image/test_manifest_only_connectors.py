@@ -5,9 +5,7 @@
 from pathlib import Path
 
 import pytest
-from dagger import Container
-from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, common, manifest_only_connectors
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, manifest_only_connectors
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.models.steps import StepStatus
 from tests.utils import mock_container
@@ -97,6 +95,12 @@ class TestBuildConnectorImage:
             build_customization,
             "apply_airbyte_entrypoint",
             return_value=container_built_from_base,
+        )
+
+        mocker.patch.object(
+            manifest_only_connectors,
+            "apply_python_development_overrides",
+            side_effect=mocker.AsyncMock(return_value=container_built_from_base),
         )
 
         step = manifest_only_connectors.BuildConnectorImages(test_context_with_connector_with_base_image)
