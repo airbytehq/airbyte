@@ -104,7 +104,7 @@ class SnowflakeSqlGenerator(
             |CREATE $forceCreateTable TABLE ${stream.id.quotedFinalTableId(suffix)} (
             |  "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
             |  "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
-            |  "_AIRBYTE_META" VARIANT NULL,
+            |  "_AIRBYTE_META" VARIANT,
             |  "_AIRBYTE_GENERATION_ID" INTEGER
             |  $columnDeclarations
             |) data_retention_time_in_days = $retentionPeriodDays;
