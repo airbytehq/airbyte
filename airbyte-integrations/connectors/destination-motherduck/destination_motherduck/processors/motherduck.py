@@ -26,7 +26,6 @@ from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Engine, create_engine
 
-
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905
 warnings.filterwarnings(
