@@ -36,8 +36,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - Messages
+            field_path: []
         paginator:
           type: DefaultPaginator
           page_size_option:
@@ -124,18 +123,8 @@ spec:
           - us-west-2
         order: 1
         title: AWS Region
+        default: "us-east-1"
         description: AWS Region of the SQS Queue
-      delete_messages:
-        type: boolean
-        order: 2
-        title: Delete Messages After Read
-        default: false
-        description: >-
-          If Enabled, messages will be deleted from the SQS Queue after being
-          read. If Disabled, messages are left in the queue and can be read more
-          than once. WARNING: Enabling this option can result in data loss in
-          cases of failure, use with caution, see documentation for more
-          detail.
       max_batch_size:
         type: integer
         order: 3
@@ -190,7 +179,7 @@ spec:
         airbyte_secret: true
       target:
         type: string
-        title: The targeted resource for fetching
+        title: The targeted action resource for the fetch
         enum:
           - GetQueueAttributes
           - ReceiveMessage
