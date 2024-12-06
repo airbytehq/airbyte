@@ -337,7 +337,7 @@ class SnowflakeSqlGenerator(
 
         return """
             |INSERT INTO ${stream.id.quotedFinalTableId(finalSuffix)}(
-            |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")},
+            |${stream.finalTableColumnsWithoutMeta { it }.replaceIndent("  ")}
             |)
             |$selectRecordsFromRawTable;
             |""".trimMargin()
