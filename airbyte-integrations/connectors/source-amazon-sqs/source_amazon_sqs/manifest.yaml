@@ -36,7 +36,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - Messages
         paginator:
           type: DefaultPaginator
           page_size_option:
