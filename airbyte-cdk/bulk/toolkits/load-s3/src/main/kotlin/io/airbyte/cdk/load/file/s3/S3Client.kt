@@ -18,6 +18,7 @@ import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toInputStream
+import aws.smithy.kotlin.runtime.net.url.Url
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
@@ -29,6 +30,7 @@ import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
@@ -175,6 +177,33 @@ class S3Client(
         upload.runUsing(block)
         return S3Object(key, bucketConfig)
     }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<S3Object> {
+        // TODO: Remove permit handling once we control concurrency with # of accumulators
+        if (uploadPermits != null) {
+            log.info {
+                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
+            }
+            uploadPermits.acquire()
+            log.info {
+                "Acquired upload permit for $key (${uploadPermits.availablePermits} available)"
+            }
+        }
+
+        val request = CreateMultipartUploadRequest {
+            this.bucket = bucketConfig.s3BucketName
+            this.key = key
+            this.metadata = metadata
+        }
+        val response = client.createMultipartUpload(request)
+
+        log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
+
+        return S3StreamingUpload(client, bucketConfig, response, uploadPermits)
+    }
 }
 
 @Factory
@@ -234,6 +263,7 @@ class S3ClientFactory(
             aws.sdk.kotlin.services.s3.S3Client {
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
+                endpointUrl = bucketConfig.s3BucketConfiguration.s3Endpoint?.let { Url.parse(it) }
             }
 
         return S3Client(

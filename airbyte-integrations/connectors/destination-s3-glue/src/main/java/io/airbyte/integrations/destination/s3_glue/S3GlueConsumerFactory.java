@@ -91,8 +91,8 @@ public class S3GlueConsumerFactory {
       final String location = "s3://" + s3Config.getBucketName() + "/" +
           fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
       final S3GlueWriteConfig writeConfig =
-          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath,
-              stream.getGenerationId(), stream.getMinimumGenerationId(), syncMode, jsonSchema, location);
+          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
+              jsonSchema, location);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
@@ -143,8 +143,8 @@ public class S3GlueConsumerFactory {
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
             writer,
             writeConfig.getNamespace(),
-            writeConfig.getFullOutputPath(),
-            writeConfig.getGenerationId()));
+            writeConfig.getStreamName(),
+            writeConfig.getFullOutputPath()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to storage:", e);
         throw new RuntimeException("Failed to upload buffer to storage", e);
@@ -157,7 +157,7 @@ public class S3GlueConsumerFactory {
                                           final List<S3GlueWriteConfig> writeConfigs,
                                           GlueDestinationConfig glueDestinationConfig,
                                           S3DestinationConfig s3DestinationConfig) {
-    return (hasFailed, streamSyncSummaryMap) -> {
+    return (hasFailed) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
