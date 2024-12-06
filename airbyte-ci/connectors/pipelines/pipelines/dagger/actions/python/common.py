@@ -6,9 +6,11 @@ import re
 from pathlib import Path
 from typing import List, Optional, Sequence
 
+from click import UsageError
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.consts import PATH_TO_LOCAL_CDK
 from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 
@@ -238,15 +240,16 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
     return with_python_package(context, testing_environment, connector_source_path)
 
 
-async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
+def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
     # Run the connector using the local cdk if flag is set
     if context.use_local_cdk:
         # Assume CDK is cloned in a sibling dir to `airbyte`:
-        path_to_cdk = str(Path("../airbyte-python-cdk").resolve())
+        path_to_cdk = str(Path(PATH_TO_LOCAL_CDK).resolve())
         if not Path(path_to_cdk).exists():
-            raise FileExistsError(f"Local CDK not found at '{path_to_cdk}'")
+            raise UsageError(
+                f"Local CDK not found at '{path_to_cdk}'. Please clone the CDK repository in a sibling directory to the airbyte repository. Or use --use-cdk-ref to specify a CDK ref."
+            )
         context.logger.info(f"Using local CDK found at: '{path_to_cdk}'")
-
         directory_to_mount = context.dagger_client.host().directory(path_to_cdk)
         cdk_mount_dir = "/airbyte-cdk/python"
 
