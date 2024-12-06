@@ -39,21 +39,28 @@ class CustomAuthenticator(NoAuth):
         self.service = "sqs"
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
-        """Attach the HTTP headers and sign the SQS request."""
+        """Attach the HTTP headers, body and sign the SQS request."""
         self.headers = {
             "Content-Type": "application/x-amz-json-1.0",
             "Host": f"sqs.{self._region}.amazonaws.com",
             "X-Amz-Target": f"AmazonSQS.{self._target}"
         }
 
+        payload = {
+            "QueueUrl": self._queue_url,
+            "AttributeNames": self._attributes_to_return.split(",") if self._attributes_to_return else ["All"],
+            "MaxNumberOfMessages": self._visibility_timeout,
+            "VisibilityTimeout": self._max_wait_time,
+        }
+
         try:
             body_json = json.loads(request.body.decode("utf-8")) if request.body else {}
         except json.JSONDecodeError as e:
             body_json = {}
-        body_json["QueueUrl"] = self._queue_url
-        body_json["AttributeNames"] = self._attributes_to_return.split(",") if self._attributes_to_return else ["All"]
-        body_json["VisibilityTimeout"] = self._visibility_timeout
-        body_json["WaitTimeSeconds"] = self._max_wait_time
+        body_json["QueueUrl"] = payload["QueueUrl"]
+        body_json["AttributeNames"] = payload["AttributeNames"]
+        body_json["VisibilityTimeout"] = payload["MaxNumberOfMessages"]
+        body_json["WaitTimeSeconds"] = payload["VisibilityTimeout"]
 
         request.body = json.dumps(body_json).encode("utf-8")
 
@@ -70,6 +77,7 @@ class CustomAuthenticator(NoAuth):
         )
         self.headers["X-Amz-Date"] = amz_date
         self.headers["Authorization"] = authorization_header
+        self.headers["Content-Length"] = str(len(json.dumps(payload)))
         request.headers.update(self.headers)
         return request
 

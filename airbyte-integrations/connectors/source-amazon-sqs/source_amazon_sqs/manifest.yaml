@@ -38,15 +38,15 @@ definitions:
             type: DpathExtractor
             field_path:
               - Messages
-        # paginator:
-        #   type: DefaultPaginator
-        #   page_size_option:
-        #     type: RequestOption
-        #     inject_into: body_json
-        #     field_name: MaxNumberOfMessages
-        #   pagination_strategy:
-        #     type: PageIncrement
-        #     page_size: "{{ config['max_batch_size'] }}"
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: MaxNumberOfMessages
+          pagination_strategy:
+            type: PageIncrement
+            page_size: "{{ config['max_batch_size'] }}"
       transformations:
         - type: AddFields
           fields:
