@@ -22,7 +22,7 @@ version = "^6.9.0"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "<3.13,>=3.10"
 pymilvus = "2.3.0"
 
 [tool.poetry.group.dev.dependencies]

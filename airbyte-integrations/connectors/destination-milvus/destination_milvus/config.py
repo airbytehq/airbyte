@@ -57,7 +57,7 @@ class MilvusIndexingConfigModel(BaseModel):
 
     class Config:
         title = "Indexing"
-        schema_extra = {   
+        schema_extra = {
             "group": "indexing",
             "description": "Indexing configuration",
         }
