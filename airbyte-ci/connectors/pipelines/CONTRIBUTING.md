@@ -301,7 +301,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                id=CONNECTOR_TEST_STEP_ID.PYTHON_CLI_VALIDATION,
                 step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
