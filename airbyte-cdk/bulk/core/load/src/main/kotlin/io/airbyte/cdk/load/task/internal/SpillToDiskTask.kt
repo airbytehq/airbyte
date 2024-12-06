@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.file.SpillFileProvider
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationStreamEvent
-import io.airbyte.cdk.load.message.LimitedMessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.message.StreamCompleteEvent
@@ -25,7 +25,7 @@ import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
 import io.airbyte.cdk.load.task.StreamLevel
-import io.airbyte.cdk.load.task.implementor.FileQueueMessage
+import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
 import io.airbyte.cdk.load.util.write
@@ -54,7 +54,7 @@ class DefaultSpillToDiskTask(
     override val streamDescriptor: DestinationStream.Descriptor,
     private val diskManager: ReservationManager,
     private val timeWindow: TimeWindowTrigger,
-    private val spillFileQueue: LimitedMessageQueue<FileQueueMessage>,
+    private val fileAggregateQueue: MultiProducerChannel<FileAggregateMessage>,
     private val taskLauncher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -69,7 +69,7 @@ class DefaultSpillToDiskTask(
     override suspend fun execute() {
         val initialResult =
             spillFileProvider.createTempFile().let { ReadResult(it, it.outputStream()) }
-        spillFileQueue.take().use {
+        fileAggregateQueue.register().use {
             queue.consume().fold(initialResult) {
                 (spillFile, outputStream, range, sizeBytes),
                 reserved ->
@@ -86,7 +86,7 @@ class DefaultSpillToDiskTask(
                             // calculate whether we should flush
                             val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
                             val bytesProcessed = sizeBytes + wrapped.sizeBytes
-                            val forceFlush =
+                            val shouldFlush =
                                 flushStrategy.shouldFlush(
                                     streamDescriptor,
                                     rangeProcessed,
@@ -96,7 +96,9 @@ class DefaultSpillToDiskTask(
                             outputStream.write(wrapped.record.serialized)
                             outputStream.write("\n")
 
-                            if (forceFlush) {
+                            if (!shouldFlush) {
+                                ReadResult(spillFile, outputStream, rangeProcessed, bytesProcessed)
+                            } else {
                                 val file =
                                     SpilledRawMessagesLocalFile(
                                         spillFile,
@@ -107,8 +109,6 @@ class DefaultSpillToDiskTask(
                                 val nextTmpFile = spillFileProvider.createTempFile()
                                 outputStream.close()
                                 ReadResult(nextTmpFile, nextTmpFile.outputStream())
-                            } else {
-                                ReadResult(spillFile, outputStream, rangeProcessed, bytesProcessed)
                             }
                         }
                         is StreamCompleteEvent -> {
@@ -120,7 +120,21 @@ class DefaultSpillToDiskTask(
                                     nextRange,
                                     endOfStream = true
                                 )
-                            publishFile(file)
+                            if (file.totalSizeBytes == 0L) {
+                                log.info { "Skipping empty file $file" }
+                                // Annoying hack to force bookkeeping even in the event that all we
+                                // processed was end-of-stream; otherwise the sync will hang
+                                // forever.
+                                // (Usually this happens because the entire stream was empty.)
+                                val dummy =
+                                    BatchEnvelope(
+                                        SimpleBatch(Batch.State.COMPLETE),
+                                        TreeRangeSet.create()
+                                    )
+                                taskLauncher.handleNewBatch(streamDescriptor, dummy)
+                            } else {
+                                publishFile(file)
+                            }
                             ReadResult(
                                 spillFile,
                                 outputStream,
@@ -129,27 +143,25 @@ class DefaultSpillToDiskTask(
                             ) // this will be the last message
                         }
                         is StreamFlushEvent -> {
-                            val forceFlush = timeWindow.isComplete()
-                            if (forceFlush) {
+                            val shouldFlush = timeWindow.isComplete()
+                            if (!shouldFlush) {
+                                ReadResult(spillFile, outputStream, range, sizeBytes)
+                            } else {
                                 log.info {
                                     "Time window complete for $streamDescriptor@${timeWindow.openedAtMs} closing $spillFile of (${sizeBytes}b)"
                                 }
-                            }
 
-                            if (range != null && sizeBytes > 0L) {
                                 val file =
                                     SpilledRawMessagesLocalFile(
                                         spillFile,
                                         sizeBytes,
-                                        range,
+                                        range!!,
                                         endOfStream = false
                                     )
                                 publishFile(file)
                                 val nextTmpFile = spillFileProvider.createTempFile()
                                 outputStream.close()
                                 ReadResult(nextTmpFile, nextTmpFile.outputStream())
-                            } else {
-                                ReadResult(spillFile, outputStream, range, sizeBytes)
                             }
                         }
                     }
@@ -159,17 +171,8 @@ class DefaultSpillToDiskTask(
     }
 
     private suspend fun publishFile(file: SpilledRawMessagesLocalFile) {
-        if (file.totalSizeBytes == 0L) {
-            log.info { "Skipping empty file $file" }
-            // Annoying hack to force bookkeeping even in the event that all we
-            // processed was end-of-stream; otherwise the sync will hang forever.
-            // (Usually this happens because the entire stream was empty.)
-            val dummy = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), TreeRangeSet.create())
-            taskLauncher.handleNewBatch(streamDescriptor, dummy)
-            return
-        }
         log.info { "Publishing file $file" }
-        spillFileQueue.publish(FileQueueMessage(streamDescriptor, file))
+        fileAggregateQueue.publish(FileAggregateMessage(streamDescriptor, file))
     }
 }
 
@@ -189,7 +192,8 @@ class DefaultSpillToDiskTaskFactory(
     @Named("diskManager") private val diskManager: ReservationManager,
     private val clock: Clock,
     @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
-    @Named("spillFileQueue") private val spillFileQueue: LimitedMessageQueue<FileQueueMessage>,
+    @Named("fileAggregateQueue")
+    private val fileAggregateQueue: MultiProducerChannel<FileAggregateMessage>,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
@@ -204,7 +208,7 @@ class DefaultSpillToDiskTaskFactory(
             stream,
             diskManager,
             timeWindow,
-            spillFileQueue,
+            fileAggregateQueue,
             taskLauncher
         )
     }

@@ -6,9 +6,9 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.message.LimitedMessageQueue
+import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.task.implementor.FileQueueMessage
+import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -40,16 +40,16 @@ class SyncBeanFactory {
     }
 
     @Singleton
-    @Named("spillFileQueue")
-    fun spillFileQueue(
+    @Named("fileAggregateQueue")
+    fun fileAggregateQueue(
         @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
         catalog: DestinationCatalog,
         config: DestinationConfiguration,
-    ): LimitedMessageQueue<FileQueueMessage> {
+    ): MultiProducerChannel<FileAggregateMessage> {
         val maxNumberChunksInFlight = ((availableBytes / config.recordBatchSizeBytes) * 0.8).toInt()
         val minusOnePerStream = maxNumberChunksInFlight - catalog.streams.size
         val capacity = min(minusOnePerStream, 1)
         log.info { "Creating spill file queue with limit $capacity" }
-        return LimitedMessageQueue(capacity)
+        return MultiProducerChannel(capacity)
     }
 }
