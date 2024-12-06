@@ -120,7 +120,6 @@ class SourceGoogleSheets(Source):
             streams = []
             for sheet_name in grid_sheets:
                 try:
-                    # here is the other request with range parameter and includeGridData
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                     if config.get("names_conversion"):
                         header_row_data = [safe_name_conversion(h) for h in header_row_data]
