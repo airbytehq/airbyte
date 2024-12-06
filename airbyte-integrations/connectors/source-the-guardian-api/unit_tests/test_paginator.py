@@ -2,10 +2,14 @@
 
 from unittest.mock import MagicMock
 
+import airbyte_cdk
 import pytest
+import logging
 import requests
 from airbyte_cdk.test.utils.manifest_only_fixtures import components_module, connector_dir
 
+
+logger = logging.getLogger(__name__)
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
     """Helper function to create mock responses"""
@@ -21,7 +25,7 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
 @pytest.mark.parametrize(
     "current_page,total_pages,expected_next_page",
     [
-        (1, 5, 2),      # First page
+        (1, 5, 3),      # First page
         (2, 5, 3),      # Middle page
         (4, 5, 5),      # Second to last page
         (5, 5, None),   # Last page
@@ -29,8 +33,12 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
     ],
     ids=["First page", "Middle page", "Penultimate page", "Last page", "Single page"]
 )
-def test_page_increment(components_module, current_page, total_pages, expected_next_page):
+def test_page_increment(connector_dir, components_module, current_page, total_pages, expected_next_page):
     """Test the CustomPageIncrement pagination for various page combinations"""
+
+    print(f"CDK Version: {airbyte_cdk.__version__}")
+    print(f"Current Dir: {connector_dir}")
+    print(f"Test File location: {__file__}")
 
     CustomPageIncrement = components_module.CustomPageIncrement
     
