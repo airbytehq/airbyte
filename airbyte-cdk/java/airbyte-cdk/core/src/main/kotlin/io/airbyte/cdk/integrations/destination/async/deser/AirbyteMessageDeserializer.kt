@@ -87,14 +87,14 @@ class AirbyteMessageDeserializer(
             // object. Having this data stored as a string is slightly more optimal for the memory
             // usage.
             partial.data = listOf(
-                transformedData.first!!.get("added_to_cart_at").toString().replace("T", " "). replace("+00:00", ""),
-                transformedData.first!!.get("created_at").toString().replace("T", " "). replace("+00:00", ""),
-                transformedData.first!!.get("id").toString(),
-                transformedData.first!!.get("product_id").toString(),
-                transformedData.first!!.get("purchased_at").toString().replace("T", " "). replace("+00:00", ""),
-                transformedData.first!!.get("returned_at").toString().replace("T", " "). replace("+00:00", ""),
-                transformedData.first!!.get("updated_at").toString().replace("T", " "). replace("+00:00", ""),
-                transformedData.first!!.get("user_id").toString(),
+                transformedData.first!!.get("added_to_cart_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("created_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("id").toString().replace("null", ""),
+                transformedData.first!!.get("product_id").toString().replace("null", ""),
+                transformedData.first!!.get("purchased_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("returned_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("updated_at").toString().replace("T", " "). replace("+00:00", "").replace("null", ""),
+                transformedData.first!!.get("user_id").toString().replace("null", ""),
             )
             partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
