@@ -88,12 +88,12 @@ class AirbyteMessageDeserializer(
             // usage.
             partial.data = listOf(
                 transformedData.first!!.get("added_to_cart_at").toString(),
-                transformedData.first!!.get("created_at").toString(),
+                transformedData.first!!.get("created_at").toString().replace("T", " "). replace("+00:00", ""),
                 transformedData.first!!.get("id").toString(),
                 transformedData.first!!.get("product_id").toString(),
-                transformedData.first!!.get("purchased_at").toString(),
-                transformedData.first!!.get("returned_at").toString(),
-                transformedData.first!!.get("updated_at").toString(),
+                transformedData.first!!.get("purchased_at").toString().replace("T", " "). replace("+00:00", ""),
+                transformedData.first!!.get("returned_at").toString().replace("T", " "). replace("+00:00", ""),
+                transformedData.first!!.get("updated_at").toString().replace("T", " "). replace("+00:00", ""),
                 transformedData.first!!.get("user_id").toString(),
             )
             partial.record?.data = null
