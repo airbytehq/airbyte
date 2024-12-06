@@ -73,7 +73,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     data class RemoteObject<T>(
         override val state: Batch.State = Batch.State.COMPLETE,
         val remoteObject: T,
-        val partNumber: Long
+        val partNumber: Long,
+        override val groupId: String? = null
     ) : ObjectStorageBatch
 
     private val partNumber = AtomicLong(0L)
