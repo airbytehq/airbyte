@@ -1,16 +1,16 @@
 # Yotpo
 
-This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/reference/welcome) source
+This page contains the setup guide and reference information for the [Yotpo](https://apidocs.yotpo.com/) source.
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be generated from the auth token call (ref - https://apidocs.yotpo.com/reference/yotpo-authentication).
+You need an Access Token (which acts as bearer token) for this connector to work. Generate one from the authentication endpoint, https://apidocs.yotpo.com/reference/yotpo-authentication.
 
 ## Setup guide
 
-### Step 1: Set up Yotpo connection
+### Step 1: Set up Yotpo access
 
-- Generate an Yotpo access token via auth endpoint (ref - https://apidocs.yotpo.com/reference/yotpo-authentication)
+- Generate a Yotpo access token from the authentication endpoint (ref - https://apidocs.yotpo.com/reference/yotpo-authentication)
 - Setup params (All params are required)
 - Available params
   - access_token: The generated access token
@@ -20,7 +20,7 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 
 ## Step 2: Set up the Yotpo connector in Airbyte
 
-### For Airbyte Cloud:
+### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
@@ -28,7 +28,7 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 4. Enter your `access_token, app_key, start_date and email`.
 5. Click **Set up source**.
 
-### For Airbyte OSS:
+### For Airbyte OSS
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
@@ -62,7 +62,7 @@ GET https://api.yotpo.com/v1/apps/APPAAAAAATTTTTTDDDDDD/reviews?utoken=abcdefghi
 
 ## Performance considerations
 
-Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connector as default uses v1 and changed according to different endpoints.
+The Yotpo [API reference](https://apidocs.yotpo.com/) is at v1. The connector uses v1 by default.
 
 ## Changelog
 
