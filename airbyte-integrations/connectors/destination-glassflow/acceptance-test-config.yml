@@ -1,0 +1,10 @@
+connector_image: airbyte/destination-glassflow:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: integration_tests/spec.json
+  connection:
+    tests:
+      - status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
