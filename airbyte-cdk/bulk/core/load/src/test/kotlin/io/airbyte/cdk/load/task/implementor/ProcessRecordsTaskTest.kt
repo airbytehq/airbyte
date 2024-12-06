@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.MockTaskLauncher
@@ -20,11 +21,13 @@ import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import jakarta.inject.Inject
 import java.nio.file.Files
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +41,7 @@ import org.junit.jupiter.api.Test
 )
 class ProcessRecordsTaskTest {
     private lateinit var diskManager: ReservationManager
+    private lateinit var fileAggregateQueue: MessageQueue<FileAggregateMessage>
     private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
     private lateinit var launcher: MockTaskLauncher
     @Inject lateinit var syncManager: SyncManager
@@ -45,12 +49,14 @@ class ProcessRecordsTaskTest {
     @BeforeEach
     fun setup() {
         diskManager = mockk(relaxed = true)
+        fileAggregateQueue = mockk(relaxed = true)
         launcher = MockTaskLauncher()
         processRecordsTaskFactory =
             DefaultProcessRecordsTaskFactory(
                 MockDeserializer(),
                 syncManager,
                 diskManager,
+                fileAggregateQueue,
             )
     }
 
@@ -123,15 +129,21 @@ class ProcessRecordsTaskTest {
                 totalSizeBytes = byteSize,
                 indexRange = Range.closed(0, recordCount)
             )
+        mockFile.outputStream().use { outputStream ->
+            repeat(recordCount.toInt()) { outputStream.write("$it\n") }
+        }
+        coEvery { fileAggregateQueue.consume() } returns
+            flowOf(
+                FileAggregateMessage(
+                    MockDestinationCatalogFactory.stream1.descriptor,
+                    file,
+                )
+            )
+
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = stream1.descriptor,
-                file = file
             )
-        mockFile.outputStream().use { outputStream ->
-            (0 until recordCount).forEach { outputStream.write("$it\n") }
-        }
 
         syncManager.registerStartedStreamLoader(
             stream1.descriptor,

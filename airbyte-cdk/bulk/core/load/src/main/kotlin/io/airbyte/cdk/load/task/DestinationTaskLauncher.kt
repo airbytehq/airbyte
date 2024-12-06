@@ -195,7 +195,7 @@ class DefaultDestinationTaskLauncher(
             }
         }
 
-        (0 until config.numProcessRecordsWorkers).forEach {
+        repeat(config.numProcessRecordsWorkers) {
             log.info { "Launching process records task $it" }
             val task = processRecordsTaskFactory.make(this)
             enqueue(task)

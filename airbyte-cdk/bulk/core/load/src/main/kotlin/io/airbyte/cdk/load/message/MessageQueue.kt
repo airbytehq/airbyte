@@ -41,23 +41,24 @@ interface MessageQueueSupplier<K, T> {
     fun get(key: K): MessageQueue<T>
 }
 
-class LimitedMessageQueue<T>(limit: Int) : ChannelMessageQueue<T>() {
+/**
+ * A channel designed for use with a dynamic amount of multiple producers. Close will only close the
+ * underlying channel, when there are no registered producers.
+ */
+class MultiProducerChannel<T>(limit: Int = Channel.UNLIMITED) : ChannelMessageQueue<T>() {
     private val log = KotlinLogging.logger {}
     private val producerCount = AtomicLong(0)
     override val channel = Channel<T>(limit)
-    init {
-        require(limit > 0) { "Limit must be greater than 0" }
-    }
 
-    fun take(): LimitedMessageQueue<T> {
+    fun register(): MultiProducerChannel<T> {
         val count = producerCount.incrementAndGet()
-        log.info { "Taking queue (count=$count)" }
+        log.info { "Registering producer (count=$count)" }
         return this
     }
 
     override suspend fun close() {
         val count = producerCount.decrementAndGet()
-        log.info { "Releasing queue (count=$count)" }
+        log.info { "Closing producer (count=$count)" }
         if (count == 0L) {
             log.info { "Closing queue" }
             channel.close()
