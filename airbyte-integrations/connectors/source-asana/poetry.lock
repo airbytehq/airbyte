@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.8.1rc10"
+version = "6.9.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.8.1rc10-py3-none-any.whl", hash = "sha256:cd0c12511580ab5430a6f3e153320270b02be215f2baade0ac763db734d30a66"},
-    {file = "airbyte_cdk-6.8.1rc10.tar.gz", hash = "sha256:41189479a33d6d35b12b7c5cf8e7b5f18bc73fe7676be9d9e1a01d0509d4c184"},
+    {file = "airbyte_cdk-6.9.0-py3-none-any.whl", hash = "sha256:b4545779b69f78725b17ec000d306aa762b060d170b3292dc568e136f86288b2"},
+    {file = "airbyte_cdk-6.9.0.tar.gz", hash = "sha256:b7e745be6f9246dbd80bf44ef46beebcebba9d481e5884c2b57010871066511d"},
 ]
 
 [package.dependencies]
@@ -46,7 +46,6 @@ xmltodict = ">=0.13.0,<0.14.0"
 
 [package.extras]
 file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
-sphinx-docs = ["Sphinx (>=4.2,<4.3)", "sphinx-rtd-theme (>=1.0,<1.1)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
 
@@ -2020,4 +2019,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "16193f0f5f2713d7902cec80f853e449d3c91aafc7702ddc488870328ce5d8b1"
+content-hash = "f574598eb867859296c6c6457f8c3d8aafc6ec4e04f9dd84004ccf7e11960b38"
