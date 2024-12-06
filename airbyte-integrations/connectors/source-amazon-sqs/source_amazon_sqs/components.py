@@ -9,6 +9,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Mapping, Union
 from urllib.parse import urlparse
+
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -43,7 +44,7 @@ class CustomAuthenticator(NoAuth):
         self.headers = {
             "Content-Type": "application/x-amz-json-1.0",
             "Host": f"sqs.{self._region}.amazonaws.com",
-            "X-Amz-Target": f"AmazonSQS.{self._target}"
+            "X-Amz-Target": f"AmazonSQS.{self._target}",
         }
 
         payload = {
@@ -94,13 +95,13 @@ class CustomAuthenticator(NoAuth):
         amz_date = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
         date_stamp = datetime.datetime.utcnow().strftime("%Y%m%d")
 
-        # Canonical URI 
+        # Canonical URI
         parsed_url = urlparse(url)
         canonical_uri = parsed_url.path or "/"
 
         # Prepare payload
         payload_str = json.dumps(payload)
-        payload_hash = hashlib.sha256(payload_str.encode('utf-8')).hexdigest()
+        payload_hash = hashlib.sha256(payload_str.encode("utf-8")).hexdigest()
 
         # Canonical headers (sorted by lowercase header name)
         sorted_headers = sorted(headers.items(), key=lambda x: x[0].lower())
@@ -109,28 +110,25 @@ class CustomAuthenticator(NoAuth):
 
         # Canonical request
         canonical_request = f"{method}\n{canonical_uri}\n\n{canonical_headers}\n{signed_headers}\n{payload_hash}"
-        
+
         # String to sign
         algorithm = "AWS4-HMAC-SHA256"
         credential_scope = f"{date_stamp}/{region}/{service}/aws4_request"
         string_to_sign = f"{algorithm}\n{amz_date}\n{credential_scope}\n{hashlib.sha256(canonical_request.encode('utf-8')).hexdigest()}"
 
         # Signing key generation
-        k_secret = ("AWS4" + aws_secret_key).encode('utf-8')
-        k_date = hmac.new(k_secret, date_stamp.encode('utf-8'), hashlib.sha256).digest()
-        k_region = hmac.new(k_date, region.encode('utf-8'), hashlib.sha256).digest()
-        k_service = hmac.new(k_region, service.encode('utf-8'), hashlib.sha256).digest()
+        k_secret = ("AWS4" + aws_secret_key).encode("utf-8")
+        k_date = hmac.new(k_secret, date_stamp.encode("utf-8"), hashlib.sha256).digest()
+        k_region = hmac.new(k_date, region.encode("utf-8"), hashlib.sha256).digest()
+        k_service = hmac.new(k_region, service.encode("utf-8"), hashlib.sha256).digest()
         signing_key = hmac.new(k_service, b"aws4_request", hashlib.sha256).digest()
 
         # Signature
-        signature = hmac.new(signing_key, string_to_sign.encode('utf-8'), hashlib.sha256).hexdigest()
+        signature = hmac.new(signing_key, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
 
         # Authorization header
         authorization_header = (
-            f"{algorithm} "
-            f"Credential={aws_access_key}/{credential_scope}, "
-            f"SignedHeaders={signed_headers}, "
-            f"Signature={signature}"
+            f"{algorithm} " f"Credential={aws_access_key}/{credential_scope}, " f"SignedHeaders={signed_headers}, " f"Signature={signature}"
         )
 
         return authorization_header, amz_date
