@@ -90,8 +90,8 @@ class Helpers(object):
         return [value.formattedValue for value in row_data.values]
 
     @staticmethod
-    def get_first_row(client, spreadsheet_id: str, sheet_name: str) -> List[str]:
-        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1"))
+    def get_first_row(client, spreadsheet_id: str, sheet_name: str, header_row_offset: int = 0) -> List[str]:
+        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!{header_row_offset+1}:{header_row_offset+1}"))
 
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
@@ -140,14 +140,14 @@ class Helpers(object):
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]], names_conversion: bool = False
+        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]], names_conversion: bool = False, header_row_offset: int = 0
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         logger.info(f"Available sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:
-                first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
+                first_row = Helpers.get_first_row(client, spreadsheet_id, sheet, header_row_offset)
                 if names_conversion:
                     first_row = [safe_name_conversion(h) for h in first_row]
                     # When performing names conversion, they won't match what is listed in catalog for the majority of cases,
@@ -224,9 +224,16 @@ class Helpers(object):
             return id_or_url
 
     @staticmethod
-    def check_sheet_is_valid(client, spreadsheet_id: str, sheet_name: str) -> Tuple[bool, str]:
+    def check_sheet_is_valid(client, spreadsheet_id: str, sheet_name: str, header_row_offset: int = 0) -> Tuple[bool, str]:
         try:
-            Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+            Helpers.get_first_row(client, spreadsheet_id, sheet_name, header_row_offset)
             return True, ""
         except Exception as e:
             return False, str(e)
+
+    @staticmethod
+    def get_header_row_offset(config) -> int:
+        if config.get("header_row_offset"):
+            return config["header_row_offset"]
+
+        return 0
