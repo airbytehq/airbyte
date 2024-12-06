@@ -408,44 +408,42 @@ class SnowflakeSqlGenerator(
         // useTryCast: Boolean,
     ): String {
         val projectionColumnsFromRawTable = stream.projectionColumnsFromRawTable(/*useTryCast*/)
-        val typeCastErrorsArray =
-            """
-            |ARRAY_COMPACT(
-            |  ARRAY_CAT(
-            |    CASE WHEN "_airbyte_meta":"changes" IS NOT NULL 
-            |      THEN "_airbyte_meta":"changes" 
-            |      ELSE ARRAY_CONSTRUCT()
-            |    END,
-            |    ARRAY_CONSTRUCT(
-            |${stream.typeCastError(/*useTryCast*/).replaceIndent("      ")}
-            |    )
-            |  )
-            |)
-            |""".trimMargin()
+        // val typeCastErrorsArray =
+        //     """
+        //     |ARRAY_COMPACT(
+        //     |  ARRAY_CAT(
+        //     |    CASE WHEN "_airbyte_meta":"changes" IS NOT NULL
+        //     |      THEN "_airbyte_meta":"changes"
+        //     |      ELSE ARRAY_CONSTRUCT()
+        //     |    END,
+        //     |    ARRAY_CONSTRUCT(
+        //     |${stream.typeCastError(/*useTryCast*/).replaceIndent("      ")}
+        //     |    )
+        //     |  )
+        //     |)
+        //     |""".trimMargin()
 
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
-        val abMetaColumn =
-            """
-            |CASE WHEN "_airbyte_meta" IS NOT NULL 
-            |  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true) 
-            |  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors") 
-            |END AS "_AIRBYTE_META"
-        """.trimMargin()
+        // val abMetaColumn =
+        //     """
+        //     |CASE WHEN "_airbyte_meta" IS NOT NULL
+        //     |  THEN OBJECT_INSERT("_airbyte_meta", 'changes', "_airbyte_cast_errors", true)
+        //     |  ELSE OBJECT_CONSTRUCT('changes', "_airbyte_cast_errors")
+        //     |END AS "_AIRBYTE_META"
+        // """.trimMargin()
 
         if (stream.postImportAction != ImportType.DEDUPE) {
             return """
                 |WITH intermediate_data AS (
                 |  SELECT
-                |${projectionColumnsFromRawTable.replaceIndent("    ")}, 
-                |${typeCastErrorsArray.replaceIndent("    ")} as "_airbyte_cast_errors"
+                |${projectionColumnsFromRawTable.replaceIndent("    ")}
                 |  FROM 
                 |    ${stream.id.rawTableId(QUOTE)}
                 |  WHERE
                 |    ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT.quoted()} IS NULL $extractedAtCondition
                 |)
                 |SELECT 
-                |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("  ")},
-                |${abMetaColumn.replaceIndent("  ")}
+                |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("  ")}
                 |FROM intermediate_data
             """.trimMargin()
         } else {
@@ -467,8 +465,7 @@ class SnowflakeSqlGenerator(
             return """
                 |WITH intermediate_data AS (
                 |  SELECT
-                |${projectionColumnsFromRawTable.replaceIndent("    ")}, 
-                |${typeCastErrorsArray.replaceIndent("    ")} as "_airbyte_cast_errors"
+                |${projectionColumnsFromRawTable.replaceIndent("    ")}
                 |  FROM 
                 |    ${stream.id.rawTableId(QUOTE)}
                 |  WHERE 
@@ -476,7 +473,6 @@ class SnowflakeSqlGenerator(
                 |), new_records AS (
                 |  SELECT
                 |${stream.finalTableColumnsWithoutMeta { "${it.quoted()} as ${it.uppercase().quoted()}" }.replaceIndent("    ")}, 
-                |${abMetaColumn.replaceIndent("    ")},
                 |    row_number() OVER (
                 |      PARTITION BY $pkList ORDER BY $cursorOrderClause "_AIRBYTE_EXTRACTED_AT" DESC
                 |    ) AS row_number
