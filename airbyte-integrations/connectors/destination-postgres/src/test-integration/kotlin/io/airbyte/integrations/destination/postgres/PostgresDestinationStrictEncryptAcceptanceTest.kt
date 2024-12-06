@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel
+import io.airbyte.commons.features.FeatureFlagsWrapper
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
@@ -14,9 +15,11 @@ import org.junit.jupiter.api.Test
 @Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinationAcceptanceTest() {
     private var testDb: PostgresTestDatabase? = null
+    override val isCloudTest: Boolean = true
+
 
     override val imageName: String
-        get() = "airbyte/destination-postgres-strict-encrypt:dev"
+        get() = "airbyte/destination-postgres:dev"
 
     override fun getConfig(): JsonNode {
         return testDb!!

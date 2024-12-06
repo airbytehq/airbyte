@@ -4,14 +4,17 @@
 package io.airbyte.integrations.destination.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.db.factory.DataSourceFactory
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addThrowableForDeinterpolation
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
@@ -19,12 +22,18 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinat
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions
+import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
+import io.airbyte.commons.json.JsonSchemas
+import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.destination.postgres.typing_deduping.*
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -33,9 +42,46 @@ import org.postgresql.util.PSQLException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class PostgresDestination :
+class PostgresDestination(override val featureFlags: FeatureFlags = EnvVariableFeatureFlags()) :
     AbstractJdbcDestination<PostgresState>(DRIVER_CLASS, PostgresSQLNameTransformer()),
     Destination {
+
+    override fun check(config: JsonNode): AirbyteConnectionStatus? {
+        if (
+            (config.has(SshTunnel.TUNNEL_METHOD_KEY) &&
+                config[SshTunnel.TUNNEL_METHOD_KEY].has(SshTunnel.TUNNEL_METHOD_KEY)) &&
+                config[SshTunnel.TUNNEL_METHOD_KEY][SshTunnel.TUNNEL_METHOD_KEY].asText() ==
+                    SshTunnel.TunnelMethod.NO_TUNNEL.name
+        ) {
+            // If no SSH tunnel
+            if (
+                config.has(JdbcUtils.SSL_MODE_KEY) &&
+                    config[JdbcUtils.SSL_MODE_KEY].has(JdbcUtils.SSL_MODE_KEY)
+            ) {
+                if (
+                    setOf(
+                            JdbcSSLConnectionUtils.SslMode.DISABLED,
+                            JdbcSSLConnectionUtils.SslMode.ALLOWED,
+                            JdbcSSLConnectionUtils.SslMode.PREFERRED
+                        )
+                        .contains(
+                            JdbcSSLConnectionUtils.SslMode.bySpec(
+                                    config[JdbcUtils.SSL_MODE_KEY][JdbcUtils.SSL_MODE_KEY].asText()
+                                )
+                                .get()
+                        )
+                ) {
+                    // Fail in case SSL mode is disable, allow or prefer
+                    return AirbyteConnectionStatus()
+                        .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                        .withMessage(
+                            "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full"
+                        )
+                }
+            }
+        }
+        return super.check(config)
+    }
     override fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
     ): DataSourceFactory.DataSourceBuilder {
@@ -203,12 +249,32 @@ class PostgresDestination :
         const val DROP_CASCADE_OPTION = "drop_cascade"
 
         @JvmStatic
-        fun sshWrappedDestination(): Destination {
-            return SshWrappedDestination(
-                PostgresDestination(),
-                JdbcUtils.HOST_LIST_KEY,
-                JdbcUtils.PORT_LIST_KEY
-            )
+        fun sshWrappedDestination(env: FeatureFlags = EnvVariableFeatureFlags()): Destination {
+            val realDestination = PostgresDestination(env)
+            return object :
+                SshWrappedDestination(
+                    realDestination,
+                    JdbcUtils.HOST_LIST_KEY,
+                    JdbcUtils.PORT_LIST_KEY
+                ) {
+                override fun spec(): ConnectorSpecification {
+                    val originalSpec = super.spec()
+                    if (realDestination.isCloudDeployment) {
+                        println("in cloud deployment mode. Editing spec")
+                        val spec: ConnectorSpecification = Jsons.clone(originalSpec)
+                        println(
+                            (spec.connectionSpecification[JsonSchemas.JSON_SCHEMA_PROPERTIES_KEY]
+                                    as ObjectNode)
+                                .get(JdbcUtils.SSL_KEY)
+                        )
+                        (spec.connectionSpecification[JsonSchemas.JSON_SCHEMA_PROPERTIES_KEY]
+                                as ObjectNode)
+                            .remove(JdbcUtils.SSL_KEY)
+                        return spec
+                    }
+                    return originalSpec
+                }
+            }
         }
 
         @Throws(Exception::class)
