@@ -7,6 +7,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 import docker  # type: ignore
+from click import UsageError
 from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, ExecError, Platform, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -55,7 +56,7 @@ class BuildConnectorImagesBase(Step, ABC):
                         exc_info=e,
                     )
                 build_results_per_platform[platform] = connector_container
-            except QueryError as e:
+            except (QueryError, UsageError) as e:
                 return StepResult(
                     step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}"
                 )

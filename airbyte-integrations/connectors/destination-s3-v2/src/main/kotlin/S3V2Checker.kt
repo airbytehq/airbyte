@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import java.nio.file.Paths
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
@@ -25,13 +26,21 @@ class S3V2Checker<T : OutputStream>(private val timeProvider: TimeProvider) :
         runBlocking {
             val s3Client = S3ClientFactory.make(config)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
-            val path = pathFactory.getStagingDirectory(mockStream())
-            val key = path.resolve("_EXAMPLE").toString()
+            val path =
+                if (pathFactory.supportsStaging) {
+                    pathFactory.getStagingDirectory(mockStream())
+                } else {
+                    pathFactory.getFinalDirectory(mockStream())
+                }
+            val key = Paths.get(path, "_EXAMPLE").toString()
             log.info { "Checking if destination can write to $path" }
             var s3Object: S3Object? = null
             val compressor = config.objectStorageCompressionConfiguration.compressor
             try {
-                s3Object = s3Client.streamingUpload(key, compressor) { it.write("""{"data": 1}""") }
+                s3Object =
+                    s3Client.streamingUpload(key, streamProcessor = compressor) {
+                        it.write("""{"data": 1}""")
+                    }
                 val results = s3Client.list(path.toString()).toList()
                 if (results.isEmpty() || results.find { it.key == key } == null) {
                     throw IllegalStateException("Failed to write to S3 bucket")
