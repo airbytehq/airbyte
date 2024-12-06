@@ -87,7 +87,7 @@ class AirbyteMessageDeserializer(
             // object. Having this data stored as a string is slightly more optimal for the memory
             // usage.
             partial.data = listOf(
-                transformedData.first!!.get("added_to_cart_at").toString(),
+                transformedData.first!!.get("added_to_cart_at").toString().replace("T", " "). replace("+00:00", ""),
                 transformedData.first!!.get("created_at").toString().replace("T", " "). replace("+00:00", ""),
                 transformedData.first!!.get("id").toString(),
                 transformedData.first!!.get("product_id").toString(),
