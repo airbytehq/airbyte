@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Mapping
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -14,13 +14,17 @@ DEFAULT_COUNT = 1_000
 
 
 class SourceFaker(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+    ) -> tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
         else:
             return False, "Count option is missing"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
         seed: int = config["seed"] if "seed" in config else None
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
