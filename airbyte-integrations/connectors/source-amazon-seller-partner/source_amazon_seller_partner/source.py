@@ -87,7 +87,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             client_secret=config.get("lwa_client_secret"),
             refresh_token=config.get("refresh_token"),
             host=endpoint.replace("https://", ""),
-            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         start_date = config.get("replication_start_date")

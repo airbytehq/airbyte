@@ -234,13 +234,13 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self.period_in_days = min(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work
         self._report_options = report_options
         self._http_method = "GET"
-        self._stream_name = stream_name
+        self._name = stream_name
 
         self.wait_to_avoid_fatal_errors = wait_to_avoid_fatal_errors
 
     @property
     def name(self):
-        return self._stream_name
+        return self.name
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -340,7 +340,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         download_report_request = self._create_prepared_request(path=payload.get("url"))
         report = self._send_request(download_report_request, {})
         if "compressionAlgorithm" in payload:
-            return gzip.decompress(reporst.content).decode("iso-8859-1")
+            return gzip.decompress(report.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
 
     def parse_response(
