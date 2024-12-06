@@ -1,0 +1,156 @@
+{"connector_name": "build.gradle", "reason": "not a source"}
+{"connector_name": "destination-amazon-sqs", "reason": "not a source"}
+{"connector_name": "destination-astra", "reason": "not a source"}
+{"connector_name": "destination-aws-datalake", "reason": "not a source"}
+{"connector_name": "destination-azure-blob-storage", "reason": "not a source"}
+{"connector_name": "destination-bigquery", "reason": "not a source"}
+{"connector_name": "destination-bigquery-denormalized", "reason": "not a source"}
+{"connector_name": "destination-bitdotio", "reason": "not a source"}
+{"connector_name": "destination-cassandra", "reason": "not a source"}
+{"connector_name": "destination-chroma", "reason": "not a source"}
+{"connector_name": "destination-clickhouse", "reason": "not a source"}
+{"connector_name": "destination-clickhouse-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-convex", "reason": "not a source"}
+{"connector_name": "destination-csv", "reason": "not a source"}
+{"connector_name": "destination-cumulio", "reason": "not a source"}
+{"connector_name": "destination-databend", "reason": "not a source"}
+{"connector_name": "destination-databricks", "reason": "not a source"}
+{"connector_name": "destination-dev-null", "reason": "not a source"}
+{"connector_name": "destination-doris", "reason": "not a source"}
+{"connector_name": "destination-duckdb", "reason": "not a source"}
+{"connector_name": "destination-dynamodb", "reason": "not a source"}
+{"connector_name": "destination-e2e-test", "reason": "not a source"}
+{"connector_name": "destination-elasticsearch", "reason": "not a source"}
+{"connector_name": "destination-elasticsearch-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-exasol", "reason": "not a source"}
+{"connector_name": "destination-firebolt", "reason": "not a source"}
+{"connector_name": "destination-firestore", "reason": "not a source"}
+{"connector_name": "destination-gcs", "reason": "not a source"}
+{"connector_name": "destination-google-sheets", "reason": "not a source"}
+{"connector_name": "destination-harness", "reason": "not a source"}
+{"connector_name": "destination-heap-analytics", "reason": "not a source"}
+{"connector_name": "destination-iceberg", "reason": "not a source"}
+{"connector_name": "destination-kafka", "reason": "not a source"}
+{"connector_name": "destination-keen", "reason": "not a source"}
+{"connector_name": "destination-kinesis", "reason": "not a source"}
+{"connector_name": "destination-kvdb", "reason": "not a source"}
+{"connector_name": "destination-langchain", "reason": "not a source"}
+{"connector_name": "destination-local-json", "reason": "not a source"}
+{"connector_name": "destination-mariadb-columnstore", "reason": "not a source"}
+{"connector_name": "destination-meilisearch", "reason": "not a source"}
+{"connector_name": "destination-milvus", "reason": "not a source"}
+{"connector_name": "destination-mongodb", "reason": "not a source"}
+{"connector_name": "destination-mongodb-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-mqtt", "reason": "not a source"}
+{"connector_name": "destination-mssql", "reason": "not a source"}
+{"connector_name": "destination-mssql-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-mysql", "reason": "not a source"}
+{"connector_name": "destination-mysql-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-oracle", "reason": "not a source"}
+{"connector_name": "destination-oracle-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-pinecone", "reason": "not a source"}
+{"connector_name": "destination-postgres", "reason": "not a source"}
+{"connector_name": "destination-postgres-rds", "reason": "not a source"}
+{"connector_name": "destination-postgres-strict-encrypt", "reason": "not a source"}
+{"connector_name": "destination-pubsub", "reason": "not a source"}
+{"connector_name": "destination-pulsar", "reason": "not a source"}
+{"connector_name": "destination-qdrant", "reason": "not a source"}
+{"connector_name": "destination-r2", "reason": "not a source"}
+{"connector_name": "destination-rabbitmq", "reason": "not a source"}
+{"connector_name": "destination-redis", "reason": "not a source"}
+{"connector_name": "destination-redpanda", "reason": "not a source"}
+{"connector_name": "destination-redshift", "reason": "not a source"}
+{"connector_name": "destination-rockset", "reason": "not a source"}
+{"connector_name": "destination-s3", "reason": "not a source"}
+{"connector_name": "destination-s3-glue", "reason": "not a source"}
+{"connector_name": "destination-scylla", "reason": "not a source"}
+{"connector_name": "destination-selectdb", "reason": "not a source"}
+{"connector_name": "destination-sftp-json", "reason": "not a source"}
+{"connector_name": "destination-snowflake", "reason": "not a source"}
+{"connector_name": "destination-snowflake-cortex", "reason": "not a source"}
+{"connector_name": "destination-sqlite", "reason": "not a source"}
+{"connector_name": "destination-starburst-galaxy", "reason": "not a source"}
+{"connector_name": "destination-starrocks", "reason": "not a source"}
+{"connector_name": "destination-teradata", "reason": "not a source"}
+{"connector_name": "destination-tidb", "reason": "not a source"}
+{"connector_name": "destination-timeplus", "reason": "not a source"}
+{"connector_name": "destination-typesense", "reason": "not a source"}
+{"connector_name": "destination-vectara", "reason": "not a source"}
+{"connector_name": "destination-vertica", "reason": "not a source"}
+{"connector_name": "destination-weaviate", "reason": "not a source"}
+{"connector_name": "destination-xata", "reason": "not a source"}
+{"connector_name": "destination-yellowbrick", "reason": "not a source"}
+{"connector_name": "destination-yugabytedb", "reason": "not a source"}
+{"connector_name": "source-adjust", "reason": "no secrets"}
+{"connector_name": "source-alt-google-ads", "reason": "metadata.yml not found"}
+{"connector_name": "source-apple-search-ads", "reason": "no secrets"}
+{"connector_name": "source-appstore-singer", "reason": "no secrets"}
+{"connector_name": "source-ashby", "reason": "no secrets"}
+{"connector_name": "source-babelforce", "reason": "no secrets"}
+{"connector_name": "source-bigquery", "reason": "not a python source"}
+{"connector_name": "source-captain-data", "reason": "no secrets"}
+{"connector_name": "source-clazar", "reason": "no secrets"}
+{"connector_name": "source-clickhouse", "reason": "not a python source"}
+{"connector_name": "source-clickhouse-strict-encrypt", "reason": "not a python source"}
+{"connector_name": "source-cockroachdb", "reason": "not a python source"}
+{"connector_name": "source-commcare", "reason": "no secrets"}
+{"connector_name": "source-db2", "reason": "not a python source"}
+{"connector_name": "source-declarative-manifest", "reason": "no secrets"}
+{"connector_name": "source-dv-360", "reason": "no secrets"}
+{"connector_name": "source-dynamodb", "reason": "not a python source"}
+{"connector_name": "source-e2e-test", "reason": "not a python source"}
+{"connector_name": "source-e2e-test-cloud", "reason": "not a python source"}
+{"connector_name": "source-elasticsearch", "reason": "not a python source"}
+{"connector_name": "source-file-secure", "reason": "metadata.yml not found"}
+{"connector_name": "source-firebase-realtime-database", "reason": "no secrets"}
+{"connector_name": "source-flexport", "reason": "no secrets"}
+{"connector_name": "source-gas-price", "reason": "metadata.yml not found"}
+{"connector_name": "source-genesys", "reason": "no secrets"}
+{"connector_name": "source-gocardless", "reason": "no secrets"}
+{"connector_name": "source-goldcast", "reason": "no secrets"}
+{"connector_name": "source-google-ad-manager", "reason": "metadata.yml not found"}
+{"connector_name": "source-holiday-api", "reason": "metadata.yml not found"}
+{"connector_name": "source-kafka", "reason": "not a python source"}
+{"connector_name": "source-kustomer", "reason": "metadata.yml not found"}
+{"connector_name": "source-kustomer-singer", "reason": "no secrets"}
+{"connector_name": "source-mcl-tests", "reason": "metadata.yml not found"}
+{"connector_name": "source-microsoft-dataverse", "reason": "no secrets"}
+{"connector_name": "source-moengage", "reason": "metadata.yml not found"}
+{"connector_name": "source-mongodb-internal-poc", "reason": "metadata.yml not found"}
+{"connector_name": "source-mongodb-strict-encrypt", "reason": "metadata.yml not found"}
+{"connector_name": "source-mongodb-v2", "reason": "not a python source"}
+{"connector_name": "source-mssql", "reason": "not a python source"}
+{"connector_name": "source-mysql", "reason": "not a python source"}
+{"connector_name": "source-mysql-strict-encrypt", "reason": "metadata.yml not found"}
+{"connector_name": "source-netsuite-odbc", "reason": "metadata.yml not found"}
+{"connector_name": "source-nvd", "reason": "metadata.yml not found"}
+{"connector_name": "source-oracle", "reason": "not a python source"}
+{"connector_name": "source-oracle-strict-encrypt", "reason": "not a python source"}
+{"connector_name": "source-oura", "reason": "no secrets"}
+{"connector_name": "source-pardot", "reason": "no secrets"}
+{"connector_name": "source-partnerstack", "reason": "no secrets"}
+{"connector_name": "source-planhat", "reason": "metadata.yml not found"}
+{"connector_name": "source-plausible", "reason": "no secrets"}
+{"connector_name": "source-postgres", "reason": "not a python source"}
+{"connector_name": "source-postgres-strict-encrypt", "reason": "metadata.yml not found"}
+{"connector_name": "source-python-http-tutorial", "reason": "metadata.yml not found"}
+{"connector_name": "source-redshift", "reason": "not a python source"}
+{"connector_name": "source-salesforce-sandbox", "reason": "metadata.yml not found"}
+{"connector_name": "source-sap-fieldgrass", "reason": "metadata.yml not found"}
+{"connector_name": "source-scaffold-java-jdbc", "reason": "not a python source"}
+{"connector_name": "source-sf-marketingcloud-singer", "reason": "metadata.yml not found"}
+{"connector_name": "source-sftp", "reason": "not a python source"}
+{"connector_name": "source-singlestore", "reason": "not a python source"}
+{"connector_name": "source-snowflake", "reason": "not a python source"}
+{"connector_name": "source-stock-ticker-api-tutorial", "reason": "metadata.yml not found"}
+{"connector_name": "source-teradata", "reason": "not a python source"}
+{"connector_name": "source-tidb", "reason": "not a python source"}
+{"connector_name": "source-tplcentral", "reason": "no secrets"}
+{"connector_name": "source-tyntec-sms", "reason": "no secrets"}
+{"connector_name": "source-uk-police", "reason": "metadata.yml not found"}
+{"connector_name": "source-vitally", "reason": "no secrets"}
+{"connector_name": "source-waiteraid", "reason": "no secrets"}
+{"connector_name": "source-workable", "reason": "no secrets"}
+{"connector_name": "source-workramp", "reason": "no secrets"}
+{"connector_name": "source-zoom-singer", "reason": "metadata.yml not found"}
+{"connector_name": "third-party", "reason": "not a source"}
