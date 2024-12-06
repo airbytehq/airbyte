@@ -109,7 +109,14 @@ class SnowflakeStorageOperation(
         |   "${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID}" VARCHAR PRIMARY KEY,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
         |   "${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT}" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-        |   "${JavaBaseConstants.COLUMN_NAME_DATA}" VARIANT,
+        |   "added_to_cart_at" TIMESTAMP WITH TIME ZONE,
+        |   "created_at" TIMESTAMP WITH TIME ZONE,
+        |   "id" INTEGER,
+        |   "product_id" INTEGER,
+        |   "purchased_at" TIMESTAMP WITH TIME ZONE,
+        |   "returned_at" TIMESTAMP WITH TIME ZONE,
+        |   "updated_at" TIMESTAMP WITH TIME ZONE,
+        |   "user_id" INTEGER,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_META}" VARIANT DEFAULT NULL,
         |   "${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}" INTEGER DEFAULT NULL
         |) data_retention_time_in_days = $retentionPeriodDays;
