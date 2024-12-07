@@ -62,10 +62,7 @@ class JdbcSelectQuerier(
             try {
                 conn = jdbcConnectionFactory.get()
                 stmt = conn!!.prepareStatement(q.sql)
-                parameters.fetchSize?.let { fetchSize: Int ->
-                    log.info { "Setting fetchSize to $fetchSize." }
-                    stmt!!.fetchSize = fetchSize
-                }
+                stmt!!.fetchSize = Int.MIN_VALUE
                 var paramIdx = 1
                 for (binding in q.bindings) {
                     log.info { "Setting parameter #$paramIdx to $binding." }
@@ -73,6 +70,10 @@ class JdbcSelectQuerier(
                     paramIdx++
                 }
                 rs = stmt!!.executeQuery()
+                parameters.fetchSize?.let { fetchSize: Int ->
+                    log.info { "Setting fetchSize to $fetchSize." }
+                    rs!!.fetchSize = fetchSize
+                }
             } catch (e: Throwable) {
                 close()
                 throw e

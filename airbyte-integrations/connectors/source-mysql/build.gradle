@@ -13,7 +13,7 @@ airbyteBulkConnector {
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
     implementation 'io.debezium:debezium-connector-mysql'
 
