@@ -1,6 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+
+from functools import wraps
 from typing import Dict
+from unittest.mock import patch
 from urllib.parse import parse_qsl, unquote, urlencode, urlunparse
 
 from airbyte_cdk.test.mock_http import HttpResponse
@@ -12,13 +15,11 @@ def parse_and_transform(parse_result_str: str):
     """
     Parse the input string representation of a HttpRequest transform it into the URL.
     """
-    # Extract the ParseResult portion only
     parse_result_part = parse_result_str.split("ParseResult(", 1)[1].split(")", 1)[0]
 
     # Convert the ParseResult string into a dictionary
     components = eval(f"dict({parse_result_part})")
 
-    # Reconstruct the URL
     url = urlunparse((
         components["scheme"],
         components["netloc"],
@@ -36,28 +37,6 @@ class CustomHttpMocker:
     This is a limited mocker for usage with httplib2.Http.request
     It has a similar interface to airbyte HttpMocker.get() method such than when we move this connector to manifest only with
     a http retriever we will be able to substitute CustomHttpMocker => HttpMocker in out integration testing with minimal changes.
-
-    e.g.
-        def test_any_test(self) -> None:
-            http_mocker = CustomHttpMocker()
-            http_mocker.get(
-                RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-                HttpResponse(json.dumps({}), 200)
-            )
-
-            with patch("httplib2.Http.request", side_effect=http_mocker.mock_request):
-               ... the rest of your implementation
-
-        now when the streams use a http retriever we can test like:
-
-        @HttpMocker()
-        def test_any_test(self, http_mocker: HttpMocker) -> None:
-            http_mocker.get(
-                RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-                HttpResponse(json.dumps({}), 200)
-            )
-
-            ... the rest of your implementation
 
     Note: there is only support for get and post method and url matching ignoring the body but this is enough for the current test set.
     """
@@ -81,3 +60,14 @@ class CustomHttpMocker:
         if not mocked_response:
             raise Exception(f"Mock response not found {uri} {method}")
         return mocked_response
+
+    # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
+    def __call__(self, test_func): # type: ignore
+        @wraps(test_func)
+        def wrapper(*args, **kwargs): # type: ignore  # this is a very generic wrapper that does not need to be typed
+            kwargs["http_mocker"] = self
+
+            with patch("httplib2.Http.request", side_effect=self.mock_request):
+                return test_func(*args, **kwargs)
+
+        return wrapper
