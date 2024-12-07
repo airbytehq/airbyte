@@ -71,7 +71,7 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
             sync_mode=SyncMode.full_refresh
         )
 
-        self._http_mocker.assert_number_of_calls(first_page_request, 2)
+        self._http_mocker.assert_number_of_calls(first_page_request, 1)
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 11
@@ -139,8 +139,6 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
             state=state
         )
 
-        # We call the first page during check availability. And the sync actually starts with a request to the second page
-        self._http_mocker.assert_number_of_calls(first_page_request, 1)
         self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 6
