@@ -5,9 +5,9 @@ from typing import Dict, Optional
 
 import freezegun
 import mock
+from airbyte_cdk.models import Level, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_protocol.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder
@@ -98,7 +98,11 @@ class TestLeadsStream(HubspotTestCase):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
         assert len(output.records) == 0
         assert len(output.trace_messages) > 0
-        assert len(output.errors) > 0
+        errors = []
+        for message in output.logs:
+            if message.log.level == Level.ERROR:
+                errors.append(message)
+        assert len(errors) > 0
 
     @HttpMocker()
     def test_given_500_then_200_when_read_then_return_records(self, http_mocker: HttpMocker):
@@ -131,7 +135,11 @@ class TestLeadsStream(HubspotTestCase):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
         assert len(output.records) == 0
         assert len(output.trace_messages) > 0
-        assert len(output.errors) > 0
+        errors = []
+        for message in output.logs:
+            if message.log.level == Level.ERROR:
+                errors.append(message)
+        assert len(errors) > 0
 
     @HttpMocker()
     def test_given_one_page_when_read_then_get_records_with_flattened_properties(self, http_mocker: HttpMocker):
