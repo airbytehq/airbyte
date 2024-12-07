@@ -73,12 +73,6 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         extra_dependencies_names: Sequence[str],
     ) -> Container:
         """Set up test environment with a directory structure matching local development."""
-        connector_name = self.context.connector.technical_name
-        
-        # Debug logging before setup
-        self.logger.info("=== Pre-Setup Debug ===")
-        self.logger.info(f"Initial container state: {built_connector_container is not None}")
-        self.logger.info("====================")
         
         # First get the environment from the parent class
         test_environment = await super().install_testing_environment(
@@ -87,15 +81,13 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
             test_config_file,
             extra_dependencies_names,
         )
+
+        self.logger.info("=== Poetry Environment Setting Up ===")
+        self.logger.info("Installing Poetry dependencies...")
         
         # Then modify our returned environment
-        test_environment = test_environment.with_exec([
-            "mkdir", "-p", "/airbyte-integrations/connectors"
-        ]).with_exec([
-            "ln", "-s", 
-            "/source-declarative-manifest", 
-            f"/airbyte-integrations/connectors/{connector_name}"
-        ])
+        test_environment = test_environment.with_exec(["poetry", "config", "virtualenvs.create", "false"]).with_exec(["poetry", "install", "--no-root", "--no-interaction", "--no-ansi", "--no-cache"])
+        self.logger.info("Poetry environment setup complete.")
         
         # Debug logging after setup
         self.logger.info("=== Post-Setup Debug ===")
@@ -103,7 +95,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         self.logger.info("====================")
         
         # Set working directory
-        return test_environment.with_workdir(f"/airbyte-integrations/connectors/{connector_name}/unit_tests")
+        return test_environment
 
     async def get_config_file_name_and_file(self) -> Tuple[str, File]:
         """Get the config file name and file to use for pytest.
@@ -135,7 +127,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
     def get_pytest_command(self, test_config_file_name: str) -> List[str]:
         """Get the pytest command to run."""
-        cmd = ["poetry", "run", "pytest", "-s", self.test_directory_name, "-c", test_config_file_name] + self.params_as_cli_options
+        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name] + self.params_as_cli_options
         if self.context.connector.is_using_poetry:
-            return ["poetry", "run", "--no-root"] + cmd
+            return ["poetry", "run"] + cmd
         return cmd
