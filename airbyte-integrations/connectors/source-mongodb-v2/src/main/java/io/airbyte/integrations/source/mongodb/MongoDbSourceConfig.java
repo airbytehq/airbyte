@@ -21,6 +21,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.ENABLE_SSL_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -84,6 +85,11 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   public boolean hasAuthCredentials() {
     return getDatabaseConfig().has(USERNAME_CONFIGURATION_KEY) && getDatabaseConfig().has(PASSWORD_CONFIGURATION_KEY);
   }
+
+  public boolean shouldUseSSL() {
+    return getDatabaseConfig().has(ENABLE_SSL_CONFIGURATION_KEY) ? getDatabaseConfig().get(ENABLE_SSL_CONFIGURATION_KEY).asBoolean() : true;
+  }
+
 
   public Integer getSampleSize() {
     if (rawConfig.has(DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY)) {
