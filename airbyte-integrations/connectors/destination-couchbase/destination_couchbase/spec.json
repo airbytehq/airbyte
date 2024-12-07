@@ -1,0 +1,49 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/couchbase",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Couchbase",
+    "type": "object",
+    "required": ["connection_string", "username", "password", "bucket"],
+    "additionalProperties": true,
+    "properties": {
+      "connection_string": {
+        "title": "Connection String",
+        "type": "string",
+        "description": "Couchbase connection string. For more information, check out our <a href=\"https://docs.airbyte.io/integrations/destinations/couchbase\">docs</a>",
+        "examples": ["couchbase://localhost", "couchbases://cb.example.com"],
+        "order": 0
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "description": "Username to use for authentication to Couchbase.",
+        "order": 1
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Password to use for authentication to Couchbase.",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "bucket": {
+        "title": "Bucket Name",
+        "type": "string",
+        "description": "Name of the Couchbase bucket to use as the destination.",
+        "order": 3
+      },
+      "scope": {
+        "title": "Scope Name",
+        "type": "string",
+        "description": "Name of the scope within the bucket. If not specified, the default scope will be used.",
+        "default": "_default",
+        "order": 4
+      }
+    }
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}
