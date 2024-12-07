@@ -8,6 +8,7 @@ import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.channels.Channel
 
 @Singleton
 @Primary
