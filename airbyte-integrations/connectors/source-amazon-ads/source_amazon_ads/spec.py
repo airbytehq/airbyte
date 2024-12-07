@@ -6,7 +6,7 @@ from enum import Enum
 from typing import List, Optional
 
 from airbyte_cdk.sources.config import BaseConfig
-from pydantic.v1 import Field
+from pydantic.v1 import BaseModel, Field
 
 
 class StateFilterEnum(str, Enum):
@@ -24,6 +24,82 @@ class ReportRecordTypeEnum(str, Enum):
     keywords = "keywords"
     productAds = "productAds"
     targets = "targets"
+
+
+class AsyncReportFilter(BaseModel):
+    field: str = Field()
+    values: List[str] = Field()
+
+
+class CustomReport(BaseModel):
+    name: str = Field(
+        None,
+        description="The Name For Custom Report, Will be used to create report in request to amazon",
+        examples=["2022-10-10", "2022-10-22"],
+        title="Start Date",
+        order=1,
+    )
+    start_date: Optional[date] = Field(
+        None,
+        description="The Start date for collecting reports. The maximum lookback window supported depends on the selection of reportTypeId. Most report types support 95 days as lookback window. Leave Empty to use one from configuration",
+        examples=["2022-10-10", "2022-10-22"],
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        title="Start Date",
+        order=1,
+    )
+    end_date: Optional[date] = Field(
+        None,
+        description="The End date for collecting reports. The maximum lookback window supported depends on the selection of reportTypeId. Most report types support 95 days as lookback window. Leave Empty to use one from configuration",
+        examples=["2022-10-10", "2022-10-22"],
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        title="End Date",
+        order=2,
+    )
+    adProduct: str = Field(
+        title="The advertising product",
+        enum=["SPONSORED_PRODUCTS", "SPONSORED_BRANDS", "SPONSORED_DISPLAY", "SPONSORED_TELEVISION", "DEMAND_SIDE_PLATFORM"],
+    )
+    # TODO: create a lookup to validate as much as possible using data from https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview for each report
+    #  create json schema using base metrics + group_by statements from the link above, so the user can select what to sync from connection setup menu.
+    reportTypeId: str = Field(
+        title="ReportTypeId",
+        description="The identifier of the Report Type to be generated.",
+        enum=[
+            "dspAudience",
+            "dspAudioAndVideo",
+            "dspCampaign",
+            "dspGeo",
+            "dspInventory",
+            "dspProduct",
+            "dspTech",
+            "sbAdGroup",
+            "sbAds",
+            "sbCampaignPlacement",
+            "sbCampaigns",
+            "sbGrossAndInvalids",
+            "sbPurchasedProduct",
+            "sbSearchTerm",
+            "sbTargeting",
+            "sdAdGroup",
+            "sdAdvertisedProduct",
+            "sdCampaigns",
+            "sdGrossAndInvalids",
+            "sdPurchasedProduct",
+            "sdTargeting",
+            "spAdvertisedProduct",
+            "spCampaigns",
+            "spGrossAndInvalids",
+            "spPurchasedProduct",
+            "spSearchTerm",
+            "spTargeting",
+            "stCampaigns",
+            "stTargeting",
+        ],
+    )
+    format: str = Field(default="GZIP_JSON", airbyte_hidden=True)
+    groupBy: List[str] = Field()
+    timeUnit: str = Field(enum=["SUMMARY", "DAILY"])
+    filter: List[AsyncReportFilter] = Field()
 
 
 class SourceAmazonAdsSpec(BaseConfig):
@@ -101,3 +177,4 @@ class SourceAmazonAdsSpec(BaseConfig):
         unique_items=True,
         order=10,
     )
+    custom_reports: Optional[List[CustomReport]] = Field()
