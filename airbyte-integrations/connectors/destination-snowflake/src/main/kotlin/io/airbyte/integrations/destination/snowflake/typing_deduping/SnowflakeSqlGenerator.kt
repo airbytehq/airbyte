@@ -479,7 +479,7 @@ class SnowflakeSqlGenerator(
                 |${abMetaColumn.replaceIndent("    ")},
                 |    row_number() OVER (
                 |      PARTITION BY $pkList ORDER BY $cursorOrderClause "_AIRBYTE_EXTRACTED_AT" DESC
-                |    ) AS row_number
+                |    ) AS _airbyte_row_number
                 |  FROM intermediate_data
                 |)
                 |SELECT 
@@ -487,7 +487,7 @@ class SnowflakeSqlGenerator(
                 |  "_AIRBYTE_META"
                 |FROM 
                 |  new_records
-                |WHERE row_number = 1
+                |WHERE _airbyte_row_number = 1
             """.trimMargin()
         }
     }
@@ -514,11 +514,11 @@ class SnowflakeSqlGenerator(
         |      SELECT 
         |        "_AIRBYTE_RAW_ID", 
         |        row_number() OVER (PARTITION BY $pkList ORDER BY $cursorOrderClause ${airbyteExtractedAtUtcForced("_AIRBYTE_EXTRACTED_AT".quoted())} DESC) 
-        |        as row_number 
+        |        as _airbyte_row_number 
         |      FROM 
         |        $quotedFinalTable
         |    )
-        |    WHERE row_number != 1
+        |    WHERE _airbyte_row_number != 1
         |  );
         |""".trimMargin()
     }
