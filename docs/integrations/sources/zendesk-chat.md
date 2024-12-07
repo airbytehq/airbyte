@@ -83,6 +83,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 1.1.0   | 2024-11-24 | [47319](https://github.com/airbytehq/airbyte/pull/47319) | Migrate to Manifest-only |
 | 1.0.0   | 2024-11-04 | [44898](https://github.com/airbytehq/airbyte/pull/44898) | Migrate to [new base url](https://developer.zendesk.com/api-reference/live-chat/introduction/)                   |
 | 0.3.1   | 2024-06-06 | [39260](https://github.com/airbytehq/airbyte/pull/39260) | [autopull] Upgrade base image to v1.2.2                                                                          |
 | 0.3.0   | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK                                                       |
