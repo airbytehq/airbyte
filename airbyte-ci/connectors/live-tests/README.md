@@ -179,6 +179,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.20.0
+
+Support multiple connection objects in the regression tests suite.
+
 ### 0.19.8
 
 Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
