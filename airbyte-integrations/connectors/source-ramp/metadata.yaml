@@ -1,0 +1,36 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.ramp.com
+      - demo-api.ramp.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-ramp
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0c457abc-21fc-448a-a9a5-3885b36b3861
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-ramp
+  githubIssueLabel: source-ramp
+  icon: ramp.svg
+  license: MIT
+  name: Ramp
+  releaseDate: 2024-08-15
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ramp
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
