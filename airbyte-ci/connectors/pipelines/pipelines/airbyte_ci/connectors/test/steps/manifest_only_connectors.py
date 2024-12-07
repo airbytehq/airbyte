@@ -58,6 +58,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
         ],
     ]
 
+
 class ManifestOnlyConnectorUnitTests(PytestStep):
     """A step to run unit tests for a manifest-only connector"""
 
@@ -73,7 +74,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         extra_dependencies_names: Sequence[str],
     ) -> Container:
         """Set up test environment with a directory structure matching local development."""
-        
+
         # First get the environment from the parent class
         test_environment = await super().install_testing_environment(
             built_connector_container,
@@ -84,22 +85,24 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
         self.logger.info("=== Poetry Environment Setting Up ===")
         self.logger.info("Installing Poetry dependencies...")
-        
+
         # Then modify our returned environment
-        test_environment = test_environment.with_exec(["poetry", "config", "virtualenvs.create", "false"]).with_exec(["poetry", "install", "--no-root", "--no-interaction", "--no-ansi", "--no-cache"])
+        test_environment = test_environment.with_exec(["poetry", "config", "virtualenvs.create", "false"]).with_exec(
+            ["poetry", "install", "--no-root", "--no-interaction", "--no-ansi", "--no-cache"]
+        )
         self.logger.info("Poetry environment setup complete.")
-        
+
         # Debug logging after setup
         self.logger.info("=== Post-Setup Debug ===")
         self.logger.info(f"Final container state: {test_environment is not None}")
         self.logger.info("====================")
-        
+
         # Set working directory
         return test_environment
 
     async def get_config_file_name_and_file(self) -> Tuple[str, File]:
         """Get the config file name and file to use for pytest.
-        
+
         For manifest-only connectors, we first check the unit_tests directory for config files
         before falling back to the parent class's search logic.
         """
@@ -109,7 +112,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         self.logger.info("=== Config File Debug ===")
         self.logger.info(f"Connector directory path: {await connector_dir.entries()}")  # Use .path() to get string representation
         self.logger.info(f"Unit tests directory path: {await unit_tests_dir.entries()}")
-        self.logger.info("====================")     
+        self.logger.info("====================")
 
         try:
             unit_tests_entries = await unit_tests_dir.entries()
