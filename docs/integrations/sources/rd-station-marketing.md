@@ -47,6 +47,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.3.4 | 2024-11-04 | [48161](https://github.com/airbytehq/airbyte/pull/48161) | Update dependencies |
 | 0.3.3 | 2024-10-29 | [47936](https://github.com/airbytehq/airbyte/pull/47936) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47577](https://github.com/airbytehq/airbyte/pull/47577) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
