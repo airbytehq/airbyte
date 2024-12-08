@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import Status
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpResponse
@@ -362,6 +363,42 @@ class GoogleSheetSourceTest(TestCase):
 
         output = read(self._source, self._config, configured_catalog)
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta_2", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_2", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions_2", __file__)), 200)
+        )
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        assert len(output.records) == 5
+        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
+
+        assert output.trace_messages[0].trace.stream_status.status == AirbyteStreamStatus.STARTED
+        assert output.trace_messages[1].trace.stream_status.status == AirbyteStreamStatus.RUNNING
+        assert output.trace_messages[2].trace.stream_status.status == AirbyteStreamStatus.COMPLETE
+
 
     @HttpMocker()
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
