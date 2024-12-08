@@ -1,0 +1,673 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+
+import json
+from copy import deepcopy
+from unittest import TestCase
+from unittest.mock import patch  # patch("time.sleep")
+from unittest.mock import Mock
+
+import pytest
+from airbyte_cdk.models import Status
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
+from airbyte_cdk.utils import AirbyteTracedException
+from source_google_sheets import SourceGoogleSheets
+
+from .custom_http_mocker import CustomHttpMocker as HttpMocker
+from .request_builder import AuthBuilder, RequestBuilder
+from .test_credentials import oauth_credentials, service_account_credentials, service_account_info
+
+_SPREADSHEET_ID = "a_spreadsheet_id"
+
+_STREAM_NAME = "a_stream_name"
+_B_STREAM_NAME = "b_stream_name"
+_C_STREAM_NAME = "c_stream_name"
+
+
+_CONFIG = {
+  "spreadsheet_id": _SPREADSHEET_ID,
+  "credentials": oauth_credentials
+}
+
+_SERVICE_CONFIG = {
+  "spreadsheet_id": _SPREADSHEET_ID,
+  "credentials": service_account_credentials
+}
+
+
+class GoogleSheetSourceTest(TestCase):
+    def setUp(self) -> None:
+        self._config = deepcopy(_CONFIG)
+        self._service_config = deepcopy(_SERVICE_CONFIG)
+        self._source = SourceGoogleSheets()
+
+    @HttpMocker()
+    def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_range", __file__)), 200)
+        )
+
+        connection_status = self._source.check(Mock(), self._config)
+        assert connection_status.status == Status.SUCCEEDED
+
+    def test_given_authentication_error_when_check_then_status_is_failed(self) -> None:
+        del self._config["credentials"]["client_secret"]
+        connection_status = self._source.check(Mock(), self._config)
+        assert connection_status.status == Status.FAILED
+
+    def test_given_service_authentication_error_when_check_then_status_is_failed(self) -> None:
+        wrong_service_account_info = deepcopy(service_account_info)
+        del wrong_service_account_info["client_email"]
+        wrong_service_account_info_encoded = json.dumps(service_account_info).encode("utf-8")
+        wrong_service_account_credentials = {
+            "auth_type": "Service",
+            "service_account_info": wrong_service_account_info_encoded,
+        }
+        connection_status = self._source.check(Mock(), wrong_service_account_credentials)
+        assert connection_status.status == Status.FAILED
+
+    @HttpMocker()
+    def test_invalid_credentials_error_message_when_check(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 200)
+        )
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+
+        assert str(exc_info.value) == (
+            "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
+        )
+
+    @HttpMocker()
+    def test_invalid_link_error_message_when_check(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
+        )
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+        assert str(exc_info.value) == (
+            "Config error: The spreadsheet link is not valid. Enter the URL of the Google spreadsheet you want to sync."
+        )
+
+    def test_check_invalid_creds_json_file(self) -> None:
+        connection_status = self._source.check(Mock(), "")
+        assert "Please use valid credentials json file" in connection_status.message
+        assert connection_status.status == Status.FAILED
+
+    @HttpMocker()
+    def test_check_access_expired(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            self._source.check(Mock(), self._config)
+        assert str(exc_info.value) == (
+            "Config error: "
+        )
+
+    @HttpMocker()
+    def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_wrong_range", __file__)), 200)
+        )
+
+        connection_status = self._source.check(Mock(), self._config)
+        assert connection_status.status == Status.FAILED
+        assert connection_status.message == f'Unable to read the schema of sheet a_stream_name. Error: Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. '
+
+    @HttpMocker()
+    def test_check_duplicated_headers(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_duplicate_headers", __file__)), 200)
+        )
+
+
+        connection_status = self._source.check(Mock(), self._config)
+        assert connection_status.status == Status.FAILED
+        assert connection_status.message == f"The following duplicate headers were found in the following sheets. Please fix them to continue: [sheet:{_STREAM_NAME}, headers:['header1']]"
+
+    @HttpMocker()
+    def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("only_headers_range", __file__)), 200)
+        )
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 1
+        assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
+
+    @HttpMocker()
+    def test_discover_return_expected_schema(self, http_mocker: HttpMocker) -> None:
+        # When we move to manifest only is possible that DynamicSchemaLoader will identify fields like age as integers
+        # and addresses "oneOf": [{"type": ["null", "string"]}, {"type": ["null", "integer"]}] as it has mixed data
+        expected_schemas_properties = {
+            _STREAM_NAME: {'age': {'type': 'string'}, 'name': {'type': 'string'}},
+            _B_STREAM_NAME: {'email': {'type': 'string'}, 'name': {'type': 'string'}},
+            _C_STREAM_NAME: {'address': {'type': 'string'}}
+        }
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 3
+        for current_stream in discovered_catalog.streams:
+            assert current_stream.json_schema["properties"] == expected_schemas_properties[current_stream.name]
+
+    @HttpMocker()
+    def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("names_conversion_range", __file__)), 200)
+        )
+
+        self._config["names_conversion"] = True
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 1
+        assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
+        assert "_1_test" in discovered_catalog.streams[0].json_schema["properties"].keys()
+
+    @HttpMocker()
+    def test_discover_could_not_run_discover(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
+        )
+
+
+        with pytest.raises(Exception) as exc_info, patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 3):
+            self._source.discover(Mock(), self._config)
+        expected_message = (
+            "Could not discover the schema of your spreadsheet. There was an issue with the Google Sheets API."
+            " This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support. Interval Server error."
+        )
+        assert str(exc_info.value) == expected_message
+
+    @HttpMocker()
+    def test_discover_invalid_credentials_error_message(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 200)
+        )
+
+        with pytest.raises(Exception) as exc_info:
+            self._source.discover(Mock(), self._config)
+        expected_message = 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
+        assert str(exc_info.value) == expected_message
+
+    @HttpMocker()
+    def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
+        )
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+
+            self._source.discover(Mock(), self._config)
+        expected_message = (
+            f"The requested Google Sheets spreadsheet with id {_SPREADSHEET_ID} does not exist."
+            " Please ensure the Spreadsheet Link you have set is valid and the spreadsheet exists. If the issue persists, contact support. Requested entity was not found.."
+        )
+        assert str(exc_info.value) == expected_message
+
+    @HttpMocker()
+    def test_discover_403_error(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+
+            self._source.discover(Mock(), self._config)
+        expected_message = (
+            "The authenticated Google Sheets user does not have permissions to view the "
+            f"spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access"
+            " to the Spreadsheet and reauthenticate. If the issue persists, contact support. "
+            "The caller does not have right permissions."
+        )
+        assert str(exc_info.value) == expected_message
+
+    @HttpMocker()
+    def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("no_rows_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("no_rows_range", __file__)), 200)
+        )
+
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 0
+
+    @HttpMocker()
+    def test_given_not_grid_sheet_type_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        # meta data request
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("non_grid_sheet_meta", __file__)), 200)
+        )
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 0
+
+    @HttpMocker()
+    def test_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions", __file__)), 200)
+        )
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        batch_request_ranges = f"{_B_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        batch_request_ranges = f"{_C_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        configured_catalog = (CatalogBuilder().with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).
+                with_json_schema({"properties": {'age': {'type': 'string'}, 'name': {'type': 'string'}}
+                                  })
+        ).with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_B_STREAM_NAME).
+                with_json_schema({"properties": {'email': {'type': 'string'}, 'name': {'type': 'string'}}
+                                  })
+        ).with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_C_STREAM_NAME).
+                with_json_schema({"properties": {'address': {'type': 'string'}}
+                                  })
+        )
+        .build())
+
+        output = read(self._source, self._config, configured_catalog)
+        assert len(output.records) == 9
+
+        assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
+        assert output.state_messages[1].state.stream.stream_descriptor.name == _B_STREAM_NAME
+        assert output.state_messages[2].state.stream.stream_descriptor.name == _C_STREAM_NAME
+
+        airbyte_stream_statuses = [AirbyteStreamStatus.COMPLETE, AirbyteStreamStatus.RUNNING, AirbyteStreamStatus.STARTED]
+        for output_id in range(3):
+            assert output.state_messages[output_id].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+            expected_status = airbyte_stream_statuses.pop()
+            assert output.trace_messages[output_id].trace.stream_status.status == expected_status
+            assert output.trace_messages[output_id + 3].trace.stream_status.status == expected_status
+            assert output.trace_messages[output_id + 6].trace.stream_status.status == expected_status
+
+    @HttpMocker()
+    def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta_2", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_2", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions_2", __file__)), 200)
+        )
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        assert len(output.records) == 5
+        assert output.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
+
+        assert output.trace_messages[0].trace.stream_status.status == AirbyteStreamStatus.STARTED
+        assert output.trace_messages[1].trace.stream_status.status == AirbyteStreamStatus.RUNNING
+        assert output.trace_messages[2].trace.stream_status.status == AirbyteStreamStatus.COMPLETE
+
+
+    @HttpMocker()
+    def test_read_429_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("rate_limit_error", __file__)), 429)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
+            output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account."
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_403_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            f"Stopped syncing process. The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support"
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_500_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
+            output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            "Stopped syncing process. There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support"
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_empty", __file__)), 200)
+        )
+
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        expected_message = (
+            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+        )
+        assert output.errors[0].trace.error.internal_message == expected_message
+
+    @HttpMocker()
+    def test_read_expected_data_on_1_sheet(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_with_unexpected_extra_sheet", __file__)), 200)
+        )
+
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        expected_message = (
+            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+        )
+        assert output.errors[0].trace.error.internal_message == expected_message

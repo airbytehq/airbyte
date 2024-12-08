@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": 429,
+    "message": "Request a higher quota limit",
+    "status": "RATE_LIMIT"
+  }
+}
