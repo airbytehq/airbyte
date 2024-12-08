@@ -24,6 +24,9 @@ from .test_credentials import oauth_credentials, service_account_credentials, se
 _SPREADSHEET_ID = "a_spreadsheet_id"
 
 _STREAM_NAME = "a_stream_name"
+_B_STREAM_NAME = "b_stream_name"
+_C_STREAM_NAME = "c_stream_name"
+
 
 _CONFIG = {
   "spreadsheet_id": _SPREADSHEET_ID,
@@ -197,6 +200,45 @@ class GoogleSheetSourceTest(TestCase):
         assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
 
     @HttpMocker()
+    def test_discover_return_expected_schema(self, http_mocker: HttpMocker) -> None:
+        # When we move to manifest only is possible that DynamicSchemaLoader will identify fields like age as integers
+        # and addresses "oneOf": [{"type": ["null", "string"]}, {"type": ["null", "integer"]}] as it has mixed data
+        expected_schemas_properties = {
+            _STREAM_NAME: {'age': {'type': 'string'}, 'name': {'type': 'string'}},
+            _B_STREAM_NAME: {'email': {'type': 'string'}, 'name': {'type': 'string'}},
+            _C_STREAM_NAME: {'address': {'type': 'string'}}
+        }
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 3
+        for current_stream in discovered_catalog.streams:
+            assert current_stream.json_schema["properties"] == expected_schemas_properties[current_stream.name]
+
+    @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
         # spreadsheet_metadata request
         http_mocker.post(
@@ -363,6 +405,83 @@ class GoogleSheetSourceTest(TestCase):
 
         output = read(self._source, self._config, configured_catalog)
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        batch_request_ranges = f"{_B_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        batch_request_ranges = f"{_C_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range_2", __file__)), 200)
+        )
+
+        configured_catalog = (CatalogBuilder().with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).
+                with_json_schema({"properties": {'age': {'type': 'string'}, 'name': {'type': 'string'}}
+                                  })
+        ).with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_B_STREAM_NAME).
+                with_json_schema({"properties": {'email': {'type': 'string'}, 'name': {'type': 'string'}}
+                                  })
+        ).with_stream(
+            ConfiguredAirbyteStreamBuilder().with_name(_C_STREAM_NAME).
+                with_json_schema({"properties": {'address': {'type': 'string'}}
+                                  })
+        )
+        .build())
+
+        output = read(self._source, self._config, configured_catalog)
+        assert len(output.records) == 9
+
+        assert output.state_messages[0].state.stream.stream_descriptor.name == _STREAM_NAME
+        assert output.state_messages[1].state.stream.stream_descriptor.name == _B_STREAM_NAME
+        assert output.state_messages[2].state.stream.stream_descriptor.name == _C_STREAM_NAME
+
+        airbyte_stream_statuses = [AirbyteStreamStatus.COMPLETE, AirbyteStreamStatus.RUNNING, AirbyteStreamStatus.STARTED]
+        for output_id in range(3):
+            assert output.state_messages[output_id].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+            expected_status = airbyte_stream_statuses.pop()
+            assert output.trace_messages[output_id].trace.stream_status.status == expected_status
+            assert output.trace_messages[output_id + 3].trace.stream_status.status == expected_status
+            assert output.trace_messages[output_id + 6].trace.stream_status.status == expected_status
 
     @HttpMocker()
     def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:

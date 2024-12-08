@@ -35,7 +35,7 @@ def parse_and_transform(parse_result_str: str):
 class CustomHttpMocker:
     """
     This is a limited mocker for usage with httplib2.Http.request
-    It has a similar interface to airbyte HttpMocker.get() method such than when we move this connector to manifest only with
+    It has a similar interface to airbyte HttpMocker such than when we move this connector to manifest only with
     a http retriever we will be able to substitute CustomHttpMocker => HttpMocker in out integration testing with minimal changes.
 
     Note: there is only support for get and post method and url matching ignoring the body but this is enough for the current test set.
