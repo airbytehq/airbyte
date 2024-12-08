@@ -4,6 +4,7 @@
 import json
 from copy import deepcopy
 from unittest import TestCase
+from unittest.mock import patch  # patch("time.sleep")
 from unittest.mock import Mock
 
 import pytest
@@ -32,7 +33,6 @@ _SERVICE_CONFIG = {
   "spreadsheet_id": _SPREADSHEET_ID,
   "credentials": service_account_credentials
 }
-
 
 
 class GoogleSheetSourceTest(TestCase):
@@ -147,10 +147,31 @@ class GoogleSheetSourceTest(TestCase):
             HttpResponse(json.dumps(find_template("check_wrong_range", __file__)), 200)
         )
 
-
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.FAILED
         assert connection_status.message == f'Unable to read the schema of sheet a_stream_name. Error: Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. '
+
+    @HttpMocker()
+    def test_check_duplicated_headers(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("check_duplicate_headers", __file__)), 200)
+        )
+
+
+        connection_status = self._source.check(Mock(), self._config)
+        assert connection_status.status == Status.FAILED
+        assert connection_status.message == f"The following duplicate headers were found in the following sheets. Please fix them to continue: [sheet:{_STREAM_NAME}, headers:['header1']]"
 
     @HttpMocker()
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self, http_mocker: HttpMocker) -> None:
@@ -173,6 +194,66 @@ class GoogleSheetSourceTest(TestCase):
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 1
         assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
+
+    @HttpMocker()
+    def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
+        )
+
+        # range 1:1 (headers)
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("names_conversion_range", __file__)), 200)
+        )
+
+        self._config["names_conversion"] = True
+
+        discovered_catalog = self._source.discover(Mock(), self._config)
+        assert len(discovered_catalog.streams) == 1
+        assert len(discovered_catalog.streams[0].json_schema["properties"]) == 2
+        assert "_1_test" in discovered_catalog.streams[0].json_schema["properties"].keys()
+
+    @HttpMocker()
+    def test_discover_could_not_run_discover(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
+        )
+
+
+        with pytest.raises(Exception) as exc_info, patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 3):
+            self._source.discover(Mock(), self._config)
+        expected_message = (
+            "Could not discover the schema of your spreadsheet. There was an issue with the Google Sheets API."
+            " This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support. Interval Server error."
+        )
+        assert str(exc_info.value) == expected_message
+
+    @HttpMocker()
+    def test_discover_invalid_credentials_error_message(self, http_mocker: HttpMocker) -> None:
+        # spreadsheet_metadata request
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 200)
+        )
+
+        with pytest.raises(Exception) as exc_info:
+            self._source.discover(Mock(), self._config)
+        expected_message = 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
+        assert str(exc_info.value) == expected_message
 
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
@@ -264,7 +345,6 @@ class GoogleSheetSourceTest(TestCase):
             HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
         )
 
-        # discovery response
         http_mocker.get(
             RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
                 f"{_STREAM_NAME}!1:1").with_alt("json").build(),
@@ -278,7 +358,160 @@ class GoogleSheetSourceTest(TestCase):
             RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
             HttpResponse(json.dumps(find_template("read_records_range_with_dimensions", __file__)), 200)
         )
-        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         output = read(self._source, self._config, configured_catalog)
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_read_429_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("rate_limit_error", __file__)), 429)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
+            output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account."
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_403_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            f"Stopped syncing process. The authenticated Google Sheets user does not have permissions to view the spreadsheet with id {_SPREADSHEET_ID}. Please ensure the authenticated user has access to the Spreadsheet and reauthenticate. If the issue persists, contact support"
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_500_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
+        )
+
+        # batch response
+        batch_request_ranges = f"{_STREAM_NAME}!2:202"
+        http_mocker.get(
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
+        )
+        configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
+            output = read(self._source, self._config, configured_catalog)
+
+        expected_message = (
+            "Stopped syncing process. There was an issue with the Google Sheets API. This is usually a temporary issue from Google's side. Please try again. If this issue persists, contact support"
+        )
+        assert output.errors[0].trace.error.message == expected_message
+
+    @HttpMocker()
+    def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_empty", __file__)), 200)
+        )
+
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        expected_message = (
+            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+        )
+        assert output.errors[0].trace.error.internal_message == expected_message
+
+    @HttpMocker()
+    def test_read_expected_data_on_1_sheet(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            AuthBuilder.get_token_endpoint().build(),
+            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
+        )
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
+        )
+
+        http_mocker.get(
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
+                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
+
+            HttpResponse(json.dumps(find_template("read_records_range_with_unexpected_extra_sheet", __file__)), 200)
+        )
+
+        configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
+
+        output = read(self._source, self._config, configured_catalog)
+        expected_message = (
+            f"Unexpected return result: Sheet {_STREAM_NAME} was expected to contain data on exactly 1 sheet. "
+        )
+        assert output.errors[0].trace.error.internal_message == expected_message
