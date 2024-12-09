@@ -413,7 +413,7 @@ spec:
         type: string
       num_workers:
         title: Number of concurrent workers
-        description: Number of concurrent workers to be used in the sync. This number should be set according your Pipedrive subscription plan and its rate limits, which coule be found <a href="https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting">here</a> on Pipedrive Rate limiting page.
+        description: Number of concurrent workers to be used in the sync. This number should be set according to your Pipedrive subscription plan and its rate limits, which coule be found <a href="https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting">here</a> on Pipedrive Rate limiting page.
         type: integer
         default: 10
         minimum: 1
@@ -446,7 +446,7 @@ spec:
 # | Get list of entities       | 20             |
 
 # We assume that airbyte users mostly on Essential plan, so they have 30k(Tokens Daily Budget) * 20(Cost in tokens) requests per day, which should be enough with 10 workers.
-#  If it's not, can increase/decrease the number of workers.
+#  If it's not, users can increase/decrease the number of workers.
 
 #  Max value of workers: 40, Min value of workers: 1, Default: 10.
 
