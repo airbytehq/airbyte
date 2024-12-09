@@ -56,10 +56,6 @@
     "type": {
       "type": ["null", "string"]
     },
-    "sourced_transfers": {
-      "items": {},
-      "type": ["null", "array"]
-    },
     "id": {
       "type": ["null", "string"]
     },

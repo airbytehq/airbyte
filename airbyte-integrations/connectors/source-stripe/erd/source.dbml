@@ -249,7 +249,6 @@ Table "payout_balance_transactions" {
     "net" integer
     "exchange_rate" number
     "type" string
-    "sourced_transfers" array
     "id" string
     "object" string
     "created" integer

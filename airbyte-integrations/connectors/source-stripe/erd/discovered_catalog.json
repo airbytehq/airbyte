@@ -3993,7 +3993,6 @@
           "net": { "type": ["null", "integer"] },
           "exchange_rate": { "type": ["null", "number"] },
           "type": { "type": ["null", "string"] },
-          "sourced_transfers": { "items": {}, "type": ["null", "array"] },
           "id": { "type": ["null", "string"] },
           "object": { "type": ["null", "string"] },
           "created": { "type": ["null", "integer"] },
