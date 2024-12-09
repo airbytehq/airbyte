@@ -74,15 +74,33 @@ def create_job_status_request(shop_name: str, job_id: str) -> HttpRequest:
     )
 
 
+def create_job_cancel_request(shop_name: str, job_id: str) -> HttpRequest:
+    return HttpRequest(
+        url=_create_job_url(shop_name),
+        body=f"""mutation {{
+                bulkOperationCancel(id: "{job_id}") {{
+                    bulkOperation {{
+                        id
+                        status
+                        createdAt
+                    }}
+                    userErrors {{
+                        field
+                        message
+                    }}
+                }}
+            }}"""
+    )
+
 class JobCreationResponseBuilder:
-    def __init__(self) -> None:
+    def __init__(self, job_created_at:str="2024-05-05T02:00:00Z") -> None:
         self._template = {
             "data": {
                 "bulkOperationRunQuery": {
                     "bulkOperation": {
                         "id": "gid://shopify/BulkOperation/0",
                         "status": "CREATED",
-                        "createdAt": "2024-05-05T02:00:00Z"
+                        "createdAt": f"{job_created_at}"
                     },
                     "userErrors": []
                 }
@@ -127,26 +145,39 @@ class JobStatusResponseBuilder:
             }
         }
 
-    def with_running_status(self, bulk_operation_id: str) -> "JobStatusResponseBuilder":
+    def with_running_status(self, bulk_operation_id: str, object_count: str="10") -> "JobStatusResponseBuilder":
         self._template["data"]["node"] = {
           "id": bulk_operation_id,
           "status": "RUNNING",
           "errorCode": None,
           "createdAt": "2024-05-28T18:57:54Z",
-          "objectCount": "10",
+          "objectCount": object_count,
           "fileSize": None,
           "url": None,
           "partialDataUrl": None,
         }
         return self
 
-    def with_completed_status(self, bulk_operation_id: str, job_result_url: str) -> "JobStatusResponseBuilder":
+    def with_completed_status(self, bulk_operation_id: str, job_result_url: str, object_count: str="4") -> "JobStatusResponseBuilder":
         self._template["data"]["node"] = {
             "id": bulk_operation_id,
             "status": "COMPLETED",
             "errorCode": None,
             "createdAt": "2024-05-05T00:45:48Z",
-            "objectCount": "4",
+            "objectCount": object_count,
+            "fileSize": "774",
+            "url": job_result_url,
+            "partialDataUrl": None
+        }
+        return self
+
+    def with_canceled_status(self, bulk_operation_id: str, job_result_url: str, object_count: str="4") -> "JobStatusResponseBuilder":
+        self._template["data"]["node"] = {
+            "id": bulk_operation_id,
+            "status": "CANCELED",
+            "errorCode": None,
+            "createdAt": "2024-05-05T00:45:48Z",
+            "objectCount": object_count,
             "fileSize": "774",
             "url": job_result_url,
             "partialDataUrl": None
@@ -161,16 +192,16 @@ class MetafieldOrdersJobResponseBuilder:
     def __init__(self) -> None:
         self._records = []
 
-    def _any_record(self) -> str:
+    def _any_record(self, updated_at:str="2024-05-05T01:09:50Z") -> str:
         an_id = str(randint(1000000000000, 9999999999999))
         a_parent_id = str(randint(1000000000000, 9999999999999))
         return f"""{{"__typename":"Order","id":"gid:\/\/shopify\/Order\/{a_parent_id}"}}
-{{"__typename":"Metafield","id":"gid:\/\/shopify\/Metafield\/{an_id}","namespace":"my_fields","value":"asdfasdf","key":"purchase_order","description":null,"createdAt":"2023-04-13T12:09:50Z","updatedAt":"2024-05-05T01:09:50Z","type":"single_line_text_field","__parentId":"gid:\/\/shopify\/Order\/{a_parent_id}"}}
+{{"__typename":"Metafield","id":"gid:\/\/shopify\/Metafield\/{an_id}","namespace":"my_fields","value":"asdfasdf","key":"purchase_order","description":null,"createdAt":"2023-04-13T12:09:50Z","updatedAt":"{updated_at}","type":"single_line_text_field","__parentId":"gid:\/\/shopify\/Order\/{a_parent_id}"}}
 """
 
 
-    def with_record(self) -> "MetafieldOrdersJobResponseBuilder":
-        self._records.append(self._any_record())
+    def with_record(self, updated_at:str="2024-05-05T01:09:50Z") -> "MetafieldOrdersJobResponseBuilder":
+        self._records.append(self._any_record(updated_at=updated_at))
         return self
 
     def build(self) -> HttpResponse:

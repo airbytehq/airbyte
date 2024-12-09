@@ -81,7 +81,7 @@ For more details, see our [Namespace documentation](namespaces.md).
 
 ## Sync Mode
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the dstination.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the destination.
 
 Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 

@@ -1,0 +1,2060 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  The OpenAQ API provides open access to global air quality data.
+
+  This connector enables you to fetch data from all the streams listed on their
+  website such as Locations , Sensors , Measurements and much more.
+
+
+  Docs : https://docs.openaq.org/using-the-api/quick-start
+
+check:
+  type: CheckStream
+  stream_names:
+    - instruments
+
+definitions:
+  streams:
+    instruments:
+      type: DeclarativeStream
+      name: instruments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: instruments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instruments"
+    manufacturers:
+      type: DeclarativeStream
+      name: manufacturers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: manufacturers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/manufacturers"
+    manufacturer_instruments:
+      type: DeclarativeStream
+      name: manufacturer_instruments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: manufacturers/{{ stream_partition.manufacturer_id }}/instruments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: manufacturer_id
+              stream:
+                $ref: "#/definitions/streams/manufacturers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/manufacturer_instruments"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.country_ids }}"
+          cursor_field: co_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: countries_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    licenses:
+      type: DeclarativeStream
+      name: licenses
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: licenses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/licenses"
+    license_instrument:
+      type: DeclarativeStream
+      name: license_instrument
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: licenses/{{ stream_partition.licenses_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: licenses_id
+              stream:
+                $ref: "#/definitions/streams/licenses"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/license_instrument"
+    parameters:
+      type: DeclarativeStream
+      name: parameters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: parameters
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/parameters"
+    countries:
+      type: DeclarativeStream
+      name: countries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: countries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/countries"
+    latest_parameters:
+      type: DeclarativeStream
+      name: latest_parameters
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: parameters/{{ stream_partition.parameters_id }}/latest
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parameters_id
+              stream:
+                $ref: "#/definitions/streams/parameters"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/latest_parameters"
+    sensors:
+      type: DeclarativeStream
+      name: sensors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations/{{ stream_partition.location_id }}/sensors
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: location_id
+              stream:
+                $ref: "#/definitions/streams/locations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sensors"
+    providers:
+      type: DeclarativeStream
+      name: providers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: providers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/providers"
+    owners:
+      type: DeclarativeStream
+      name: owners
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: owners
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/owners"
+    location_latest_measure:
+      type: DeclarativeStream
+      name: location_latest_measure
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations/{{ stream_partition.location_id }}/latest
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: location_id
+              stream:
+                $ref: "#/definitions/streams/locations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/location_latest_measure"
+    sensor_measurements:
+      type: DeclarativeStream
+      name: sensor_measurements
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sensors/{{ stream_partition.sensor_id }}/measurements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sensor_id
+              stream:
+                $ref: "#/definitions/streams/sensors"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sensor_measurements"
+    measurements_daily:
+      type: DeclarativeStream
+      name: measurements_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sensors/{{ stream_partition.sensor_id }}/days
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: SUCCESS
+                    http_codes:
+                      - 500
+                    error_message: Internal Server Error
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sensor_id
+              stream:
+                $ref: "#/definitions/streams/sensors"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/measurements_daily"
+    measurements_yearly:
+      type: DeclarativeStream
+      name: measurements_yearly
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sensors/{{ stream_partition.sensor_id }}/years
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sensor_id
+              stream:
+                $ref: "#/definitions/streams/sensors"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/measurements_yearly"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.openaq.org/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/instruments"
+  - $ref: "#/definitions/streams/manufacturers"
+  - $ref: "#/definitions/streams/manufacturer_instruments"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/licenses"
+  - $ref: "#/definitions/streams/license_instrument"
+  - $ref: "#/definitions/streams/parameters"
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/latest_parameters"
+  - $ref: "#/definitions/streams/sensors"
+  - $ref: "#/definitions/streams/providers"
+  - $ref: "#/definitions/streams/owners"
+  - $ref: "#/definitions/streams/location_latest_measure"
+  - $ref: "#/definitions/streams/sensor_measurements"
+  - $ref: "#/definitions/streams/measurements_daily"
+  - $ref: "#/definitions/streams/measurements_yearly"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - country_ids
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      country_ids:
+        type: array
+        description: >-
+          The list of IDs of countries (comma separated) you need the data for,
+          check more: https://docs.openaq.org/resources/countries
+        order: 1
+        title: Countries
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    instruments: true
+    manufacturers: true
+    manufacturer_instruments: true
+    locations: true
+    licenses: true
+    license_instrument: true
+    parameters: true
+    countries: true
+    latest_parameters: true
+    sensors: true
+    providers: true
+    owners: true
+    location_latest_measure: true
+    sensor_measurements: true
+    measurements_daily: true
+    measurements_yearly: true
+  testedStreams:
+    instruments:
+      streamHash: 37ced606dd4d1ee203685c7dfff05e26f1c6fbe0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    manufacturers:
+      streamHash: 758a158a89e8f45543eb8c22c99ea8643ea462ab
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    manufacturer_instruments:
+      streamHash: 1d7607c726b0ca392e558ae0b2244c6696b67a0e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      streamHash: 19ade0d6f041647c45cc191e69b2d4fb6c4a5203
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    licenses:
+      streamHash: 186c2b5653b20ef06c281f6aef755eee7b1c050f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    license_instrument:
+      streamHash: 1ba49590965222df97cb14b486c66eddbffd3253
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    parameters:
+      streamHash: 2957351af4367680bc00dee0b089bb0b44ab51f1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    countries:
+      streamHash: 8d9861715c30528ea96f98e4cb461a87ab3fbef0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    latest_parameters:
+      streamHash: 5c9ed8694a093960cd9fa4a5a5821d4b2ccd9282
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sensors:
+      streamHash: 32b6ebb6a4882b0e0b46b458aa2ad685df21be9e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    providers:
+      streamHash: d4d7e6b2db844501fb3a3a8b004071d0be10c22a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    owners:
+      streamHash: f39546df1a5c47d70a3c98d020dae113f1bcd6f5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    location_latest_measure:
+      streamHash: d55e14b3570d202bb19b85675d5de26b634a8597
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sensor_measurements:
+      streamHash: b1a0f502086b51e638bc82d67731db75b05d2392
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    measurements_daily:
+      streamHash: 1c3febd96e12e486b4a47d61cff3e6b6026a2157
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    measurements_yearly:
+      streamHash: 713432a65dbf7b74fa621638c524aa2c3def25b2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  instruments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      isMonitor:
+        type:
+          - boolean
+          - "null"
+      manufacturer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  manufacturers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      instruments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  manufacturer_instruments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      isMonitor:
+        type:
+          - boolean
+          - "null"
+      manufacturer:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bounds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      datetimeFirst:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      datetimeLast:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      instruments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      isMobile:
+        type:
+          - boolean
+          - "null"
+      isMonitor:
+        type:
+          - boolean
+          - "null"
+      licenses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            attribution:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+            dateFrom:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      locality:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      provider:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      sensors:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            parameter:
+              type:
+                - object
+                - "null"
+              properties:
+                displayName:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                units:
+                  type:
+                    - string
+                    - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  licenses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributionRequired:
+        type:
+          - boolean
+          - "null"
+      commercialUseAllowed:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      modificationAllowed:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      redistributionAllowed:
+        type:
+          - boolean
+          - "null"
+      shareAlikeRequired:
+        type:
+          - boolean
+          - "null"
+      sourceUrl:
+        type:
+          - string
+          - "null"
+  license_instrument:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attributionRequired:
+        type:
+          - boolean
+          - "null"
+      commercialUseAllowed:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modificationAllowed:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      redistributionAllowed:
+        type:
+          - boolean
+          - "null"
+      shareAlikeRequired:
+        type:
+          - boolean
+          - "null"
+      sourceUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  parameters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      units:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      datetimeFirst:
+        type:
+          - string
+          - "null"
+      datetimeLast:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            units:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  latest_parameters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+      datetime:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      locationsId:
+        type:
+          - number
+          - "null"
+      sensorsId:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  sensors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coverage:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          expectedCount:
+            type:
+              - number
+              - "null"
+          expectedInterval:
+            type:
+              - string
+              - "null"
+          observedCount:
+            type:
+              - number
+              - "null"
+          observedInterval:
+            type:
+              - string
+              - "null"
+          percentComplete:
+            type:
+              - number
+              - "null"
+          percentCoverage:
+            type:
+              - number
+              - "null"
+      datetimeFirst:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      datetimeLast:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      latest:
+        type:
+          - object
+          - "null"
+        properties:
+          coordinates:
+            type:
+              - object
+              - "null"
+            properties:
+              latitude:
+                type:
+                  - number
+                  - "null"
+              longitude:
+                type:
+                  - number
+                  - "null"
+          datetime:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          value:
+            type:
+              - number
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parameter:
+        type:
+          - object
+          - "null"
+        properties:
+          displayName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          units:
+            type:
+              - string
+              - "null"
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+  providers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bbox:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          coordinates:
+            type:
+              - array
+              - "null"
+            items:
+              anyOf:
+                - type: number
+                - type: array
+                  items:
+                    type: array
+                    items:
+                      type: number
+      datetimeAdded:
+        type:
+          - string
+          - "null"
+      datetimeFirst:
+        type:
+          - string
+          - "null"
+      datetimeLast:
+        type:
+          - string
+          - "null"
+      entitiesId:
+        type:
+          - number
+          - "null"
+      exportPrefix:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            units:
+              type:
+                - string
+                - "null"
+      sourceName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  owners:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  location_latest_measure:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coordinates:
+        type:
+          - object
+          - "null"
+        properties:
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+      datetime:
+        type:
+          - object
+          - "null"
+        properties:
+          local:
+            type:
+              - string
+              - "null"
+          utc:
+            type:
+              - string
+              - "null"
+      locationsId:
+        type:
+          - number
+          - "null"
+      sensorsId:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  sensor_measurements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coverage:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          expectedCount:
+            type:
+              - number
+              - "null"
+          expectedInterval:
+            type:
+              - string
+              - "null"
+          observedCount:
+            type:
+              - number
+              - "null"
+          observedInterval:
+            type:
+              - string
+              - "null"
+          percentComplete:
+            type:
+              - number
+              - "null"
+          percentCoverage:
+            type:
+              - number
+              - "null"
+      flagInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          hasFlags:
+            type:
+              - boolean
+              - "null"
+      parameter:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          units:
+            type:
+              - string
+              - "null"
+      period:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          interval:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+      value:
+        type:
+          - number
+          - "null"
+  measurements_daily:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coverage:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          expectedCount:
+            type:
+              - number
+              - "null"
+          expectedInterval:
+            type:
+              - string
+              - "null"
+          observedCount:
+            type:
+              - number
+              - "null"
+          observedInterval:
+            type:
+              - string
+              - "null"
+          percentComplete:
+            type:
+              - number
+              - "null"
+          percentCoverage:
+            type:
+              - number
+              - "null"
+      flagInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          hasFlags:
+            type:
+              - boolean
+              - "null"
+      parameter:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          units:
+            type:
+              - string
+              - "null"
+      period:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          interval:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          median:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+          q02:
+            type:
+              - number
+              - "null"
+          q25:
+            type:
+              - number
+              - "null"
+          q75:
+            type:
+              - number
+              - "null"
+          q98:
+            type:
+              - number
+              - "null"
+          sd:
+            type:
+              - number
+              - "null"
+      value:
+        type:
+          - number
+          - "null"
+  measurements_yearly:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      coverage:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          expectedCount:
+            type:
+              - number
+              - "null"
+          expectedInterval:
+            type:
+              - string
+              - "null"
+          observedCount:
+            type:
+              - number
+              - "null"
+          observedInterval:
+            type:
+              - string
+              - "null"
+          percentComplete:
+            type:
+              - number
+              - "null"
+          percentCoverage:
+            type:
+              - number
+              - "null"
+      flagInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          hasFlags:
+            type:
+              - boolean
+              - "null"
+      parameter:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          units:
+            type:
+              - string
+              - "null"
+      period:
+        type:
+          - object
+          - "null"
+        properties:
+          datetimeFrom:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          datetimeTo:
+            type:
+              - object
+              - "null"
+            properties:
+              local:
+                type:
+                  - string
+                  - "null"
+              utc:
+                type:
+                  - string
+                  - "null"
+          interval:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          avg:
+            type:
+              - number
+              - "null"
+          max:
+            type:
+              - number
+              - "null"
+          median:
+            type:
+              - number
+              - "null"
+          min:
+            type:
+              - number
+              - "null"
+          q02:
+            type:
+              - number
+              - "null"
+          q25:
+            type:
+              - number
+              - "null"
+          q75:
+            type:
+              - number
+              - "null"
+          q98:
+            type:
+              - number
+              - "null"
+          sd:
+            type:
+              - number
+              - "null"
+      value:
+        type:
+          - number
+          - "null"

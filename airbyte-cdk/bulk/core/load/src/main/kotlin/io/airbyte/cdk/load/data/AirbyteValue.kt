@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.data
 
+import com.fasterxml.jackson.databind.JsonNode
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -16,11 +18,13 @@ sealed interface AirbyteValue {
     companion object {
         fun from(value: Any?): AirbyteValue =
             when (value) {
+                is AirbyteValue -> value
                 null -> NullValue
                 is String -> StringValue(value)
                 is Boolean -> BooleanValue(value)
                 is Int -> IntegerValue(value.toLong())
                 is Long -> IntegerValue(value)
+                is BigInteger -> IntegerValue(value)
                 is Double -> NumberValue(BigDecimal.valueOf(value))
                 is BigDecimal -> NumberValue(value)
                 is LocalDate -> DateValue(value.toString())
@@ -58,7 +62,8 @@ value class BooleanValue(val value: Boolean) : AirbyteValue, Comparable<BooleanV
 }
 
 @JvmInline
-value class IntegerValue(val value: Long) : AirbyteValue, Comparable<IntegerValue> {
+value class IntegerValue(val value: BigInteger) : AirbyteValue, Comparable<IntegerValue> {
+    constructor(value: Long) : this(BigInteger.valueOf(value))
     override fun compareTo(other: IntegerValue): Int = value.compareTo(other.value)
 }
 
@@ -143,7 +148,7 @@ value class TimeValue(val value: String) : AirbyteValue, Comparable<TimeValue> {
 @JvmInline
 value class ArrayValue(val values: List<AirbyteValue>) : AirbyteValue {
     companion object {
-        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { it as AirbyteValue })
+        fun from(list: List<Any?>): ArrayValue = ArrayValue(list.map { AirbyteValue.from(it) })
     }
 }
 
@@ -155,4 +160,4 @@ value class ObjectValue(val values: LinkedHashMap<String, AirbyteValue>) : Airby
     }
 }
 
-@JvmInline value class UnknownValue(val what: String) : AirbyteValue
+@JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
