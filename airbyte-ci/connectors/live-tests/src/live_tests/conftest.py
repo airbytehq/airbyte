@@ -16,7 +16,7 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
-from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
+from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -170,7 +170,6 @@ def pytest_configure(config: Config) -> None:
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
-            fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
             connector_version=config.stash[stash_keys.CONTROL_VERSION],
             auto_select_connections=config.stash[stash_keys.AUTO_SELECT_CONNECTION],

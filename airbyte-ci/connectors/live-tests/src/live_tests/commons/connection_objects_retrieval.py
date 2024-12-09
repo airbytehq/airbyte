@@ -2,20 +2,19 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
+import textwrap
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
-from connection_retriever.errors import NotPermittedError  # type: ignore
+from connection_retriever.retrieval import TestingCandidate, retrieve_testing_candidates
 from live_tests.commons.models import ConnectionSubset
 from live_tests.commons.utils import build_connection_url
 
 from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
 
-LOGGER = logging.getLogger(__name__)
 console = rich.get_console()
 
 
@@ -96,7 +95,6 @@ def get_connection_objects(
     custom_configured_catalog_path: Optional[Path],
     custom_state_path: Optional[Path],
     retrieval_reason: Optional[str],
-    fail_if_missing_objects: bool = True,
     connector_image: Optional[str] = None,
     connector_version: Optional[str] = None,
     auto_select_connections: bool = False,
@@ -143,12 +141,11 @@ def get_connection_objects(
         if not retrieval_reason:
             raise ValueError("A retrieval reason is required to access the connection objects when passing a connection id.")
 
-        connection_object = _get_connection_objects_from_retrieved_objects(
+        connection_objects = _get_connection_objects_from_retrieved_objects(
             requested_objects,
             retrieval_reason=retrieval_reason,
             source_docker_repository=connector_image,
             source_docker_image_tag=connector_version,
-            prompt_for_connection_selection=False,
             selected_streams=selected_streams,
             connection_id=connection_id,
             custom_config=custom_config,
@@ -159,12 +156,12 @@ def get_connection_objects(
 
     else:
         if auto_select_connections:
-            connection_object = _get_connection_objects_from_retrieved_objects(
+
+            connection_objects = _get_connection_objects_from_retrieved_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
                 source_docker_repository=connector_image,
                 source_docker_image_tag=connector_version,
-                prompt_for_connection_selection=not is_ci,
                 selected_streams=selected_streams,
                 custom_config=custom_config,
                 custom_configured_catalog=custom_configured_catalog,
@@ -174,31 +171,49 @@ def get_connection_objects(
 
         else:
             # We don't make any requests to the connection-retriever; it is expected that config/catalog/state have been provided if needed for the commands being run.
-            connection_object = ConnectionObjects(
-                source_config=custom_config,
-                destination_config=custom_config,
-                catalog=None,
-                configured_catalog=custom_configured_catalog,
-                state=custom_state,
-                workspace_id=None,
-                source_id=None,
-                destination_id=None,
-                connection_id=None,
-                source_docker_image=None,
-            )
+            connection_objects = [
+                ConnectionObjects(
+                    source_config=custom_config,
+                    destination_config=custom_config,
+                    catalog=None,
+                    configured_catalog=custom_configured_catalog,
+                    state=custom_state,
+                    workspace_id=None,
+                    source_id=None,
+                    destination_id=None,
+                    connection_id=None,
+                    source_docker_image=None,
+                )
+            ]
+    if not connection_objects:
+        raise ValueError("No connection objects could be fetched.")
 
-    if fail_if_missing_objects:
-        if not connection_object.source_config and ConnectionObject.SOURCE_CONFIG in requested_objects:
-            raise ValueError("A source config is required to run the command.")
-        if not connection_object.catalog and ConnectionObject.CONFIGURED_CATALOG in requested_objects:
-            raise ValueError("A catalog is required to run the command.")
-        if not connection_object.state and ConnectionObject.STATE in requested_objects:
-            raise ValueError("A state is required to run the command.")
-    # TODO: remove this once the connection-retriever is updated to return multiple connection objects
-    all_connection_objects = [connection_object]
-    all_connection_ids = [connection_object.connection_id for connection_object in all_connection_objects]
+    all_connection_ids = [connection_object.connection_id for connection_object in connection_objects]
     assert len(set(all_connection_ids)) == len(all_connection_ids), "Connection IDs must be unique."
-    return all_connection_objects
+    return connection_objects
+
+
+def _find_best_candidates_subset(candidates: List[TestingCandidate]) -> List[Tuple[TestingCandidate, List[str]]]:
+    """
+    This function reduces the list of candidates to the best subset of candidates.
+    The best subset is the one which maximizes the number of streams tested and minimizes the number of candidates.
+    """
+    candidates_sorted_by_duration = sorted(candidates, key=lambda x: x.last_attempt_duration_in_microseconds)
+
+    tested_streams = set()
+    candidates_and_streams_to_test = []
+
+    for candidate in candidates_sorted_by_duration:
+        candidate_streams_to_test = []
+        for stream in candidate.streams_with_data:
+            # The candidate is selected if one of its streams has not been tested yet
+            if stream not in tested_streams:
+                candidate_streams_to_test.append(stream)
+                tested_streams.add(stream)
+        if candidate_streams_to_test:
+            candidates_and_streams_to_test.append((candidate, candidate_streams_to_test))
+    console.log(f"Selected {len(candidates_and_streams_to_test)} candidates to test {len(tested_streams)} streams.")
+    return candidates_and_streams_to_test
 
 
 def _get_connection_objects_from_retrieved_objects(
@@ -206,7 +221,6 @@ def _get_connection_objects_from_retrieved_objects(
     retrieval_reason: str,
     source_docker_repository: str,
     source_docker_image_tag: str,
-    prompt_for_connection_selection: bool,
     selected_streams: Optional[Set[str]],
     connection_id: Optional[str] = None,
     custom_config: Optional[Dict] = None,
@@ -214,48 +228,78 @@ def _get_connection_objects_from_retrieved_objects(
     custom_state: Optional[Dict] = None,
     connection_subset: ConnectionSubset = ConnectionSubset.SANDBOXES,
 ):
-    LOGGER.info("Retrieving connection objects from the database...")
-    connection_id, retrieved_objects = retrieve_objects(
-        requested_objects,
-        retrieval_reason=retrieval_reason,
-        source_docker_repository=source_docker_repository,
-        source_docker_image_tag=source_docker_image_tag,
-        prompt_for_connection_selection=prompt_for_connection_selection,
-        with_streams=selected_streams,
-        connection_id=connection_id,
-        connection_subset=connection_subset,
+    console.log(
+        textwrap.dedent(
+            """
+        Retrieving connection objects from the database. 
+        We will build a subset of candidates to test. 
+        This subset should minimize the number of candidates and sync duration while maximizing the number of streams tested. 
+        We patch configured catalogs to only test streams once.
+        """
+        )
     )
-
-    retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
-    retrieved_destination_config = parse_config(retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG))
-    retrieved_catalog = parse_catalog(retrieved_objects.get(ConnectionObject.CATALOG))
-    retrieved_configured_catalog = parse_configured_catalog(retrieved_objects.get(ConnectionObject.CONFIGURED_CATALOG), selected_streams)
-    retrieved_state = parse_state(retrieved_objects.get(ConnectionObject.STATE))
-
-    retrieved_source_docker_image = retrieved_objects.get(ConnectionObject.SOURCE_DOCKER_IMAGE)
-    connection_url = build_connection_url(retrieved_objects.get(ConnectionObject.WORKSPACE_ID), connection_id)
-    if retrieved_source_docker_image is None:
-        raise InvalidConnectionError(
-            f"No docker image was found for connection ID {connection_id}. Please double check that the latest job run used version {source_docker_image_tag}. Connection URL: {connection_url}"
+    try:
+        candidates = retrieve_testing_candidates(
+            source_docker_repository=source_docker_repository,
+            source_docker_image_tag=source_docker_image_tag,
+            with_streams=selected_streams,
+            connection_subset=connection_subset,
         )
-    elif retrieved_source_docker_image.split(":")[0] != source_docker_repository:
+    except IndexError:
         raise InvalidConnectionError(
-            f"The provided docker image ({source_docker_repository}) does not match the image for connection ID {connection_id}. Please double check that this connection is using the correct image. Connection URL: {connection_url}"
+            f"No candidates were found for the provided source docker image ({source_docker_repository}:{source_docker_image_tag})."
         )
-    elif retrieved_source_docker_image.split(":")[1] != source_docker_image_tag:
-        raise InvalidConnectionError(
-            f"The provided docker image tag ({source_docker_image_tag}) does not match the image tag for connection ID {connection_id}. Please double check that this connection is using the correct image tag and the latest job ran using this version. Connection URL: {connection_url}"
-        )
+    # If the connection_id is provided, we filter the candidates to only keep the ones with the same connection_id
+    if connection_id:
+        candidates = [candidate for candidate in candidates if candidate.connection_id == connection_id]
 
-    return ConnectionObjects(
-        source_config=custom_config if custom_config else retrieved_source_config,
-        destination_config=custom_config if custom_config else retrieved_destination_config,
-        catalog=retrieved_catalog,
-        configured_catalog=custom_configured_catalog if custom_configured_catalog else retrieved_configured_catalog,
-        state=custom_state if custom_state else retrieved_state,
-        workspace_id=retrieved_objects.get(ConnectionObject.WORKSPACE_ID),
-        source_id=retrieved_objects.get(ConnectionObject.SOURCE_ID),
-        destination_id=retrieved_objects.get(ConnectionObject.DESTINATION_ID),
-        source_docker_image=retrieved_source_docker_image,
-        connection_id=connection_id,
-    )
+    candidates_and_streams_to_tests = _find_best_candidates_subset(candidates)
+
+    all_connection_objects = []
+    for candidate, streams_to_test in candidates_and_streams_to_tests:
+
+        retrieved_objects = retrieve_objects(
+            requested_objects,
+            retrieval_reason=retrieval_reason,
+            source_docker_repository=source_docker_repository,
+            source_docker_image_tag=source_docker_image_tag,
+            connection_id=candidate.connection_id,
+            connection_subset=connection_subset,
+        )
+        retrieved_objects = retrieved_objects[0]
+        retrieved_source_config = parse_config(retrieved_objects.source_config)
+        retrieved_destination_config = parse_config(retrieved_objects.destination_config)
+        retrieved_catalog = parse_catalog(retrieved_objects.catalog)
+        retrieved_configured_catalog = parse_configured_catalog(retrieved_objects.configured_catalog, streams_to_test)
+        retrieved_state = parse_state(retrieved_objects.state)
+
+        retrieved_source_docker_image = retrieved_objects.source_docker_image
+        connection_url = build_connection_url(retrieved_objects.workspace_id, retrieved_objects.connection_id)
+        if retrieved_source_docker_image is None:
+            raise InvalidConnectionError(
+                f"No docker image was found for connection ID {retrieved_objects.connection_id}. Please double check that the latest job run used version {source_docker_image_tag}. Connection URL: {connection_url}"
+            )
+        elif retrieved_source_docker_image.split(":")[0] != source_docker_repository:
+            raise InvalidConnectionError(
+                f"The provided docker image ({source_docker_repository}) does not match the image for connection ID {retrieved_objects.connection_id}. Please double check that this connection is using the correct image. Connection URL: {connection_url}"
+            )
+        elif retrieved_source_docker_image.split(":")[1] != source_docker_image_tag:
+            raise InvalidConnectionError(
+                f"The provided docker image tag ({source_docker_image_tag}) does not match the image tag for connection ID {retrieved_objects.connection_id}. Please double check that this connection is using the correct image tag and the latest job ran using this version. Connection URL: {connection_url}"
+            )
+
+        all_connection_objects.append(
+            ConnectionObjects(
+                source_config=custom_config if custom_config else retrieved_source_config,
+                destination_config=custom_config if custom_config else retrieved_destination_config,
+                catalog=retrieved_catalog,
+                configured_catalog=custom_configured_catalog if custom_configured_catalog else retrieved_configured_catalog,
+                state=custom_state if custom_state else retrieved_state,
+                workspace_id=retrieved_objects.workspace_id,
+                source_id=retrieved_objects.source_id,
+                destination_id=retrieved_objects.destination_id,
+                source_docker_image=retrieved_source_docker_image,
+                connection_id=retrieved_objects.connection_id,
+            )
+        )
+    return all_connection_objects
