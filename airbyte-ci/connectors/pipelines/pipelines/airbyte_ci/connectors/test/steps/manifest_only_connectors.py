@@ -77,14 +77,12 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
         connector_name = self.context.connector.technical_name
         connector_path = f"/airbyte-integrations/connectors/{connector_name}"
-        
+
         # Create a symlink between the local connector's directory and the built container
-        test_environment = (
-            built_connector_container
-            .with_workdir(f"{connector_path}/unit_tests")
-            .with_exec(["ln", "-s", "/source-declarative-manifest", connector_path])
+        test_environment = built_connector_container.with_workdir(f"{connector_path}/unit_tests").with_exec(
+            ["ln", "-s", "/source-declarative-manifest", connector_path]
         )
-        
+
         return await super().install_testing_environment(
             test_environment,
             test_config_file_name,
