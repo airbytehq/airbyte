@@ -60,9 +60,7 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     }
 
     @Test
-    @Disabled(
-        "This is currently hanging forever and we should look into why"
-    )
+    @Disabled("This is currently hanging forever and we should look into why")
     override fun testInterruptedTruncateWithoutPriorData() {
         super.testInterruptedTruncateWithoutPriorData()
     }
