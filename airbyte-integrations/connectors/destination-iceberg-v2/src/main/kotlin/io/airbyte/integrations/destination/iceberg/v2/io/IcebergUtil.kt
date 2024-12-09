@@ -113,7 +113,7 @@ class IcebergUtil {
         synchronized(tableIdentifier.namespace()) {
             if (
                 catalog is SupportsNamespaces &&
-                !catalog.namespaceExists(tableIdentifier.namespace())
+                    !catalog.namespaceExists(tableIdentifier.namespace())
             ) {
                 try {
                     catalog.createNamespace(tableIdentifier.namespace())

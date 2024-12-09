@@ -6,21 +6,7 @@ package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.BooleanValue
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
