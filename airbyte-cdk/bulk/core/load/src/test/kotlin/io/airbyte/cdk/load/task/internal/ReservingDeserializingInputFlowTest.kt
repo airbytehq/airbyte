@@ -6,11 +6,12 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.message.Deserializer
-import io.airbyte.cdk.load.state.MemoryManager
+import io.airbyte.cdk.load.state.ReservationManager
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
 import java.util.stream.Stream
@@ -44,7 +45,7 @@ class ReservingDeserializingInputFlowTest {
         override val config: DestinationConfiguration,
         override val inputStream: InputStream,
         override val deserializer: Deserializer<String>,
-        override val memoryManager: MemoryManager,
+        @Named("memoryManager") override val memoryManager: ReservationManager,
     ) : ReservingDeserializingInputFlow<String>()
 
     @Singleton

@@ -156,6 +156,7 @@ async def test(
             ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            use_cdk_ref=ctx.obj.get("use_cdk_ref"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             docker_hub_username=ctx.obj.get("docker_hub_username"),
