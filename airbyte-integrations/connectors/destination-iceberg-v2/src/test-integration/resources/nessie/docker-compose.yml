@@ -169,7 +169,7 @@ services:
         "--features=token-exchange",
         "--import-realm",
         "--health-enabled=true",
-        "--verbose"
+        "--verbose",
       ]
     healthcheck:
       test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"
