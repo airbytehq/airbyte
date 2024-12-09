@@ -44,11 +44,6 @@ abstract class IcebergV2WriteTest(configContents: String) :
 
 class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
     @Disabled(
         "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
     )
