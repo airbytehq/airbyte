@@ -45,6 +45,9 @@
           "external_variant_id": {
             "type": ["string"]
           },
+          "price": {
+            "type": ["string"]
+          },
           "quantity": {
             "type": ["integer"]
           },
