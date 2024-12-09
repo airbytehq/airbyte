@@ -72,7 +72,7 @@ open class JdbcSelectQuerier(
         var hasNext = false
         var hasLoggedResultsReceived = false
 
-        /** Initialize a connection and readies the resultset. */
+        /** Initializes a connection and readies the resultset. */
         open fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
