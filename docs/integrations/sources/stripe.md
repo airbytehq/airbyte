@@ -110,6 +110,10 @@ The Stripe source connector supports the following streams:
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
+- [Payout Balance Transactions](https://docs.stripe.com/api/balance_transactions/list) \(Incremental\)
+  :::note
+  This stream is built with a call using payout_id from the payout stream (parent) as a parmeter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
+  :::
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
@@ -196,6 +200,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoices`
 - `Payment Intents`
 - `Payouts`
+- `Payout Balance Transactions`
 - `Promotion Codes`
 - `Persons`
 - `Plans`
