@@ -17,7 +17,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -33,19 +36,21 @@ class ObjectStorageStreamLoaderTest {
         mockk(relaxed = true)
 
     private val objectStorageStreamLoader =
-        ObjectStorageStreamLoader(
-            stream,
-            client,
-            compressor,
-            pathFactory,
-            writerFactory,
-            destinationStateManager
+        spyk(
+            ObjectStorageStreamLoader(
+                stream,
+                client,
+                compressor,
+                pathFactory,
+                writerFactory,
+                destinationStateManager
+            )
         )
 
     @Test
     fun `test processFile`() = runTest {
         val fileUrl = "fileUrl"
-        val stagingDirectory = Path.of("stagingDirectory")
+        val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
@@ -54,6 +59,8 @@ class ObjectStorageStreamLoaderTest {
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
         coEvery { destinationStateManager.getState(stream) } returns mockedStateStorage
+        val mockedFile = mockk<File>(relaxed = true)
+        every { objectStorageStreamLoader.createFile(any()) } returns mockedFile
 
         val expectedKey = Path.of(stagingDirectory.toString(), fileUrl).toString()
         val metadata =
@@ -69,7 +76,8 @@ class ObjectStorageStreamLoaderTest {
         coVerify { client.streamingUpload(expectedKey, metadata, compressor, any()) }
         assertEquals(
             mockRemoteObject,
-            (result as ObjectStorageStreamLoader.FinalizedObject<*>).remoteObject
+            (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
         )
+        verify { mockedFile.delete() }
     }
 }

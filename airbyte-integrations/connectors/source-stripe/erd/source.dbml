@@ -68,6 +68,7 @@ Table "customer_balance_transactions" {
     "livemode" boolean
     "metadata" object
     "type" string
+    "updated" integer
 }
 
 Table "events" {
@@ -186,6 +187,7 @@ Table "accounts" {
     "company" object
     "country" string
     "created" integer
+    "updated" integer
     "default_currency" string
     "details_submitted" boolean
     "email" string
@@ -1141,6 +1143,8 @@ Table "invoice_line_items" {
     "discounts" array
     "tax_rates" array
     "tax_amounts" array
+    "created" integer
+    "updated" integer
 }
 
 Table "subscription_items" {
@@ -1167,6 +1171,7 @@ Table "subscription_items" {
     "billing_thresholds" object
     "tax_rates" array
     "price" object
+    "updated" integer
 }
 
 Table "transfer_reversals" {

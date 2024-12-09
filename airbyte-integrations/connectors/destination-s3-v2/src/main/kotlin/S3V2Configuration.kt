@@ -20,7 +20,9 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
@@ -33,11 +35,11 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
-    // Temporary to expose internal config for tuning
-    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration,
-    override val recordBatchSizeBytes: Long = 200L * 1024 * 1024,
-    override val maxMessageQueueMemoryUsageRatio: Double = 0.2,
-    override val estimatedRecordMemoryOverheadRatio: Double = 1.1,
+    // Internal configuration
+    override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
+        ObjectStorageUploadConfiguration(),
+    override val recordBatchSizeBytes: Long,
+    override val numProcessRecordsWorkers: Int = 2
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -49,9 +51,13 @@ data class S3V2Configuration<T : OutputStream>(
     ObjectStorageCompressionConfigurationProvider<T>
 
 @Singleton
-class S3V2ConfigurationFactory :
-    DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
+class S3V2ConfigurationFactory(
+    @Value("\${airbyte.destination.record-batch-size}") private val recordBatchSizeBytes: Long
+) : DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
+    private val log = KotlinLogging.logger {}
+
     override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
+        log.info { "Record batch size override: $recordBatchSizeBytes" }
         return S3V2Configuration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
@@ -59,16 +65,7 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            // Temporary to expose internal config for tuning
-            objectStorageUploadConfiguration =
-                ObjectStorageUploadConfiguration(
-                    pojo.uploadPartSize
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_STREAMING_UPLOAD_PART_SIZE,
-                    pojo.maxConcurrentUploads
-                        ?: ObjectStorageUploadConfiguration.DEFAULT_MAX_NUM_CONCURRENT_UPLOADS
-                ),
-            maxMessageQueueMemoryUsageRatio = pojo.maxMessageQueueMemoryUsageRatio ?: 0.2,
-            estimatedRecordMemoryOverheadRatio = pojo.estimatedRecordMemoryOverheadRatio ?: 1.1
+            recordBatchSizeBytes = recordBatchSizeBytes
         )
     }
 }

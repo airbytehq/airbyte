@@ -129,7 +129,8 @@ class CSVFormatSpecification(
     ObjectStorageCompressionSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-    override val compression: ObjectStorageCompressionSpecification? = NoCompressionSpecification()
+    override val compression: ObjectStorageCompressionSpecification? =
+        GZIPCompressionSpecification()
 }
 
 /** JSONL */
@@ -144,7 +145,8 @@ class JsonFormatSpecification(
     ObjectStorageCompressionSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening? =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-    override val compression: ObjectStorageCompressionSpecification? = NoCompressionSpecification()
+    override val compression: ObjectStorageCompressionSpecification? =
+        GZIPCompressionSpecification()
 }
 
 /** AVRO */

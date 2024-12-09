@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.iceberg.v2.io
 
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
@@ -17,8 +18,13 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -37,11 +43,19 @@ import org.apache.iceberg.nessie.NessieCatalog
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 internal class IcebergUtilTest {
+
+    private lateinit var icebergUtil: IcebergUtil
+
+    @BeforeEach
+    fun setup() {
+        icebergUtil = IcebergUtil()
+    }
 
     @Test
     fun testCreateCatalog() {
@@ -52,7 +66,7 @@ internal class IcebergUtilTest {
                 URI to "http://localhost:19120/api/v1",
                 WAREHOUSE_LOCATION to "s3://test/"
             )
-        val catalog = IcebergUtil.createCatalog(catalogName = catalogName, properties = properties)
+        val catalog = icebergUtil.createCatalog(catalogName = catalogName, properties = properties)
         assertNotNull(catalog)
         assertEquals(catalogName, catalog.name())
         assertEquals(NessieCatalog::class.java, catalog.javaClass)
@@ -78,7 +92,7 @@ internal class IcebergUtilTest {
             every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
         }
         val table =
-            IcebergUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -110,7 +124,7 @@ internal class IcebergUtilTest {
             every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
         }
         val table =
-            IcebergUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -134,7 +148,7 @@ internal class IcebergUtilTest {
             every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns true
         }
         val table =
-            IcebergUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -148,7 +162,7 @@ internal class IcebergUtilTest {
     }
 
     @Test
-    fun testConvertAirbyteRecordToIcebergRecord() {
+    fun testConvertAirbyteRecordToIcebergRecordInsert() {
         val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val airbyteStream =
             DestinationStream(
@@ -184,7 +198,7 @@ internal class IcebergUtilTest {
             )
         val schema = Schema(columns)
         val icebergRecord =
-            IcebergUtil.toRecord(
+            icebergUtil.toRecord(
                 record = airbyteRecord,
                 pipeline = pipeline,
                 tableSchema = schema,
@@ -193,6 +207,106 @@ internal class IcebergUtilTest {
         assertNotNull(icebergRecord)
         assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
         assertEquals(Operation.INSERT, (icebergRecord as RecordWrapper).operation)
+    }
+
+    @Test
+    fun testConvertAirbyteRecordToIcebergRecordDelete() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val airbyteStream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = true),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val airbyteRecord =
+            DestinationRecord(
+                stream = airbyteStream.descriptor,
+                data =
+                    ObjectValue(
+                        linkedMapOf(
+                            "id" to IntegerValue(42L),
+                            "name" to StringValue("John Doe"),
+                            AIRBYTE_CDC_DELETE_COLUMN to TimestampValue("2024-01-01T00:00:00Z"),
+                        )
+                    ),
+                emittedAtMs = System.currentTimeMillis(),
+                meta = DestinationRecord.Meta(),
+                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        val schema = Schema(columns, setOf(1))
+        val icebergRecord =
+            icebergUtil.toRecord(
+                record = airbyteRecord,
+                pipeline = pipeline,
+                tableSchema = schema,
+                stream = airbyteStream
+            )
+        assertNotNull(icebergRecord)
+        assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        assertEquals(Operation.DELETE, (icebergRecord as RecordWrapper).operation)
+    }
+
+    @Test
+    fun testConvertAirbyteRecordToIcebergRecordUpdate() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val airbyteStream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id")),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = false),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val airbyteRecord =
+            DestinationRecord(
+                stream = airbyteStream.descriptor,
+                data =
+                    ObjectValue(
+                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+                    ),
+                emittedAtMs = System.currentTimeMillis(),
+                meta = DestinationRecord.Meta(),
+                serialized = "{\"id\":42, \"name\":\"John Doe\"}"
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        val schema = Schema(columns, setOf(1))
+        val icebergRecord =
+            icebergUtil.toRecord(
+                record = airbyteRecord,
+                pipeline = pipeline,
+                tableSchema = schema,
+                stream = airbyteStream
+            )
+        assertNotNull(icebergRecord)
+        assertEquals(RecordWrapper::class.java, icebergRecord.javaClass)
+        assertEquals(Operation.UPDATE, (icebergRecord as RecordWrapper).operation)
     }
 
     @Test
@@ -229,7 +343,7 @@ internal class IcebergUtilTest {
                 s3BucketConfiguration = s3BucketConfiguration,
             )
         val catalogProperties =
-            IcebergUtil.toCatalogProperties(icebergConfiguration = configuration)
+            icebergUtil.toCatalogProperties(icebergConfiguration = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
         assertEquals(nessieServerUri, catalogProperties[URI])
         assertEquals(warehouseLocation, catalogProperties[WAREHOUSE_LOCATION])
@@ -237,7 +351,6 @@ internal class IcebergUtilTest {
         assertEquals("main", catalogProperties["nessie.ref"])
         assertEquals(awsAccessKey, catalogProperties["s3.access-key-id"])
         assertEquals(awsSecretAccessKey, catalogProperties["s3.secret-access-key"])
-        assertEquals(S3BucketRegion.`us-east-1`.toString(), catalogProperties["s3.region"])
         assertEquals(s3Endpoint, catalogProperties["s3.endpoint"])
         assertEquals("true", catalogProperties["s3.path-style-access"])
         assertEquals("BEARER", catalogProperties["nessie.authentication.type"])
@@ -248,7 +361,7 @@ internal class IcebergUtilTest {
     fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
         val validGenerationId = "ab-generation-id-123-e"
         assertDoesNotThrow {
-            IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
         }
     }
 
@@ -257,7 +370,7 @@ internal class IcebergUtilTest {
         val invalidGenerationId = "invalid-generation-id-123"
         val exception =
             assertThrows<IcebergUtil.InvalidFormatException> {
-                IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -270,7 +383,7 @@ internal class IcebergUtilTest {
         val invalidGenerationId = "ab-generation-id-"
         val exception =
             assertThrows<IcebergUtil.InvalidFormatException> {
-                IcebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -283,7 +396,7 @@ internal class IcebergUtilTest {
         val stream = mockk<DestinationStream>()
         every { stream.generationId } returns 42
         val expectedSuffix = "ab-generation-id-42-e"
-        val result = IcebergUtil.constructGenerationIdSuffix(stream)
+        val result = icebergUtil.constructGenerationIdSuffix(stream)
         assertEquals(expectedSuffix, result)
     }
 
@@ -293,11 +406,72 @@ internal class IcebergUtilTest {
         every { stream.generationId } returns -1
         val exception =
             assertThrows<IllegalArgumentException> {
-                IcebergUtil.constructGenerationIdSuffix(stream)
+                icebergUtil.constructGenerationIdSuffix(stream)
             }
         assertEquals(
             "GenerationId must be non-negative. Provided: ${stream.generationId}",
             exception.message
         )
+    }
+
+    @Test
+    fun testConversionToIcebergSchemaWithMetadataAndPrimaryKey() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val primaryKeys = listOf("id")
+        val stream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = false),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
+        assertEquals(6, schema.columns().size)
+        assertNotNull(schema.findField("id"))
+        assertNotNull(schema.findField("name"))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_RAW_ID))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_EXTRACTED_AT))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_META))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_GENERATION_ID))
+    }
+
+    @Test
+    fun testConversionToIcebergSchemaWithMetadataAndWithoutPrimaryKey() {
+        val streamDescriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val stream =
+            DestinationStream(
+                descriptor = streamDescriptor,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = true),
+                            "name" to FieldType(StringType, nullable = true),
+                        )
+                    ),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+            )
+        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        assertEquals(emptySet<String>(), schema.identifierFieldNames())
+        assertEquals(6, schema.columns().size)
+        assertNotNull(schema.findField("id"))
+        assertNotNull(schema.findField("name"))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_RAW_ID))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_EXTRACTED_AT))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_META))
+        assertNotNull(schema.findField(COLUMN_NAME_AB_GENERATION_ID))
     }
 }

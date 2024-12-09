@@ -13,6 +13,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface SyncResult
 
@@ -79,7 +80,8 @@ class DefaultSyncManager(
         stream: DestinationStream.Descriptor
     ): StreamLoader? {
         val completable = streamLoaders[stream]
-        return completable?.let { if (it.isCompleted) it.await() else null }
+        // `.isCompleted` does not work as expected here.
+        return completable?.let { withTimeoutOrNull(1000L) { it.await() } }
     }
 
     override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {

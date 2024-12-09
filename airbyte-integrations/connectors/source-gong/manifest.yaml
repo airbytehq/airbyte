@@ -58,8 +58,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    error_message_contains: found corresponding to the provided filters
         record_selector:
           type: RecordSelector
           extractor:
@@ -76,6 +82,23 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDateTime
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -198,8 +221,6 @@ definitions:
           http_method: POST
           request_parameters:
             fromDateTime: "{{ config['start_date'] }}"
-          request_body_json:
-            filter: '{"callFromDate": "{{ config["start_date"] }}"}'
         record_selector:
           type: RecordSelector
           extractor:
@@ -221,6 +242,25 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: >-
+          source_declarative_manifest.components.IncrementalSingleBodyFilterCursor
+        cursor_field: reviewTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: filter, reviewFromDate
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -230,8 +270,8 @@ definitions:
     url_base: https://api.gong.io/v2/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config["access_key"] }}'
-      password: '{{ config["access_key_secret"] }}'
+      username: "{{ config[\"access_key\"] }}"
+      password: "{{ config[\"access_key_secret\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/users"
@@ -282,14 +322,16 @@ metadata:
     extensiveCalls: false
     scorecards: false
     answeredScorecards: false
+  yamlComponents:
+    streams:
+      calls:
+        - errorHandler
+        - incrementalSync
+      extensiveCalls:
+        - incrementalSync
+      answeredScorecards:
+        - incrementalSync
   testedStreams:
-    scorecards:
-      streamHash: b4a5aa11ee2cb96554fa359ffec46d50641b0434
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
       hasResponse: true
@@ -297,11 +339,11 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    answeredScorecards:
-      streamHash: 42e030943265c512ecbca24e953416c157210edf
+    calls:
+      streamHash: 6f531846afce0222f244df5390aa7b3e1a534d1d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
+      responsesAreSuccessful: false
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     extensiveCalls:
@@ -311,8 +353,15 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    calls:
-      streamHash: 4152ed041830ae0728cd87629fcc46f5ab42a394
+    scorecards:
+      streamHash: b4a5aa11ee2cb96554fa359ffec46d50641b0434
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    answeredScorecards:
+      streamHash: 42e030943265c512ecbca24e953416c157210edf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true

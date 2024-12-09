@@ -3,7 +3,7 @@
 #
 
 
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import requests
@@ -24,7 +24,7 @@ def test_config():
 
 
 def prepare_config(config: Dict):
-    return SourceZendeskSupport().convert_config2stream_args(config)
+    return SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
 
 
 @pytest.mark.parametrize(
