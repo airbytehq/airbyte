@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 4.3.3
+  dockerImageTag: 4.3.4
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
