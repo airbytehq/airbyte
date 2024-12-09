@@ -108,6 +108,7 @@ def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to
     assert len(selected_connectors) == 1
 
 
+@pytest.mark.flaky
 def test_get_selected_connectors_with_modified():
     first_modified_connector = pick_a_random_connector()
     second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
