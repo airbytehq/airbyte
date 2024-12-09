@@ -1116,8 +1116,8 @@ abstract class BasicFunctionalityIntegrationTest(
                 DestinationRecord(
                     randomizedNamespace,
                     "test_stream",
-                    """{"id": 43, "name": "second_value"}""",
-                    emittedAtMs = 1234,
+                    """{"id": 42, "name": "second_value"}""",
+                    emittedAtMs = 5678L,
                 )
             )
         )
@@ -1131,9 +1131,9 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 5678,
                     generationId = 0,
-                    data = mapOf("id" to 43, "name" to "second_value"),
+                    data = mapOf("id" to 42, "name" to "second_value"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
             ),
