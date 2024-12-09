@@ -5,12 +5,12 @@
 import datetime
 from multiprocessing import current_process
 
-from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale
 
-from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
-from .utils import format_airbyte_time, now_millis
+from airbyte_cdk.models import AirbyteRecordMessage, Type
+from source_faker.models import AirbyteMessageWithCachedJSON
+from source_faker.utils import format_airbyte_time, now_millis
 
 
 class UserGenerator:
@@ -18,7 +18,7 @@ class UserGenerator:
         self.stream_name = stream_name
         self.seed = seed
 
-    def prepare(self):
+    def prepare(self) -> None:
         """
         Note: the instances of the mimesis generators need to be global.
         Yes, they *should* be able to be instance variables on this class, which should only instantiated once-per-worker, but that's not quite the case:
@@ -38,7 +38,7 @@ class UserGenerator:
         address = Address(locale=Locale.EN, seed=seed_with_offset)
         dt = Datetime(seed=seed_with_offset)
 
-    def generate(self, user_id: int):
+    def generate(self, user_id: int) -> AirbyteMessageWithCachedJSON:
         # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
         email_parts = person.email().split("@")
         email = f"{email_parts[0]}+{user_id + 1}@{email_parts[1]}"
@@ -74,5 +74,12 @@ class UserGenerator:
         while not profile["created_at"]:
             profile["created_at"] = format_airbyte_time(dt.datetime())
 
-        record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
-        return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
+        record = AirbyteRecordMessage(
+            stream=self.stream_name,
+            data=profile,
+            emitted_at=now_millis(),
+        )
+        return AirbyteMessageWithCachedJSON(
+            type=Type.RECORD,
+            record=record,
+        )
