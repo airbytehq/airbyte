@@ -52,6 +52,9 @@ class TooManyRequests(Exception):
     """
 
 
+CONFIG_DATE_FORMAT = "YYYY-MM-DD"
+
+
 class ReportStream(BasicAmazonAdsStream, ABC):
     """
     Common base class for report streams
@@ -86,7 +89,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._session.auth = authenticator
         self._report_download_session = self._session
-        self._start_date: Optional[Date] = config.get("start_date")
+        self._start_date: Optional[str] = (
+            pendulum.from_format(config["start_date"], CONFIG_DATE_FORMAT).date() if config.get("start_date") else None
+        )
         self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
@@ -287,7 +292,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         stream_state = stream_state or {}
         no_data = True
 

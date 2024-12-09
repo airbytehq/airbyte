@@ -322,4 +322,98 @@ class StreamManagerTest {
         // Can close now
         Assertions.assertDoesNotThrow(manager::markSucceeded)
     }
+
+    @Test
+    fun testEmptyCompletedStreamYieldsBatchProcessingComplete() {
+        val manager = DefaultStreamManager(stream1)
+        manager.markEndOfStream()
+        Assertions.assertTrue(manager.isBatchProcessingComplete())
+    }
+
+    @Test
+    fun `ranges with the same id conflate to latest state`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range1)
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range2)
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertTrue(manager.areRecordsPersistedUntil(10L), "later state propagates back")
+    }
+
+    @Test
+    fun `ranges with a different id conflate to latest state`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range1)
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "bar"), range2)
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertFalse(
+            manager.areRecordsPersistedUntil(10L),
+            "state does not propagate to other ids"
+        )
+    }
+
+    @Test
+    fun `state does not conflate between id and no id`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = null), range1)
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "bar"), range2)
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertFalse(
+            manager.areRecordsPersistedUntil(10L),
+            "state does not propagate to null ids"
+        )
+    }
+
+    @Test
+    fun `max of newer and older state is always used`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range1)
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range2)
+
+        manager.updateBatchState(batch1)
+        Assertions.assertFalse(manager.areRecordsPersistedUntil(20L), "local < persisted")
+        manager.updateBatchState(batch2)
+        Assertions.assertTrue(
+            manager.areRecordsPersistedUntil(20L),
+            "max of newer and older state is used"
+        )
+    }
+
+    @Test
+    fun `max of older and newer state is always used`() {
+        val manager = DefaultStreamManager(stream1)
+        val range1 = Range.closed(0L, 9L)
+        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE, groupId = "foo"), range1)
+
+        val range2 = Range.closed(10, 19L)
+        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range2)
+        manager.markEndOfStream()
+
+        manager.updateBatchState(batch2)
+        manager.updateBatchState(batch1)
+        Assertions.assertTrue(
+            manager.isBatchProcessingComplete(),
+            "max of older and newer state is used"
+        )
+    }
 }

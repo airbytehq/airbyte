@@ -4,7 +4,7 @@ products: oss-enterprise
 
 # Airbyte Self-Managed Enterprise
 
-[Airbyte Self-Managed Enterprise](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 350+ pre-built connectors, data never leaves your environment, and Self-Managed Enterprise introduces several new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
+[Airbyte Self-Managed Enterprise](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 500+ pre-built connectors, data never leaves your environment, and Self-Managed Enterprise introduces several new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
 
 
 | Feature             | Description                                                                                                            |

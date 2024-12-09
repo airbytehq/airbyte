@@ -1,0 +1,223 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: >-
+  Allows importing any datasets from Hugging Face
+  ([https://huggingface.co/datasets](https://huggingface.co/datasets))
+
+check:
+  type: CheckStream
+  stream_names:
+    - rows
+
+definitions:
+  streams:
+    rows:
+      type: DeclarativeStream
+      name: rows
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /rows?dataset={{ config["dataset_name"] }}&config={{
+            stream_partition.key.split("::")[1] }}&split={{
+            stream_partition.key.split("::")[2] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: length
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: key
+              partition_field: key
+              stream:
+                $ref: "#/definitions/streams/splits"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - config
+              value: "{{ stream_partition.key }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rows"
+    splits:
+      type: DeclarativeStream
+      name: splits
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /splits?dataset={{ config["dataset_name"] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - splits
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ (not config["dataset_splits"] or record.split in
+              config["dataset_splits"]) and (not config["dataset_subsets"] or
+              record.config in config["dataset_subsets"]) }}
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - key
+              value: >-
+                {{ "::".join([record["dataset"], record["config"],
+                record["split"]]) }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/splits"
+  base_requester:
+    type: HttpRequester
+    url_base: https://datasets-server.huggingface.co
+
+streams:
+  - $ref: "#/definitions/streams/rows"
+  - $ref: "#/definitions/streams/splits"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - dataset_name
+    properties:
+      dataset_name:
+        type: string
+        order: 0
+        title: Dataset Name
+      dataset_subsets:
+        type: array
+        description: >-
+          Dataset Subsets to import. Will import all of them if nothing is
+          provided (see
+          https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for
+          more details)
+        order: 1
+        title: Dataset Subsets
+      dataset_splits:
+        type: array
+        description: >-
+          Splits to import. Will import all of them if nothing is provided (see
+          https://huggingface.co/docs/dataset-viewer/en/configs_and_splits for
+          more details)
+        order: 2
+        title: Dataset Splits
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    rows: true
+    splits: true
+  testedStreams:
+    rows:
+      streamHash: 7dbbacc410a5b2e190f31a4699420ede8232f1ac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    splits:
+      streamHash: 6f7caee478d97fb11794d8e47e1f4a276ebd934a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  rows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      config:
+        type:
+          - string
+          - "null"
+      row:
+        type:
+          - object
+          - "null"
+        properties:
+          messages:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                content:
+                  type:
+                    - string
+                    - "null"
+                role:
+                  type:
+                    - string
+                    - "null"
+          tokens:
+            type:
+              - number
+              - "null"
+      row_idx:
+        type:
+          - number
+          - "null"
+      truncated_cells:
+        type:
+          - array
+          - "null"
+  splits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      config:
+        type:
+          - string
+          - "null"
+      dataset:
+        type:
+          - string
+          - "null"
+      key:
+        type:
+          - string
+          - "null"
+      split:
+        type:
+          - string
+          - "null"

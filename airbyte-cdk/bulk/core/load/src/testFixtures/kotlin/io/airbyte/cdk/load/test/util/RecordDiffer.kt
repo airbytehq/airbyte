@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,6 +32,21 @@ class RecordDiffer(
     val primaryKey: List<List<String>> = emptyList(),
     /** The path to the cursor from a record, or null if the stream has no cursor. */
     val cursor: List<String>? = null,
+    /**
+     * Many destinations (e.g. SQL destinations with a JSON column type) can distinguish between a
+     * value being explicitly null, vs being unset. E.g. postgres `"null" :: jsonb` vs `null ::
+     * jsonb`, or plain JSONL files `{"foo": null}` vs `{}`.
+     *
+     * Set this parameter to true for destinations which do not support this distinction (e.g. Avro
+     * files).
+     */
+    val nullEqualsUnset: Boolean = false,
+    /**
+     * Most tests should require the destination to contain an exact list of records. However, some
+     * tests expect a record to be present, but may also expect other unspecified records to exist.
+     * Those tests should set this parameter to true.
+     */
+    val allowUnexpectedRecord: Boolean = false,
 ) {
     private fun extract(data: Map<String, AirbyteValue>, path: List<String>): AirbyteValue {
         return when (path.size) {
@@ -109,8 +126,8 @@ class RecordDiffer(
             expectedRecordIndex < expectedRecordsSorted.size &&
                 actualRecordIndex < actualRecordsSorted.size
         ) {
-            val expectedRecord = expectedRecords[expectedRecordIndex]
-            val actualRecord = actualRecords[actualRecordIndex]
+            val expectedRecord = expectedRecordsSorted[expectedRecordIndex]
+            val actualRecord = actualRecordsSorted[actualRecordIndex]
             val compare = everythingComparator.compare(expectedRecord, actualRecord)
             if (compare == 0) {
                 // These records are the same underlying record
@@ -122,8 +139,10 @@ class RecordDiffer(
                 matches.add(MatchingRecords(expectedRecord, actualRecord = null))
                 expectedRecordIndex++
             } else {
-                // There's an extra actual record
-                matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                if (!allowUnexpectedRecord) {
+                    // There's an extra actual record
+                    matches.add(MatchingRecords(expectedRecord = null, actualRecord))
+                }
                 actualRecordIndex++
             }
         }
@@ -133,9 +152,13 @@ class RecordDiffer(
             matches.add(MatchingRecords(expectedRecords[expectedRecordIndex], actualRecord = null))
             expectedRecordIndex++
         }
-        while (actualRecordIndex < actualRecords.size) {
-            matches.add(MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex]))
-            actualRecordIndex++
+        if (!allowUnexpectedRecord) {
+            while (actualRecordIndex < actualRecords.size) {
+                matches.add(
+                    MatchingRecords(expectedRecord = null, actualRecords[actualRecordIndex])
+                )
+                actualRecordIndex++
+            }
         }
 
         // We've paired up all the records, now find just the ones that are wrong.
@@ -220,17 +243,22 @@ class RecordDiffer(
                 val expectedPresent: Boolean = expectedRecord.data.values.containsKey(key)
                 val actualPresent: Boolean = actualRecord.data.values.containsKey(key)
                 if (expectedPresent && !actualPresent) {
-                    // The expected record contained this key, but the actual record was missing
-                    // this key.
-                    diff.append(
-                        "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
-                    )
+                    if (!nullEqualsUnset || expectedRecord.data.values[key] !is NullValue) {
+                        // The expected record contained this key, but the actual record was missing
+                        // this key.
+                        diff.append(
+                            "$key: Expected ${expectedRecord.data.values[key]}, but was <unset>\n"
+                        )
+                    }
                 } else if (!expectedPresent && actualPresent) {
-                    // The expected record didn't contain this key, but the actual record contained
-                    // this key.
-                    diff.append(
-                        "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
-                    )
+                    if (!nullEqualsUnset || actualRecord.data.values[key] !is NullValue) {
+                        // The expected record didn't contain this key, but the actual record
+                        // contained
+                        // this key.
+                        diff.append(
+                            "$key: Expected <unset>, but was ${actualRecord.data.values[key]}\n"
+                        )
+                    }
                 } else if (expectedPresent && actualPresent) {
                     // The expected and actual records both contain this key.
                     // Compare the values for equality.
@@ -262,6 +290,19 @@ class RecordDiffer(
                 ?: 0)
 
         private fun compare(v1: AirbyteValue, v2: AirbyteValue): Int {
+            if (v1 is UnknownValue) {
+                return compare(
+                    JsonToAirbyteValue().fromJson(v1.value),
+                    v2,
+                )
+            }
+            if (v2 is UnknownValue) {
+                return compare(
+                    v1,
+                    JsonToAirbyteValue().fromJson(v2.value),
+                )
+            }
+
             // when comparing values of different types, just sort by their class name.
             // in theory, we could check for numeric types and handle them smartly...
             // that's a lot of work though
