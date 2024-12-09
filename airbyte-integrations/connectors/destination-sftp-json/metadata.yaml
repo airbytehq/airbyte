@@ -1,11 +1,20 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: destination
   definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-sftp-json
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
   githubIssueLabel: destination-sftp-json
-  icon: sftp.svg
+  icon: icon.svg
   license: MIT
   name: SFTP-JSON
   registryOverrides:
@@ -14,15 +23,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
+  supportLevel: community
   tags:
     - language:python
     - cdk:python
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
 metadataSpecVersion: "1.0"
