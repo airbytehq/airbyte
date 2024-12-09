@@ -344,7 +344,7 @@ data object UserDefinedCursorConfigurationSpecification : IncrementalConfigurati
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using Oracle's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle#getting-started\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class CdcCursorConfigurationSpecification : IncrementalConfigurationSpecification {

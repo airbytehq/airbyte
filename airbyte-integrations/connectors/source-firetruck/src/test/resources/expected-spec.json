@@ -298,7 +298,7 @@
             "title": "Read Changes using Change Data Capture (CDC)",
             "type": "object",
             "additionalProperties": true,
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Oracle's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Oracle's <a href=\"https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle#getting-started\"> change data capture feature</a>. This must be enabled on your database.",
             "properties": {
               "cursor_method": {
                 "type": "string",
