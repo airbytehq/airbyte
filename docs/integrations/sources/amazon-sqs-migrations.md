@@ -1,4 +1,4 @@
-# Amazon Sqs Migration Guide
+# Amazon SQS Migration Guide
 
 ## Upgrading to 1.0.0
 

@@ -22,10 +22,9 @@ data:
   name: Amazon SQS
   releaseDate: 2021-10-27
   releases:
-    isReleaseCandidate: true
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-11-30"
+        upgradeDeadline: "2024-12-30"
         message:
           "The verison migrates the Amazon SQS connector to the low-code
           framework for greater maintainability. !! Important: The management_events
