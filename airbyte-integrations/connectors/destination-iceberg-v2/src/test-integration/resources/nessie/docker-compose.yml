@@ -27,8 +27,7 @@
 #   "nessie.authentication.oauth2.client-secret"=s3cr3t AND
 #   "nessie.authentication.oauth2.issuer-url"="http://127.0.0.1:8080/realms/iceberg/"
 
-version:
-  "3"
+version: "3"
 # This is the file!!!
 services:
   ## IMPORTANT
@@ -170,7 +169,7 @@ services:
         "--features=token-exchange",
         "--import-realm",
         "--health-enabled=true",
-        "--verbose"
+        "--verbose",
       ]
     healthcheck:
       test: "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"
