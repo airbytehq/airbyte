@@ -292,7 +292,6 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_invalid_credentials_error_message(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
         http_mocker.post(
             AuthBuilder.get_token_endpoint().build(),
             HttpResponse(json.dumps(find_template("auth_invalid_client", __file__)), 200)
