@@ -30,6 +30,12 @@ connectionSpecification:
         Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    header_row_offset:
+      type: number
+      title: Header Row Offset
+      description: >-
+        Enter the number of rows to skip before the header row. Example, if the header values are in the second row enter: 1. If left empty we default to 0
+      default: 0
     names_conversion:
       type: boolean
       title: Convert Column Names to SQL-Compliant Format
