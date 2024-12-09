@@ -41,11 +41,11 @@ class DefaultProcessRecordsTask(
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     private val diskManager: ReservationManager,
-    private val fileAggregateQueue: MessageQueue<FileAggregateMessage>,
+    private val inputQueue: MessageQueue<FileAggregateMessage>,
 ) : ProcessRecordsTask {
     private val log = KotlinLogging.logger {}
     override suspend fun execute() {
-        fileAggregateQueue.consume().collect { (streamDescriptor, file) ->
+        inputQueue.consume().collect { (streamDescriptor, file) ->
             log.info { "Fetching stream loader for $streamDescriptor" }
             val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
             log.info { "Processing records from $file for stream $streamDescriptor" }
@@ -104,7 +104,7 @@ class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     @Named("diskManager") private val diskManager: ReservationManager,
-    @Named("fileAggregateQueue") private val fileAggregateQueue: MessageQueue<FileAggregateMessage>
+    @Named("fileAggregateQueue") private val inputQueue: MessageQueue<FileAggregateMessage>
 ) : ProcessRecordsTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
@@ -114,7 +114,7 @@ class DefaultProcessRecordsTaskFactory(
             deserializer,
             syncManager,
             diskManager,
-            fileAggregateQueue,
+            inputQueue,
         )
     }
 }
