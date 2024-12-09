@@ -640,6 +640,8 @@ definitions:
           path: "{{stream_slice['url']}}"
           url_base: ""
           http_method: GET
+        download_extractor:
+          type: ResponseToFileExtractor
       schema_loader:
         type: InlineSchemaLoader
         schema:
