@@ -35,6 +35,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import java.time.Clock
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -95,8 +96,11 @@ class SpillToDiskTaskTest {
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
                 inputQueue.publish(Reserved(value = recordMsg))
 
-                task.execute()
-                coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                val job = launch {
+                    task.execute()
+                    coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                }
+                job.cancel()
             }
 
         @Test
@@ -104,8 +108,11 @@ class SpillToDiskTaskTest {
             val completeMsg = StreamCompleteEvent(0L)
             inputQueue.publish(Reserved(value = completeMsg))
 
-            task.execute()
-            coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+            val job = launch {
+                task.execute()
+                coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+            }
+            job.cancel()
         }
 
         @Test
@@ -130,8 +137,11 @@ class SpillToDiskTaskTest {
                 inputQueue.publish(Reserved(value = recordMsg))
                 inputQueue.publish(Reserved(value = flushMsg))
 
-                task.execute()
-                coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                val job = launch {
+                    task.execute()
+                    coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                }
+                job.cancel()
             }
     }
 
@@ -192,23 +202,26 @@ class SpillToDiskTaskTest {
                 diskManager.remainingCapacityBytes,
             )
 
-            spillToDiskTaskFactory
-                .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
-                .execute()
-            spillToDiskTaskFactory
-                .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
-                .execute()
+            val job = launch {
+                spillToDiskTaskFactory
+                    .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
+                    .execute()
+                spillToDiskTaskFactory
+                    .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
+                    .execute()
 
-            // we have released all memory reservations
-            Assertions.assertEquals(
-                Fixtures.INITIAL_MEMORY_CAPACITY,
-                memoryManager.remainingCapacityBytes,
-            )
-            // we now have equivalent disk reservations
-            Assertions.assertEquals(
-                Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk,
-                diskManager.remainingCapacityBytes,
-            )
+                // we have released all memory reservations
+                Assertions.assertEquals(
+                    Fixtures.INITIAL_MEMORY_CAPACITY,
+                    memoryManager.remainingCapacityBytes,
+                )
+                // we now have equivalent disk reservations
+                Assertions.assertEquals(
+                    Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk,
+                    diskManager.remainingCapacityBytes,
+                )
+            }
+            job.cancel()
         }
 
         inner class MockFlushStrategy : FlushStrategy {
