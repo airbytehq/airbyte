@@ -1,0 +1,394 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Customer",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "accountnumber": {
+              "type": "string"
+            },
+            "acquisitionsource": {
+              "type": "integer"
+            },
+            "alcoholrecipienttype": {
+              "type": "string"
+            },
+            "altemail": {
+              "type": "string"
+            },
+            "altname": {
+              "type": "string"
+            },
+            "altphone": {
+              "type": "string"
+            },
+            "assignedwebsite": {
+              "type": "integer"
+            },
+            "balancesearch": {
+              "type": "number"
+            },
+            "billingratecard": {
+              "type": "integer"
+            },
+            "billingschedule": {
+              "type": "integer"
+            },
+            "billingtransactionform": {
+              "type": "integer"
+            },
+            "billingtransactiontype": {
+              "type": "integer"
+            },
+            "billpay": {
+              "type": "string"
+            },
+            "buyingreason": {
+              "type": "integer"
+            },
+            "buyingtimeframe": {
+              "type": "integer"
+            },
+            "campaignevent": {
+              "type": "integer"
+            },
+            "category": {
+              "type": "integer"
+            },
+            "clickstream": {
+              "type": "string"
+            },
+            "comments": {
+              "type": "string"
+            },
+            "companyname": {
+              "type": "string"
+            },
+            "consolbalancesearch": {
+              "type": "number"
+            },
+            "consoldaysoverduesearch": {
+              "type": "integer"
+            },
+            "consoloverduebalancesearch": {
+              "type": "number"
+            },
+            "consolunbilledorderssearch": {
+              "type": "number"
+            },
+            "contact": {
+              "type": "integer"
+            },
+            "contactlist": {
+              "type": "string"
+            },
+            "creditholdoverride": {
+              "type": "string"
+            },
+            "creditlimit": {
+              "type": "number"
+            },
+            "currency": {
+              "type": "integer"
+            },
+            "custentity_ava_exemptcertno": {
+              "type": "string"
+            },
+            "custentity_date_lsa": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "custentity_link_lsa": {
+              "type": "string"
+            },
+            "custentity_link_name_lsa": {
+              "type": "string"
+            },
+            "dateclosed": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "datecreated": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "defaultallocationstrategy": {
+              "type": "integer"
+            },
+            "defaultbankaccount": {
+              "type": "integer"
+            },
+            "defaultbillingaddress": {
+              "type": "integer"
+            },
+            "defaultorderpriority": {
+              "type": "number"
+            },
+            "defaultshippingaddress": {
+              "type": "integer"
+            },
+            "defaulttaxreg": {
+              "type": "integer"
+            },
+            "draccount": {
+              "type": "integer"
+            },
+            "duplicate": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "emailpreference": {
+              "type": "string"
+            },
+            "emailtransactions": {
+              "type": "string"
+            },
+            "enddate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "entityid": {
+              "type": "string"
+            },
+            "entitynumber": {
+              "type": "integer"
+            },
+            "entitystatus": {
+              "type": "integer"
+            },
+            "entitytitle": {
+              "type": "string"
+            },
+            "estimatedbudget": {
+              "type": "number"
+            },
+            "externalid": {
+              "type": "string"
+            },
+            "fax": {
+              "type": "string"
+            },
+            "faxtransactions": {
+              "type": "string"
+            },
+            "firstname": {
+              "type": "string"
+            },
+            "firstorderdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "firstsaledate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "firstvisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "fxaccount": {
+              "type": "integer"
+            },
+            "giveaccess": {
+              "type": "string"
+            },
+            "globalsubscriptionstatus": {
+              "type": "integer"
+            },
+            "groupinvoices": {
+              "type": "string"
+            },
+            "homephone": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "isautogeneratedrepresentingentity": {
+              "type": "string"
+            },
+            "isbudgetapproved": {
+              "type": "string"
+            },
+            "isinactive": {
+              "type": "string"
+            },
+            "isperson": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "string"
+            },
+            "language": {
+              "type": "integer"
+            },
+            "lastcustomervisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastmodifieddate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastname": {
+              "type": "string"
+            },
+            "lastorderdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastpagevisited": {
+              "type": "string"
+            },
+            "lastsaledate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "lastvisit": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "leadsource": {
+              "type": "integer"
+            },
+            "middlename": {
+              "type": "string"
+            },
+            "mobilephone": {
+              "type": "string"
+            },
+            "mostuseddevice": {
+              "type": "integer"
+            },
+            "negativenumberformat": {
+              "type": "integer"
+            },
+            "numberformat": {
+              "type": "integer"
+            },
+            "oncredithold": {
+              "type": "string"
+            },
+            "overduebalancesearch": {
+              "type": "number"
+            },
+            "parent": {
+              "type": "integer"
+            },
+            "partner": {
+              "type": "integer"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "phoneticname": {
+              "type": "string"
+            },
+            "prefccprocessor": {
+              "type": "integer"
+            },
+            "pricelevel": {
+              "type": "integer"
+            },
+            "printoncheckas": {
+              "type": "string"
+            },
+            "printtransactions": {
+              "type": "string"
+            },
+            "probability": {
+              "type": "number"
+            },
+            "receivablesaccount": {
+              "type": "integer"
+            },
+            "referrer": {
+              "type": "string"
+            },
+            "reminderdays": {
+              "type": "integer"
+            },
+            "representingsubsidiary": {
+              "type": "integer"
+            },
+            "resalenumber": {
+              "type": "string"
+            },
+            "salesreadiness": {
+              "type": "integer"
+            },
+            "salesrep": {
+              "type": "integer"
+            },
+            "salutation": {
+              "type": "string"
+            },
+            "searchstage": {
+              "type": "string"
+            },
+            "shipcomplete": {
+              "type": "string"
+            },
+            "shippingcarrier": {
+              "type": "string"
+            },
+            "shippingitem": {
+              "type": "integer"
+            },
+            "sourcewebsite": {
+              "type": "integer"
+            },
+            "startdate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "terms": {
+              "type": "integer"
+            },
+            "territory": {
+              "type": "integer"
+            },
+            "thirdpartyacct": {
+              "type": "string"
+            },
+            "thirdpartycarrier": {
+              "type": "string"
+            },
+            "thirdpartycountry": {
+              "type": "string"
+            },
+            "thirdpartyzipcode": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "unbilledorderssearch": {
+              "type": "number"
+            },
+            "url": {
+              "type": "string"
+            },
+            "visits": {
+              "type": "integer"
+            },
+            "weblead": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "primary_key": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
