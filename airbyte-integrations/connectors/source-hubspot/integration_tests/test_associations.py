@@ -38,7 +38,7 @@ def configured_catalog(config, source):
 
 
 def test_incremental_read_fetches_associations(config, configured_catalog, source, associations):
-    messages = source.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog), {})
+    messages = source.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.model_validate(configured_catalog), {})
 
     association_found = False
     for message in messages:
