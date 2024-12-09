@@ -27,11 +27,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
