@@ -1,4 +1,4 @@
-version: 1.0.0
+version: 6.7.2
 
 type: DeclarativeSource
 
@@ -17,21 +17,9 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
-          authenticator:
-            type: CustomAuthenticator
-            class_name: source_amazon_sqs.components.CustomAuthenticator
-            access_key: "{{config['access_key']}}"
-            secret_key: "{{config['secret_key']}}"
-            region: "{{config['region']}}"
-            attributes_to_return: "{{config['attributes_to_return']}}"
-            queue_url: "{{config['queue_url']}}"
-            visibility_timeout: "{{config['visibility_timeout']}}"
-            max_wait_time: "{{config['max_wait_time']}}"
-            target: "{{ config['target']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -42,8 +30,8 @@ definitions:
           type: DefaultPaginator
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: MaxNumberOfMessages
+            inject_into: body_json
           pagination_strategy:
             type: PageIncrement
             page_size: "{{ config['max_batch_size'] }}"
@@ -63,6 +51,24 @@ definitions:
             - path:
                 - attributes
               value: "{{ record['MessageAttributes'] or record['Attributes'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/QueueMessages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sqs.{{ config['region'] }}.amazonaws.com
+    authenticator:
+      type: CustomAuthenticator
+      region: "{{config['region']}}"
+      target: "{{ config['target']}}"
+      queue_url: "{{config['queue_url']}}"
+      access_key: "{{config['access_key']}}"
+      class_name: source_amazon_sqs.components.CustomAuthenticator
+      secret_key: "{{config['secret_key']}}"
+      max_wait_time: "{{config['max_wait_time']}}"
+      visibility_timeout: "{{config['visibility_timeout']}}"
+      attributes_to_return: "{{config['attributes_to_return']}}"
 
 streams:
   - $ref: "#/definitions/streams/QueueMessages"
@@ -73,21 +79,22 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - access_key
-      - secret_key
       - queue_url
       - region
+      - access_key
+      - secret_key
       - target
     properties:
       queue_url:
         type: string
+        description: URL of the SQS Queue
         order: 0
         title: Queue URL
         examples:
           - https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue
-        description: URL of the SQS Queue
       region:
         type: string
+        description: AWS Region of the SQS Queue
         enum:
           - af-south-1
           - ap-east-1
@@ -124,67 +131,98 @@ spec:
           - us-west-2
         order: 1
         title: AWS Region
-        default: "us-east-1"
-        description: AWS Region of the SQS Queue
+        default: us-east-1
       max_batch_size:
         type: integer
-        order: 3
+        description: Max amount of messages to get in one batch (10 max)
+        order: 2
         title: Max Batch Size
         default: 10
         examples:
           - 5
-        description: Max amount of messages to get in one batch (10 max)
       max_wait_time:
         type: integer
-        order: 4
-        title: Max Wait Time
-        examples:
-          - 5
-        default: 20
         description: >-
           Max amount of time in seconds to wait for messages in a single poll
           (20 max)
+        order: 3
+        title: Max Wait Time
+        default: 20
+        examples:
+          - 5
       attributes_to_return:
         type: string
-        order: 5
+        description: Comma separated list of Mesage Attribute names to return
+        order: 4
         title: Message Attributes To Return
+        default: All
         examples:
           - attr1,attr2
-        default: "All"
-        description: Comma separated list of Mesage Attribute names to return
       visibility_timeout:
         type: integer
-        order: 6
-        title: Message Visibility Timeout
-        examples:
-          - 20
-        default: 20
         description: >-
           Modify the Visibility Timeout of the individual message from the
           Queue's default (seconds).
+        order: 5
+        title: Message Visibility Timeout
+        default: 20
+        examples:
+          - 20
       access_key:
         type: string
-        order: 7
+        description: The Access Key ID of the AWS IAM Role to use for pulling messages
+        order: 6
         title: AWS IAM Access Key ID
         examples:
           - xxxxxHRNxxx3TBxxxxxx
-        description: The Access Key ID of the AWS IAM Role to use for pulling messages
         airbyte_secret: true
       secret_key:
         type: string
-        order: 8
+        description: The Secret Key of the AWS IAM Role to use for pulling messages
+        order: 7
         title: AWS IAM Secret Key
         examples:
           - hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz
-        description: The Secret Key of the AWS IAM Role to use for pulling messages
         airbyte_secret: true
       target:
         type: string
-        title: The targeted action resource for the fetch
+        description: >-
+          Note - Different targets have different attribute enum requirements,
+          please refer actions sections in
+          https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/Welcome.html
         enum:
           - GetQueueAttributes
           - ReceiveMessage
+        order: 8
+        title: The targeted action resource for the fetch
         default: ReceiveMessage
-        description: Note - Different targets have different attribute enum requirements, please refer actions sections in https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/Welcome.html
-        order: 9
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    QueueMessages: false
+  yamlComponents:
+    streams:
+      QueueMessages:
+        - paginator
+    global:
+      - authenticator
+  testedStreams:
+    QueueMessages:
+      streamHash: e012f0b20f4c20f9b96c4a8aa7ab497a7d35203f
+  assist: {}
+
+schemas:
+  QueueMessages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type: string
+      body:
+        type: string
+      attributes:
+        type:
+          - object
+          - "null"
     additionalProperties: true
