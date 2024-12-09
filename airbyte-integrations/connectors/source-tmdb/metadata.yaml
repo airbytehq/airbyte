@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6240848f-f795-45eb-8f5e-c7542822fc03
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.2.0-rc1
   dockerRepository: airbyte/source-tmdb
   githubIssueLabel: source-tmdb
   icon: tmdb.svg
@@ -18,6 +18,8 @@ data:
     oss:
       enabled: true
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-07-30"
@@ -42,5 +44,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.8.0rc3@sha256:ad76d596aa08a45a9bbc2cc7cc8e003791792f34076ebe8e9192cad4803c7246
 metadataSpecVersion: "1.0"
