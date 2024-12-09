@@ -58,7 +58,7 @@ class SpillToDiskTaskTest {
 
         @MockK(relaxed = true) lateinit var diskManager: ReservationManager
 
-        @MockK(relaxed = true) lateinit var fileAggQueue: MultiProducerChannel<FileAggregateMessage>
+        @MockK(relaxed = true) lateinit var outputQueue: MultiProducerChannel<FileAggregateMessage>
 
         private lateinit var inputQueue: DestinationStreamEventQueue
 
@@ -71,11 +71,11 @@ class SpillToDiskTaskTest {
                 DefaultSpillToDiskTask(
                     spillFileProvider,
                     inputQueue,
+                    outputQueue,
                     flushStrategy,
                     MockDestinationCatalogFactory.stream1.descriptor,
                     diskManager,
                     timeWindow,
-                    fileAggQueue,
                     taskLauncher,
                 )
         }
@@ -98,7 +98,7 @@ class SpillToDiskTaskTest {
 
                 val job = launch {
                     task.execute()
-                    coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                    coVerify(exactly = 1) { outputQueue.publish(any()) }
                 }
                 job.cancel()
             }
@@ -110,7 +110,7 @@ class SpillToDiskTaskTest {
 
             val job = launch {
                 task.execute()
-                coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                coVerify(exactly = 1) { outputQueue.publish(any()) }
             }
             job.cancel()
         }
@@ -139,7 +139,7 @@ class SpillToDiskTaskTest {
 
                 val job = launch {
                     task.execute()
-                    coVerify(exactly = 1) { fileAggQueue.publish(any()) }
+                    coVerify(exactly = 1) { outputQueue.publish(any()) }
                 }
                 job.cancel()
             }
@@ -160,11 +160,11 @@ class SpillToDiskTaskTest {
         private lateinit var queueSupplier:
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
         private lateinit var spillFileProvider: SpillFileProvider
-        private lateinit var fileAggQueue: MultiProducerChannel<FileAggregateMessage>
+        private lateinit var outputQueue: MultiProducerChannel<FileAggregateMessage>
 
         @BeforeEach
         fun setup() {
-            fileAggQueue = mockk(relaxed = true)
+            outputQueue = mockk(relaxed = true)
             spillFileProvider = DefaultSpillFileProvider(MockDestinationConfiguration())
             queueSupplier =
                 DestinationStreamQueueSupplier(
@@ -181,7 +181,7 @@ class SpillToDiskTaskTest {
                     diskManager,
                     clock,
                     flushWindowMs,
-                    fileAggQueue,
+                    outputQueue,
                 )
         }
 

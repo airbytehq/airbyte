@@ -42,15 +42,15 @@ interface MessageQueueSupplier<K, T> {
 }
 
 /**
- * A channel designed for use with a dynamic amount of multiple producers. Close will only close the
- * underlying channel, when there are no registered producers.
+ * A channel designed for use with a dynamic amount of producers. Close will only close the
+ * underlying channel, when there are no remaining registered producers.
  */
 class MultiProducerChannel<T>(limit: Int = Channel.UNLIMITED) : ChannelMessageQueue<T>() {
     private val log = KotlinLogging.logger {}
     private val producerCount = AtomicLong(0)
     override val channel = Channel<T>(limit)
 
-    fun register(): MultiProducerChannel<T> {
+    fun registerProducer(): MultiProducerChannel<T> {
         val count = producerCount.incrementAndGet()
         log.info { "Registering producer (count=$count)" }
         return this
