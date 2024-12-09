@@ -89,12 +89,12 @@ class SnowflakeStagingClientIntegrationTest {
 
                 override fun getDataRow(
                     id: UUID,
-                    formattedString: String,
+                    data: List<String>,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
                     generationId: Long
                 ): List<Any> {
-                    return listOf(id, Instant.ofEpochMilli(emittedAt), formattedString)
+                    return listOf(id, Instant.ofEpochMilli(emittedAt), data)
                 }
 
                 override fun getHeaderRow(): List<String> {
@@ -110,8 +110,8 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
+            it.accept(listOf(), "", System.currentTimeMillis(), 0)
+            it.accept(listOf(), "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             stagingClient.copyIntoTableFromStage(stageName, stagingPath, listOf(fileName), streamId)
@@ -145,7 +145,7 @@ class SnowflakeStagingClientIntegrationTest {
 
                 override fun getDataRow(
                     id: UUID,
-                    formattedString: String,
+                    data: List<String>,
                     emittedAt: Long,
                     formattedAirbyteMetaString: String,
                     generationId: Long
@@ -153,7 +153,7 @@ class SnowflakeStagingClientIntegrationTest {
                     return listOf(
                         id,
                         Instant.ofEpochMilli(emittedAt),
-                        formattedString,
+                        data,
                         "unknown_data_column"
                     )
                 }
@@ -171,7 +171,7 @@ class SnowflakeStagingClientIntegrationTest {
         val streamId = StreamId("unused", "unused", namespace, tablename, "unused", "unused")
         val stagingPath = "${UUID.randomUUID()}/test/"
         writeBuffer.use {
-            it.accept(""" {"dummyKey": "dummyValue"} """, "", System.currentTimeMillis(), 0)
+            it.accept(listOf(), "", System.currentTimeMillis(), 0)
             it.flush()
             val fileName = stagingClient.uploadRecordsToStage(writeBuffer, stageName, stagingPath)
             assertThrows(Exception::class.java) {

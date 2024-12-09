@@ -165,7 +165,7 @@ class ParquetSerializedBuffer(
 
     @Throws(Exception::class)
     override fun accept(
-        recordString: String,
+        record: List<String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
