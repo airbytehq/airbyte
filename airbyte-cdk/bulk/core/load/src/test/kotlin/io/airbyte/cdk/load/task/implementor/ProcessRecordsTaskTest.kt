@@ -112,6 +112,7 @@ class ProcessRecordsTaskTest {
 
     @Test
     fun testProcessRecordsTask() = runTest {
+        val stream1 = MockDestinationCatalogFactory.stream1
         val byteSize = 999L
         val recordCount = 1024L
 
@@ -125,14 +126,17 @@ class ProcessRecordsTaskTest {
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = MockDestinationCatalogFactory.stream1.descriptor,
+                stream = stream1.descriptor,
                 file = file
             )
         mockFile.outputStream().use { outputStream ->
             (0 until recordCount).forEach { outputStream.write("$it\n") }
         }
 
-        syncManager.registerStartedStreamLoader(MockStreamLoader())
+        syncManager.registerStartedStreamLoader(
+            stream1.descriptor,
+            Result.success(MockStreamLoader())
+        )
         task.execute()
 
         Assertions.assertEquals(1, launcher.batchEnvelopes.size)

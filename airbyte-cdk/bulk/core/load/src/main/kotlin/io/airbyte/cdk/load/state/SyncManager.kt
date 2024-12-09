@@ -13,7 +13,6 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface SyncResult
 
@@ -29,7 +28,10 @@ interface SyncManager {
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
     fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager
 
-    fun registerStartedStreamLoader(streamLoader: StreamLoader)
+    fun registerStartedStreamLoader(
+        streamDescriptor: DestinationStream.Descriptor,
+        streamLoaderResult: Result<StreamLoader>
+    )
     suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
     suspend fun getStreamLoaderOrNull(stream: DestinationStream.Descriptor): StreamLoader?
 
@@ -56,7 +58,7 @@ class DefaultSyncManager(
 ) : SyncManager {
     private val syncResult = CompletableDeferred<SyncResult>()
     private val streamLoaders =
-        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>>()
+        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<Result<StreamLoader>>>()
     private val inputConsumed = CompletableDeferred<Boolean>()
     private val checkpointsProcessed = CompletableDeferred<Boolean>()
 
@@ -64,24 +66,25 @@ class DefaultSyncManager(
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
     }
 
-    override fun registerStartedStreamLoader(streamLoader: StreamLoader) {
+    override fun registerStartedStreamLoader(
+        streamDescriptor: DestinationStream.Descriptor,
+        streamLoaderResult: Result<StreamLoader>
+    ) {
         streamLoaders
-            .getOrPut(streamLoader.stream.descriptor) { CompletableDeferred() }
-            .complete(streamLoader)
+            .getOrPut(streamDescriptor) { CompletableDeferred() }
+            .complete(streamLoaderResult)
     }
 
     override suspend fun getOrAwaitStreamLoader(
         stream: DestinationStream.Descriptor
     ): StreamLoader {
-        return streamLoaders.getOrPut(stream) { CompletableDeferred() }.await()
+        return streamLoaders.getOrPut(stream) { CompletableDeferred() }.await().getOrThrow()
     }
 
     override suspend fun getStreamLoaderOrNull(
         stream: DestinationStream.Descriptor
     ): StreamLoader? {
-        val completable = streamLoaders[stream]
-        // `.isCompleted` does not work as expected here.
-        return completable?.let { withTimeoutOrNull(1000L) { it.await() } }
+        return streamLoaders[stream]?.await()?.getOrNull()
     }
 
     override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
