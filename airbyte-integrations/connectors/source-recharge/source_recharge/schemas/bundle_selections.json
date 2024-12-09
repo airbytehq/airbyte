@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer"]
+    },
+    "bundle_variant": {
+      "type": ["integer"]
+    },
+    "purchase_item_id": {
+      "type": ["integer"]
+    },
+    "created_at": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "external_product_id": {
+      "type": ["string"]
+    },
+    "external_variant_id": {
+      "type": ["string"]
+    },
+    "items": {
+      "type": ["array"],
+      "items": {
+        "type": ["object"],
+        "properties": {
+          "id": {
+            "type": ["integer"]
+          },
+          "collection_id": {
+            "type": ["string"]
+          },
+          "collection_source": {
+            "type": ["string"]
+          },
+          "created_at": {
+            "type": ["string"],
+            "format": "date-time"
+          },
+          "external_product_id": {
+            "type": ["string"]
+          },
+          "external_variant_id": {
+            "type": ["string"]
+          },
+          "price": {
+            "type": ["string"]
+          },
+          "quantity": {
+            "type": ["integer"]
+          },
+          "updated_at": {
+            "type": ["string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "updated_at": {
+      "type": ["string"],
+      "format": "date-time"
+    }
+  }
+}
