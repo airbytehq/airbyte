@@ -3,7 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.9.1dev1@sha256:a68d94e4642c8da9348f1ed3406a693d6a56353972807db1ac63b6f1e4dc9ab2
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.9.1-dev3@sha256:046fec7679bfea07a993e475e7a6a45ba5bbf2ed741bc817f84284fda8284c18
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: unitTests

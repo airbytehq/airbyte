@@ -73,32 +73,22 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         test_config_file: File,
         extra_dependencies_names: Sequence[str],
     ) -> Container:
-        """Set up test environment with a directory structure matching local development."""
-
-        # First get the environment from the parent class
-        test_environment = await super().install_testing_environment(
-            built_connector_container,
+        connector_name = self.context.connector.technical_name
+        connector_path = f"/airbyte-integrations/connectors/{connector_name}"
+        
+        test_environment = (
+            built_connector_container
+            .with_workdir(f"{connector_path}/unit_tests")
+            .with_exec(["ln", "-s", "/source-declarative-manifest", connector_path])
+            .with_exec(["ls", "-la"])  # Debug: list files in workdir
+        )
+        
+        return await super().install_testing_environment(
+            test_environment,
             test_config_file_name,
             test_config_file,
             extra_dependencies_names,
         )
-
-        self.logger.info("=== Poetry Environment Setting Up ===")
-        self.logger.info("Installing Poetry dependencies...")
-
-        # Then modify our returned environment
-        test_environment = test_environment.with_exec(["poetry", "config", "virtualenvs.create", "false"]).with_exec(
-            ["poetry", "install", "--no-root", "--no-interaction", "--no-ansi", "--no-cache"]
-        )
-        self.logger.info("Poetry environment setup complete.")
-
-        # Debug logging after setup
-        self.logger.info("=== Post-Setup Debug ===")
-        self.logger.info(f"Final container state: {test_environment is not None}")
-        self.logger.info("====================")
-
-        # Set working directory
-        return test_environment
 
     async def get_config_file_name_and_file(self) -> Tuple[str, File]:
         """Get the config file name and file to use for pytest.
