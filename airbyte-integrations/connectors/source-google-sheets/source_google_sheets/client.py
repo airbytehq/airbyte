@@ -33,17 +33,9 @@ class GoogleSheetsClient:
     def __init__(self, credentials: Dict[str, str], scopes: List[str] = SCOPES):
         self.client = Helpers.get_authenticated_sheets_client(credentials, scopes)
 
-    def _create_range(self, sheet, row_cursor):
-        range = f"{sheet}!{row_cursor}:{row_cursor + self.Backoff.row_batch_size}"
-        return range
-
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
     def get(self, **kwargs):
         return self.client.get(**kwargs).execute()
-
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
-    def create(self, **kwargs):
-        return self.client.create(**kwargs).execute()
 
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
     def get_values(self, **kwargs):
@@ -51,6 +43,6 @@ class GoogleSheetsClient:
         logger.info(f"Fetching range {range}")
         return self.client.values().batchGet(ranges=range, **kwargs).execute()
 
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
-    def update_values(self, **kwargs):
-        return self.client.values().batchUpdate(**kwargs).execute()
+    def _create_range(self, sheet, row_cursor):
+        range = f"{sheet}!{row_cursor}:{row_cursor + self.Backoff.row_batch_size}"
+        return range
