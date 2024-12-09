@@ -801,13 +801,11 @@ protected constructor(
                     catalog = catalog,
                     runNormalization = false,
                     imageName = imageName,
+                    additionalEnvs = mapOf("USE_FILE_TRANSFER" to "true"),
                 )
             fail("sync should have failed. Instead got output $destinationOutput")
         } catch (e: TestHarnessException) {
-            assertContains(
-                e.outputMessages!![0].trace.error.internalMessage,
-                S3DestinationFlushFunction.FILE_RECORD_ERROR_MESSAGE
-            )
+            assertContains(e.outputMessages!![0].trace.error.internalMessage, "File does not exist")
         }
     }
 

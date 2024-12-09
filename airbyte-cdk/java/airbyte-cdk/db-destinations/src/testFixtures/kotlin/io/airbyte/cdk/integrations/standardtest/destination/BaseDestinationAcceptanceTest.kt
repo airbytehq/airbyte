@@ -174,9 +174,10 @@ abstract class BaseDestinationAcceptanceTest(
         catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
         imageName: String,
+        additionalEnvs: Map<String, String> = mapOf()
     ): List<AirbyteMessage> {
         val destinationConfig = getDestinationConfig(config, catalog)
-        return runSync(messages, runNormalization, imageName, destinationConfig)
+        return runSync(messages, runNormalization, imageName, destinationConfig, additionalEnvs)
     }
 
     @Throws(Exception::class)
@@ -185,13 +186,14 @@ abstract class BaseDestinationAcceptanceTest(
         runNormalization: Boolean,
         imageName: String,
         destinationConfig: WorkerDestinationConfig,
+        additionalEnvs: Map<String, String> = mapOf()
     ): List<AirbyteMessage> {
         val destination = getDestination(imageName)
 
         destination.start(
             destinationConfig,
             jobRoot,
-            inDestinationNormalizationFlags(runNormalization)
+            additionalEnvs + inDestinationNormalizationFlags(runNormalization)
         )
         messages.forEach(
             Consumer { message: AirbyteMessage ->

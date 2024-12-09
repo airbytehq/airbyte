@@ -125,8 +125,13 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         if (pathFactory.supportsStaging) {
             throw IllegalStateException("Staging is not supported for files")
         }
+        val fileUrl = file.fileMessage.fileUrl ?: ""
+        if (!File(fileUrl).exists()) {
+            log.error { "File does not exist: $fileUrl" }
+            throw IllegalStateException("File does not exist: $fileUrl")
+        }
         val key =
-            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+            Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
                 .toString()
 
         val state = destinationStateManager.getState(stream)
@@ -137,13 +142,12 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             isStaging = false
         )
 
-        val localFile = createFile(file.fileMessage.fileUrl!!)
-
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
+                File(fileUrl).inputStream().use { it.copyTo(outputStream) }
             }
+        val localFile = createFile(fileUrl)
         localFile.delete()
         return RemoteObject(remoteObject = obj, partNumber = 0)
     }
