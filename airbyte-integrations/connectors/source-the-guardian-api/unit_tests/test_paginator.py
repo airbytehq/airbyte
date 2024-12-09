@@ -24,7 +24,7 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
 @pytest.mark.parametrize(
     "current_page,total_pages,expected_next_page",
     [
-        (1, 5, 3),      # First page
+        (1, 5, 2),      # First page
         (2, 5, 3),      # Middle page
         (4, 5, 5),      # Second to last page
         (5, 5, None),   # Last page
@@ -34,10 +34,6 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
 )
 def test_page_increment(connector_dir, components_module, current_page, total_pages, expected_next_page):
     """Test the CustomPageIncrement pagination for various page combinations"""
-
-    print(f"CDK Version: {airbyte_cdk.__version__}")
-    print(f"Current Dir: {connector_dir}")
-    print(f"Test File location: {__file__}")
 
     CustomPageIncrement = components_module.CustomPageIncrement
     

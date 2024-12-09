@@ -10,7 +10,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "6.9.1.dev3"
+airbyte-cdk = "6.9.3rc1"
 pytest = "^8"
 
 [tool.pytest.ini_options]

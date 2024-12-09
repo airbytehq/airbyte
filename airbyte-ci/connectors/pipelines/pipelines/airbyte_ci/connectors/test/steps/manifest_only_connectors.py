@@ -73,14 +73,16 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         test_config_file: File,
         extra_dependencies_names: Sequence[str],
     ) -> Container:
+        """Install the testing environment for manifest-only connectors."""
+
         connector_name = self.context.connector.technical_name
         connector_path = f"/airbyte-integrations/connectors/{connector_name}"
         
+        # Create a symlink between the local connector's directory and the built container
         test_environment = (
             built_connector_container
             .with_workdir(f"{connector_path}/unit_tests")
             .with_exec(["ln", "-s", "/source-declarative-manifest", connector_path])
-            .with_exec(["ls", "-la"])  # Debug: list files in workdir
         )
         
         return await super().install_testing_environment(
@@ -91,36 +93,23 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         )
 
     async def get_config_file_name_and_file(self) -> Tuple[str, File]:
-        """Get the config file name and file to use for pytest.
-
-        For manifest-only connectors, we first check the unit_tests directory for config files
-        before falling back to the parent class's search logic.
         """
+        Get the config file name and file to use for pytest.
+        For manifest-only connectors, we expect the poetry config to be found in the unit_tests directory.
+        """
+        connector_name = self.context.connector.technical_name
         connector_dir = await self.context.get_connector_dir()
         unit_tests_dir = connector_dir.directory("unit_tests")
-
-        self.logger.info("=== Config File Debug ===")
-        self.logger.info(f"Connector directory path: {await connector_dir.entries()}")  # Use .path() to get string representation
-        self.logger.info(f"Unit tests directory path: {await unit_tests_dir.entries()}")
-        self.logger.info("====================")
-
-        try:
-            unit_tests_entries = await unit_tests_dir.entries()
-            if self.PYPROJECT_FILE_NAME in unit_tests_entries:
-                config_file_name = self.PYPROJECT_FILE_NAME
-                test_config = unit_tests_dir.file(self.PYPROJECT_FILE_NAME)
-                self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} in unit_tests directory, using it for testing.")
-                return config_file_name, test_config
-        except Exception:
-            # If we can't access unit_tests entries, fall back to parent class behavior
-            pass
-
-        # If no config found in unit_tests, use parent class's search logic
-        return await super().get_config_file_name_and_file()
+        unit_tests_entries = await unit_tests_dir.entries()
+        if self.PYPROJECT_FILE_NAME in unit_tests_entries:
+            config_file_name = self.PYPROJECT_FILE_NAME
+            test_config = unit_tests_dir.file(self.PYPROJECT_FILE_NAME)
+            self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} in the unit_tests directory for {connector_name}, using it for testing.")
+            return config_file_name, test_config
+        else:
+            raise FileNotFoundError(f"Could not find {self.PYPROJECT_FILE_NAME} in the unit_tests directory for {connector_name}.")
 
     def get_pytest_command(self, test_config_file_name: str) -> List[str]:
         """Get the pytest command to run."""
         cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name] + self.params_as_cli_options
-        if self.context.connector.is_using_poetry:
-            return ["poetry", "run"] + cmd
-        return cmd
+        return ["poetry", "run"] + cmd
