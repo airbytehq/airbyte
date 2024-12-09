@@ -207,7 +207,7 @@ class TestFullRefresh(TestCase):
             error_reduce_amount_of_data_response(),
         )
         http_mocker.get(
-            _get_videos_request().with_limit(int(limit / 2)).with_fields(_FIELDS).with_summary().build(),
+            _get_videos_request().with_limit(int(limit / 4)).with_fields(_FIELDS).with_summary().build(),
             _get_videos_response().with_record(_video_record()).build(),
         )
 
