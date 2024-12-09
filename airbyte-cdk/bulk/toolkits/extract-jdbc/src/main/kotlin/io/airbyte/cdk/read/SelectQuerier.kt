@@ -45,8 +45,8 @@ interface SelectQuerier {
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
-class JdbcSelectQuerier(
-    private val jdbcConnectionFactory: JdbcConnectionFactory,
+open class JdbcSelectQuerier(
+    val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
@@ -104,6 +104,23 @@ class JdbcSelectQuerier(
                 log.info { "Setting ResultSet fetchSize to $fetchSize." }
                 rs!!.fetchSize = fetchSize
             }
+        }
+
+        /** Initializes a connection and readies the resultset. */
+        open fun initQueryExecution() {
+            conn = jdbcConnectionFactory.get()
+            stmt = conn!!.prepareStatement(q.sql)
+            parameters.fetchSize?.let { fetchSize: Int ->
+                log.info { "Setting fetchSize to $fetchSize." }
+                stmt!!.fetchSize = fetchSize
+            }
+            var paramIdx = 1
+            for (binding in q.bindings) {
+                log.info { "Setting parameter #$paramIdx to $binding." }
+                binding.type.set(stmt!!, paramIdx, binding.value)
+                paramIdx++
+            }
+            rs = stmt!!.executeQuery()
         }
 
         override fun hasNext(): Boolean {
