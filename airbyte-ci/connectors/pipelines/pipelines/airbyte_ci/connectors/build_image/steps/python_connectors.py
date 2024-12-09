@@ -5,13 +5,11 @@
 
 from typing import Any
 
-from base_images.bases import AirbyteConnectorBaseImage  # type: ignore
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
-from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import StepResult
 
 
@@ -23,21 +21,6 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
-    USER = AirbyteConnectorBaseImage.USER
-
-    async def _get_image_user(self, base_container: Container) -> str:
-        """If the base image in use has a user named 'airbyte', we will use it as the user for the connector image.
-
-        Args:
-            base_container (Container): The base container to use to build the connector.
-
-        Returns:
-            str: The user to use for the connector image.
-        """
-        users = (await base_container.with_exec(sh_dash_c(["cut -d: -f1 /etc/passwd | sort | uniq"])).stdout()).splitlines()
-        if self.USER in users:
-            return self.USER
-        return "root"
 
     async def _build_connector(self, platform: Platform, *args: Any) -> Container:
         if (
