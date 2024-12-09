@@ -46,10 +46,15 @@ class SyncBeanFactory {
         catalog: DestinationCatalog,
         config: DestinationConfiguration,
     ): MultiProducerChannel<FileAggregateMessage> {
-        val maxNumberChunksInFlight = ((availableBytes / config.recordBatchSizeBytes) * 0.8).toInt()
-        val minusOnePerStream = maxNumberChunksInFlight - catalog.streams.size
-        val capacity = min(minusOnePerStream, 1)
-        log.info { "Creating spill file queue with limit $capacity" }
+        // total batches by disk capacity
+        val maxBatchesThatFitOnDisk = (availableBytes / config.recordBatchSizeBytes).toInt()
+        // account for batches in flight processing by the workers
+        val maxBatchesMinusUploadOverhead = maxBatchesThatFitOnDisk - config.numProcessRecordsWorkers
+        // ideally we'd allow enough headroom to smooth out rate differences between consumer / producer streams
+        val idealDepth = 4 * config.numProcessRecordsWorkers
+        // take the smaller of the two—this should be the idealDepth except in corner cases
+        val capacity = min(maxBatchesMinusUploadOverhead, idealDepth)
+        log.info { "Creating file aggregate queue with limit $capacity" }
         return MultiProducerChannel(capacity)
     }
 }
