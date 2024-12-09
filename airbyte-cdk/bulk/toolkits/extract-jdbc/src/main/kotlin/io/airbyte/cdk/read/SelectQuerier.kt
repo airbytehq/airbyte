@@ -35,17 +35,18 @@ interface SelectQuerier {
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
-class JdbcSelectQuerier(
-    private val jdbcConnectionFactory: JdbcConnectionFactory,
+open class JdbcSelectQuerier(
+    val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = Result(q, parameters)
+    ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
-    private inner class Result(
+    open class Result(
+        val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
-        parameters: SelectQuerier.Parameters,
+        val parameters: SelectQuerier.Parameters,
     ) : SelectQuerier.Result {
         private val log = KotlinLogging.logger {}
 
@@ -60,20 +61,7 @@ class JdbcSelectQuerier(
         init {
             log.info { "Querying ${q.sql}" }
             try {
-                conn = jdbcConnectionFactory.get()
-                stmt = conn!!.prepareStatement(q.sql)
-                stmt!!.fetchSize = Int.MIN_VALUE
-                var paramIdx = 1
-                for (binding in q.bindings) {
-                    log.info { "Setting parameter #$paramIdx to $binding." }
-                    binding.type.set(stmt!!, paramIdx, binding.value)
-                    paramIdx++
-                }
-                rs = stmt!!.executeQuery()
-                parameters.fetchSize?.let { fetchSize: Int ->
-                    log.info { "Setting fetchSize to $fetchSize." }
-                    rs!!.fetchSize = fetchSize
-                }
+                initQueryExecution()
             } catch (e: Throwable) {
                 close()
                 throw e
@@ -83,6 +71,23 @@ class JdbcSelectQuerier(
         var isReady = false
         var hasNext = false
         var hasLoggedResultsReceived = false
+
+        /** Initialize a connection and readies the resultset. */
+        open fun initQueryExecution() {
+            conn = jdbcConnectionFactory.get()
+            stmt = conn!!.prepareStatement(q.sql)
+            parameters.fetchSize?.let { fetchSize: Int ->
+                log.info { "Setting fetchSize to $fetchSize." }
+                stmt!!.fetchSize = fetchSize
+            }
+            var paramIdx = 1
+            for (binding in q.bindings) {
+                log.info { "Setting parameter #$paramIdx to $binding." }
+                binding.type.set(stmt!!, paramIdx, binding.value)
+                paramIdx++
+            }
+            rs = stmt!!.executeQuery()
+        }
 
         override fun hasNext(): Boolean {
             // hasNext() is idempotent
