@@ -329,7 +329,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         }
     }
 
-    class MockBatch(override val state: Batch.State) : Batch
+    class MockBatch(override val state: Batch.State, override val groupId: String? = null) : Batch
 
     @Singleton
     @Requires(env = ["DestinationTaskLauncherTest"])
