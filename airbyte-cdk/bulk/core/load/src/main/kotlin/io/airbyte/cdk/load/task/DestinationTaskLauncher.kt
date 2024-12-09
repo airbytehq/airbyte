@@ -214,6 +214,7 @@ class DefaultDestinationTaskLauncher(
             // TODO: Make this `maybeCloseStream` or something
             handleNewBatch(stream, BatchEnvelope(SimpleBatch(Batch.State.COMPLETE)))
         }
+
         if (!file.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
@@ -237,7 +238,8 @@ class DefaultDestinationTaskLauncher(
                 enqueue(flushCheckpointsTaskFactory.make())
             }
 
-            if (wrapped.batch.state != Batch.State.COMPLETE) {
+            // Only (re)process an incomplete batch if it's not part of a group.
+            if (wrapped.batch.state != Batch.State.COMPLETE && wrapped.batch.groupId == null) {
                 log.info {
                     "Batch not complete: Starting process batch task for ${stream}, batch $wrapped"
                 }
