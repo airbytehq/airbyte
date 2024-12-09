@@ -16,7 +16,7 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
-from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
+from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -99,6 +99,11 @@ def pytest_addoption(parser: Parser) -> None:
         default=ConnectionSubset.SANDBOXES.value,
         help="Whether to select from sandbox accounts only.",
     )
+    parser.addoption(
+        "--max-connections",
+        default=None,
+        help="The maximum number of connections to retrieve and use for testing.",
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -143,6 +148,10 @@ def pytest_configure(config: Config) -> None:
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
     config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode(config.getoption("--test-evaluation-mode", "strict"))
+    config.stash[stash_keys.MAX_CONNECTIONS] = config.getoption("--max-connections")
+    config.stash[stash_keys.MAX_CONNECTIONS] = (
+        int(config.stash[stash_keys.MAX_CONNECTIONS]) if config.stash[stash_keys.MAX_CONNECTIONS] else None
+    )
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(config.getoption("--should-read-with-state"))
@@ -170,12 +179,12 @@ def pytest_configure(config: Config) -> None:
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
-            fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
             connector_version=config.stash[stash_keys.CONTROL_VERSION],
             auto_select_connections=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
             selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
             connection_subset=config.stash[stash_keys.CONNECTION_SUBSET],
+            max_connections=config.stash[stash_keys.MAX_CONNECTIONS],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, InvalidConnectionError) as exc:
