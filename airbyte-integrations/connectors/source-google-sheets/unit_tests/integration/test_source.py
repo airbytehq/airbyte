@@ -3,6 +3,7 @@
 
 import json
 from copy import deepcopy
+from typing import Optional
 from unittest import TestCase
 from unittest.mock import patch  # patch("time.sleep")
 from unittest.mock import Mock
@@ -45,23 +46,124 @@ class GoogleSheetSourceTest(TestCase):
         self._service_config = deepcopy(_SERVICE_CONFIG)
         self._source = SourceGoogleSheets()
 
-    @HttpMocker()
-    def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
+    @staticmethod
+    def authorize(http_mocker: HttpMocker):
+        # Authorization request with user credentials to "https://oauth2.googleapis.com" to obtain a token
         http_mocker.post(
             AuthBuilder.get_token_endpoint().build(),
             HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
         )
 
+    @staticmethod
+    def get_streams(http_mocker: HttpMocker, streams_response_file: Optional[str]=None, meta_response_code: Optional[int]=200):
+        """"
+        Mock request to https://sheets.googleapis.com/v4/spreadsheets/<spreed_sheet_id>?includeGridData=false&alt=json in order
+        to obtain sheets (streams) from the spreed_sheet_id provided.
+        e.g. from response file
+          "sheets": [
+            {
+              "properties": {
+                "sheetId": 0,
+                "title": "<sheet_id>",
+                "index": 0,
+                "sheetType": "GRID",
+                "gridProperties": {
+                  "rowCount": 1,
+                  "columnCount": 1
+                }
+              }
+            }
+          ],
+        """
+        GoogleSheetSourceTest.authorize(http_mocker)
+        if streams_response_file:
+            http_mocker.get(
+                RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
+                HttpResponse(json.dumps(find_template(streams_response_file, __file__)), meta_response_code)
+            )
+
+    @staticmethod
+    def get_schema(http_mocker: HttpMocker, headers_response_file: str, headers_response_code: int=200, stream_name: Optional[str]=_STREAM_NAME, data_initial_range_response_file: Optional[str]=None, data_initial_response_code: Optional[int]=200):
+        """"
+        Mock request to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>?includeGridData=true&ranges=<sheet>!1:1&alt=json'
+        to obtain headers data (keys) used for stream schema from the spreadsheet + sheet provided.
+        For this we use range of first row in query.
+        e.g. from response file
+        "sheets": [
+            {
+              "properties": {
+                "sheetId": 0,
+                "title": <sheet_id>,
+                "index": 0,
+                "sheetType": "GRID",
+                "gridProperties": {
+                  "rowCount": 4,
+                  "columnCount": 2
+                }
+              },
+              "data": [
+                {
+                  "rowData": [
+                    {
+                      "values": [
+                        {
+                          "userEnteredValue": {
+                            "stringValue": "name"
+                          },
+                          "effectiveValue": {
+                            "stringValue": "name"
+                          },
+                          "formattedValue": "name"
+                        },
+                        {
+                          "userEnteredValue": {
+                            "stringValue": "age"
+                          },
+                          "effectiveValue": {
+                            "stringValue": "age"
+                          },
+                          "formattedValue": "age"
+                        }
+                      ]}],}]}]
+        """
         http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
+            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{stream_name}!1:1").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(headers_response_file, __file__)), headers_response_code)
         )
 
+    @staticmethod
+    def get_stream_data(http_mocker: HttpMocker, range_data_response_file: str, range_response_code: int=200, stream_name:Optional[str]=_STREAM_NAME):
+        """"
+        Mock requests to 'https://sheets.googleapis.com/v4/spreadsheets/<spreadsheet>/values:batchGet?ranges=<sheet>!2:202&majorDimension=ROWS&alt=json'
+        to obtain value ranges (data) for stream from the spreadsheet + sheet provided.
+        For this we use range [2:202(2 + range in config which default is 200)].
+        We start at 2 as we consider row 1 to contain headers. If we had more data the routine would continue to next ranges.
+        e.g. from response file
+        {
+          "spreadsheetId": "<spreadsheet_id>",
+          "valueRanges": [
+            {
+              "range": "<sheet_id>!A2:B4",
+              "majorDimension": "ROWS",
+              "values": [
+                ["name1", "22"],
+                ["name2", "24"],
+                ["name3", "25"]
+              ]
+            }
+          ]
+        }
+        """
+        batch_request_ranges = f"{stream_name}!2:202"
         http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_succeeded_range", __file__)), 200)
+            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
+            HttpResponse(json.dumps(find_template(range_data_response_file, __file__)), range_response_code)
         )
 
+    @HttpMocker()
+    def test_given_spreadsheet_when_check_then_status_is_succeeded(self, http_mocker: HttpMocker) -> None:
+        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta")
+        GoogleSheetSourceTest.get_schema(http_mocker, "check_succeeded_range")
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.SUCCEEDED
 
@@ -96,15 +198,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_invalid_link_error_message_when_check(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_link", 404)
 
         with pytest.raises(AirbyteTracedException) as exc_info:
             self._source.check(Mock(), self._config)
@@ -119,15 +213,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_check_access_expired(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_permissions", 403)
         with pytest.raises(AirbyteTracedException) as exc_info:
             self._source.check(Mock(), self._config)
         assert str(exc_info.value) == (
@@ -136,20 +222,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_check_expected_to_read_data_from_1_sheet(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_wrong_range", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "check_wrong_range", 200)
 
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.FAILED
@@ -157,21 +231,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_check_duplicated_headers(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_succeeded_meta", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("check_duplicate_headers", __file__)), 200)
-        )
-
+        GoogleSheetSourceTest.get_streams(http_mocker, "check_succeeded_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "check_duplicate_headers", 200)
 
         connection_status = self._source.check(Mock(), self._config)
         assert connection_status.status == Status.FAILED
@@ -179,21 +240,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_given_grid_sheet_type_with_at_least_one_row_when_discover_then_return_stream(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
-        )
-
-        # range 1:1 (headers)
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("only_headers_range", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "only_headers_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "only_headers_range", 200)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 1
@@ -208,30 +256,10 @@ class GoogleSheetSourceTest(TestCase):
             _B_STREAM_NAME: {'email': {'type': 'string'}, 'name': {'type': 'string'}},
             _C_STREAM_NAME: {'address': {'type': 'string'}}
         }
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
-        )
-
-        # range 1:1 (headers)
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "multiple_streams_schemas_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 3
@@ -240,21 +268,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_with_names_conversion(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("only_headers_meta", __file__)), 200)
-        )
-
-        # range 1:1 (headers)
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("names_conversion_range", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "only_headers_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "names_conversion_range", 200)
 
         self._config["names_conversion"] = True
 
@@ -265,17 +280,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_could_not_run_discover(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
-        )
-
+        GoogleSheetSourceTest.get_streams(http_mocker, "internal_server_error", 500)
 
         with pytest.raises(Exception) as exc_info, patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 3):
             self._source.discover(Mock(), self._config)
@@ -300,15 +305,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("invalid_link", __file__)), 404)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_link", 404)
 
         with pytest.raises(AirbyteTracedException) as exc_info:
 
@@ -321,15 +318,7 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_discover_403_error(self, http_mocker: HttpMocker) -> None:
-        # spreadsheet_metadata request
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "invalid_permissions", 403)
 
         with pytest.raises(AirbyteTracedException) as exc_info:
 
@@ -344,63 +333,24 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_given_grid_sheet_type_without_rows_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("no_rows_meta", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("no_rows_range", __file__)), 200)
-        )
-
+        GoogleSheetSourceTest.get_streams(http_mocker, "no_rows_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "no_rows_range", 200)
 
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 0
 
     @HttpMocker()
     def test_given_not_grid_sheet_type_when_discover_then_ignore_stream(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        # meta data request
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("non_grid_sheet_meta", __file__)), 200)
-        )
-
+        GoogleSheetSourceTest.get_streams(http_mocker, "non_grid_sheet_meta", 200)
         discovered_catalog = self._source.discover(Mock(), self._config)
         assert len(discovered_catalog.streams) == 0
 
     @HttpMocker()
     def test_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta")
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions")
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions", __file__)), 200)
-        )
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         output = read(self._source, self._config, configured_catalog)
@@ -408,50 +358,15 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_when_read_multiple_streams_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "multiple_streams_schemas_meta", 200)
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("multiple_streams_schemas_meta", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range", 200, _B_STREAM_NAME)
+        GoogleSheetSourceTest.get_schema(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range", 200, _C_STREAM_NAME)
 
-        # range 1:1 (headers)
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_B_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(f"{_C_STREAM_NAME}!1:1").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_STREAM_NAME}_range_2", __file__)), 200)
-        )
-
-        batch_request_ranges = f"{_B_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_B_STREAM_NAME}_range_2", __file__)), 200)
-        )
-
-        batch_request_ranges = f"{_C_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template(f"multiple_streams_schemas_{_C_STREAM_NAME}_range_2", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"multiple_streams_schemas_{_STREAM_NAME}_range_2")
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"multiple_streams_schemas_{_B_STREAM_NAME}_range_2", stream_name=_B_STREAM_NAME)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, f"multiple_streams_schemas_{_C_STREAM_NAME}_range_2", stream_name=_C_STREAM_NAME)
 
         configured_catalog = (CatalogBuilder().with_stream(
             ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).
@@ -485,28 +400,10 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_when_read_then_status_and_state_messages_emitted(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta_2", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta_2", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_2", 200)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "read_records_range_with_dimensions_2")
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range_2", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_range_with_dimensions_2", __file__)), 200)
-        )
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         output = read(self._source, self._config, configured_catalog)
@@ -521,28 +418,10 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "rate_limit_error", 429)
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("rate_limit_error", __file__)), 429)
-        )
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
@@ -555,28 +434,10 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "invalid_permissions", 403)
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("invalid_permissions", __file__)), 403)
-        )
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         output = read(self._source, self._config, configured_catalog)
@@ -588,28 +449,10 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range", 200)
+        GoogleSheetSourceTest.get_stream_data(http_mocker, "internal_server_error", 500)
 
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range", __file__)), 200)
-        )
-
-        # batch response
-        batch_request_ranges = f"{_STREAM_NAME}!2:202"
-        http_mocker.get(
-            RequestBuilder.get_account_endpoint().with_spreadsheet_id(_SPREADSHEET_ID).with_ranges(batch_request_ranges).with_major_dimension("ROWS").with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("internal_server_error", __file__)), 500)
-        )
         configured_catalog =CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
         with patch("time.sleep"), patch("backoff._sync._maybe_call", side_effect=lambda value: 1):
@@ -622,21 +465,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_empty_sheet(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range_empty", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_empty", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
@@ -648,21 +478,8 @@ class GoogleSheetSourceTest(TestCase):
 
     @HttpMocker()
     def test_read_expected_data_on_1_sheet(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            AuthBuilder.get_token_endpoint().build(),
-            HttpResponse(json.dumps(find_template("auth_response", __file__)), 200)
-        )
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(False).with_alt("json").build(),
-            HttpResponse(json.dumps(find_template("read_records_meta", __file__)), 200)
-        )
-
-        http_mocker.get(
-            RequestBuilder().with_spreadsheet_id(_SPREADSHEET_ID).with_include_grid_data(True).with_ranges(
-                f"{_STREAM_NAME}!1:1").with_alt("json").build(),
-
-            HttpResponse(json.dumps(find_template("read_records_range_with_unexpected_extra_sheet", __file__)), 200)
-        )
+        GoogleSheetSourceTest.get_streams(http_mocker, "read_records_meta", 200)
+        GoogleSheetSourceTest.get_schema(http_mocker, "read_records_range_with_unexpected_extra_sheet", 200)
 
         configured_catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_STREAM_NAME).with_json_schema({"properties": {"header_1": { "type": ["null", "string"] }, "header_2": { "type": ["null", "string"] }}})).build()
 
