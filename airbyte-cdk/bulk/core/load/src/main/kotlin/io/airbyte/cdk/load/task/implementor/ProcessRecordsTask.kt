@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.write.StreamLoader
@@ -26,7 +25,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : StreamLevel, ImplementorScope
+interface ProcessRecordsTask : ImplementorScope
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -37,7 +36,7 @@ interface ProcessRecordsTask : StreamLevel, ImplementorScope
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    override val streamDescriptor: DestinationStream.Descriptor,
+    val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val file: SpilledRawMessagesLocalFile,
     private val deserializer: Deserializer<DestinationMessage>,
