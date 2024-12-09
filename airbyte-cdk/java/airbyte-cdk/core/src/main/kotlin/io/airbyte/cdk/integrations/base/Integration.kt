@@ -4,6 +4,8 @@
 package io.airbyte.cdk.integrations.base
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
+import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 
