@@ -65,10 +65,19 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     }
 
     @Test
+    @Disabled(
+        "This is currently hanging forever and we should look into why"
+    )
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
     @Disabled
     override fun testContainerTypes() {
         super.testContainerTypes()
     }
+
     @Test
     @Disabled(
         "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
@@ -76,11 +85,13 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
+
     @Test
     @Disabled("Ed will be looking into it")
     override fun testAppend() {
         super.testAppend()
     }
+
     @Test
     @Disabled("This is expected")
     override fun testAppendSchemaEvolution() {

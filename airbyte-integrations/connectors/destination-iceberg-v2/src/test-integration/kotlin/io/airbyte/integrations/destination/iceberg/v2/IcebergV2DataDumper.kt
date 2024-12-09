@@ -120,6 +120,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
             }
         }
 
+        catalog.close()
         return outputRecords
     }
 
