@@ -80,12 +80,6 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     }
 
     @Test
-    @Disabled("Ed will be looking into it")
-    override fun testAppend() {
-        super.testAppend()
-    }
-
-    @Test
     @Disabled("This is expected")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
