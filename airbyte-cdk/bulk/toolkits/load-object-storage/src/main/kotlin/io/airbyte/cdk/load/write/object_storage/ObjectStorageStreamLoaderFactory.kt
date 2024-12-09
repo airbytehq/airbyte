@@ -84,6 +84,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val nextPartNumber = state.nextPartNumber
         log.info { "Got next part number from destination state: $nextPartNumber" }
         partNumber.set(nextPartNumber)
+        throw RuntimeException("Synthetic exception for testing: ${stream.descriptor}")
     }
 
     override suspend fun processRecords(
