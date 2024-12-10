@@ -40,7 +40,7 @@ abstract class S3V2WriteTest(
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
-        supportFileTransfer = false,
+        supportFileTransfer = true,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
