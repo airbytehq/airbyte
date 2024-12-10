@@ -552,7 +552,7 @@ Bump source-openweather:
 
 | Argument          | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
-| `BUMP_TYPE`       | major, minor, patch, or version:<explicit-version>                     |
+| `BUMP_TYPE`       | major, minor, patch, rc, or version:<explicit-version>                 |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
 #### Options
@@ -560,6 +560,7 @@ Bump source-openweather:
 | Option      | Description                                                                               |
 | ----------- | ----------------------------------------------------------------------------------------- |
 | --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
+| --rc        | Bump the version by the specified bump type and append the release candidate suffix.      |
 
 ### <a id="connectors-upgrade-cdk"></a>`connectors upgrade-cdk` command
 
