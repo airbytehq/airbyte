@@ -40,13 +40,13 @@ class MysqlSelectQuerier(
             stmt!!.fetchSize = Int.MIN_VALUE
             var paramIdx = 1
             for (binding in q.bindings) {
-            log.info { "Setting parameter #$paramIdx to $binding." }
+                log.info { "Setting parameter #$paramIdx to $binding." }
                 binding.type.set(stmt!!, paramIdx, binding.value)
                 paramIdx++
             }
             rs = stmt!!.executeQuery()
             parameters.fetchSize?.let { fetchSize: Int ->
-            log.info { "Setting fetchSize to $fetchSize." }
+                log.info { "Setting fetchSize to $fetchSize." }
                 rs!!.fetchSize = fetchSize
             }
         }
