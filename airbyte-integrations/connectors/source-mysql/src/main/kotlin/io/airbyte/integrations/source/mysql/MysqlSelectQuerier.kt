@@ -12,18 +12,18 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
-private val log = KotlinLogging.logger {}
-
 /** Mysql implementation of [JdbcSelectQuerier], which sets fetch size differently */
 @Singleton
 @Primary
 class MysqlSelectQuerier(
-    jdbcConnectionFactory: JdbcConnectionFactory,
-) : JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
+) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val log = KotlinLogging.logger {}
+
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): Result = MysqlResult(jdbcConnectionFactory, q, parameters)
+    ): SelectQuerier.Result = MysqlResult(jdbcConnectionFactory, q, parameters)
 
     inner class MysqlResult(
         jdbcConnectionFactory: JdbcConnectionFactory,
@@ -40,13 +40,13 @@ class MysqlSelectQuerier(
             stmt!!.fetchSize = Int.MIN_VALUE
             var paramIdx = 1
             for (binding in q.bindings) {
-                log.info { "Setting parameter #$paramIdx to $binding." }
+            log.info { "Setting parameter #$paramIdx to $binding." }
                 binding.type.set(stmt!!, paramIdx, binding.value)
                 paramIdx++
             }
             rs = stmt!!.executeQuery()
             parameters.fetchSize?.let { fetchSize: Int ->
-                log.info { "Setting fetchSize to $fetchSize." }
+            log.info { "Setting fetchSize to $fetchSize." }
                 rs!!.fetchSize = fetchSize
             }
         }
