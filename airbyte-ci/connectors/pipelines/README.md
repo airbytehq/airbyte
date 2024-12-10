@@ -850,6 +850,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.44.2  | [#48725](https://github.com/airbytehq/airbyte/pull/48725)  | up-to-date: specific changelog comment for base image upgrade to rootless.                                                   |
 | 4.44.1  | [#48836](https://github.com/airbytehq/airbyte/pull/48836)  | Manifest-only connector build: give ownership of copied file to the current user.                                            |
 | 4.44.0  | [#48818](https://github.com/airbytehq/airbyte/pull/48818)  | Use local CDK or CDK ref for manifest only connector build.                                                                  |
 | 4.43.1  | [#48824](https://github.com/airbytehq/airbyte/pull/48824)  | Allow uploading CI reports to GCS with fewer permissions set.                                                                |
