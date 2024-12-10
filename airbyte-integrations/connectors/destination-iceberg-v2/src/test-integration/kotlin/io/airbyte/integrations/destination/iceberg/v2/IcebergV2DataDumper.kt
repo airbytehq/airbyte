@@ -128,7 +128,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<String> {
-        TODO("Not yet implemented")
+        throw NotImplementedError("Iceberg doesn't support universal file transfer")
     }
 
     private fun getNessieCatalog(config: IcebergV2Configuration): NessieCatalog {
