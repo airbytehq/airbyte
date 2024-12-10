@@ -87,10 +87,11 @@
     "@docusaurus/theme-search-algolia": "^3.0.1",
     "@docusaurus/types": "^3.0.1",
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-brands-svg-icons": "^6.7.1",
     "@fortawesome/free-regular-svg-icons": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@headlessui/react": "^1.7.18",
+    "@headlessui/react": "^2.1.9",
     "@mdx-js/react": "^3.0.0",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
@@ -106,6 +107,7 @@
     "del": "6.1.1",
     "docusaurus-plugin-hubspot": "^1.0.0",
     "docusaurus-plugin-segment": "^1.0.3",
+    "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
     "json-schema-faker": "^0.5.4",
@@ -124,6 +126,7 @@
     "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "^8.0.7",
     "react-router": "5.3.3",
     "sanitize-html": "^2.12.1",
@@ -134,6 +137,9 @@
     "unist-util-visit": "^5.0.0",
     "webpack-dev-server": "4.9.2",
     "yaml-loader": "^0.8.0"
+  },
+  "resolutions": {
+    "dompurify": "3.1.6"
   },
   "browserslist": {
     "production": [

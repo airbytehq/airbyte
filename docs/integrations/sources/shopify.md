@@ -247,6 +247,15 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.12 | 2024-11-25 | [48661](https://github.com/airbytehq/airbyte/pull/48661) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.5.11 | 2024-11-07 | [48402](https://github.com/airbytehq/airbyte/pull/48402) | Add `image_src`, `image_url`, including `options` to `Product Variants` stream |
+| 2.5.10 | 2024-11-05 | [48322](https://github.com/airbytehq/airbyte/pull/48322) | Update dependencies |
+| 2.5.9 | 2024-10-29 | [47814](https://github.com/airbytehq/airbyte/pull/47814) | Update dependencies |
+| 2.5.8 | 2024-10-28 | [47044](https://github.com/airbytehq/airbyte/pull/47044) | Update dependencies |
+| 2.5.7 | 2024-10-14 | [46552](https://github.com/airbytehq/airbyte/pull/46552) | Add `parent state` tracking for BULK sub-streams |
+| 2.5.6 | 2024-10-12 | [46844](https://github.com/airbytehq/airbyte/pull/46844) | Update dependencies |
+| 2.5.5 | 2024-10-05 | [46578](https://github.com/airbytehq/airbyte/pull/46578) | Raise exception on missing stream |
+| 2.5.4 | 2024-10-05 | [45759](https://github.com/airbytehq/airbyte/pull/45759) | Update dependencies |
 | 2.5.3 | 2024-09-27 | [46095](https://github.com/airbytehq/airbyte/pull/46095) | Fixed duplicates for `Product Images`, `Metafield Product Images` and `Metafield Products` streams for Incremental syncs |
 | 2.5.2 | 2024-09-17 | [45633](https://github.com/airbytehq/airbyte/pull/45633) | Adds `read_inventory` as a required scope for `product_variants` stream |
 | 2.5.1 | 2024-09-14 | [45255](https://github.com/airbytehq/airbyte/pull/45255) | Update dependencies |

@@ -23,7 +23,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.10.2"
+PYAIRBYTE_VERSION = "0.20.2"
 
 
 class PytestStep(Step, ABC):
@@ -155,16 +155,14 @@ class PytestStep(Step, ABC):
             # Install the connector python package in /test_environment with the extra dependencies
             await pipelines.dagger.actions.python.common.with_python_connector_installed(
                 self.context,
-                # Reset the entrypoint to run non airbyte commands
-                built_connector_container.with_entrypoint([]),
+                # Reset the entrypoint to run non airbyte commands and set the user to root to install the dependencies and access secrets
+                built_connector_container.with_entrypoint([]).with_user("root"),
                 str(self.context.connector.code_directory),
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
         if self.common_test_dependencies:
-            container_with_test_deps = container_with_test_deps.with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
-            )
+            container_with_test_deps = container_with_test_deps.with_exec(["pip", "install", f'{" ".join(self.common_test_dependencies)}'])
         return (
             container_with_test_deps
             # Mount the test config file
@@ -197,9 +195,16 @@ class UnitTests(PytestStep):
 
 
 class PyAirbyteValidation(Step):
-    """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
+    """Validate the connector can be installed and invoked via Python, using PyAirbyte.
 
-    title = "PyAirbyte validation tests"
+    When this fails, it generally signals that the connector is not installable or not
+    runnable in a Python environment. The most common reasons for this are:
+    1. Conflicting dependencies.
+    2. Missing dependency declarations.
+    3. Incorrect or invalid CLI entrypoints.
+    """
+
+    title = "Python CLI smoke test using PyAirbyte"
 
     context: ConnectorTestContext
 
@@ -211,11 +216,18 @@ class PyAirbyteValidation(Step):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         if dpath.util.get(self.context.connector.metadata, "remoteRegistries/pypi/enabled", default=False) is False:
-            return self.skip("Connector is not published on pypi, skipping PyAirbyte validation.")
+            return self.skip("Connector is not flagged for PyPI publish, skipping Python CLI validation.")
 
         test_environment = await self.install_testing_environment(with_poetry(self.context))
         test_execution = test_environment.with_(
-            hacks.never_fail_exec(["airbyte-lib-validate-source", "--connector-dir", ".", "--validate-install-only"])
+            hacks.never_fail_exec(
+                [
+                    "pyab",
+                    "validate",
+                    f"--connector={self.context.connector.technical_name}",
+                    "--pip-url='.'",
+                ]
+            )
         )
 
         return await self.get_step_result(test_execution)
@@ -230,13 +242,7 @@ class PyAirbyteValidation(Step):
         container_with_test_deps = await pipelines.dagger.actions.python.common.with_python_package(
             self.context, built_connector_container.with_entrypoint([]), str(context.connector.code_directory)
         )
-        return container_with_test_deps.with_exec(
-            [
-                "pip",
-                "install",
-                f"airbyte=={PYAIRBYTE_VERSION}",
-            ]
-        )
+        return container_with_test_deps.with_exec(["pip", "install", f"airbyte=={PYAIRBYTE_VERSION}"], use_entrypoint=True)
 
 
 class IntegrationTests(PytestStep):
@@ -271,7 +277,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_LIB_VALIDATION,
+                id=CONNECTOR_TEST_STEP_ID.PYTHON_CLI_VALIDATION,
                 step=PyAirbyteValidation(context),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],

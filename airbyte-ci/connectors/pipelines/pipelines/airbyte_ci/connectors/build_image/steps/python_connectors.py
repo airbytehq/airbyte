@@ -60,6 +60,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
+        user = await self._get_image_user(base)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
         main_file_name = build_customization.get_main_file_name(self.context.connector)
 
@@ -73,16 +74,18 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name))
+            .with_exec(["chown", "-R", f"{user}:{user}", "."])
+            .with_file(main_file_name, (await self.context.get_connector_dir(include=[main_file_name])).file(main_file_name), owner=user)
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
+                owner=user,
             )
         )
 
         connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
-        return customized_connector
+        return customized_connector.with_user(user)
 
     async def _build_from_dockerfile(self, platform: Platform) -> Container:
         """Build the connector container using its Dockerfile.

@@ -131,7 +131,7 @@ The Stripe source connector supports the following streams:
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
-- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
+- [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -197,6 +197,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `External Account Bank Accounts`
 - `External Account Cards`
 - `Invoice Items`
+- `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
 - `Payouts`
@@ -209,6 +210,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
+- `Subscription Items`
 - `Subscriptions`
 - `Top Ups`
 - `Transactions`
@@ -244,8 +246,11 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.2   | 2024-10-05 | [46499](https://github.com/airbytehq/airbyte/pull/46499)      | Source-Stripe: Add new payout_balance_transactions incremental stream
-| 5.6.1   | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327)      | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches                                                                                                                                  |
+| 5.8.1   | 2024-12-08 | [46499](https://github.com/airbytehq/airbyte/pull/46499)  | Source-Stripe: Add new payout_balance_transactions incremental stream
+| 5.8.0   | 2024-10-12 | [46864](https://github.com/airbytehq/airbyte/pull/46864)  | Add incremental stream support to `accounts` stream                                                                                                                                                                           |
+| 5.7.0   | 2024-10-01 | [45860](https://github.com/airbytehq/airbyte/pull/45860)  | Add incremental stream support to `invoice_line_items` and `subscription_items` streams                                                                                                                                       |
+| 5.6.2   | 2024-10-05 | [43881](https://github.com/airbytehq/airbyte/pull/43881)  | Update dependencies                                                                                                                                                                                                           |
+| 5.6.1   | 2024-10-03 | [46327](https://github.com/airbytehq/airbyte/pull/46327)  | Bump the cdk to 5.10.2 to stop using PrintBuffer optimization due to record count mismatches                                                                                                                                  |
 | 5.6.0   | 2024-09-10 | [44891](https://github.com/airbytehq/airbyte/pull/44891)  | Update `Payment Methods` stream                                                                                                                                                                                               |
 | 5.5.4   | 2024-09-09 | [45348](https://github.com/airbytehq/airbyte/pull/45348)  | Remove `stripe` python package                                                                                                                                                                                                |
 | 5.5.3   | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101)  | Fix regression following pagination issue fix                                                                                                                                                                                 |
