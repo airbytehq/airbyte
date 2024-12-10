@@ -32,6 +32,8 @@ For Databases and File sources, Airbyte measures the data volume observed by the
 ## Start a Trial
 To begin a trial of Airbyte Cloud, head to https://cloud.airbyte.com/signup. Your trial will only begin after your first successful sync. Trials last 14 days or when 400 trial credits are used, whichever occurs first. 
 
+If you need additional trial credits or time to evaluate Airbyte, please reach out to our [Sales team](https://airbyte.com/company/talk-to-sales).
+
 ## Add Payment Details
 To continue using Airbyte beyond your trial, we require a valid payment method on file. We currently only accept credit card. If you prefer ACH, please [Talk to Sales](https://airbyte.com/company/talk-to-sales).
 
