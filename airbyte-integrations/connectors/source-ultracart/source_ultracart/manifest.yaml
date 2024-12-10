@@ -1,0 +1,102 @@
+version: 0.51.16
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+streams:
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - customer_profile_oid
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          business_notes:
+            type: string
+          customer_profile_oid:
+            type: number
+          email:
+            type: string
+          last_modified_by:
+            type: string
+          merchant_id:
+            type: string
+          signup_dts:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://secure.ultracart.com/rest/v2
+        path: /customer/customers
+        http_method: GET
+        request_parameters:
+          _sort: +last_modified_dts
+        request_headers:
+          User-Agent: PostmanRuntime/7.42.0
+          X-UltraCart-Api-Version: '2017-03-01'
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - customers
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: _offset
+        page_size_option:
+          type: RequestOption
+          field_name: _limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 2
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_modified_dts
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        inject_into: request_parameter
+        field_name: _since
+        type: RequestOption
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - start_date
+      - api_key
+    properties:
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 0
+      api_key:
+        type: string
+        title: Access Token
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    customers: true
