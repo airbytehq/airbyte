@@ -191,21 +191,44 @@ class MagniteStream(HttpStream, ABC):
             "range": date_range,
         }
         return request_payload
+
+    def chunk_dates(self, start_date: int, end_date: int) -> Iterable[Tuple[int, int]]:
+    #     after = start_date
+    #     while after < end_date:
+    #         before = min(end_date, after + timedelta(days=WINDOW_IN_DAYS))
+    #         yield after, before
+    #         after = before
     
+    # def stream_slices(
+    #         self, sync_mode, cursor_field: Optional[str] = None, stream_state: Mapping[str, Any] = None
+    # ) -> Iterable[Optional[Mapping[str, Any]]]:
+    #     today = date.today()
+    #     start_date = None
+    #     end_date = max(string_to_date(self.config.get("toDate", date_to_string(today))), today)
+    #     print(self.cursor_field)
+    #     if stream_state and self.cursor_field and self.cursor_field in stream_state:
+    #         start_date = string_to_date(stream_state[self.cursor_field], DATE_FORMAT)
+    #     else:
+    #         start_date = string_to_date(self.config["fromDate"], DATE_FORMAT)
+    #     start_date = max(start_date, string_to_date(self.config["fromDate"], DATE_FORMAT))
+
+    #     print(start_date, end_date)
+    #     if start_date > end_date:
+    #         yield from []
+    #         return
+    #     for start, end in self.chunk_dates(start_date, end_date):
+    #         print(start, end)
+    #         yield {
+    #             "fromDate": date_to_string(start, DATE_FORMAT),
+    #             "toDate": date_to_string(end, DATE_FORMAT),
+    #         }
+
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         today: date = date.today()
-        start_date = None
-        if self.cursor_field:
-            start_date = stream_state and stream_state.get(self.cursor_field)
-        if start_date:
-            start_date = (
-                start_date if not self.cursor_field == "date" else start_date
-            )
-            start_date = max(start_date, self.config["fromDate"])
-        else:
-            start_date = string_to_date(self.config["fromDate"], DATE_FORMAT)
+        start_date = string_to_date(self.config["fromDate"])
 
         while start_date <= today:
             yield {
