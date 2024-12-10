@@ -7,8 +7,10 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.message.LimitedMessageQueue
+import io.airbyte.cdk.load.message.UnlimitedMessageQueue
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileQueueMessage
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -51,5 +53,11 @@ class SyncBeanFactory {
         val capacity = min(minusOnePerStream, 1)
         log.info { "Creating spill file queue with limit $capacity" }
         return LimitedMessageQueue(capacity)
+    }
+
+    @Singleton
+    @Named("transferFileQueue")
+    fun transferFileQueue(): UnlimitedMessageQueue<FileTransferQueueMessage> {
+        return UnlimitedMessageQueue()
     }
 }

@@ -144,7 +144,6 @@ class DefaultDestinationTaskLauncher(
                 inputFlow = inputFlow,
                 recordQueueSupplier = recordQueueSupplier,
                 checkpointQueue = checkpointQueue,
-                this,
             )
         enqueue(inputConsumerTask)
 
@@ -166,6 +165,11 @@ class DefaultDestinationTaskLauncher(
             log.info { "Launching process records task $it" }
             val task = processRecordsTaskFactory.make(this)
             enqueue(task)
+        }
+
+        (0 until /*config.numProcessRecordsWorkers*/2).forEach {
+            log.info { "Launching process file task $it" }
+            enqueue(processFileTaskFactory.make(this))
         }
 
         // Start flush task
@@ -259,6 +263,7 @@ class DefaultDestinationTaskLauncher(
         file: DestinationFile,
         index: Long
     ) {
-        enqueue(processFileTaskFactory.make(this, stream, file, index))
+
+
     }
 }

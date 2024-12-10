@@ -140,22 +140,4 @@ class DestinationTaskLauncherUTest {
         coVerify { spillToDiskTaskFactory.make(any(), any()) }
         coVerify { exceptionHandler.withExceptionHandling(spillToDiskTask) }
     }
-
-    class MockedTaskWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-        override suspend fun execute() {}
-    }
-
-    @Test
-    fun `test handle file`() = runTest {
-        val wrappedTask = MockedTaskWrapper(mockk(relaxed = true))
-        coEvery { exceptionHandler.withExceptionHandling(any()) } returns wrappedTask
-        val processFileTask = mockk<ProcessFileTask>(relaxed = true)
-        every { processFileTaskFactory.make(any(), any(), any(), any()) } returns processFileTask
-
-        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-        destinationTaskLauncher.handleFile(mockk(), mockk(), 1L)
-
-        coVerify { exceptionHandler.withExceptionHandling(processFileTask) }
-        coVerify { taskScopeProvider.launch(wrappedTask) }
-    }
 }
