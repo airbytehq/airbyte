@@ -154,3 +154,6 @@ data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,
     val numRecords: Long,
 )
+
+/** A [PartitionReader] that has a time limit for its execution. */
+interface TimeBoundPartitionReader : PartitionReader;

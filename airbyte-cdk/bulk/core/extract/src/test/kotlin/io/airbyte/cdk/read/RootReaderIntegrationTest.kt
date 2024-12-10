@@ -579,7 +579,7 @@ class TestPartitionReader(
     private val readerID: Long,
     private var case: ReaderCase,
     private val resource: Semaphore,
-) : PartitionReader {
+) : TimeBoundPartitionReader {
     private val log = KotlinLogging.logger {}
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =

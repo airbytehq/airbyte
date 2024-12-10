@@ -14,14 +14,13 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
@@ -217,9 +216,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // in interrupting it until the snapshot is done.
                 return null
             }
-            if (!coroutineContext.isActive) {
-                return CloseReason.TIMEOUT
-            }
+
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
             if (currentPosition == null || currentPosition < upperBound) {
                 return null
