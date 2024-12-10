@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.config
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
@@ -15,6 +14,7 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlin.math.min
+import kotlinx.coroutines.channels.Channel
 
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
@@ -39,22 +39,31 @@ class SyncBeanFactory {
         return ReservationManager(availableBytes)
     }
 
+    /**
+     * The queue that sits between the aggregation (SpillToDiskTask) and load steps
+     * (ProcessRecordsTask).
+     *
+     * Since we are buffering on disk, we must consider the available disk space in our depth
+     * configuration.
+     */
     @Singleton
     @Named("fileAggregateQueue")
     fun fileAggregateQueue(
         @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
-        catalog: DestinationCatalog,
         config: DestinationConfiguration,
     ): MultiProducerChannel<FileAggregateMessage> {
         // total batches by disk capacity
         val maxBatchesThatFitOnDisk = (availableBytes / config.recordBatchSizeBytes).toInt()
         // account for batches in flight processing by the workers
-        val maxBatchesMinusUploadOverhead = maxBatchesThatFitOnDisk - config.numProcessRecordsWorkers
-        // ideally we'd allow enough headroom to smooth out rate differences between consumer / producer streams
+        val maxBatchesMinusUploadOverhead =
+            maxBatchesThatFitOnDisk - config.numProcessRecordsWorkers
+        // ideally we'd allow enough headroom to smooth out rate differences between consumer /
+        // producer streams
         val idealDepth = 4 * config.numProcessRecordsWorkers
         // take the smaller of the two—this should be the idealDepth except in corner cases
         val capacity = min(maxBatchesMinusUploadOverhead, idealDepth)
         log.info { "Creating file aggregate queue with limit $capacity" }
-        return MultiProducerChannel(capacity)
+        val channel = Channel<FileAggregateMessage>(capacity)
+        return MultiProducerChannel(channel)
     }
 }

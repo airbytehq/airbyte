@@ -5,8 +5,6 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
-import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -39,29 +37,4 @@ abstract class ChannelMessageQueue<T> : MessageQueue<T> {
 
 interface MessageQueueSupplier<K, T> {
     fun get(key: K): MessageQueue<T>
-}
-
-/**
- * A channel designed for use with a dynamic amount of producers. Close will only close the
- * underlying channel, when there are no remaining registered producers.
- */
-class MultiProducerChannel<T>(limit: Int = Channel.UNLIMITED) : ChannelMessageQueue<T>() {
-    private val log = KotlinLogging.logger {}
-    private val producerCount = AtomicLong(0)
-    override val channel = Channel<T>(limit)
-
-    fun registerProducer(): MultiProducerChannel<T> {
-        val count = producerCount.incrementAndGet()
-        log.info { "Registering producer (count=$count)" }
-        return this
-    }
-
-    override suspend fun close() {
-        val count = producerCount.decrementAndGet()
-        log.info { "Closing producer (count=$count)" }
-        if (count == 0L) {
-            log.info { "Closing queue" }
-            channel.close()
-        }
-    }
 }
