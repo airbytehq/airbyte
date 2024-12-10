@@ -179,6 +179,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.19.9
+
+Fix import from connector-retriever
+
 ### 0.19.8
 
 Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).
