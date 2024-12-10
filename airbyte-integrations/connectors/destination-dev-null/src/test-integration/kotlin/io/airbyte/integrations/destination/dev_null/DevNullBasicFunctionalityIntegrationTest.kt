@@ -26,6 +26,7 @@ class DevNullBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
