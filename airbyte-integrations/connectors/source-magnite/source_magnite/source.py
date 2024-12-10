@@ -282,11 +282,8 @@ class MagniteStream(HttpStream, ABC):
 class SourceMagnite(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-
             auth_headers = CookieAuthenticator(config).get_auth_header()
             url = "https://api.tremorhub.com/v1/resources/queries"
-            today: date = date.today()
-
             test_payload = {
                 "source": "adstats-publisher",
                 "fields": get_dimensions("adstats-publisher") + get_metrics("adstats-publisher"),
@@ -294,14 +291,13 @@ class SourceMagnite(AbstractSource):
                 "orderings": [],
                 "range": {
                     "fromDate": config["fromDate"],
-                    "toDate": config.get("toDate", date_to_string(min(string_to_date(config["fromDate"]) + timedelta(days=WINDOW_IN_DAYS - 1), today)))
-                }
+                    "toDate": date_to_string(date.today())
+                },
+                "fmt": "csv"
             }
-
             response = requests.request("POST", url=url, headers=auth_headers, data=json.dumps(test_payload))
             if response.status_code != 412:
                 response.raise_for_status()
-            # TODO: retrieve data???
             return True, None
         except Exception as e:
             return False, e
