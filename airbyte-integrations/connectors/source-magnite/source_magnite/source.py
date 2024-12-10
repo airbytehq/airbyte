@@ -16,7 +16,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from .auth import CookieAuthenticator
 from .utils import (
     date_to_string,
-    string_to_date
+    string_to_date,
+    get_dimensions,
+    get_metrics
 )
 
 DATE_FORMAT = "%Y-%m-%d"
@@ -48,7 +50,9 @@ class BaseResourceStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json
+        all_columns = get_dimensions(self.name) + get_metrics(self.name)
+        result = [ x for x in response_json if x["id"] in all_columns ]
+        yield from result
 
     @property
     def use_cache(self) -> bool:
@@ -182,9 +186,8 @@ class MagniteStream(HttpStream, ABC):
             date_range = stream_slice
         request_payload = {
             "source": self.name,
-            "fields": self.dimensions + self.metrics,
-            "constraints":self.config["constraints"],
-            "orderings": self.config["orderings"],
+            # "fields": self.dimensions + self.metrics,
+            "fields": get_dimensions(self.name) + get_metrics(self.name),
             "range": date_range,
         }
         return request_payload
@@ -233,10 +236,9 @@ class SourceMagnite(AbstractSource):
 
             test_payload = {
                 "source": "adstats-publisher",
-                "fields": ["day", "date", "adUnit", "publisher", "channel", "brand", "requests",
-                           "impressions", "useRate", "netRevenue", "grossRevenue"],
-                "constraints": config["constraints"],
-                "orderings": config["orderings"],
+                "fields": get_dimensions("adstats-publisher") + get_metrics("adstats-publisher"),
+                "constraints": [],
+                "orderings": [],
                 "range": {
                     "fromDate": config["fromDate"],
                     "toDate": config.get("toDate", date_to_string(min(string_to_date(config["fromDate"]) + timedelta(days=WINDOW_IN_DAYS - 1), today)))
