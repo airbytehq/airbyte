@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.async.model.AirbyteRecordMessageFile
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3BaseDestinationAcceptanceTest
-import io.airbyte.cdk.integrations.destination.s3.S3ConsumerFactory
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
@@ -29,12 +28,10 @@ import kotlin.io.path.writeText
 import kotlin.random.Random
 import kotlin.test.*
 import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
 
-@Disabled("Pending FILE TRANSFER S3V2")
 class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
     override val imageName: String = "airbyte/destination-s3-v2:dev"
     override val supportsFileTransfer = true
@@ -167,7 +164,7 @@ class S3V2FileTransferDestinationTest : S3BaseDestinationAcceptanceTest() {
         } catch (e: TestHarnessException) {
             assertContains(
                 e.outputMessages!![0].trace.error.internalMessage,
-                S3ConsumerFactory.MISSING_FILE_FIELD_IN_FILE_TRANSFER_ERROR_MESSAGE
+                "Failed to convert AirbyteMessage"
             )
         }
     }
