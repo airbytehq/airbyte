@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -51,6 +52,7 @@ class S3Client(
     val bucketConfig: S3BucketConfiguration,
     private val uploadConfig: ObjectStorageUploadConfiguration?,
 ) : ObjectStorageClient<S3Object> {
+    private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String) = flow {
         var request = ListObjectsRequest {
@@ -168,17 +170,6 @@ class S3Client(
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<S3Object> {
-        // TODO: Remove permit handling once we control concurrency with # of accumulators
-        if (uploadPermits != null) {
-            log.info {
-                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-            uploadPermits.acquire()
-            log.info {
-                "Acquired upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-        }
-
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
             this.key = key
@@ -188,7 +179,7 @@ class S3Client(
 
         log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
-        return S3StreamingUpload(client, bucketConfig, response, uploadPermits)
+        return S3StreamingUpload(client, bucketConfig, response)
     }
 }
 
