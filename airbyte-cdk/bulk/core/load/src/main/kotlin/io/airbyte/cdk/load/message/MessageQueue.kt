@@ -64,3 +64,25 @@ class LimitedMessageQueue<T>(limit: Int) : ChannelMessageQueue<T>() {
         }
     }
 }
+
+class UnlimitedMessageQueue<T>() : ChannelMessageQueue<T>() {
+    private val log = KotlinLogging.logger {}
+    private val producerCount = AtomicLong(0)
+    override val channel = Channel<T>(Channel.UNLIMITED)
+
+    fun take(): UnlimitedMessageQueue<T> {
+        val count = producerCount.incrementAndGet()
+        log.info { "Taking queue (count=$count)" }
+        return this
+    }
+
+    override suspend fun close() {
+        val count = producerCount.decrementAndGet()
+        log.info { "Releasing queue (count=$count)" }
+        if (count == 0L) {
+            log.info { "Closing queue" }
+            channel.close()
+        }
+    }
+}
+
