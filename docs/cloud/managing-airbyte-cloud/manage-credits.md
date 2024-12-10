@@ -103,4 +103,4 @@ To unenroll, [email us](mailto:billing@airbyte.io) with your request.
 Credits can no longer be pre-purchased. As of November 2024, Airbyte Cloud has moved to in-arrears billing invoiced monthly.
 :::
 
-Purchased credits expire after 1 year, or 12 months after purchase. Purchased credits are used before accruing an invoice for additional usage. Purchased credits can not be used for the monthly subscription fee.
+Purchased credits expire after 12 months after purchase. Purchased credits are used before accruing an invoice for additional usage. Purchased credits can not be used for the monthly subscription fee.
