@@ -100,7 +100,6 @@ class SapHanaSourceConfigurationFactory :
         // val protocol: String = if (encryption is SslCertificate) "TCPS" else "TCP"
         // Build JDBC URL
         // val address = "(ADDRESS=(PROTOCOL=$protocol)(HOST=%s)(PORT=%d))"
-        // TODO: fixme
         val jdbcUrlFmt = "jdbc:sap://%s:%s"
 
         val defaultSchema: String = pojo.username.uppercase()

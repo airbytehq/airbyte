@@ -27,7 +27,7 @@ airbyte:
         #
         queries:
           - >-
-            SELECT 1 FROM M_DATABASE WHERE 1 = 0
+            SELECT 1 FROM DUMMY WHERE 1 = 0
 
     exception-classifiers:
       regex:

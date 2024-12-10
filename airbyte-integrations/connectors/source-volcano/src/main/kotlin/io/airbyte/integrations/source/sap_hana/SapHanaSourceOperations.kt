@@ -1,46 +1,79 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.sap_hana
 
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldType
-import io.airbyte.cdk.discover.JdbcMetadataQuerier
-import io.airbyte.cdk.jdbc.LongFieldType
-import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
-import io.airbyte.cdk.jdbc.PokemonFieldType
-import io.airbyte.cdk.read.And
-import io.airbyte.cdk.read.Equal
-import io.airbyte.cdk.read.FromNode
-import io.airbyte.cdk.read.Greater
-import io.airbyte.cdk.read.GreaterOrEqual
-import io.airbyte.cdk.read.Lesser
-import io.airbyte.cdk.read.LesserOrEqual
-import io.airbyte.cdk.read.Limit
-import io.airbyte.cdk.read.LimitNode
-import io.airbyte.cdk.read.NoLimit
-import io.airbyte.cdk.read.NoOrderBy
-import io.airbyte.cdk.read.NoWhere
-import io.airbyte.cdk.read.Or
-import io.airbyte.cdk.read.OrderBy
-import io.airbyte.cdk.read.OrderByNode
-import io.airbyte.cdk.read.SelectColumnMaxValue
-import io.airbyte.cdk.read.SelectColumns
-import io.airbyte.cdk.read.SelectNode
-import io.airbyte.cdk.read.SelectQuery
-import io.airbyte.cdk.read.SelectQueryGenerator
-import io.airbyte.cdk.read.SelectQuerySpec
-import io.airbyte.cdk.read.Where
-import io.airbyte.cdk.read.WhereClauseLeafNode
-import io.airbyte.cdk.read.WhereClauseNode
-import io.airbyte.cdk.read.WhereNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.*
+import io.airbyte.cdk.jdbc.*
+import io.airbyte.cdk.read.*
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class SapHanaSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
-    // TODO: implement me.
-    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType = PokemonFieldType
+class SapHanaSourceOperations :
+    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+
+    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
+        when (val type = c.type) {
+            is SystemType -> leafType(type)
+            else -> PokemonFieldType
+        }
+
+    private fun leafType(type: SystemType): JdbcFieldType<*> {
+        // This mapping includes literals returned by the JDBC driver as well as
+        // *_TYPE_NAME column values from queries to ALL_* system tables.
+        return when (type.typeName) {
+            "BINARY_FLOAT" -> FloatFieldType
+            "BINARY_DOUBLE" -> DoubleFieldType
+            "FLOAT",
+            "DOUBLE PRECISION",
+            "REAL", -> BigDecimalFieldType
+            "NUMBER",
+            "NUMERIC",
+            "DECIMAL",
+            "DEC", -> BigDecimalFieldType
+            "INTEGER",
+            "INT",
+            "SMALLINT", -> BigIntegerFieldType
+            "BOOLEAN",
+            "BOOL", -> BooleanFieldType
+            "CHAR",
+            "VARCHAR2",
+            "VARCHAR",
+            "CHARACTER",
+            "CHARACTER VARYING",
+            "CHAR VARYING", -> StringFieldType
+            "NCHAR",
+            "NVARCHAR2",
+            "NCHAR VARYING",
+            "NATIONAL CHARACTER VARYING",
+            "NATIONAL CHARACTER",
+            "NATIONAL CHAR VARYING",
+            "NATIONAL CHAR", -> NStringFieldType
+            "BLOB" -> BinaryStreamFieldType
+            "CLOB" -> ClobFieldType
+            "NCLOB" -> NClobFieldType
+            "BFILE" -> BinaryStreamFieldType
+            "DATE" -> LocalDateTimeFieldType
+            "INTERVALDS",
+            "INTERVAL DAY TO SECOND",
+            "INTERVALYM",
+            "INTERVAL YEAR TO MONTH", -> StringFieldType
+            "JSON" -> JsonStringFieldType
+            "LONG",
+            "LONG RAW",
+            "RAW", -> BinaryStreamFieldType
+            "TIMESTAMP",
+            "TIMESTAMP WITH LOCAL TIME ZONE",
+            "TIMESTAMP WITH LOCAL TZ", -> LocalDateTimeFieldType
+            "TIMESTAMP WITH TIME ZONE",
+            "TIMESTAMP WITH TZ", -> OffsetDateTimeFieldType
+            else -> PokemonFieldType
+        }
+    }
 
     override fun generate(ast: SelectQuerySpec): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
@@ -48,17 +81,13 @@ class SapHanaSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQuery
     fun SelectQuerySpec.sql(): String {
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
-        val rownumClause: String =
+        val limitClause: String =
             when (limit) {
                 NoLimit -> return sqlWithoutLimit
-                Limit(0) -> "ROWNUM < 1"
-                is Limit -> "ROWNUM <= ?"
+                Limit(0) -> "LIMIT 0"
+                is Limit -> "LIMIT ?"
             }
-        return if (where == NoWhere && orderBy == NoOrderBy) {
-            "$sqlWithoutLimit WHERE $rownumClause"
-        } else {
-            "${select.sql()} FROM ($sqlWithoutLimit) WHERE $rownumClause"
-        }
+        return "$sqlWithoutLimit $limitClause"
     }
 
     fun SelectNode.sql(): String =
@@ -70,7 +99,22 @@ class SapHanaSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQuery
 
     fun Field.sql(): String = "\"$id\""
 
-    fun FromNode.sql(): String = "" // TODO: fill me.
+    fun FromNode.sql(): String =
+        when (this) {
+            NoFrom -> "FROM DUMMY"
+            is From ->
+                if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
+            is FromSample -> {
+                val sample: String =
+                    if (sampleRateInv == 1L) {
+                        ""
+                    } else {
+                        " TABLESAMPLE BERNOULLI (${sampleRatePercentage.toPlainString()})"
+                    }
+                val innerFrom: String = From(name, namespace).sql() + sample
+                "SELECT * $innerFrom LIMIT $sampleSize"
+            }
+        }
 
     fun WhereNode.sql(): String =
         when (this) {
@@ -119,4 +163,17 @@ class SapHanaSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQuery
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
+
+    override val globalCursor: MetaField? = null
+
+    override val globalMetaFields: Set<MetaField> = emptySet()
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {
+        return
+    }
 }

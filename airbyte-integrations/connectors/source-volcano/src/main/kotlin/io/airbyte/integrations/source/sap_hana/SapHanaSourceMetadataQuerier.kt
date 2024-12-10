@@ -4,10 +4,7 @@ package io.airbyte.integrations.source.sap_hana
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.JdbcMetadataQuerier
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.discover.*
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
@@ -31,27 +28,32 @@ class SapHanaSourceMetadataQuerier(
     // TODO: Might need a redo on all functions below.
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
-        // TODO: Implement me.
-        return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
+        if (table !in base.memoizedColumnMetadata) return listOf()
+        return base.memoizedColumnMetadata[table]!!.map {
+            Field(it.label, base.fieldTypeMapper.toFieldType(it))
+        }
     }
 
-    data class AllTypesRow(
-        val owner: String,
-        val typeName: String,
-    )
+    fun findTableName(
+        streamID: StreamIdentifier,
+    ): TableName? =
+        base.memoizedTableNames.find {
+            it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
+        }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
         val schemas: List<String> = base.streamNamespaces()
         val sql: String = PK_QUERY_FMTSTR.format(schemas.joinToString { "\'$it\'" })
-        log.info { "Querying Oracle system tables for all primary keys for catalog discovery." }
+        log.info { "Querying SAP HANA system tables for all primary keys for catalog discovery." }
         try {
             base.conn.createStatement().use { stmt: Statement ->
                 stmt.executeQuery(sql).use { rs: ResultSet ->
                     while (rs.next()) {
                         results.add(
                             AllPrimaryKeysRow(
-                                rs.getString("OWNER"),
+                                rs.getString("SCHEMA_NAME"),
                                 rs.getString("TABLE_NAME"),
                                 rs.getString("CONSTRAINT_NAME"),
                                 rs.getInt("POSITION").takeUnless { rs.wasNull() },
@@ -64,7 +66,8 @@ class SapHanaSourceMetadataQuerier(
             log.info { "Discovered all primary keys in ${schemas.size} schema(s)." }
             return@lazy results
                 .groupBy {
-                    val desc = StreamDescriptor().withName(it.tableName).withNamespace(it.owner)
+                    val desc =
+                        StreamDescriptor().withName(it.tableName).withNamespace(it.schemaName)
                     base.findTableName(StreamIdentifier.from(desc))
                 }
                 .mapNotNull { (table, rowsByTable) ->
@@ -99,7 +102,7 @@ class SapHanaSourceMetadataQuerier(
     }
 
     private data class AllPrimaryKeysRow(
-        val owner: String,
+        val schemaName: String,
         val tableName: String,
         val constraintName: String,
         val position: Int?,
@@ -108,29 +111,17 @@ class SapHanaSourceMetadataQuerier(
 
     companion object {
 
-        const val TYPES_QUERY =
-            """
-SELECT OWNER, TYPE_NAME
-FROM ALL_TYPES 
-WHERE OWNER IS NOT NULL AND TYPE_NAME IS NOT NULL           
-        """
-
         const val PK_QUERY_FMTSTR =
             """
-SELECT
-    ac.OWNER,
-    ac.TABLE_NAME,
-    ac.CONSTRAINT_NAME,
-    acc.POSITION,
-    acc.COLUMN_NAME
-FROM
-    ALL_CONSTRAINTS ac
-    JOIN ALL_CONS_COLUMNS acc
-    ON ac.OWNER = acc.OWNER
-    AND ac.CONSTRAINT_NAME = acc.CONSTRAINT_NAME
-WHERE
-    ac.CONSTRAINT_TYPE = 'P'
-    AND ac.OWNER IN (%s)
+SELECT 
+    SCHEMA_NAME,
+    TABLE_NAME,
+    CONSTRAINT_NAME,
+    POSITION,
+    COLUMN_NAME
+FROM CONSTRAINTS
+WHERE IS_PRIMARY_KEY = 'TRUE'
+AND SCHEMA_NAME IN (%s);
             """
     }
 
