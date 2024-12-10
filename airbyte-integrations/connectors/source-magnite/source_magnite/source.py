@@ -100,6 +100,52 @@ class MagniteStream(HttpStream, ABC):
     def config(self):
         return self._config
     
+    @property
+    def url_base(self) -> str:
+        return "https://api.tremorhub.com/"
+
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+    
+    @property
+    def dimensions(self):
+        if self.dimensions_data is None:
+            self.dimensions_data = list(self.dimensions_stream.read_records(sync_mode=SyncMode.full_refresh))
+        return [record['id'] for record in self.dimensions_data]
+    
+    @property
+    def metrics(self):
+        if self.metrics_data is None:
+            self.metrics_data = list(self.metrics_stream.read_records(sync_mode=SyncMode.full_refresh))
+        return [record['id'] for record in self.metrics_data]
+
+
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return self._path
+
+    def get_json_schema(self):  
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {}
+        }
+        self.dimensions
+        self.metrics
+        for record in self.dimensions_data + self.metrics_data:
+            schema["properties"][record["id"]] = {"type": record["type"]}
+        return schema
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -143,48 +189,43 @@ class MagniteStream(HttpStream, ABC):
                     raise Exception(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
         else:
             yield from response_json
-    
-    @property
-    def name(self) -> str:
-        return self._name
 
-    def path(
-        self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return self._path
+    # def _poll_for_results(self, result_url: str, **kwargs) -> Iterable[Mapping]:
+    #     while True:
+    #         result_response = requests.get(result_url, headers=self.authenticator.get_auth_header())
+    #         query_status = result_response.json()['status']
+            
+    #         if result_response.status_code == 412:
+    #             self.logger.warning("Precondition failed! A query is already running")
+    #             return
+    #         if query_status in [1, 2]:  # created or running queries
+    #             self.logger.info(f"Query results are not ready yet. Checking again in {POLLING_IN_SECONDS} seconds...")
+    #             time.sleep(POLLING_IN_SECONDS)
+    #         elif query_status == 3:  # completed query
+    #             self.logger.info(f"Query results are ready")
+    #             data_response = requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header())
+    #             self.logger.info(f"Query results are fetched")
+    #             self.logger.info(f"{sys.getsizeof(data_response)}")
+    #             yield from data_response.json()[:3]
+    #             break
+    #         else:  # error(4) or cancelled(5) query
+    #             error_message = f"Failed to fetch results: {result_response.status_code} - {result_response.text}"
+    #             self.logger.error(error_message)
+    #             raise Exception(error_message)
 
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
-    
-    @property
-    def dimensions(self):
-        if self.dimensions_data is None:
-            self.dimensions_data = list(self.dimensions_stream.read_records(sync_mode=SyncMode.full_refresh))
-        return [record['id'] for record in self.dimensions_data]
-    
-    @property
-    def metrics(self):
-        if self.metrics_data is None:
-            self.metrics_data = list(self.metrics_stream.read_records(sync_mode=SyncMode.full_refresh))
-        return [record['id'] for record in self.metrics_data]
-        
-    
     def request_body_json(
         self,
         stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
+
         if stream_slice and "fromDate" in stream_slice and "toDate" in stream_slice:
             self.logger.info(f"Fetching {self.name} data from {stream_slice['fromDate']} to {stream_slice['toDate']}")
             date_range = {"fromDate": stream_slice["fromDate"], "toDate": stream_slice["toDate"]}
         else:
             date_range = stream_slice
+
         request_payload = {
             "source": self.name,
             # "fields": self.dimensions + self.metrics,
@@ -193,7 +234,7 @@ class MagniteStream(HttpStream, ABC):
         }
         return request_payload
 
-    def chunk_dates(self, start_date: int, end_date: int) -> Iterable[Tuple[int, int]]:
+    # def chunk_dates(self, start_date: int, end_date: int) -> Iterable[Tuple[int, int]]:
     #     after = start_date
     #     while after < end_date:
     #         before = min(end_date, after + timedelta(days=WINDOW_IN_DAYS))
@@ -237,18 +278,6 @@ class MagniteStream(HttpStream, ABC):
                 "toDate": date_to_string(min(start_date + timedelta(days=WINDOW_IN_DAYS - 1), today)),
             }
             start_date += timedelta(days=WINDOW_IN_DAYS)
-
-    def get_json_schema(self):
-        schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {}
-        }
-        self.dimensions
-        self.metrics
-        for record in self.dimensions_data + self.metrics_data:
-            schema["properties"][record["id"]] = {"type": record["type"]}
-        return schema
 
 class SourceMagnite(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
