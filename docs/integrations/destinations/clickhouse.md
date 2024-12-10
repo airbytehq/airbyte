@@ -3,7 +3,7 @@
 :::warning
 The Clickhouse connector is outdated and does not use Destination v2 (typing and deduplication). 
 As a result, it may not work well with large datasets or could have performance issues. 
-If this connector is critical to your project, please consider upvoting and adding comments to the [discussion]([url](https://github.com/airbytehq/airbyte/discussions/35339)) about transitioning Clickhouse to the Destination v2 format. 
+Subscribe to the [discussion](https://github.com/airbytehq/airbyte/discussions/35339) to receive updates and learn more.
 :::
 
 ## Features
