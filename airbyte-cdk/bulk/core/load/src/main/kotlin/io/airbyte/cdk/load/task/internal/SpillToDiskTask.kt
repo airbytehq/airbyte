@@ -48,19 +48,18 @@ interface SpillToDiskTask : InternalScope
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
 class DefaultSpillToDiskTask(
-    private val spillFileProvider: SpillFileProvider,
+    private val fileAccFactory: FileAccumulatorFactory,
     private val inputQueue: QueueReader<Reserved<DestinationStreamEvent>>,
     private val outputQueue: MultiProducerChannel<FileAggregateMessage>,
     private val flushStrategy: FlushStrategy,
     val streamDescriptor: DestinationStream.Descriptor,
     private val diskManager: ReservationManager,
-    private val timeWindow: TimeWindowTrigger,
     private val taskLauncher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
     override suspend fun execute() {
-        val initialAccumulator = createNewAccumulator()
+        val initialAccumulator = fileAccFactory.make()
 
         val registration = outputQueue.registerProducer()
         registration.use {
@@ -84,7 +83,7 @@ class DefaultSpillToDiskTask(
         acc: FileAccumulator,
         event: StreamRecordEvent,
     ): FileAccumulator {
-        val (spillFile, outputStream, range, sizeBytes) = acc
+        val (spillFile, outputStream, timeWindow, range, sizeBytes) = acc
         // once we have received a record for the stream, consider the aggregate opened.
         timeWindow.open()
 
@@ -102,13 +101,19 @@ class DefaultSpillToDiskTask(
             flushStrategy.shouldFlush(streamDescriptor, rangeProcessed, bytesProcessed)
 
         if (!shouldPublish) {
-            return FileAccumulator(spillFile, outputStream, rangeProcessed, bytesProcessed)
+            return FileAccumulator(
+                spillFile,
+                outputStream,
+                timeWindow,
+                rangeProcessed,
+                bytesProcessed,
+            )
         }
 
         val file = SpilledRawMessagesLocalFile(spillFile, bytesProcessed, rangeProcessed)
         publishFile(file)
         outputStream.close()
-        return createNewAccumulator()
+        return fileAccFactory.make()
     }
 
     /**
@@ -119,7 +124,7 @@ class DefaultSpillToDiskTask(
         acc: FileAccumulator,
         event: StreamCompleteEvent,
     ): FileAccumulator {
-        val (spillFile, outputStream, range, sizeBytes) = acc
+        val (spillFile, outputStream, timeWindow, range, sizeBytes) = acc
         if (sizeBytes == 0L) {
             log.info { "Skipping empty file $spillFile" }
             // Cleanup empty file
@@ -147,6 +152,7 @@ class DefaultSpillToDiskTask(
         return FileAccumulator(
             spillFile,
             outputStream,
+            timeWindow,
             range,
             sizeBytes,
         )
@@ -159,10 +165,10 @@ class DefaultSpillToDiskTask(
     private suspend fun accFlushEvent(
         acc: FileAccumulator,
     ): FileAccumulator {
-        val (spillFile, outputStream, range, sizeBytes) = acc
+        val (spillFile, outputStream, timeWindow, range, sizeBytes) = acc
         val shouldPublish = timeWindow.isComplete()
         if (!shouldPublish) {
-            return FileAccumulator(spillFile, outputStream, range, sizeBytes)
+            return FileAccumulator(spillFile, outputStream, timeWindow, range, sizeBytes)
         }
 
         log.info {
@@ -178,11 +184,7 @@ class DefaultSpillToDiskTask(
             )
         publishFile(file)
         outputStream.close()
-        return createNewAccumulator()
-    }
-
-    private fun createNewAccumulator(): FileAccumulator {
-        return spillFileProvider.createTempFile().let { FileAccumulator(it, it.outputStream()) }
+        return fileAccFactory.make()
     }
 
     private suspend fun publishFile(file: SpilledRawMessagesLocalFile) {
@@ -200,13 +202,11 @@ interface SpillToDiskTaskFactory {
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
-    private val spillFileProvider: SpillFileProvider,
+    private val fileAccFactory: FileAccumulatorFactory,
     private val queueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
     @Named("diskManager") private val diskManager: ReservationManager,
-    private val clock: Clock,
-    @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
     @Named("fileAggregateQueue")
     private val fileAggregateQueue: MultiProducerChannel<FileAggregateMessage>,
 ) : SpillToDiskTaskFactory {
@@ -214,17 +214,31 @@ class DefaultSpillToDiskTaskFactory(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
-        val timeWindow = TimeWindowTrigger(clock, windowWidthMs)
 
         return DefaultSpillToDiskTask(
-            spillFileProvider,
+            fileAccFactory,
             queueSupplier.get(stream),
             fileAggregateQueue,
             flushStrategy,
             stream,
             diskManager,
-            timeWindow,
-            taskLauncher
+            taskLauncher,
+        )
+    }
+}
+
+@Singleton
+class FileAccumulatorFactory(
+    @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
+    private val spillFileProvider: SpillFileProvider,
+    private val clock: Clock,
+) {
+    fun make(): FileAccumulator {
+        val file = spillFileProvider.createTempFile()
+        return FileAccumulator(
+            file,
+            file.outputStream(),
+            TimeWindowTrigger(clock, windowWidthMs),
         )
     }
 }
@@ -232,6 +246,7 @@ class DefaultSpillToDiskTaskFactory(
 data class FileAccumulator(
     val spillFile: Path,
     val spillFileOutputStream: OutputStream,
+    val timeWindow: TimeWindowTrigger,
     val range: Range<Long>? = null,
     val sizeBytes: Long = 0,
 )

@@ -48,7 +48,7 @@ class SpillToDiskTaskTest {
     @Nested
     @ExtendWith(MockKExtension::class)
     inner class UnitTests {
-        @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
+        @MockK(relaxed = true) lateinit var fileAccumulatorFactory: FileAccumulatorFactory
 
         @MockK(relaxed = true) lateinit var flushStrategy: FlushStrategy
 
@@ -66,16 +66,22 @@ class SpillToDiskTaskTest {
 
         @BeforeEach
         fun setup() {
+            val acc =
+                FileAccumulator(
+                    mockk(),
+                    mockk(),
+                    timeWindow,
+                )
+            every { fileAccumulatorFactory.make() } returns acc
             inputQueue = DestinationStreamEventQueue()
             task =
                 DefaultSpillToDiskTask(
-                    spillFileProvider,
+                    fileAccumulatorFactory,
                     inputQueue,
                     outputQueue,
                     flushStrategy,
                     MockDestinationCatalogFactory.stream1.descriptor,
                     diskManager,
-                    timeWindow,
                     taskLauncher,
                 )
         }
@@ -154,6 +160,7 @@ class SpillToDiskTaskTest {
         private lateinit var diskManager: ReservationManager
         private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
         private lateinit var taskLauncher: MockTaskLauncher
+        private lateinit var fileAccumulatorFactory: FileAccumulatorFactory
         private val clock: Clock = mockk(relaxed = true)
         private val flushWindowMs = 60000L
 
@@ -170,17 +177,16 @@ class SpillToDiskTaskTest {
                 DestinationStreamQueueSupplier(
                     MockDestinationCatalogFactory().make(),
                 )
+            fileAccumulatorFactory = FileAccumulatorFactory(flushWindowMs, spillFileProvider, clock)
             taskLauncher = MockTaskLauncher()
             memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
             spillToDiskTaskFactory =
                 DefaultSpillToDiskTaskFactory(
-                    spillFileProvider,
+                    fileAccumulatorFactory,
                     queueSupplier,
                     MockFlushStrategy(),
                     diskManager,
-                    clock,
-                    flushWindowMs,
                     outputQueue,
                 )
         }
