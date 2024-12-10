@@ -425,6 +425,11 @@ const deployAirbyte = {
   },
   items: [
     {
+      type: "doc",
+      id: "deploying-airbyte/deploy-airbyte-aws-eks",
+    },
+
+    {
       type: "category",
       label: "Infrastructure",
       items: [
