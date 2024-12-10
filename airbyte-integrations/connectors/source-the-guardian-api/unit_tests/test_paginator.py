@@ -1,14 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import logging
 from unittest.mock import MagicMock
 
-import airbyte_cdk
 import pytest
 import requests
-from airbyte_cdk.test.utils.manifest_only_fixtures import components_module, connector_dir
 
-logger = logging.getLogger(__name__)
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
     """Helper function to create mock responses"""
