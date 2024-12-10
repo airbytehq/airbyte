@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING, Mapping, Any
 
 import dagger
 import semver
@@ -14,7 +14,7 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
 
-BUMP_VERSION_METHOD_MAPPING: Mapping[str, callable] = {
+BUMP_VERSION_METHOD_MAPPING: Mapping[str, Any] = {
     "patch": semver.Version.bump_patch,
     "minor": semver.Version.bump_minor,
     "major": semver.Version.bump_major,
