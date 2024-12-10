@@ -1,13 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import csv
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 import json
 import time
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -22,7 +21,7 @@ from .utils import (
 )
 
 DATE_FORMAT = "%Y-%m-%d"
-WINDOW_IN_DAYS = 45
+WINDOW_IN_DAYS = 1
 POLLING_IN_SECONDS = 30
 
 class BaseResourceStream(HttpStream, ABC):
@@ -81,6 +80,10 @@ class MetricsStream(BaseResourceStream):
 
 class MagniteStream(HttpStream, ABC):
     http_method = "POST"
+    max_retries = 90
+    cursor_field = "fromDate"
+    # _state: MutableMapping[str, Any] = {}
+
     def __init__(self, config: Mapping[str, Any], name: str, path: str, primary_key: Union[str, List[str]], data_field: str, **kwargs: Any) -> None:
         self._config = config
         self._name = name
@@ -93,8 +96,6 @@ class MagniteStream(HttpStream, ABC):
         self.metrics_data = None
         self.authenticator = kwargs.get("authenticator")
         super().__init__(**kwargs)
-
-    url_base = "https://api.tremorhub.com/"
 
     @property
     def config(self):
@@ -154,19 +155,43 @@ class MagniteStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 412:
-            return True
-        return super().should_retry(response)
+    # def should_retry(self, response: requests.Response) -> bool:
+    #     if response.status_code == 412 and self.max_retries > 0:
+    #         self.max_retries -= 1
+    #         return True
+    #     return super().should_retry(response)
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == 412:
             self.logger.warning("Precondition failed! A query is already running.")
             return POLLING_IN_SECONDS * 2
         return super().backoff_time(response)
-    
+
+    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    #     response_json = response.json()
+    #     if self._data_field:
+    #         result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}"
+    #         self.logger.info(f"Retrieving report {response_json[self._data_field]}...")
+    #         # yield from self._poll_for_results(result_url, **kwargs)
+    #         yield from self._poll_for_results(result_url, **kwargs)
+    #         # self.logger.info(f"Query results are yielded")
+    #     else:
+    #         print("here")
+    #         yield from response_json
+    def fetch_csv_rows(self, api_url):
+        # Open a connection to the API with streaming enabled
+        response = requests.get(api_url, headers=self.authenticator.get_auth_header(), stream=True)
+        response.raise_for_status()  # Raise an error if the request failed
+        self.logger.info(f"Query results fetched")
+        
+        # Decode the content and iterate over lines
+        for line in response.iter_lines(decode_unicode=True):
+            if line:  # Skip empty lines
+                yield line
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+
         if self._data_field:
             result_url = f"{self.url_base}{self.path()}/{response_json[self._data_field]}"
             self.logger.info(f"Retrieving report {response_json[self._data_field]}...")
@@ -181,8 +206,34 @@ class MagniteStream(HttpStream, ABC):
                     time.sleep(POLLING_IN_SECONDS)
                 elif query_status == 3: # completed query
                     self.logger.info(f"Query results ready")
-                    data_response = requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header())
-                    yield from data_response.json()
+                    rows = self.fetch_csv_rows(f"{result_url}/results?fmt=csv")
+                    # Pass the lines to csv.reader to handle CSV parsing
+                    csv_reader = csv.reader(rows)
+                    header = next(csv_reader, None)  # Get the first row as the header
+                    if not header:
+                        raise ValueError("The CSV response is empty or invalid.")
+                    for row in csv_reader:
+                        yield dict(zip(header, row))
+                    # with requests.get(f"{result_url}/results", headers=self.authenticator.get_auth_header(), stream=True) as data_response:
+                    #     response.raise_for_status()  # Raise an exception for HTTP errors
+
+                        # decoded_stream = codecs.getreader("utf-8")(data_response.raw)
+
+                        # for item in data_response.raw:
+                        #     print(item)
+                        #     print()
+                        # for item in data_response:
+                        #     print(item)
+                        #     print()
+                        # # try:
+                        # for item in ijson.items(decoded_stream, 'item', use_float=True):
+                            
+                        #     print(item)
+                        #     yield item
+                    # except Exception as e:
+                    #    self.logger.info(f"{e}, ")
+
+                        
                     break
                 else: # error(4) or cancelled(5) query
                     self.logger.error(f"Failed to fetch results: {result_response.status_code} - {result_response.text}")
