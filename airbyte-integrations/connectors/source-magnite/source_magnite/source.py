@@ -91,6 +91,7 @@ class MagniteStream(HttpStream, ABC):
         self.metrics_stream = MetricsStream(name, **kwargs)
         self.dimensions_data = None
         self.metrics_data = None
+        self.authenticator = kwargs.get("authenticator")
         super().__init__(**kwargs)
 
     url_base = "https://api.tremorhub.com/"
@@ -280,8 +281,6 @@ class SourceMagnite(AbstractSource):
         auth = CookieAuthenticator(config)
         streams = [
             MagniteStream(config, name="adstats-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
-            MagniteStream(config, name="deals-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
-            MagniteStream(config, name="platform-adsource-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth),
-            MagniteStream(config, name="platform-supply-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)
+            MagniteStream(config, name="deals-publisher", path="v1/resources/queries", primary_key=None, data_field="code", authenticator=auth)
         ]
         return streams
