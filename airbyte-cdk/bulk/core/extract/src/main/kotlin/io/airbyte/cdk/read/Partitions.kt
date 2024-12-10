@@ -156,4 +156,4 @@ data class PartitionReadCheckpoint(
 )
 
 /** A [PartitionReader] that has a time limit for its execution. */
-interface TimeBoundPartitionReader : PartitionReader;
+interface TimeBoundPartitionReader : PartitionReader
