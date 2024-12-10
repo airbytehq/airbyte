@@ -75,7 +75,6 @@ async def run_connector_up_to_date_pipeline(
     auto_merge: bool = False,
     specific_dependencies: List[str] = [],
     bump_connector_version: bool = True,
-    rc: bool = False,
 ) -> ConnectorReport:
     async with semaphore:
         async with context:
@@ -111,7 +110,7 @@ async def run_connector_up_to_date_pipeline(
             # NOTE:
             # BumpConnectorVersion will already work for manifest-only and Java connectors too
             if bump_connector_version and one_previous_step_is_successful:
-                bump_version = BumpConnectorVersion(context, connector_directory, BUMP_TYPE, rc)
+                bump_version = BumpConnectorVersion(context, connector_directory, BUMP_TYPE)
                 bump_version_result = await bump_version.run()
                 step_results.append(bump_version_result)
                 if bump_version_result.success:

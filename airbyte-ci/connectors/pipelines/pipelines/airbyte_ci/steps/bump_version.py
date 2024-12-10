@@ -117,7 +117,7 @@ class SetConnectorVersion(StepModifyingFiles):
 
 
 class BumpConnectorVersion(SetConnectorVersion):
-    def __init__(self, context: ConnectorContext, connector_directory: dagger.Directory, bump_type: str, rc: bool) -> None:
+    def __init__(self, context: ConnectorContext, connector_directory: dagger.Directory, bump_type: str, rc: bool = False) -> None:
         self.bump_type = bump_type
         new_version = self.get_bumped_version(context.connector.version, bump_type, rc)
         super().__init__(
