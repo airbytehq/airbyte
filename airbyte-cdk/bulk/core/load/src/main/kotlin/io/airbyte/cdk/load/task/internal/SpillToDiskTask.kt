@@ -149,6 +149,7 @@ class DefaultSpillToDiskTask(
 
             publishFile(file)
         }
+        // this result should not be used as upstream will close the channel.
         return FileAccumulator(
             spillFile,
             outputStream,
