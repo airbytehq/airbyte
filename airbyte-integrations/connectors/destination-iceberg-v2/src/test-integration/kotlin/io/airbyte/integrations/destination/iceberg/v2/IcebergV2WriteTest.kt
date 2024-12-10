@@ -23,7 +23,6 @@ abstract class IcebergV2WriteTest(configContents: String) :
         IcebergV2DataDumper,
         NoopDestinationCleaner,
         NoopExpectedRecordMapper,
-        // TODO let's validate these - I'm making some assumptions about how iceberg works
         isStreamSchemaRetroactive = true,
         supportsDedup = false,
         stringifySchemalessObjects = true,
