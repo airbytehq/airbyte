@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_box_devrel"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = {extras = ["file-based"], version = "^1"}
+python = ">=3.10,<3.12"
 box-sdk-gen = "^1.8.0"
+airbyte-cdk = "^6.9.2"
 
 
 [tool.poetry.scripts]
