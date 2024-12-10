@@ -7,6 +7,5 @@ import sys
 
 from destination_deepset import DestinationDeepset
 
-
 if __name__ == "__main__":
     DestinationDeepset().run(sys.argv[1:])

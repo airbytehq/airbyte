@@ -8,9 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Deepset",
     "type": "object",
-    "required": [
-      "TODO -- fix me!"
-    ],
+    "required": ["TODO -- fix me!"],
     "additionalProperties": false,
     "properties": {
       "TODO": {
