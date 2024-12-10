@@ -415,7 +415,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             payouts,
-            ParentIncrementalStipeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="payout_balance_transactions",
                 path=lambda self, stream_slice, *args, **kwargs: "balance_transactions",
                 parent=payouts,
