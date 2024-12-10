@@ -167,7 +167,7 @@ class DefaultDestinationTaskLauncher(
             enqueue(task)
         }
 
-        (0 until /*config.numProcessRecordsWorkers*/2).forEach {
+        (0 until config.numProcessRecordsWorkers).forEach {
             log.info { "Launching process file task $it" }
             enqueue(processFileTaskFactory.make(this))
         }

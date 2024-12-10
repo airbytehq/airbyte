@@ -69,6 +69,7 @@ class S3MultipartUpload<T : OutputStream>(
         launch {
             val uploadedParts = mutableListOf<CompletedPart>()
             for (bytes in partQueue) {
+                log.error { "Uploading part ${uploadedParts.size}" }
                 val part = uploadPart(bytes, uploadedParts)
                 uploadedParts.add(part)
             }
