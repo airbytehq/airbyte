@@ -1,19 +1,47 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/deepset",
   "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
+    "overwrite",
+    "append"
   ],
   "supportsIncremental": true,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Destination Deepset",
+    "title": "Deepset Destination Spec",
     "type": "object",
-    "required": ["TODO -- fix me!"],
+    "required": [
+      "api_key",
+      "workspace"
+    ],
     "additionalProperties": false,
     "properties": {
-      "TODO": {
+      "api_key": {
         "type": "string",
-        "description": "FIX ME"
+        "description": "Your deepset cloud API key"
+      },
+      "base_url": {
+        "type": "string",
+        "default": "https://api.cloud.deepset.ai/",
+        "description": "Base url of your deepset cloud instance. Configure this if using an on-prem instance."
+      },
+      "workspace": {
+        "type": "string",
+        "description": "Name of workspace to which to sync the data."
+      },
+      "write_mode": {
+        "type": "string",
+        "enum": [
+          "FAIL",
+          "KEEP",
+          "OVERWRITE"
+        ],
+        "default": "KEEP",
+        "description": "Specifies what to do when a file with the same name already exists in the workspace."
+      },
+      "sync": {
+        "type": "boolean",
+        "default": true,
+        "description": "Ensure that the files have been saved and are visible in deepset cloud."
       }
     }
   }

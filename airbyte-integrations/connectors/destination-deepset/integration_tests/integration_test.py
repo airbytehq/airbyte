@@ -4,6 +4,6 @@
 from __future__ import annotations
 
 
-def integration_test():
+def integration_test() -> None:
     # TODO write integration tests
     pass
