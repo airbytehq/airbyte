@@ -39,8 +39,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
     RemoteObject<S3BucketConfiguration> {
@@ -55,7 +53,6 @@ class S3Client(
     private val uploadConfig: ObjectStorageUploadConfiguration?,
 ) : ObjectStorageClient<S3Object> {
     private val log = KotlinLogging.logger {}
-    private val uploadPermits = uploadConfig?.maxNumConcurrentUploads?.let { Semaphore(it) }
 
     override suspend fun list(prefix: String) = flow {
         var request = ListObjectsRequest {
@@ -142,16 +139,7 @@ class S3Client(
         streamProcessor: StreamProcessor<U>?,
         block: suspend (OutputStream) -> Unit
     ): S3Object {
-        if (uploadPermits != null) {
-            uploadPermits.withPermit {
-                log.info {
-                    "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-                }
-                return streamingUploadInner(key, metadata, streamProcessor, block)
-            }
-        } else {
-            return streamingUploadInner(key, metadata, streamProcessor, block)
-        }
+        return streamingUploadInner(key, metadata, streamProcessor, block)
     }
 
     private suspend fun <U : OutputStream> streamingUploadInner(
@@ -182,17 +170,6 @@ class S3Client(
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<S3Object> {
-        // TODO: Remove permit handling once we control concurrency with # of accumulators
-        if (uploadPermits != null) {
-            log.info {
-                "Attempting to acquire upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-            uploadPermits.acquire()
-            log.info {
-                "Acquired upload permit for $key (${uploadPermits.availablePermits} available)"
-            }
-        }
-
         val request = CreateMultipartUploadRequest {
             this.bucket = bucketConfig.s3BucketName
             this.key = key
@@ -202,7 +179,7 @@ class S3Client(
 
         log.info { "Starting multipart upload for $key (uploadId=${response.uploadId})" }
 
-        return S3StreamingUpload(client, bucketConfig, response, uploadPermits)
+        return S3StreamingUpload(client, bucketConfig, response)
     }
 }
 

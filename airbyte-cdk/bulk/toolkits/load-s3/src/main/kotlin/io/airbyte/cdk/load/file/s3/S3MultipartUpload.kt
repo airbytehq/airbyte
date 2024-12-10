@@ -25,7 +25,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Semaphore
 
 /**
  * An S3MultipartUpload that provides an [OutputStream] abstraction for writing data. This should
@@ -156,7 +155,6 @@ class S3StreamingUpload(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     private val bucketConfig: S3BucketConfiguration,
     private val response: CreateMultipartUploadResponse,
-    private val uploadPermits: Semaphore?,
 ) : StreamingUpload<S3Object> {
     private val log = KotlinLogging.logger {}
     private val uploadedParts = ConcurrentLinkedQueue<CompletedPart>()
@@ -189,9 +187,6 @@ class S3StreamingUpload(
             this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts.toList() }
         }
         client.completeMultipartUpload(request)
-        // TODO: Remove permit handling once concurrency is managed by controlling # of concurrent
-        // uploads
-        uploadPermits?.release()
         return S3Object(response.key!!, bucketConfig)
     }
 }
