@@ -7,8 +7,8 @@ from typing import Any, Mapping
 import logging
 
 # from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
-
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+   
 # class MissingAccessTokenError(Exception):
 #     """
 #     Raised when the token is `None` instead of the real value
@@ -26,7 +26,7 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 url_base = "https://api.tremorhub.com/v1/resources/sessions"
 DOMAIN = ".tremorhub.com"
 
-class CookieAuthenticator(HttpAuthenticator):
+class CookieAuthenticator(DeclarativeAuthenticator):
 
     def __init__(self, config):
         self.cookie_jar = self.login(config["access_key"], config["secret_key"])
