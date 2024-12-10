@@ -214,6 +214,7 @@ class PostgresDestination :
         @Throws(Exception::class)
         @JvmStatic
         fun main(args: Array<String>) {
+            LOGGER.info("log message to bust cache")
             addThrowableForDeinterpolation(PSQLException::class.java)
             val destination = sshWrappedDestination()
             LOGGER.info("starting destination: {}", PostgresDestination::class.java)
