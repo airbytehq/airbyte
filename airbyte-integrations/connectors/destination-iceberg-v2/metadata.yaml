@@ -10,7 +10,7 @@ data:
   name: Iceberg V2 Destination
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: false
   releaseStage: alpha

@@ -8,6 +8,9 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 
+const val ACCESS_KEY_ID = "access-key-id"
+const val SECRET_ACCESS_KEY = "secret-access-key"
+
 class GlueCredentialsProvider private constructor(private val credentials: AwsBasicCredentials) :
     AwsCredentialsProvider {
     override fun resolveCredentials(): AwsCredentials {
@@ -18,10 +21,10 @@ class GlueCredentialsProvider private constructor(private val credentials: AwsBa
         @JvmStatic
         fun create(properties: Map<String, String>): GlueCredentialsProvider {
             val accessKey =
-                properties["access-key-id"]
+                properties[ACCESS_KEY_ID]
                     ?: throw IllegalArgumentException("Missing property: access-key-id")
             val secretKey =
-                properties["secret-access-key"]
+                properties[SECRET_ACCESS_KEY]
                     ?: throw IllegalArgumentException("Missing property: secret-access-key")
             return GlueCredentialsProvider(AwsBasicCredentials.create(accessKey, secretKey))
         }

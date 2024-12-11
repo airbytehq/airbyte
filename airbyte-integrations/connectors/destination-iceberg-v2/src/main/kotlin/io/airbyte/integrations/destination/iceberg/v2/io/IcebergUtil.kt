@@ -16,8 +16,10 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
+import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.hadoop.conf.Configuration
@@ -248,8 +250,8 @@ class IcebergUtil {
                             config.s3BucketConfiguration.s3BucketRegion.region,
                         AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                             GlueCredentialsProvider::class.java.name,
-                        "${clientCredentialsProviderPrefix}access-key-id" to awsAccessKeyId,
-                        "${clientCredentialsProviderPrefix}secret-access-key" to awsSecretAccessKey
+                        "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
+                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
                     )
 
                 glueProperties + s3CommonProperties
