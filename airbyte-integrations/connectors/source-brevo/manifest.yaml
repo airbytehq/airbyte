@@ -484,6 +484,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/companies"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - last_updated_at
+              value: "{{ record['attributes']['last_updated_at'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_at
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
     companies_attributes:
       type: DeclarativeStream
       name: companies_attributes
