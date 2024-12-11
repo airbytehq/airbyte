@@ -150,7 +150,7 @@ class Users(MicrosoftGraphStream):
         return ["full_refresh", "incremental"]
 
     def path(self, **kwargs) -> str:
-        return "users/delta"
+        return "users/delta?$select=businessPhones,displayName,givenName,jobTitle,mail,mobilePhone,officeLocation,preferredLanguage,surname,userPrincipalName,id,userType"
 
 
 class Groups(MicrosoftGraphStream):
