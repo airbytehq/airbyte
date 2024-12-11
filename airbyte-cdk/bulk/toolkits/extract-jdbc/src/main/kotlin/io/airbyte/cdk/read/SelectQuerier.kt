@@ -45,8 +45,8 @@ interface SelectQuerier {
 
 /** Default implementation of [SelectQuerier]. */
 @Singleton
-open class JdbcSelectQuerier(
-    val jdbcConnectionFactory: JdbcConnectionFactory,
+class JdbcSelectQuerier(
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {
     override fun executeQuery(
         q: SelectQuery,
