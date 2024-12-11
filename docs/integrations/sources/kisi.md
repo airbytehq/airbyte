@@ -39,6 +39,7 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2024-12-11 | [48983](https://github.com/airbytehq/airbyte/pull/48983) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-05 | [48356](https://github.com/airbytehq/airbyte/pull/48356) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.4 | 2024-11-05 | [48332](https://github.com/airbytehq/airbyte/pull/48332) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47914](https://github.com/airbytehq/airbyte/pull/47914) | Update dependencies |
