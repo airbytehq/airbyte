@@ -76,7 +76,8 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.2 | 2024-12-11 | [47678](https://github.com/airbytehq/airbyte/pull/47678) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44097](https://github.com/airbytehq/airbyte/pull/44097) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43817](https://github.com/airbytehq/airbyte/pull/43817) | Update dependencies |
 | 0.1.13 | 2024-08-03 | [43057](https://github.com/airbytehq/airbyte/pull/43057) | Update dependencies |
