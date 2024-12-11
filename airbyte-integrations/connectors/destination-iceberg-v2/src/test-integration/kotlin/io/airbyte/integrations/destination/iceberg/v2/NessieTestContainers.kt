@@ -7,7 +7,8 @@ package io.airbyte.integrations.destination.iceberg.v2
 import io.airbyte.cdk.load.util.setOnce
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.DefaultAsserter.fail
-import org.projectnessie.minio.MinioContainer
+import org.projectnessie.testing.nessie.NessieContainer
+import org.testcontainers.containers.MinIOContainer
 
 /**
  * Shared test containers for all nessie tests, so that we don't launch redundant docker containers
@@ -30,15 +31,21 @@ object NessieTestContainers {
         if (startRunOnce.setOnce()) {
             //            testcontainers.start()
             val minio =
-                MinioContainer()
-                    .withEnv("MINIO_ROOT_USER", "minioadmin")
-                    .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
-                    .withEnv("MINIO_ADDRESS", ":9000")
-                    .withEnv("MINIO_CONSOLE_ADDRESS", ":9090")
-                    .withExposedPorts(9000)
+                MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
+                    .withUserName("minioadmin")
+                    .withPassword("minioadmin")
             minio.start()
+            val nessieBuilder =
+                NessieContainer.builder()
+                    .dockerImage("ghcr.io/projectnessie/nessie:0.100.0")
+                    .build()
+            val nessie = nessieBuilder.createContainer()
+            nessie.start()
+
+            val nessiePort = nessie.getMappedPort(19120)
             val minioPort = minio.getMappedPort(9000)
-            fail("Started minio. Port is $minioPort")
+
+            fail("Started nessie. Port is $nessiePort")
         }
         //        } else {
         //            // afaict there's no method to wait for the containers to start
