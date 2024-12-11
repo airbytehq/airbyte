@@ -215,6 +215,8 @@ async def with_installed_python_package(
     has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
+    container = container.with_user("root")
+    # All of these will require root access to install dependencies
     if has_pyproject_toml:
         container = with_poetry_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_poetry(container, additional_dependency_groups, install_root_package)
@@ -224,6 +226,8 @@ async def with_installed_python_package(
     elif has_requirements_txt:
         container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_requirements_txt(container)
+
+    container = container.with_user(user)
 
     return container
 
