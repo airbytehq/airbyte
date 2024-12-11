@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.jsonl
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
+import io.airbyte.cdk.integrations.destination.s3.util.Stringify
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -31,6 +33,7 @@ class JsonLSerializedBuffer(
     gzipCompression: Boolean,
     private val flattenData: Boolean = false,
     private val useV2FieldNames: Boolean = false,
+    private val stringifyData: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
 
     private lateinit var printWriter: PrintWriter
@@ -85,6 +88,24 @@ class JsonLSerializedBuffer(
         printWriter.println(Jsons.serialize(json))
     }
 
+    // Get all root level objets as strings
+    if (stringifyData) {
+        try {
+            val rootNode: JsonNode = MAPPER.readTree(json.toString())
+            rootNode.fieldNames().forEachRemaining(fieldName -> {
+                val node: JsonNode = rootNode.get(fieldName)
+                if (node.isObject()) {
+                    // Convert the root level object to a string
+                    val jsonString: String = node.toString()
+                    // set the value of the root level object in the "json" ObjectNode as a string
+                    json.put(fieldName, jsonString)
+                }
+            })
+        } catch (e: JsonProcessingException) {
+            throw RuntimeException(e)
+        }
+    }
+
     @Suppress("DEPRECATION")
     override fun writeRecord(
         recordString: String,
@@ -126,11 +147,13 @@ class JsonLSerializedBuffer(
                     if (config == null) S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
                     else config.compressionType
                 val flattening = if (config == null) Flattening.NO else config.flatteningType
+                val stringify = if (config == null) Stringify.NO else config.stringifyType
                 JsonLSerializedBuffer(
                     createStorageFunction.call(),
                     compressionType != CompressionType.NO_COMPRESSION,
                     flattening != Flattening.NO,
                     useV2FieldNames,
+                    stringify != Stringify.NO,
                 )
             }
         }
