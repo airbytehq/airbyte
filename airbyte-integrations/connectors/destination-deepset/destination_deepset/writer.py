@@ -1,27 +1,27 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
-from typing import Any
-
-from deepset_cloud_sdk.workflows.sync_client.files import upload_bytes
+from collections.abc import Iterable
 
 from airbyte_cdk.models import AirbyteMessage
-from destination_deepset.models import DeepsetCloudFileBytes, DeepsetConfig
+from destination_deepset.api import APIError, DeepsetCloudApi
+from destination_deepset.models import DeepsetCloudFile
 
 
-class Writer:
-    def __init__(self, config: Mapping[str, Any]) -> None:
-        self.config: DeepsetConfig = DeepsetConfig.parse_obj(config)
+class DeepsetCloudFileWriter:
+    def __init__(self, api_client: DeepsetCloudApi) -> None:
+        self.client = api_client
 
-    def write(self, messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessage]:
-        files = [DeepsetCloudFileBytes.from_message(message) for message in messages]
-        upload_bytes(
-            files=files,
-            api_key=self.config.api_key,
-            api_url=self.config.base_url,
-            workspace_name=self.config.workspace,
-            write_mode=self.config.write_mode.value,
-            blocking=self.config.sync,
-        )
-        # @todo[abraham]: report which files failed giving airbyte a chance to retry them
-        return []
+    def write(self, message: AirbyteMessage) -> AirbyteMessage:
+        try:
+            file_id = self.client.upload_file(DeepsetCloudFile.from_message(message))
+        except APIError:
+            # @todo[abraham]: return a message signifying the failure
+            raise
+        else:
+            # @todo[abraham]: return a message signifying success with the file id as additional context
+            pass
+
+        return message
+
+    def batch_write(self, messages: Iterable[AirbyteMessage], batch_size: int = 20) -> Iterable[AirbyteMessage]:
+        pass

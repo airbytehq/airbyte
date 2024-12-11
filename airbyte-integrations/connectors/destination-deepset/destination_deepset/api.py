@@ -1,0 +1,96 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+import httpx
+from httpx import HTTPError, HTTPStatusError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
+
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
+
+
+class APIError(RuntimeError):
+    pass
+
+
+class FileTypeError(APIError):
+    """Raised when the file's extension does not match one of the supported file types."""
+
+    def __str__(self) -> str:
+        return f"File type not supported. Supported file extensions: {SUPPORTED_FILE_EXTENSIONS}"
+
+
+class FileUploadError(APIError):
+    """Raised when the server is unable to successfully upload the file."""
+
+    def __str__(self) -> str:
+        return "File upload failed."
+
+
+class DeepsetCloudApi:
+    def __init__(self, config: DeepsetCloudConfig) -> None:
+        self.config = config
+        self.http = httpx.Client(
+            base_url=self.config.base_url,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {config.api_key}",
+                "X-Client-Source": "deepset-cloud-sdk",
+            },
+            follow_redirects=True,
+        )
+
+        # retry settings in seconds
+        self.max = 60
+        self.multiplier = 0.5
+
+    def health_check(self) -> bool:
+        try:
+            with retry(
+                retry=retry_if_exception_type(HTTPError),
+                stop=stop_after_attempt(self.config.retries),
+                wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
+                reraise=True,
+            ):
+                response = self.http.get("/health")
+                response.raise_for_status()
+        except Exception:
+            return False
+        else:
+            return True
+
+    def upload_file(self, file: DeepsetCloudFile) -> UUID:
+        """Upload file to deepset Cloud.
+
+        :param file: The file to upload.
+        :return: The ID of the uploaded file.
+        """
+        if file.extension not in SUPPORTED_FILE_EXTENSIONS:
+            raise FileTypeError
+
+        try:
+            with retry(
+                retry=retry_if_exception_type(HTTPError),
+                stop=stop_after_attempt(self.config.retries),
+                wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
+                reraise=True,
+            ):
+                response = self.http.post(
+                    f"/api/v1/workspaces/{self.config.workspace}/files",
+                    files={"file": (file.name, file.content)},
+                    data={"meta": file.meta_as_string},
+                    params={"write_mode": self.config.write_mode},
+                )
+                response.raise_for_status()
+
+            if file_id := response.json().get("file_id"):
+                return UUID(file_id)
+
+        except HTTPStatusError as ex:
+            status_code, response_text = ex.response.status_code, ex.response.text
+            message = f"File upload failed: {status_code = }, {response_text = }."
+            raise FileUploadError(message) from ex
+        except Exception as ex:
+            raise FileUploadError from ex
+
+        raise FileUploadError
