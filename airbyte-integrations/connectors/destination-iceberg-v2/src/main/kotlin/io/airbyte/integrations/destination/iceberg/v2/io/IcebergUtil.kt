@@ -251,7 +251,8 @@ class IcebergUtil {
                         AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
                             GlueCredentialsProvider::class.java.name,
                         "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
-                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to awsSecretAccessKey
+                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to
+                            awsSecretAccessKey
                     )
 
                 glueProperties + s3CommonProperties
