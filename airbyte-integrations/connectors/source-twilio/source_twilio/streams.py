@@ -134,7 +134,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self._slice_step = slice_step and pendulum.duration(days=slice_step)
         self._start_date = start_date if start_date is not None else "1970-01-01T00:00:00Z"
         self._lookback_window = lookback_window
-        self._cursor_value = None
+        self._state = {"states": []}
 
     @property
     def slice_step(self):
@@ -156,29 +156,26 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {
-                self.cursor_field: self._cursor_value,
-            }
-
-        return {}
+        return self._state
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        if self._lookback_window and value.get(self.cursor_field):
-            new_start_date = (
-                pendulum.parse(value[self.cursor_field]) - pendulum.duration(minutes=self._lookback_window)
-            ).to_iso8601_string()
-            if new_start_date > self._start_date:
-                value[self.cursor_field] = new_start_date
-        self._cursor_value = value.get(self.cursor_field)
+        if self._lookback_window:
+            lookback_duration = pendulum.duration(minutes=self._lookback_window)
+            for state in value.get("states", []):
+                cursor = state.get("cursor", {})
+                if self.cursor_field in cursor:
+                    new_start_date = (pendulum.parse(cursor[self.cursor_field]) - lookback_duration).to_iso8601_string()
+                if new_start_date > self._start_date:
+                    cursor[self.cursor_field] = new_start_date
+        self._state = value
 
-    def generate_date_ranges(self) -> Iterable[Optional[MutableMapping[str, Any]]]:
+    def generate_date_ranges(self, partition: MutableMapping[str, Any]) -> Iterable[Optional[MutableMapping[str, Any]]]:
         def align_to_dt_format(dt: DateTime) -> DateTime:
             return pendulum.parse(dt.format(self.time_filter_template))
 
         end_datetime = pendulum.now("utc")
-        start_datetime = min(end_datetime, pendulum.parse(self.state.get(self.cursor_field, self._start_date)))
+        start_datetime = min(end_datetime, pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date)))
         current_start = start_datetime
         current_end = start_datetime
         # Aligning to a datetime format is done to avoid the following scenario:
@@ -196,10 +193,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             current_start = current_end + self.slice_granularity
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: StreamSlice = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            for dt_range in self.generate_date_ranges():
+            for dt_range in self.generate_date_ranges(super_slice.partition if super_slice else {}):
                 yield StreamSlice(partition=super_slice.partition if super_slice else {}, cursor_slice=dt_range)
 
     def request_params(
@@ -221,14 +218,31 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: StreamSlice = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        if stream_slice is None:
+            stream_slice = StreamSlice(partition={}, cursor_slice={})
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).to_iso8601_string()
-            if record[self.cursor_field] >= self.state.get(self.cursor_field, self._start_date):
-                self._cursor_value = record[self.cursor_field]
+            if record[self.cursor_field] >= self._get_partition_state(stream_slice.partition).get(self.cursor_field, self._start_date):
+                self._state = self._update_partition_state(stream_slice.partition, {self.cursor_field: record[self.cursor_field]})
             yield record
+
+    def _update_partition_state(self, partition: Mapping[str, Any], cursor: Mapping[str, Any]) -> Mapping[str, Any]:
+        states = copy.deepcopy(self._state.get("states", []))
+        for state in states:
+            if state.get("partition") == partition:
+                state.update({"cursor": cursor})
+                return self._state
+        states.append({"partition": partition, "cursor": cursor})
+        return {"states": states}
+
+    def _get_partition_state(self, partition: Mapping[str, Any]) -> Mapping[str, Any]:
+        for state in self._state.get("states", []):
+            if state.get("partition") == partition:
+                return state.get("cursor", {})
+        return {}
 
 
 class TwilioNestedStream(TwilioStream):

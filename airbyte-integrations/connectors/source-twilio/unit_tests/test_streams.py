@@ -195,7 +195,7 @@ class TestIncrementalTwilioStream:
     def test_read_records(self, stream_cls, record, expected):
         stream = stream_cls(**self.CONFIG)
         with patch.object(HttpStream, "read_records", return_value=record):
-            result = stream.read_records(sync_mode=None)
+            result = stream.read_records(sync_mode=None, stream_slice=StreamSlice(partition={}, cursor_slice={}))
             assert list(result) == expected
 
     @pytest.mark.parametrize(
@@ -231,17 +231,42 @@ class TestIncrementalTwilioStream:
         (
             (
                 Messages,
-                {"date_sent": "2022-11-13 23:39:00"},
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"date_sent": "2022-11-13 23:39:00"},
+                        }
+                    ]
+                },
                 [
                     {"DateSent>": "2022-11-13 23:39:00Z", "DateSent<": "2022-11-14 23:39:00Z"},
                     {"DateSent>": "2022-11-14 23:39:00Z", "DateSent<": "2022-11-15 23:39:00Z"},
                     {"DateSent>": "2022-11-15 23:39:00Z", "DateSent<": "2022-11-16 12:03:11Z"},
                 ],
             ),
-            (UsageRecords, {"start_date": "2021-11-16 00:00:00"}, [{"StartDate": "2021-11-16", "EndDate": "2022-11-16"}]),
+            (
+                UsageRecords,
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"start_date": "2021-11-16 00:00:00"},
+                        }
+                    ]
+                },
+                [{"StartDate": "2021-11-16", "EndDate": "2022-11-16"}],
+            ),
             (
                 Recordings,
-                {"date_created": "2021-11-16 00:00:00"},
+                {
+                    "states": [
+                        {
+                            "partition": {"key": "value"},
+                            "cursor": {"date_created": "2021-11-16 00:00:00"},
+                        }
+                    ]
+                },
                 [
                     {"DateCreated>": "2021-11-16 00:00:00Z", "DateCreated<": "2022-11-16 00:00:00Z"},
                     {"DateCreated>": "2022-11-16 00:00:00Z", "DateCreated<": "2022-11-16 12:03:11Z"},
@@ -252,7 +277,7 @@ class TestIncrementalTwilioStream:
     def test_generate_dt_ranges(self, stream_cls, state, expected_dt_ranges):
         stream = stream_cls(authenticator=TEST_CONFIG.get("authenticator"), start_date="2000-01-01 00:00:00")
         stream.state = state
-        dt_ranges = list(stream.generate_date_ranges())
+        dt_ranges = list(stream.generate_date_ranges({"key": "value"}))
         assert dt_ranges == expected_dt_ranges
 
 
