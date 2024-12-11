@@ -13,6 +13,7 @@ import org.projectnessie.minio.MinioContainer
  * Shared test containers for all nessie tests, so that we don't launch redundant docker containers
  */
 object NessieTestContainers {
+
     //    val testcontainers: ComposeContainer =
     //        ComposeContainer(File("src/test-integration/resources/nessie/docker-compose.yml"))
     //            .withLocalCompose(true)
@@ -30,8 +31,8 @@ object NessieTestContainers {
             //            testcontainers.start()
             val minio =
                 MinioContainer()
-                    .withEnv("MINIO_ROOT_USER", "inioadmin")
-                    .withEnv("MINIO_ROOT_PASSWORD", "inioadmin")
+                    .withEnv("MINIO_ROOT_USER", "minioadmin")
+                    .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
                     .withEnv("MINIO_ADDRESS", ":9000")
                     .withEnv("MINIO_CONSOLE_ADDRESS", ":9090")
                     .withExposedPorts(9000)
