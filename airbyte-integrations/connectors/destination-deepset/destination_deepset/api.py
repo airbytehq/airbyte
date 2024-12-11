@@ -5,13 +5,21 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
-from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 from httpx import HTTPError, HTTPStatusError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
+
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 
 
 class APIError(RuntimeError):
     pass
+
+
+class ConfigurationError(ValueError, APIError):
+    """Raised when the configuration is missing or incorrect."""
+
+    def __str__(self) -> str:
+        return "Configuration is missing, cannot create an HTTP client."
 
 
 class FileTypeError(APIError):
@@ -31,19 +39,29 @@ class FileUploadError(APIError):
 class DeepsetCloudApi:
     def __init__(self, config: DeepsetCloudConfig) -> None:
         self.config = config
-        self.http = httpx.Client(
-            base_url=self.config.base_url,
-            headers={
-                "Accept": "application/json",
-                "Authorization": f"Bearer {config.api_key}",
-                "X-Client-Source": "deepset-cloud-sdk",
-            },
-            follow_redirects=True,
-        )
+        self._client: httpx.Client | None = None
 
         # retry settings in seconds
         self.max = 60
         self.multiplier = 0.5
+
+    @property
+    def client(self) -> httpx.Client:
+        if not self.config:
+            raise ConfigurationError
+
+        if self._client is None:
+            self._client = httpx.Client(
+                base_url=self.config.base_url,
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {self.config.api_key}",
+                    "X-Client-Source": "deepset-cloud-airbyte",
+                },
+                follow_redirects=True,
+            )
+
+        return self._client
 
     def health_check(self) -> bool:
         """Check the health of deepset cloud API
@@ -58,7 +76,7 @@ class DeepsetCloudApi:
                 wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
                 reraise=True,
             ):
-                response = self.http.get("/health")
+                response = self.client.get("/health")
                 response.raise_for_status()
         except Exception:
             return False
@@ -87,7 +105,7 @@ class DeepsetCloudApi:
                 wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
                 reraise=True,
             ):
-                response = self.http.post(
+                response = self.client.post(
                     f"/api/v1/workspaces/{self.config.workspace}/files",
                     files={"file": (file.name, file.content)},
                     data={"meta": file.meta_as_string},
