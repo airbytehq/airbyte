@@ -270,6 +270,9 @@ List all connectors:
 
 `airbyte-ci connectors list`
 
+List all connectors and write the output to a file:
+`airbyte-ci connectors list --output=connectors.json`
+
 List certified connectors:
 
 `airbyte-ci connectors --support-level=certified list`
@@ -851,6 +854,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.45.1  | [#48872](https://github.com/airbytehq/airbyte/pull/48872)  | Make the `connectors list` command write its output to a JSON file.                                                          |
 | 4.45.0  | [#48866](https://github.com/airbytehq/airbyte/pull/48866)  | Adds `--rc` option to `bump-version` command                                                   |
 | 4.44.2  | [#48725](https://github.com/airbytehq/airbyte/pull/48725)  | up-to-date: specific changelog comment for base image upgrade to rootless.                                                   |
 | 4.44.1  | [#48836](https://github.com/airbytehq/airbyte/pull/48836)  | Manifest-only connector build: give ownership of copied file to the current user.                                            |
