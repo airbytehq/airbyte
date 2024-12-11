@@ -452,7 +452,7 @@ streams:
   - $ref: "#/definitions/streams/visitor_activities"
   - $ref: "#/definitions/streams/visitors"
   - $ref: "#/definitions/streams/visits"
-  # - $ref: "#/definitions/streams/opportunities" # Currently disabled because test account doesn't have any data
+  - $ref: "#/definitions/streams/opportunities" # Previously disabled because test account didn't have any data
 
 
 spec:
