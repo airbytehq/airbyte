@@ -177,6 +177,7 @@ class PoetryInit(Step):
             self.context,
             base_container,
             str(self.context.connector.code_directory),
+            "airbyte",
         )
         with_egg_info = await connector_container.with_exec(["python", "setup.py", "egg_info"], use_entrypoint=True)
 

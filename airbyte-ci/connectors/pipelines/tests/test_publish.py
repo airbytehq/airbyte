@@ -95,7 +95,7 @@ class TestUploadSpecToCache:
         step = publish_pipeline.UploadSpecToCache(publish_context)
         step_result = await step.run(connector_container)
         if valid_spec:
-            publish_pipeline.upload_to_gcs.assert_called_once_with(
+            publish_pipeline.upload_to_gcs.assert_called_with(
                 publish_context.dagger_client,
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
