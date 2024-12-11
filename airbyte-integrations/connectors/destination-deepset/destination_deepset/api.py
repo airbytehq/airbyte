@@ -5,10 +5,9 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 from httpx import HTTPError, HTTPStatusError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
-
-from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 
 
 class APIError(RuntimeError):
@@ -47,6 +46,11 @@ class DeepsetCloudApi:
         self.multiplier = 0.5
 
     def health_check(self) -> bool:
+        """Check the health of deepset cloud API
+
+        Returns:
+            bool: Returns `True` if the health check was successful, `False` otherwise
+        """
         try:
             with retry(
                 retry=retry_if_exception_type(HTTPError),
@@ -64,8 +68,14 @@ class DeepsetCloudApi:
     def upload_file(self, file: DeepsetCloudFile) -> UUID:
         """Upload file to deepset Cloud.
 
-        :param file: The file to upload.
-        :return: The ID of the uploaded file.
+        Args:
+            file (DeepsetCloudFile): The file to upload
+
+        Raises:
+            APIError: Raised whenever the file upload fails
+
+        Returns:
+            UUID: The unique identifier of the uploaded file
         """
         if file.extension not in SUPPORTED_FILE_EXTENSIONS:
             raise FileTypeError

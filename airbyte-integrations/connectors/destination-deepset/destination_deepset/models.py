@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 from enum import Enum, unique
 from pathlib import Path
-from typing import Any, Dict, Union
-from pydantic import BaseModel, Field
+from typing import Any
+
 from airbyte_cdk.models import AirbyteRecordMessage
+from pydantic import BaseModel, Field
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -15,12 +16,26 @@ __all__ = [
     "WriteMode",
 ]
 
-SUPPORTED_FILE_EXTENSIONS = [".csv", ".docx", ".html", ".json", ".md", ".txt", ".pdf", ".pptx", ".xlsx", ".xml",]
+SUPPORTED_FILE_EXTENSIONS = [
+    ".csv",
+    ".docx",
+    ".html",
+    ".json",
+    ".md",
+    ".txt",
+    ".pdf",
+    ".pptx",
+    ".xlsx",
+    ".xml",
+]
+
+
 @unique
 class WriteMode(str, Enum):
     FAIL = "FAIL"
     KEEP = "KEEP"
     OVERWRITE = "OVERWRITE"
+
 
 class DeepsetCloudConfig(BaseModel):
     api_key: str = Field(title="API Key", description="Your deepset cloud API key")
@@ -40,13 +55,13 @@ class DeepsetCloudConfig(BaseModel):
         title="Sync",
         description="Ensure that the files have been saved and are visible in deepset cloud.",
     )
-    retries: int = Field(10, title='Retries', description='Number of times to retry an action before giving up.')
+    retries: int = Field(10, title="Retries", description="Number of times to retry an action before giving up.")
 
 
 class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
-    content: Union[str, bytes] = Field(title="Content", description="File Content")
-    meta: Dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
+    content: str | bytes = Field(title="Content", description="File Content")
+    meta: dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
 
     @property
     def extension(self) -> str:
@@ -58,6 +73,6 @@ class DeepsetCloudFile(BaseModel):
         return json.dumps(self.meta or {})
 
     @classmethod
-    def from_message(cls, message: AirbyteRecordMessage)-> DeepsetCloudFile
+    def from_message(cls, message: AirbyteRecordMessage) -> DeepsetCloudFile:
         # @todo[abraham]: implement me!
         pass

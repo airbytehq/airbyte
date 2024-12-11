@@ -12,6 +12,14 @@ class DeepsetCloudFileWriter:
         self.client = api_client
 
     def write(self, message: AirbyteMessage) -> AirbyteMessage:
+        """Write a record to deepset cloud workspace.
+
+        Args:
+            message (AirbyteMessage): The Airbyte message to write
+
+        Returns:
+            AirbyteMessage: Returns an Airbyte message with a suitable status.
+        """
         try:
             file_id = self.client.upload_file(DeepsetCloudFile.from_message(message))
         except APIError:
