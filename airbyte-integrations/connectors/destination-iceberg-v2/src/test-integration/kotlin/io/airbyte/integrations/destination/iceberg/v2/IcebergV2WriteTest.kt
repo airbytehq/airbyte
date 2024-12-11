@@ -124,8 +124,10 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
         }
 
         fun getConfig(): String {
-//            val minioEndpoint = NessieTestContainers.testcontainers.getServiceHost("minio", 9000)
-//            val nessieEndpoint = NessieTestContainers.testcontainers.getServiceHost("nessie", 19120)
+            //            val minioEndpoint =
+            // NessieTestContainers.testcontainers.getServiceHost("minio", 9000)
+            //            val nessieEndpoint =
+            // NessieTestContainers.testcontainers.getServiceHost("nessie", 19120)
 
             val authToken = getToken()
             return """
