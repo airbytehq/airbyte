@@ -588,11 +588,9 @@ class BigQuerySqlGenerator
 
         if (stream.postImportAction == ImportType.DEDUPE) {
             // When deduping, we need to dedup the raw records. Note the row_number() invocation in
-            // the SQL
-            // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup
-            // mode, but
-            // then add a row_number column so that we only take the most-recent raw record for each
-            // PK.
+            // the SQL statement. Do the same extract+cast CTE + airbyte_meta construction as in
+            // non-dedup mode, but then add a _airbyte_row_number column so that we only take the
+            // most-recent raw record for each PK.
 
             // We also explicitly include old CDC deletion records, which act as tombstones to
             // correctly delete
@@ -676,12 +674,12 @@ class BigQuerySqlGenerator
               ), numbered_rows AS (
                 SELECT *, row_number() OVER (
                   PARTITION BY ${'$'}{pk_list} ORDER BY ${'$'}{cursor_order_clause} `_airbyte_extracted_at` DESC
-                ) AS row_number
+                ) AS _airbyte_row_number
                 FROM new_records
               )
               SELECT ${'$'}{column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
               FROM numbered_rows
-              WHERE row_number = 1
+              WHERE _airbyte_row_number = 1
               """.trimIndent()
                 )
         } else {
