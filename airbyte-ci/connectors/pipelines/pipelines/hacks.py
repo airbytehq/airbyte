@@ -131,7 +131,9 @@ def determine_changelog_entry_comment(upgrade_base_image_in_metadata_result: Ste
     assert isinstance(
         upgrade_base_image_in_metadata_result.step, UpdateBaseImageMetadata
     ), "StepResult's step must be instance of UpdateBaseImageMetadata"
-    if upgrade_base_image_in_metadata_result.output is not None and upgrade_base_image_in_metadata_result.output.get("updated_base_image_address"):
+    if upgrade_base_image_in_metadata_result.output is not None and upgrade_base_image_in_metadata_result.output.get(
+        "updated_base_image_address"
+    ):
         updated_base_image_address = upgrade_base_image_in_metadata_result.output.get("updated_base_image_address")
         if (
             "airbyte/python-connector-base:3.0.0" in updated_base_image_address
