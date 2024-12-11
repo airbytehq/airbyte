@@ -202,7 +202,9 @@ class FeedReader(
             if (partitionReader is UnlimitedTimePartitionReader) {
                 partitionReader.run()
             } else {
-                log.info { "Running partition reader with ${root.timeout.toKotlinDuration()} timeout" }
+                log.info {
+                    "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
+                }
                 withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
             }
             log.info {
