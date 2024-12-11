@@ -16,7 +16,9 @@ from pipelines.helpers.utils import export_container_to_tarball, sh_dash_c
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Type, TypeVar
+
+    T = TypeVar("T", bound="BuildConnectorImagesBase")
 
 
 def apply_airbyte_docker_labels(connector_container: Container, connector: Connector) -> Container:
@@ -76,7 +78,8 @@ class BuildConnectorImagesBase(Step, ABC):
         """
         raise NotImplementedError("`BuildConnectorImagesBase`s must define a '_build_connector' attribute.")
 
-    async def _get_image_user(self, base_container: Container) -> str:
+    @classmethod
+    async def get_image_user(cls: Type[T], base_container: Container) -> str:
         """If the base image in use has a user named 'airbyte', we will use it as the user for the connector image.
 
         Args:
@@ -86,8 +89,8 @@ class BuildConnectorImagesBase(Step, ABC):
             str: The user to use for the connector image.
         """
         users = (await base_container.with_exec(sh_dash_c(["cut -d: -f1 /etc/passwd | sort | uniq"])).stdout()).splitlines()
-        if self.USER in users:
-            return self.USER
+        if cls.USER in users:
+            return cls.USER
         return "root"
 
 

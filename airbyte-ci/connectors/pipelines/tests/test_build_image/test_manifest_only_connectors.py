@@ -93,7 +93,7 @@ class TestBuildConnectorImage:
 
         mocker.patch.object(
             manifest_only_connectors.BuildConnectorImages,
-            "_get_image_user",
+            "get_image_user",
             return_value="airbyte",
         )
 
