@@ -183,6 +183,7 @@ async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
+    user: str,
     additional_dependency_groups: Optional[Sequence[str]] = None,
     exclude: Optional[List] = None,
     include: Optional[List] = None,
@@ -194,6 +195,7 @@ async def with_installed_python_package(
         context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
         python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
+        user (str): The user to use in the container.
         additional_dependency_groups (Optional[Sequence[str]]): extra_requires dependency of setup.py to install. Defaults to None.
         exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
         include (Optional[List]): A list of file or directory to include from the python package source code.
@@ -207,7 +209,7 @@ async def with_installed_python_package(
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
     for dependency_directory in local_dependencies:
-        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory), owner=user)
 
     has_setup_py = await check_path_in_workdir(container, "setup.py")
     has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
@@ -240,7 +242,7 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
     return with_python_package(context, testing_environment, connector_source_path)
 
 
-def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
+def apply_python_development_overrides(context: ConnectorContext, connector_container: Container, current_user: str) -> Container:
     # Run the connector using the local cdk if flag is set
     if context.use_local_cdk:
         # Assume CDK is cloned in a sibling dir to `airbyte`:
@@ -254,7 +256,6 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
         cdk_mount_dir = "/airbyte-cdk/python"
 
         context.logger.info(f"Mounting CDK from '{path_to_cdk}' to '{cdk_mount_dir}'")
-
         # Install the airbyte-cdk package from the local directory
         connector_container = (
             connector_container.with_env_variable(
@@ -264,9 +265,17 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
             .with_directory(
                 cdk_mount_dir,
                 directory_to_mount,
+                owner=current_user,
             )
+            # We switch to root as otherwise we get permission errors when installing the package
+            # Permissions errors are caused by the fact that the airbyte user does not have a home directory
+            # Pip tries to write to /nonexistent which does not exist and on which the airbyte user does not have permissions
+            # We could create a proper home directory for the airbyte user, but that should be done at the base image level.
+            # Installing as root should not cause any issues as the container is ephemeral and the image is not pushed to a registry.
+            # Moreover this install is a system-wide install so the airbyte user will be able to use the package.
+            .with_user("root")
             .with_exec(
-                ["pip", "install", "--force-reinstall", f"{cdk_mount_dir}"],
+                ["pip", "install", "--no-cache-dir", "--force-reinstall", f"{cdk_mount_dir}"],
                 # TODO: Consider moving to Poetry-native installation:
                 # ["poetry", "add", cdk_mount_dir]
             )
@@ -292,6 +301,7 @@ async def with_python_connector_installed(
     context: ConnectorContext,
     python_container: Container,
     connector_source_path: str,
+    user: str,
     additional_dependency_groups: Optional[Sequence[str]] = None,
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
@@ -306,13 +316,14 @@ async def with_python_connector_installed(
         context,
         python_container,
         connector_source_path,
+        user,
         additional_dependency_groups=additional_dependency_groups,
         exclude=exclude,
         include=include,
         install_root_package=install_root_package,
     )
 
-    container = await apply_python_development_overrides(context, container)
+    container = await apply_python_development_overrides(context, container, user)
 
     return container
 
