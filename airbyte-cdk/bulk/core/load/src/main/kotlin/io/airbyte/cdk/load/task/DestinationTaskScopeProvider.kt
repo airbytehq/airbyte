@@ -48,6 +48,10 @@ interface ImplementorScope : ScopedTask
  */
 interface KillableScope : ScopedTask
 
+interface WrappedTask<T : Task> : Task {
+    val innerTask: T
+}
+
 @Singleton
 @Secondary
 class DestinationTaskScopeProvider(config: DestinationConfiguration) :

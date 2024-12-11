@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.KillableScope
-import io.airbyte.cdk.load.task.SyncLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
@@ -30,7 +29,7 @@ class FlushTickTask(
     private val catalog: DestinationCatalog,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-) : SyncLevel, KillableScope {
+) : KillableScope {
     private val log = KotlinLogging.logger {}
 
     override suspend fun execute() {
