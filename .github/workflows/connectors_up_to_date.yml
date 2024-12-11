@@ -47,6 +47,7 @@ jobs:
     needs: generate_matrix
     name: Connectors up-to-date
     runs-on: connector-nightly-xlarge
+    continue-on-error: true
     strategy:
       matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
     permissions:
