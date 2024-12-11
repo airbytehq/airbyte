@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql
+package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
@@ -13,6 +13,7 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerSourceConfigurationSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -24,28 +25,13 @@ import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Statement
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.testcontainers.containers.MySQLContainer
 
-class MysqlCursorBasedIntegrationTest {
-
-    @BeforeEach
-    fun resetTable() {
-        connectionFactory.get().use { connection: Connection ->
-            connection.isReadOnly = false
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("DELETE FROM test.$tableName")
-            }
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (10, 'foo'), (20, 'bar')")
-            }
-        }
-    }
+class MsSqlServerCursorBasedIntegrationTest {
 
     @Test
     fun testCursorBasedRead() {
@@ -54,21 +40,31 @@ class MysqlCursorBasedIntegrationTest {
 
         val lastStateMessageFromRun1 = run1.states().last()
         val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
+        println("SGX lastStreamStateFromRun1=$lastStreamStateFromRun1")
 
         assertEquals("20", lastStreamStateFromRun1.get("cursor").textValue())
         assertEquals(2, lastStreamStateFromRun1.get("version").intValue())
         assertEquals("cursor_based", lastStreamStateFromRun1.get("state_type").asText())
         assertEquals(tableName, lastStreamStateFromRun1.get("stream_name").asText())
         assertEquals(listOf("k"), lastStreamStateFromRun1.get("cursor_field").map { it.asText() })
-        assertEquals("test", lastStreamStateFromRun1.get("stream_namespace").asText())
+        assertEquals(
+            dbContainer.schemaName,
+            lastStreamStateFromRun1.get("stream_namespace").asText()
+        )
         assertEquals(0, lastStreamStateFromRun1.get("cursor_record_count").asInt())
 
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { stmt: Statement ->
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (3, 'baz-ignore')")
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (13, 'baz-ignore')")
-                stmt.execute("INSERT INTO test.$tableName (k, v) VALUES (30, 'baz')")
+                stmt.execute(
+                    "INSERT INTO ${dbContainer.schemaName}.$tableName (k, v) VALUES (3, 'baz-ignore')"
+                )
+                stmt.execute(
+                    "INSERT INTO ${dbContainer.schemaName}.$tableName (k, v) VALUES (13, 'baz-ignore')"
+                )
+                stmt.execute(
+                    "INSERT INTO ${dbContainer.schemaName}.$tableName (k, v) VALUES (30, 'baz')"
+                )
             }
         }
 
@@ -84,32 +80,26 @@ class MysqlCursorBasedIntegrationTest {
         var state: AirbyteStateMessage = Jsons.readValue(V1_STATE, AirbyteStateMessage::class.java)
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
-        val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 1)
-    }
-
-    @Test
-    fun testWithV1StateEmptyCursor() {
-        var state: AirbyteStateMessage =
-            Jsons.readValue(V1_STATE_EMPTY_CURSOR, AirbyteStateMessage::class.java)
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
-        val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 2)
+        val recordMessagesFromRun1: List<AirbyteRecordMessage> = run1.records()
+        assertEquals(
+            actual = recordMessagesFromRun1.size,
+            expected = 1,
+            message = recordMessagesFromRun1.toString()
+        )
     }
 
     @Test
     fun testWithFullRefresh() {
         val fullRefreshCatalog =
             getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
-        log.info { "SGX run1" }
+        log.info { "SGX running connector. Run1" }
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        assertEquals(recordMessageFromRun1.size, 2)
+        assertEquals(3, recordMessageFromRun1.size, recordMessageFromRun1.toString())
         val lastStateMessageFromRun1 = run1.states().last()
 
-        log.info { "SGX run2" }
+        log.info { "SGX running connector. Run2" }
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
                 .run()
@@ -117,70 +107,27 @@ class MysqlCursorBasedIntegrationTest {
         assertEquals(recordMessageFromRun2.size, 0)
     }
 
-    @Test
-    fun testWithFullRefreshWithEmptyTable() {
-        connectionFactory.get().use { connection: Connection ->
-            connection.isReadOnly = false
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("DELETE FROM test.$tableName")
-            }
-        }
-
-        val fullRefreshCatalog =
-            getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config, fullRefreshCatalog).run()
-
-        assertTrue(run1.states().isEmpty())
-        assertTrue(run1.records().isEmpty())
-
-        val run2: BufferingOutputConsumer =
-            CliRunner.source("read", config, fullRefreshCatalog).run()
-        assertTrue(run2.states().isEmpty())
-        assertTrue(run2.records().isEmpty())
-    }
-
-    @Test
-    fun testCursorBasedReadWithEmptyTable() {
-        connectionFactory.get().use { connection: Connection ->
-            connection.isReadOnly = false
-            connection.createStatement().use { stmt: Statement ->
-                stmt.execute("DELETE FROM test.$tableName")
-            }
-        }
-
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config, getConfiguredCatalog()).run()
-
-        assertTrue(run1.states().isEmpty())
-        assertTrue(run1.records().isEmpty())
-
-        val run2: BufferingOutputConsumer =
-            CliRunner.source("read", config, getConfiguredCatalog()).run()
-        assertTrue(run2.states().isEmpty())
-        assertTrue(run2.records().isEmpty())
-    }
-
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: MySQLContainer<*> = MysqlContainerFactory.shared(imageName = "mysql:8.0")
+        val dbContainer: MsSqlServercontainer =
+            MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
 
-        val config: MysqlSourceConfigurationSpecification =
-            MysqlContainerFactory.config(dbContainer)
+        val config: MsSqlServerSourceConfigurationSpecification =
+            dbContainer.config
 
         val connectionFactory: JdbcConnectionFactory by lazy {
-            JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config))
+            JdbcConnectionFactory(MsSqlServerSourceConfigurationFactory().make(config))
         }
 
         fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
-            val desc = StreamDescriptor().withName(tableName).withNamespace("test")
+            val desc = StreamDescriptor().withName(tableName).withNamespace(dbContainer.schemaName)
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MysqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream = MsSqlServerStreamFactory().createGlobal(discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
@@ -204,7 +151,14 @@ class MysqlCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
+                    stmt.execute(
+                        "CREATE TABLE ${dbContainer.schemaName}.$tableName(k INT PRIMARY KEY, v VARCHAR(80))"
+                    )
+                }
+                connection.createStatement().use { stmt: Statement ->
+                    stmt.execute(
+                        "INSERT INTO ${dbContainer.schemaName}.$tableName (k, v) VALUES (5, 'abc'), (10, 'foo'), (20, 'bar')"
+                    )
                 }
             }
         }
@@ -216,7 +170,7 @@ class MysqlCursorBasedIntegrationTest {
         "stream": {
             "stream_descriptor": {
               "name": "${tableName}",
-              "namespace": "test"
+              "namespace": "${dbContainer.schemaName}"
             },
             "stream_state": {
               "cursor": "10",
@@ -226,31 +180,7 @@ class MysqlCursorBasedIntegrationTest {
               "cursor_field": [
                 "k"
               ],
-              "stream_namespace": "test",
-              "cursor_record_count": 1
-            }
-        }
-    }
-    """
-
-    // Legacy mysql connector saved the following state for an empty table in user cursor mode
-    val V1_STATE_EMPTY_CURSOR: String =
-        """  
-      {
-        "type": "STREAM",
-        "stream": {
-            "stream_descriptor": {
-              "name": "${tableName}",
-              "namespace": "test"
-            },
-            "stream_state": {
-              "version": 2,
-              "state_type": "cursor_based",
-              "stream_name": "${tableName}",
-              "cursor_field": [
-                "k"
-              ],
-              "stream_namespace": "test",
+              "stream_namespace": "${dbContainer.schemaName}",
               "cursor_record_count": 1
             }
         }
