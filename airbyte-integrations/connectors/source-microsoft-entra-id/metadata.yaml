@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-microsoft-entra-id
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.9.2@sha256:ea8087899b36a891ce16e47035b10de8d52b0fb041b593b18e53ed2d699e3b46
   connectorSubtype: api
   connectorType: source
   definitionId: 337930a3-778a-413e-99cf-e79a3fca1c74
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-microsoft-entra-id
   githubIssueLabel: source-microsoft-entra-id
   icon: icon.svg
