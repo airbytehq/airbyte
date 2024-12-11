@@ -16,13 +16,13 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.9.2@sha256:ea8087899b36a891ce16e47035b10de8d52b0fb041b593b18e53ed2d699e3b46
   connectorSubtype: api
   connectorType: source
-  definitionId: 77357983-a124-409d-97ef-bf4465cc9b21
+  definitionId: a2c32418-3f7a-40e3-8378-2bcfc62aa298
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-apple-search-ads-custom
   githubIssueLabel: source-apple-search-ads-custom
   icon: icon.svg
   license: MIT
-  name: Apple Search Ads
+  name: Apple Search Ads Custom
   releaseDate: 2024-12-11
   releaseStage: alpha
   supportLevel: community

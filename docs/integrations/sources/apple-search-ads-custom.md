@@ -1,4 +1,4 @@
-# Apple Search Ads
+# Apple Search Ads Custom
 Update api to v5
 
 ## Configuration
@@ -17,9 +17,9 @@ Update api to v5
 | campaigns | id | DefaultPaginator | ✅ |  ❌  |
 | adgroups | id | DefaultPaginator | ✅ |  ❌  |
 | keywords | id | DefaultPaginator | ✅ |  ❌  |
-| campaigns_report_daily | date.campaignId | No pagination | ✅ |  ✅  |
-| adgroups_report_daily | date.adGroupId | No pagination | ✅ |  ✅  |
-| keywords_report_daily | date.keywordId | No pagination | ✅ |  ✅  |
+| campaigns_report_daily | date.campaignId | DefaultPaginator | ✅ |  ✅  |
+| adgroups_report_daily | date.adGroupId | DefaultPaginator | ✅ |  ✅  |
+| keywords_report_daily | date.keywordId | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 

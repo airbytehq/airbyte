@@ -1,4 +1,4 @@
-# Apple Search Ads
+# Apple Search Ads Custom
 This directory contains the manifest-only connector for `source-apple-search-ads-custom`.
 
 Update api to v5

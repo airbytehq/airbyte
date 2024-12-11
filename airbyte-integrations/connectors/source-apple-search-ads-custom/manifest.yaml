@@ -49,6 +49,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
         record_selector:
@@ -111,6 +112,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
         record_selector:
@@ -171,6 +173,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
         record_selector:
@@ -196,6 +199,19 @@ definitions:
             - row
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/campaigns/{{ stream_slice.campaign_id }}/adgroups
@@ -212,6 +228,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
@@ -287,25 +304,36 @@ definitions:
             - row
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/campaigns/{{ stream_slice.campaign_id }}/keywords
           http_method: POST
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
@@ -381,6 +409,19 @@ definitions:
             - row
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         requester:
           $ref: "#/definitions/base_requester"
           path: /reports/campaigns
@@ -397,6 +438,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: 2
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           request_body_json:
@@ -529,50 +571,47 @@ metadata:
   testedStreams:
     adgroups:
       hasRecords: true
-      streamHash: 0f8464e6642e3d5baa58b8b18cea96239e3c53aa
+      streamHash: e8dfe90ac8da81ddc911285b96a9d5358b4cdc88
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     keywords:
       hasRecords: true
-      streamHash: b7d503bd9aed80fc98dfd89b884c39ae2f359857
+      streamHash: 0f7a53c234d0587d4d79d37961eaacbc3e9229c8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     campaigns:
       hasRecords: true
-      streamHash: 6e53e2663ccc694ad6df7c0c4da2399a1e6d06ed
+      streamHash: 4bdacb2e6aa3f599de57b5c28821ebfb754f65e6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     adgroups_report_daily:
       hasRecords: true
-      streamHash: 55ad5aedde5041f3bb923f727a99542f166ba0f2
+      streamHash: 68e04fd9d81f2d1b014a7ece6d5e4a3849d16331
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     keywords_report_daily:
       hasRecords: true
-      streamHash: 1210b36a4651ab4d54631e454944e8a1c0ba6e2a
+      streamHash: 5697c3787baae2b23fcba258e5ab3d5f9626b328
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     campaigns_report_daily:
       hasRecords: true
-      streamHash: 8a56b214f9fbd2bb076ae3ae6dbc3e89b4f6dea7
+      streamHash: 064ace495001016049f80029ed354fe47a1aa5fa
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
   yamlComponents:
-    streams:
-      keywords_report_daily:
-        - errorHandler
     global:
       - authenticator
   autoImportSchema:
