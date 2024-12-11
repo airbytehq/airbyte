@@ -175,7 +175,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             return pendulum.parse(dt.format(self.time_filter_template))
 
         end_datetime = pendulum.now("utc")
-        start_datetime = min(end_datetime, pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date)))
+        start_datetime = min(end_datetime, self._min_datetime(partition))
         current_start = start_datetime
         current_end = start_datetime
         # Aligning to a datetime format is done to avoid the following scenario:
@@ -243,6 +243,9 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             if state.get("partition") == partition:
                 return state.get("cursor", {})
         return {}
+
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        return pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
 
 
 class TwilioNestedStream(TwilioStream):
@@ -578,7 +581,7 @@ class UsageNestedStream(TwilioNestedStream):
         return f"Accounts/{stream_slice['account_sid']}/Usage/{self.path_name}.json"
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"account_sid": record["sid"]}, cursor_slice={})
+        return StreamSlice(partition={"account_sid": record["sid"], "date_created": record["date_created"]}, cursor_slice={})
 
 
 class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
@@ -594,6 +597,11 @@ class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     primary_key = [["account_sid"], ["category"], ["start_date"], ["end_date"]]
     changeable_fields = ["as_of"]
 
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        cursor_value = pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
+
+        return max(cursor_value, pendulum.parse(partition.get("date_created", self._start_date), strict=False))
+
 
 class UsageTriggers(UsageNestedStream):
     """https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources"""
@@ -601,6 +609,11 @@ class UsageTriggers(UsageNestedStream):
     parent_stream = Accounts
     subresource_uri_key = "triggers"
     path_name = "Triggers"
+
+    def _min_datetime(self, partition: Mapping[str, Any]) -> DateTime:
+        cursor_value = pendulum.parse(self._get_partition_state(partition).get(self.cursor_field, self._start_date))
+
+        return max(cursor_value, pendulum.parse(partition.get("date_created", self._start_date), strict=False))
 
 
 class Alerts(IncrementalTwilioStream):
