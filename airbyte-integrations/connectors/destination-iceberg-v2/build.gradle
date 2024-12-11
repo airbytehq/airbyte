@@ -55,6 +55,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
+
+    integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
 }
 
 test {
