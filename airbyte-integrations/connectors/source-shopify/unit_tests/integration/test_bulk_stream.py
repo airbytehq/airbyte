@@ -237,13 +237,14 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         assert output.errors == []
         assert len(output.records) == 2
 
-    @pytest.mark.skip(reason="is intended to reproduce bug behavior for repeated slices")
     def test_when_read_with_updated_at_field_before_bulk_request_window_start_date(self) -> None:
         """"
         The motivation of this test is https://github.com/airbytehq/oncall/issues/6874
+        
         In this scenario we end having stream_slices method to generate same slice N times.
         Our checkpointing logic will trigger when job_checkpoint_interval is passed, but there may be the case that such checkpoint
         has the same value as the current slice start date so we would end requesting same job.
+        
         In this test:
         1. First job requires to checkpoint as we pass the 1500 limit, it cancels the bulk job and checkpoints from last cursor value.
         2. Next job just goes "fine".
@@ -260,7 +261,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders`, the BULK Job: `gid://shopify/BulkOperation/4472588009771` is CREATED"}}
         ...
         """
-        def add_n_records(builder, n, record_date:str=None):
+        def add_n_records(builder, n, record_date: Optional[str] = None):
             for _ in range(n):
                 builder = builder.with_record(updated_at=record_date)
             return builder
@@ -272,7 +273,6 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             create_job_creation_request(_SHOP_NAME, _INCREMENTAL_JOB_START_DATE, _INCREMENTAL_JOB_END_DATE),
             JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ")).with_bulk_operation_id(_BULK_OPERATION_ID).build(),
         )
-
         # get job status
         self._http_mocker.post(
             create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
@@ -291,7 +291,6 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 HttpResponse(json.dumps({}), status_code=200)
             ]
         )
-
         # get results for the request that got cancelled
         adjusted_checkpoint_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(days=2, hours=6, minutes=30)
         adjusted_record_date = adjusted_checkpoint_start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -312,7 +311,6 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             create_job_creation_request(_SHOP_NAME, adjusted_checkpoint_start_date, adjusted_checkpoint_end_date),
             JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ")).with_bulk_operation_id(next_bulk_operation_id).build(),
         )
-
         # get job status
         next_job_result_url = "https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final?GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&Expires=1715633149&Signature=oMjQelfAzUW%2FdulC3HbuBapbUriUJ%2Bc9%2FKpIIf954VTxBqKChJAdoTmWT9ymh%2FnCiHdM%2BeM%2FADz5siAC%2BXtHBWkJfvs%2F0cYpse0ueiQsw6R8gW5JpeSbizyGWcBBWkv5j8GncAnZOUVYDxRIgfxcPb8BlFxBfC3wsx%2F00v9D6EHbPpkIMTbCOAhheJdw9GmVa%2BOMqHGHlmiADM34RDeBPrvSo65f%2FakpV2LBQTEV%2BhDt0ndaREQ0MrpNwhKnc3vZPzA%2BliOGM0wyiYr9qVwByynHq8c%2FaJPPgI5eGEfQcyepgWZTRW5S0DbmBIFxZJLN6Nq6bJ2bIZWrVriUhNGx2g%3D%3D&response-content-disposition=attachment%3B+filename%3D%22bulk-4476008693950.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4476008693950.jsonl&response-content-type=application%2Fjsonl"
         self._http_mocker.post(
@@ -322,10 +320,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobStatusResponseBuilder().with_completed_status(next_bulk_operation_id, next_job_result_url).build(),
                 ]
         )
-
         # get results for the request that got cancelled
-        # adjusted_checkpoint_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(days=2, hours=6, minutes=30)
-        # adjusted_record_date = adjusted_checkpoint_start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         self._http_mocker.get(
             HttpRequest(next_job_result_url),
             # MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
@@ -338,21 +333,25 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         adjusted_checkpoint_end_date = adjusted_checkpoint_start_date + timedelta(days=1)
         job_created_at = _INCREMENTAL_JOB_END_DATE - timedelta(minutes=4)
         create_job_request = create_job_creation_request(_SHOP_NAME, adjusted_checkpoint_start_date, adjusted_checkpoint_end_date)
+        
         self._http_mocker.post(
             create_job_request,
             JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ")).with_bulk_operation_id(next_bulk_operation_id).build(),
         )
+        
         base_status_responses = [
-                JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="500").build(),
-                # this should make the job get canceled as it gets over 15000 rows
-                JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="16000").build(),
-                # this will complete the job
-                JobStatusResponseBuilder().with_canceled_status(next_bulk_operation_id, next_job_result_url, object_count="1700").build(),
-                ]
+            JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="500").build(),
+            # this should make the job get canceled as it gets over 15000 rows
+            JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="16000").build(),
+            # this will complete the job
+            JobStatusResponseBuilder().with_canceled_status(next_bulk_operation_id, next_job_result_url, object_count="1700").build(),
+        ]
+        
         n_times_to_loop = 4
         responses_in_loop = base_status_responses * n_times_to_loop
         # get job status
         next_job_result_url = "https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final?GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&Expires=1715633149&Signature=oMjQelfAzUW%2FdulC3HbuBapbUriUJ%2Bc9%2FKpIIf954VTxBqKChJAdoTmWT9ymh%2FnCiHdM%2BeM%2FADz5siAC%2BXtHBWkJfvs%2F0cYpse0ueiQsw6R8gW5JpeSbizyGWcBBWkv5j8GncAnZOUVYDxRIgfxcPb8BlFxBfC3wsx%2F00v9D6EHbPpkIMTbCOAhheJdw9GmVa%2BOMqHGHlmiADM34RDeBPrvSo65f%2FakpV2LBQTEV%2BhDt0ndaREQ0MrpNwhKnc3vZPzA%2BliOGM0wyiYr9qVwByynHq8c%2FaJPPgI5eGEfQcyepgWZTRW5S0DbmBIFxZJLN6Nq6bJ2bIZWrVriUhNGx2g%3D%3D&response-content-disposition=attachment%3B+filename%3D%22bulk-4476008693960.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4476008693960.jsonl&response-content-type=application%2Fjsonl"
+        
         self._http_mocker.post(
             create_job_status_request(_SHOP_NAME, next_bulk_operation_id),
             responses_in_loop
@@ -372,17 +371,11 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             HttpRequest(next_job_result_url),
             add_n_records(MetafieldOrdersJobResponseBuilder(), 80, adjusted_record_date).build(),
         )
+       
         # ********* end of request mocking *************
 
-        # mock the cancel operation request as we passed the 15000 rows
-        self._http_mocker.post(
-            create_job_cancel_request(_SHOP_NAME, next_bulk_operation_id),
-            [
-                HttpResponse(json.dumps({}), status_code=200)
-            ]
-        )
-
-        metafield_orders_orders_state = {"orders": {
+        metafield_orders_orders_state = {
+            "orders": {
               "updated_at": _INCREMENTAL_JOB_START_DATE_ISO,
               "deleted": {
                 "deleted_at": ""
@@ -396,17 +389,14 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         config_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(weeks=104)
         output = self._read(_get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state)
 
-        # We have errors as we can not infinitely pass response to status request
-        assert output.errors
-        # we add 1 request for the extra when exiting as we don't provide more status requests.
-        self._http_mocker.assert_number_of_calls(create_job_request, number_of_calls=n_times_to_loop+1)
+        expected_error_message = "The stream: `metafield_orders` checkpoint collision is detected."
+        result = output.errors[0].trace.error.internal_message
 
-        # If we can have a long term solution we should have:
-        # assert  output.errors == []
-        # self._http_mocker.assert_number_of_calls(create_job_request, number_of_calls=1)
+        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError` 
+        assert result is not None and expected_error_message in result
 
 
-    def _read(self, config, sync_mode=SyncMode.full_refresh ,state:Optional[List[AirbyteStateMessage]]=None):
+    def _read(self, config, sync_mode=SyncMode.full_refresh, state: Optional[List[AirbyteStateMessage]] = None):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, sync_mode).build()
         output = read(SourceShopify(), config, catalog, state=state)
         return output
