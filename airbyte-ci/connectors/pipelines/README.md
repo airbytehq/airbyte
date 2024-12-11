@@ -270,6 +270,9 @@ List all connectors:
 
 `airbyte-ci connectors list`
 
+List all connectors and write the output to a file:
+`airbyte-ci connectors list --output=connectors.json`
+
 List certified connectors:
 
 `airbyte-ci connectors --support-level=certified list`
@@ -852,7 +855,10 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | 4.46.0  | [#48790](https://github.com/airbytehq/airbyte/pull/48790)  | Add unit tests step for manifest-only connectors                                                                             |
-| 4.45.0  | [#48866](https://github.com/airbytehq/airbyte/pull/48866)  | Adds `--rc` option to `bump-version` command                                                   |
+| 4.45.3  | [#48927](https://github.com/airbytehq/airbyte/pull/48927)      | Fix bug in determine_changelog_entry_comment                                                                             |
+| 4.45.2  | [#48868](https://github.com/airbytehq/airbyte/pull/48868)  | Fix ownership issues while using `--use-local-cdk`                                                                           |
+| 4.45.1  | [#48872](https://github.com/airbytehq/airbyte/pull/48872)  | Make the `connectors list` command write its output to a JSON file.                                                          |
+| 4.45.0  | [#48866](https://github.com/airbytehq/airbyte/pull/48866)  | Adds `--rc` option to `bump-version` command                                                                                 |
 | 4.44.2  | [#48725](https://github.com/airbytehq/airbyte/pull/48725)  | up-to-date: specific changelog comment for base image upgrade to rootless.                                                   |
 | 4.44.1  | [#48836](https://github.com/airbytehq/airbyte/pull/48836)  | Manifest-only connector build: give ownership of copied file to the current user.                                            |
 | 4.44.0  | [#48818](https://github.com/airbytehq/airbyte/pull/48818)  | Use local CDK or CDK ref for manifest only connector build.                                                                  |

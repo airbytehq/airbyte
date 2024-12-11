@@ -113,7 +113,8 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
-| 0.2.3 | 2024-12-04 | [48790](https://github.com/airbytehq/airbyte/pull/48790) | Add unit tests for custom components |
+| 0.2.4 | 2024-12-11 | [48790](https://github.com/airbytehq/airbyte/pull/48790) | Add unit tests for custom components |
+| 0.2.3 | 2024-12-11 | [48201](https://github.com/airbytehq/airbyte/pull/48201) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-10-29 | [47779](https://github.com/airbytehq/airbyte/pull/47779) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47456](https://github.com/airbytehq/airbyte/pull/47456) | Update dependencies |
 | 0.2.0 | 2024-09-06 | [45195](https://github.com/airbytehq/airbyte/pull/45195) | Refactor connector to manifest-only format |
