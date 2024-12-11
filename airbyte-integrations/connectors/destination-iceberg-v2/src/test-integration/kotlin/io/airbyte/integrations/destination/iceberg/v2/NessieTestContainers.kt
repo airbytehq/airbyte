@@ -29,16 +29,16 @@ object NessieTestContainers {
      */
     fun start() {
         if (startRunOnce.setOnce()) {
-//            testcontainers.start()
-            val minio = MinioContainer()
-                .withEnv("MINIO_ROOT_USER", "inioadmin")
-                .withEnv("MINIO_ROOT_PASSWORD", "inioadmin")
-                .withEnv("MINIO_ADDRESS", ":9000")
-                .withEnv("MINIO_CONSOLE_ADDRESS", ":9090")
-                .withExposedPorts(9000)
-            minio.start()
-            val minioPort = minio.getMappedPort(9000)
-            fail("Started minio. Port is $minioPort")
+            testcontainers.start()
+//            val minio = MinioContainer()
+//                .withEnv("MINIO_ROOT_USER", "inioadmin")
+//                .withEnv("MINIO_ROOT_PASSWORD", "inioadmin")
+//                .withEnv("MINIO_ADDRESS", ":9000")
+//                .withEnv("MINIO_CONSOLE_ADDRESS", ":9090")
+//                .withExposedPorts(9000)
+//            minio.start()
+//            val minioPort = minio.getMappedPort(9000)
+//            fail("Started minio. Port is $minioPort")
         } else {
             // afaict there's no method to wait for the containers to start
             // so just poll until these methods stop throwing exceptions
