@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from airbyte_cdk.models import AirbyteMessage
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudFile
@@ -22,6 +20,3 @@ class DeepsetCloudFileWriter:
             pass
 
         return message
-
-    def batch_write(self, messages: Iterable[AirbyteMessage], batch_size: int = 20) -> Iterable[AirbyteMessage]:
-        pass

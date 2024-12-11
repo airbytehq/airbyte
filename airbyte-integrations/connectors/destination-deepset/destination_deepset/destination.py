@@ -9,9 +9,16 @@ from typing import Any
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from destination_deepset.api import DeepsetCloudApi
+from destination_deepset.models import DeepsetCloudConfig
+from destination_deepset.writer import DeepsetCloudFileWriter
 
 
 class DestinationDeepset(Destination):
+    def get_deepset_cloud_api(self, config: Mapping[str, Any]) -> DeepsetCloudApi:
+        deepset_cloud_config = DeepsetCloudConfig.parse_obj(config)
+        return DeepsetCloudApi(deepset_cloud_config)
+
     def write(
         self,
         config: Mapping[str, Any],
@@ -34,7 +41,13 @@ class DestinationDeepset(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        pass
+        deepset_cloud_api = self.get_deepset_cloud_api(config)
+        deepset_cloud_file_writer = DeepsetCloudFileWriter(deepset_cloud_api)
+
+        for message in input_messages:
+            yield deepset_cloud_file_writer.write(message)
+
+        # @todo[abraham]: We need to do something with the configured catalog but I am not sure what
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -48,9 +61,9 @@ class DestinationDeepset(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-            # TODO
+        deepset_cloud_api = self.get_deepset_cloud_api(config)
 
+        if deepset_cloud_api.health_check():
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")
+
+        return AirbyteConnectionStatus(status=Status.FAILED, message="Connection is down.")
