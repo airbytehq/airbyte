@@ -211,21 +211,21 @@ class ShopifyBulkManager:
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
 
-    def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: Optional[str] = None) -> None:
+    def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: str) -> None:
         """
         Sets the last checkpoint cursor value.
 
         Args:
-            checkpointed_cursor (Optional[str]): The cursor value to set as the last checkpoint. Defaults to None.
+            checkpointed_cursor (str): The cursor value to set as the last checkpoint. Defaults to None.
         """
         self._job_last_checkpoint_cursor_value = checkpointed_cursor
 
-    def _checkpoint_cursor_has_collision(self, checkpointed_cursor: Optional[str] = None) -> bool:
+    def _checkpoint_cursor_has_collision(self, checkpointed_cursor: str) -> bool:
         """
         Checks if the provided checkpointed cursor collides with the last checkpointed cursor value.
 
         Args:
-            checkpointed_cursor (Optional[str]): The cursor value to check for collision. Defaults to None.
+            checkpointed_cursor (str): The cursor value to check for collision. Defaults to None.
 
         Returns:
             bool: True if the provided cursor collides with the last checkpointed cursor value, False otherwise.
@@ -526,13 +526,12 @@ class ShopifyBulkManager:
         """
 
         if checkpointed_cursor:
-            self._set_last_checkpoint_cursor_value(checkpointed_cursor)
-
             if self._checkpoint_cursor_has_collision(checkpointed_cursor):
                 raise ShopifyBulkExceptions.BulkJobCheckpointCollisionError(
                     f"The stream: `{self.http_client.name}` checkpoint collision is detected. Try to increase the `BULK Job checkpoint (rows collected)` to the bigger value. The stream will be synced again during the next sync attempt."
                 )
-
+            # set the checkpointed cursor value
+            self._set_last_checkpoint_cursor_value(checkpointed_cursor)
             return pdm.parse(checkpointed_cursor)
 
         return slice_end
