@@ -155,5 +155,5 @@ data class PartitionReadCheckpoint(
     val numRecords: Long,
 )
 
-/** A [PartitionReader] that has a time limit for its execution. */
-interface TimeBoundPartitionReader : PartitionReader
+/** A [PartitionReader] with no time limit for its execution. */
+interface UnlimitedTimePartitionReader : PartitionReader

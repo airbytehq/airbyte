@@ -15,7 +15,7 @@ import kotlinx.coroutines.ensureActive
 /** Base class for JDBC implementations of [PartitionReader]. */
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
-) : TimeBoundPartitionReader {
+) : PartitionReader {
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream

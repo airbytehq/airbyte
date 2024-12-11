@@ -9,6 +9,7 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.StreamRecordConsumer
+import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
@@ -31,7 +32,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val input: DebeziumInput,
-) : PartitionReader {
+) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
