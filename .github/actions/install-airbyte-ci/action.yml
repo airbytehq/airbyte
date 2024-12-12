@@ -38,8 +38,8 @@ runs:
           echo "install-mode=source" >> $GITHUB_OUTPUT
           echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
         else
-          echo "install-mode=binary" >> $GITHUB_OUTPUT
-          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "install-mode=source" >> $GITHUB_OUTPUT
+          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
         fi
 
     - name: Install Airbyte CI from binary
