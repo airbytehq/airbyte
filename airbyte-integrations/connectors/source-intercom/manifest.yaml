@@ -21,20 +21,20 @@ definitions:
           path: admins/activity_logs
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -82,20 +82,20 @@ definitions:
           path: admins
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -108,8 +108,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -133,20 +133,20 @@ definitions:
           path: tags
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -159,8 +159,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -184,20 +184,20 @@ definitions:
           path: teams
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -210,8 +210,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -235,20 +235,20 @@ definitions:
           path: segments
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -269,8 +269,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -298,8 +298,8 @@ definitions:
           path: companies/scroll
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -352,8 +352,8 @@ definitions:
             field_name: scroll_param
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -383,20 +383,20 @@ definitions:
           request_parameters:
             model: company
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -409,8 +409,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -436,20 +436,20 @@ definitions:
           request_parameters:
             model: contact
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -462,8 +462,8 @@ definitions:
             type: RequestPath
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 150
@@ -485,9 +485,10 @@ definitions:
           path: contacts/search
           http_method: POST
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           request_body_json:
+            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
               'operator': '>', 'value': {{ stream_slice.get('prior_state',
@@ -497,7 +498,6 @@ definitions:
               stream_slice.get('prior_state', stream_state.get('prior_state',
               {})).get('updated_at') or format_datetime(config['start_date'],
               '%s') }} }, ], }
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             pagination: >-
               { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
               next_page_token.get('next_page_token').get('page') }},
@@ -508,13 +508,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -556,9 +556,10 @@ definitions:
           path: conversations/search
           http_method: POST
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           request_body_json:
+            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
               'operator': '>', 'value': {{ stream_slice.get('prior_state',
@@ -568,7 +569,6 @@ definitions:
               stream_slice.get('prior_state', stream_state.get('prior_state',
               {})).get('updated_at') or format_datetime(config['start_date'],
               '%s') }} }, ], }
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             pagination: >-
               { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
               next_page_token.get('next_page_token').get('page') }},
@@ -579,13 +579,13 @@ definitions:
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -627,17 +627,17 @@ definitions:
           path: /conversations/{{ stream_slice.id }}
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
+                    action: IGNORE
                     http_codes:
                       - 404
-                    action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -659,9 +659,10 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/conversations"
+              incremental_dependency: true
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
+        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
         cursor_field: updated_at
       transformations:
         - type: AddFields
@@ -685,20 +686,20 @@ definitions:
           path: /companies/{{ stream_slice.id }}/segments
           http_method: GET
           request_headers:
-            Intercom-Version: "2.11"
             Accept: application/json
+            Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
             response_filters:
               - type: HttpResponseFilter
-                error_message_contains: Active subscription needed
                 action: FAIL
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
                   Please, validate your current Intercom plan to continue using
                   API.
+                error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -719,9 +720,10 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/companies"
+              incremental_dependency: true
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
+        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
         cursor_field: updated_at
       schema_loader:
         type: InlineSchemaLoader
@@ -763,55 +765,55 @@ spec:
           Access token for making authenticated requests. See the <a
           href="https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token">Intercom
           docs</a> for more information.
+        order: 0
         title: Access token
         airbyte_secret: true
-        order: 0
       client_id:
         type: string
         description: Client Id for your Intercom application.
+        order: 1
         title: Client Id
         airbyte_secret: true
-        order: 1
       client_secret:
         type: string
         description: Client Secret for your Intercom application.
+        order: 2
         title: Client Secret
         airbyte_secret: true
-        order: 2
       activity_logs_time_step:
         type: integer
         description: >-
           Set lower value in case of failing long running sync of Activity Logs
           stream.
-        default: 30
-        minimum: 1
-        maximum: 91
+        order: 3
         title: Activity logs stream slice step size (in days)
+        default: 30
+        maximum: 91
+        minimum: 1
         examples:
           - 30
           - 10
           - 5
-        order: 3
       lookback_window:
         type: integer
         description: The number of days to shift the state value backward for record sync
+        order: 4
         title: Lookback window
-        examples:
-          - 60
         default: 0
         minimum: 0
-        order: 4
+        examples:
+          - 60
       start_date:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
+        order: 5
         title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2020-11-16T00:00:00Z"
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        format: date-time
-        order: 5
     additionalProperties: true
 
 metadata:
@@ -860,82 +862,84 @@ metadata:
         - incrementalSync
   testedStreams:
     activity_logs:
+      hasRecords: true
       streamHash: dae54ab01efc8a7c580121de6902d67a82a87775
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     admins:
+      hasRecords: true
       streamHash: 62fdd12c98bec28f09edd3a34cd16bc5c1afedb6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tags:
+      hasRecords: true
       streamHash: 53f9b051b3d5c8747598b848c006c80f3ffc5957
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     teams:
+      hasRecords: true
       streamHash: d27cc586e29ddf6347d6356ea4970af99b7980c1
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     segments:
+      hasRecords: true
       streamHash: 96ba554609834b986e20813cedf03a96183196fd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     companies:
+      hasRecords: true
       streamHash: 801c62e3a0a4028608efc4bf5f1ad5119b986973
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     company_attributes:
+      hasRecords: true
       streamHash: e59558fb65b2c762d2b3f6b67e9071db2773cf13
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contact_attributes:
+      hasRecords: true
       streamHash: 70d4afa7c3ad63877ab1fd9c185bd58c27ce06bc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     contacts:
+      hasRecords: false
       streamHash: e796494e6a861bce39d40f66e78e19b9ec633e29
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     conversations:
+      hasRecords: false
       streamHash: 5838b59eba7d58cae3fe42eca72062bc9d29e1c4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversation_parts:
+      streamHash: 67469544cde547846d7636a110f775313d6e04fc
     company_segments:
+      hasRecords: true
       streamHash: 41220115640c54deccc0e5a421991a60aa808d3c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: false
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
