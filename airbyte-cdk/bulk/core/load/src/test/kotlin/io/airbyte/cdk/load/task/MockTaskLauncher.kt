@@ -45,7 +45,7 @@ class MockTaskLauncher : DestinationTaskLauncher {
         throw NotImplementedError()
     }
 
-    override suspend fun handleTeardownComplete() {
+    override suspend fun handleTeardownComplete(success: Boolean) {
         throw NotImplementedError()
     }
 
@@ -55,6 +55,17 @@ class MockTaskLauncher : DestinationTaskLauncher {
         index: Long
     ) {
         throw NotImplementedError("This destination does not support file transfer.")
+    }
+
+    override suspend fun handleException(e: Exception) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun handleFailStreamComplete(
+        stream: DestinationStream.Descriptor,
+        e: Exception
+    ) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun run() {

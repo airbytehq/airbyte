@@ -25,6 +25,7 @@ https://www.cqc.org.uk/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.6 | 2024-12-12 | [49008](https://github.com/airbytehq/airbyte/pull/49008) | Update dependencies |
 | 0.0.5 | 2024-11-05 | [48368](https://github.com/airbytehq/airbyte/pull/48368) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.4 | 2024-11-05 | [48329](https://github.com/airbytehq/airbyte/pull/48329) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47897](https://github.com/airbytehq/airbyte/pull/47897) | Update dependencies |

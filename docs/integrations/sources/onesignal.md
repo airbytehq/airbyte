@@ -78,6 +78,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.2 | 2024-12-11 | [49106](https://github.com/airbytehq/airbyte/pull/49106) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.2.1 | 2024-10-29 | [47667](https://github.com/airbytehq/airbyte/pull/47667) | Update dependencies |
 | 1.2.0 | 2024-10-05 | [46372](https://github.com/airbytehq/airbyte/pull/46372) | Converting to manifest-only format |
 | 1.1.14 | 2024-09-28 | [46184](https://github.com/airbytehq/airbyte/pull/46184) | Update dependencies |

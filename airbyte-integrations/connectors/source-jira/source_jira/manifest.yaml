@@ -1077,7 +1077,7 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: "updated"
     start_datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
     lookback_window: "PT{{ config.get('lookback_window_minutes', '0') }}M"

@@ -81,6 +81,8 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.5 | 2024-12-12 | [49221](https://github.com/airbytehq/airbyte/pull/49221) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [48907](https://github.com/airbytehq/airbyte/pull/48907) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.3 | 2024-11-04 | [48257](https://github.com/airbytehq/airbyte/pull/48257) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47863](https://github.com/airbytehq/airbyte/pull/47863) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47520](https://github.com/airbytehq/airbyte/pull/47520) | Update dependencies |

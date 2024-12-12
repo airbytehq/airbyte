@@ -45,6 +45,7 @@ Documentation: https://apidoc.samanage.com/#section/General-Concepts
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-11 | [49111](https://github.com/airbytehq/airbyte/pull/49111) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-10-29 | [47855](https://github.com/airbytehq/airbyte/pull/47855) | Update dependencies |
 | 0.0.1 | 2024-10-10 | [46707](https://github.com/airbytehq/airbyte/pull/46707) | Initial release by [@gemsteam](https://github.com/gemsteam) via Connector Builder |
 

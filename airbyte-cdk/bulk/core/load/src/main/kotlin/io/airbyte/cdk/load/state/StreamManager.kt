@@ -96,6 +96,9 @@ class DefaultStreamManager(
 ) : StreamManager {
     private val streamResult = CompletableDeferred<StreamResult>()
 
+    data class CachedRanges(val state: Batch.State, val ranges: RangeSet<Long>)
+    private val cachedRangesById = ConcurrentHashMap<String, CachedRanges>()
+
     private val log = KotlinLogging.logger {}
 
     private val recordCount = AtomicLong(0)
@@ -144,15 +147,30 @@ class DefaultStreamManager(
         rangesState[batch.batch.state]
             ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
+        // If the batch is part of a group, update all ranges associated with its groupId
+        // to the most advanced state. Otherwise, just use the ranges provided.
+        val cachedRangesMaybe = batch.batch.groupId?.let { cachedRangesById[batch.batch.groupId] }
+
+        log.info {
+            "Updating state for stream ${stream.descriptor} with batch $batch using cached ranges $cachedRangesMaybe"
+        }
+
+        val stateToSet =
+            cachedRangesMaybe?.state?.let { maxOf(it, batch.batch.state) } ?: batch.batch.state
+        val rangesToUpdate = TreeRangeSet.create(batch.ranges)
+        cachedRangesMaybe?.ranges?.also { rangesToUpdate.addAll(it) }
+
+        log.info { "Marking ranges for stream ${stream.descriptor} $rangesToUpdate as $stateToSet" }
+
         // Force the ranges to overlap at their endpoints, in order to work around
         // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
         // contiguous.
         // This ensures that a state message received at eg, index 10 (after messages 0..9 have
         // been received), will pass `{'[0..5]','[6..9]'}.encloses('[0..10)')`.
         val expanded =
-            batch.ranges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
+            rangesToUpdate.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
 
-        when (batch.batch.state) {
+        when (stateToSet) {
             Batch.State.PERSISTED -> {
                 rangesState[Batch.State.PERSISTED]?.addAll(expanded)
             }
@@ -166,6 +184,10 @@ class DefaultStreamManager(
 
         log.info {
             "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $expanded. PERSISTED is also updated on COMPLETE."
+        }
+
+        batch.batch.groupId?.also {
+            cachedRangesById[it] = CachedRanges(stateToSet, rangesToUpdate)
         }
     }
 

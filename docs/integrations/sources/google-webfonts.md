@@ -68,6 +68,8 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.4 | 2024-12-12 | [49232](https://github.com/airbytehq/airbyte/pull/49232) | Update dependencies |
+| 0.2.3 | 2024-12-11 | [48141](https://github.com/airbytehq/airbyte/pull/48141) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-10-29 | [47891](https://github.com/airbytehq/airbyte/pull/47891) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47623](https://github.com/airbytehq/airbyte/pull/47623) | Update dependencies |
 | 0.2.0 | 2024-08-23 | [44615](https://github.com/airbytehq/airbyte/pull/44615) | Refactor connector to manifest-only format |
