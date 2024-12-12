@@ -54,6 +54,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2024-12-12 | [49358](https://github.com/airbytehq/airbyte/pull/49358) | Update dependencies |
 | 0.0.6 | 2024-12-11 | [49086](https://github.com/airbytehq/airbyte/pull/49086) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-05 | [48362](https://github.com/airbytehq/airbyte/pull/48362) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.4 | 2024-11-05 | [48325](https://github.com/airbytehq/airbyte/pull/48325) | Update dependencies |
