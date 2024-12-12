@@ -29,7 +29,6 @@ data:
     - cdk:low-code
       # Disable acceptance tests for now
       # No/Low airbyte cloud usage
-      # connectorTestSuitesOptions:
       #   - suite: acceptanceTests
       #     testSecrets:
       #       - name: SECRET_SOURCE-COPPER__CREDS
