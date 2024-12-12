@@ -1267,10 +1267,21 @@ dynamic_streams:
           field_path: ["retriever", "requester", "request_parameters", "pivot"]
           value: "(value:{{components_values['pivot_by']}})"
         - type: ComponentMappingDefinition
-          field_path: ["retriever", "requester", "request_parameters", "timeGranularity"]
+          field_path:
+            ["retriever", "requester", "request_parameters", "timeGranularity"]
           value: "(value:{{components_values['time_granularity']}})"
         - type: ComponentMappingDefinition
-          field_path: ["retriever", "record_selector", "**", "transformations", 1, "fields", 0, "value"]
+          field_path:
+            [
+              "retriever",
+              "record_selector",
+              "**",
+              "transformations",
+              1,
+              "fields",
+              0,
+              "value",
+            ]
           value: "{{components_values['pivot_by']}}"
 spec:
   type: Spec
