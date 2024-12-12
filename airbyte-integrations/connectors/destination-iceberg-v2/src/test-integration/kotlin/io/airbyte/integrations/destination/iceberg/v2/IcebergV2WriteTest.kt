@@ -133,7 +133,7 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
             val minioEndpoint = NessieTestContainers.getMinioUrl()
             val nessieEndpoint = NessieTestContainers.getNessieUrl()
 
-//            val authToken = getToken()
+            //            val authToken = getToken()
             return """
             {
                 "s3_bucket_name": "demobucket",
