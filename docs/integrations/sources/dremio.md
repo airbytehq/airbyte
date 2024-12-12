@@ -41,6 +41,7 @@ Please read [How to get your APIs credentials](https://docs.dremio.com/software/
 
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
+| 0.2.3 | 2024-12-11 | [48904](https://github.com/airbytehq/airbyte/pull/48904) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-10-29 | [47886](https://github.com/airbytehq/airbyte/pull/47886) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47633](https://github.com/airbytehq/airbyte/pull/47633) | Update dependencies |
 | 0.2.0 | 2024-08-19 | [44415](https://github.com/airbytehq/airbyte/pull/44415) | Refactor connector to manifest-only format |

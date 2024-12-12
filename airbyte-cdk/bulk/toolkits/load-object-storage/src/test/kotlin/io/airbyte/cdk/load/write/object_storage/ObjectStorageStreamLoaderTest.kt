@@ -21,6 +21,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -52,12 +53,14 @@ class ObjectStorageStreamLoaderTest {
 
     @Test
     fun `test processFile`() = runTest {
-        val fileUrl = "fileUrl"
+        val fileUrl = "/tmp/fileUrl"
+        Files.deleteIfExists(Path.of(fileUrl))
+        Files.createFile(Path.of(fileUrl))
         val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
-            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl)
+            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl, fileRelativePath = fileUrl)
         every { pathFactory.getFinalDirectory(any()) } returns stagingDirectory
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
@@ -82,5 +85,6 @@ class ObjectStorageStreamLoaderTest {
             (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
         )
         verify { mockedFile.delete() }
+        Files.deleteIfExists(Path.of(fileUrl))
     }
 }
