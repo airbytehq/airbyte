@@ -72,4 +72,6 @@ data:
       3.0.0:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
+    rolloutConfiguration:
+      enableProgressiveRollout: false
 metadataSpecVersion: "1.0"
