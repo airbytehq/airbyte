@@ -10,7 +10,7 @@
       "account_sid": {
         "title": "Account ID",
         "description": "Twilio account SID",
-        "airbyte_secret": true,
+        "airbyte_secret": false,
         "type": "string",
         "order": 1
       },
