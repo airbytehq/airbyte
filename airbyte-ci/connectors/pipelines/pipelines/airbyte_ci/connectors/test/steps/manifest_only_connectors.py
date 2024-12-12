@@ -83,6 +83,10 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
             ["ln", "-s", "/source-declarative-manifest", connector_path]
         )
 
+        # Specify the root user for installation of dependencies.
+        # This is necessary to install poetry dependencies in rootless containers.
+        test_environment = test_environment.with_user("root")
+
         return await super().install_testing_environment(
             test_environment,
             test_config_file_name,
