@@ -7,8 +7,10 @@ from enum import Enum, unique
 from pathlib import Path
 from typing import Any
 
-from airbyte_cdk.models import AirbyteRecordMessage, DestinationSyncMode
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.models import AirbyteRecordMessage, DestinationSyncMode
+
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -29,11 +31,6 @@ SUPPORTED_FILE_EXTENSIONS = [
     ".xml",
 ]
 
-SUPPORTED_DESTINATION_SYNC_MODES = [
-    DestinationSyncMode.append,
-    DestinationSyncMode.overwrite,
-]
-
 
 @unique
 class WriteMode(str, Enum):
@@ -43,12 +40,15 @@ class WriteMode(str, Enum):
 
     @classmethod
     def from_destination_sync_mode(cls, destination_sync_mode: DestinationSyncMode) -> WriteMode:
-        fallback_write_mode = cls.KEEP
-        sync_mode_to_write_mode = {
-            cls.KEEP: DestinationSyncMode.append,
-            cls.OVERWRITE: DestinationSyncMode.overwrite,
-        }
-        return sync_mode_to_write_mode.get(destination_sync_mode, fallback_write_mode)
+        return SUPPORTED_DESTINATION_SYNC_MODES.get(destination_sync_mode, FALLBACK_FILE_WRITE_MODE)
+
+
+FALLBACK_FILE_WRITE_MODE = WriteMode.KEEP
+
+SUPPORTED_DESTINATION_SYNC_MODES = {
+    DestinationSyncMode.append: WriteMode.KEEP,
+    DestinationSyncMode.overwrite: WriteMode.OVERWRITE,
+}
 
 
 class DeepsetCloudConfig(BaseModel):
