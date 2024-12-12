@@ -90,8 +90,7 @@ airbyte:
             please refresh your schema or reset the connection.
           reference-links: -https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
 
-        - pattern: >-
-            (?i).*vttablet: rpc error: code = Unavailable desc = error reading from server: EOF.*
+        - pattern: .*vttablet.*?rpc\s+error.*?code\s*=\s*Unavailable.*?desc\s*=\s*error\s+reading\s+from\s+server\s*:\s*EOF.*
           input-example: >-
             java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
             vttablet: rpc error: code = Unavailable desc = error reading from server: EOF
