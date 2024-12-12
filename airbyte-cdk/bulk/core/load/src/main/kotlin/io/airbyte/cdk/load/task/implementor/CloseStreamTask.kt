@@ -8,12 +8,11 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : StreamLevel, ImplementorScope
+interface CloseStreamTask : ImplementorScope
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the
@@ -21,7 +20,7 @@ interface CloseStreamTask : StreamLevel, ImplementorScope
  */
 class DefaultCloseStreamTask(
     private val syncManager: SyncManager,
-    override val streamDescriptor: DestinationStream.Descriptor,
+    val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher
 ) : CloseStreamTask {
 
