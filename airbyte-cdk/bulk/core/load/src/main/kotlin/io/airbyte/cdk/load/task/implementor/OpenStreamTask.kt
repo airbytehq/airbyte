@@ -8,13 +8,12 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface OpenStreamTask : StreamLevel, ImplementorScope
+interface OpenStreamTask : ImplementorScope
 
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
@@ -24,14 +23,18 @@ interface OpenStreamTask : StreamLevel, ImplementorScope
 class DefaultOpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    override val streamDescriptor: DestinationStream.Descriptor,
+    val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val stream: DestinationStream,
 ) : OpenStreamTask {
     override suspend fun execute() {
         val streamLoader = destinationWriter.createStreamLoader(stream)
-        streamLoader.start()
-        syncManager.registerStartedStreamLoader(streamLoader)
+        val result = runCatching {
+            streamLoader.start()
+            streamLoader
+        }
+        syncManager.registerStartedStreamLoader(stream.descriptor, result)
+        result.getOrThrow() // throw after registering the failure
         taskLauncher.handleStreamStarted(streamDescriptor)
     }
 }
