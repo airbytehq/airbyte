@@ -56,6 +56,7 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.3 | 2024-12-12 | [49159](https://github.com/airbytehq/airbyte/pull/49159) | Update dependencies |
 | 0.4.2 | 2024-12-11 | [47674](https://github.com/airbytehq/airbyte/pull/47674) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-15 | [44153](https://github.com/airbytehq/airbyte/pull/44153) | Refactor connector to manifest-only format |

@@ -55,6 +55,7 @@ If the connector is used with an API key, Google allows for 25.000 queries per d
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.3 | 2024-12-12 | [49177](https://github.com/airbytehq/airbyte/pull/49177) | Update dependencies |
 | 0.2.2 | 2024-12-11 | [47793](https://github.com/airbytehq/airbyte/pull/47793) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44143](https://github.com/airbytehq/airbyte/pull/44143) | Refactor connector to manifest-only format |

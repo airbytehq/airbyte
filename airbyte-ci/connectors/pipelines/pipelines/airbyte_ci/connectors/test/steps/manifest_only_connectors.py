@@ -14,7 +14,6 @@ from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, I
 from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
-from pipelines.models.steps import StepResult
 
 
 def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:

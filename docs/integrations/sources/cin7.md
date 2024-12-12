@@ -39,6 +39,7 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-12 | [49284](https://github.com/airbytehq/airbyte/pull/49284) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [48950](https://github.com/airbytehq/airbyte/pull/48950) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-10-30 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 

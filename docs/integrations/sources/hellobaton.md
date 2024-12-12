@@ -56,6 +56,7 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.3.6 | 2024-12-12 | [49245](https://github.com/airbytehq/airbyte/pull/49245) | Update dependencies |
 | 0.3.5 | 2024-12-11 | [48981](https://github.com/airbytehq/airbyte/pull/48981) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.4 | 2024-11-05 | [48359](https://github.com/airbytehq/airbyte/pull/48359) | Revert to source-declarative-manifest v5.17.0 |
 | 0.3.3 | 2024-11-05 | [48320](https://github.com/airbytehq/airbyte/pull/48320) | Update dependencies |

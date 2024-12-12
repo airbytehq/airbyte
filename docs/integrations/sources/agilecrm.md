@@ -30,6 +30,7 @@ The [Agile CRM](https://agilecrm.com/) Airbyte Connector allows you to sync and 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-12 | [49279](https://github.com/airbytehq/airbyte/pull/49279) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49026](https://github.com/airbytehq/airbyte/pull/49026) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 

@@ -52,6 +52,7 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.6 | 2024-12-12 | [49208](https://github.com/airbytehq/airbyte/pull/49208) | Update dependencies |
 | 0.2.5 | 2024-12-11 | [48937](https://github.com/airbytehq/airbyte/pull/48937) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.4 | 2024-11-05 | [48363](https://github.com/airbytehq/airbyte/pull/48363) | Revert to source-declarative-manifest v5.17.0 |
 | 0.2.3 | 2024-11-05 | [48330](https://github.com/airbytehq/airbyte/pull/48330) | Update dependencies |
