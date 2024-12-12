@@ -929,6 +929,13 @@ metadata:
       hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    company_segments:
+      streamHash: 41220115640c54deccc0e5a421991a60aa808d3c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: false
   assist: {}
 
 schemas:
