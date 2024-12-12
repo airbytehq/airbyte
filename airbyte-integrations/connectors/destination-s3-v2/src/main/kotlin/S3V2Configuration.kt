@@ -39,6 +39,7 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
     override val recordBatchSizeBytes: Long,
+    override val numProcessRecordsWorkers: Int = 2
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,

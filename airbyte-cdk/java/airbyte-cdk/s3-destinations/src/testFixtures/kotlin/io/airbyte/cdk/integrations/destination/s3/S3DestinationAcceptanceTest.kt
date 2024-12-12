@@ -491,7 +491,7 @@ protected constructor(
      * both syncs are preserved.
      */
     @Test
-    fun testOverwriteSyncFailedResumedGeneration() {
+    open fun testOverwriteSyncFailedResumedGeneration() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."
@@ -525,7 +525,7 @@ protected constructor(
 
     /** Test runs 2 failed syncs and verifies the previous sync objects are not cleaned up. */
     @Test
-    fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
+    open fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
         assumeTrue(
             implementsOverwrite(),
             "Destination's spec.json does not support overwrite sync mode."

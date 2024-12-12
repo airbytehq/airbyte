@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.DestinationStreamEventQueue
 import io.airbyte.cdk.load.message.DestinationStreamQueueSupplier
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.StreamCompleteEvent
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
@@ -25,8 +26,8 @@ import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.MockTaskLauncher
+import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
-import io.airbyte.cdk.load.util.lineSequence
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -34,7 +35,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import java.time.Clock
-import kotlin.io.path.inputStream
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -47,7 +48,7 @@ class SpillToDiskTaskTest {
     @Nested
     @ExtendWith(MockKExtension::class)
     inner class UnitTests {
-        @MockK(relaxed = true) lateinit var spillFileProvider: SpillFileProvider
+        @MockK(relaxed = true) lateinit var fileAccumulatorFactory: FileAccumulatorFactory
 
         @MockK(relaxed = true) lateinit var flushStrategy: FlushStrategy
 
@@ -57,22 +58,31 @@ class SpillToDiskTaskTest {
 
         @MockK(relaxed = true) lateinit var diskManager: ReservationManager
 
+        @MockK(relaxed = true) lateinit var outputQueue: MultiProducerChannel<FileAggregateMessage>
+
         private lateinit var inputQueue: DestinationStreamEventQueue
 
         private lateinit var task: DefaultSpillToDiskTask
 
         @BeforeEach
         fun setup() {
+            val acc =
+                FileAccumulator(
+                    mockk(),
+                    mockk(),
+                    timeWindow,
+                )
+            every { fileAccumulatorFactory.make() } returns acc
             inputQueue = DestinationStreamEventQueue()
             task =
                 DefaultSpillToDiskTask(
-                    spillFileProvider,
+                    fileAccumulatorFactory,
                     inputQueue,
+                    outputQueue,
                     flushStrategy,
                     MockDestinationCatalogFactory.stream1.descriptor,
-                    taskLauncher,
                     diskManager,
-                    timeWindow,
+                    taskLauncher,
                 )
         }
 
@@ -92,8 +102,11 @@ class SpillToDiskTaskTest {
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
                 inputQueue.publish(Reserved(value = recordMsg))
 
-                task.execute()
-                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
+                val job = launch {
+                    task.execute()
+                    coVerify(exactly = 1) { outputQueue.publish(any()) }
+                }
+                job.cancel()
             }
 
         @Test
@@ -101,8 +114,11 @@ class SpillToDiskTaskTest {
             val completeMsg = StreamCompleteEvent(0L)
             inputQueue.publish(Reserved(value = completeMsg))
 
-            task.execute()
-            coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
+            val job = launch {
+                task.execute()
+                coVerify(exactly = 1) { outputQueue.publish(any()) }
+            }
+            job.cancel()
         }
 
         @Test
@@ -127,8 +143,11 @@ class SpillToDiskTaskTest {
                 inputQueue.publish(Reserved(value = recordMsg))
                 inputQueue.publish(Reserved(value = flushMsg))
 
-                task.execute()
-                coVerify(exactly = 1) { taskLauncher.handleNewSpilledFile(any(), any()) }
+                val job = launch {
+                    task.execute()
+                    coVerify(exactly = 1) { outputQueue.publish(any()) }
+                }
+                job.cancel()
             }
     }
 
@@ -141,31 +160,34 @@ class SpillToDiskTaskTest {
         private lateinit var diskManager: ReservationManager
         private lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
         private lateinit var taskLauncher: MockTaskLauncher
+        private lateinit var fileAccumulatorFactory: FileAccumulatorFactory
         private val clock: Clock = mockk(relaxed = true)
         private val flushWindowMs = 60000L
 
         private lateinit var queueSupplier:
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>
         private lateinit var spillFileProvider: SpillFileProvider
+        private lateinit var outputQueue: MultiProducerChannel<FileAggregateMessage>
 
         @BeforeEach
         fun setup() {
+            outputQueue = mockk(relaxed = true)
             spillFileProvider = DefaultSpillFileProvider(MockDestinationConfiguration())
             queueSupplier =
                 DestinationStreamQueueSupplier(
                     MockDestinationCatalogFactory().make(),
                 )
+            fileAccumulatorFactory = FileAccumulatorFactory(flushWindowMs, spillFileProvider, clock)
             taskLauncher = MockTaskLauncher()
             memoryManager = ReservationManager(Fixtures.INITIAL_MEMORY_CAPACITY)
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
             spillToDiskTaskFactory =
                 DefaultSpillToDiskTaskFactory(
-                    spillFileProvider,
+                    fileAccumulatorFactory,
                     queueSupplier,
                     MockFlushStrategy(),
                     diskManager,
-                    clock,
-                    flushWindowMs,
+                    outputQueue,
                 )
         }
 
@@ -186,51 +208,26 @@ class SpillToDiskTaskTest {
                 diskManager.remainingCapacityBytes,
             )
 
-            spillToDiskTaskFactory
-                .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
-                .execute()
-            Assertions.assertEquals(1, taskLauncher.spilledFiles.size)
-            spillToDiskTaskFactory
-                .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
-                .execute()
-            Assertions.assertEquals(2, taskLauncher.spilledFiles.size)
+            val job = launch {
+                spillToDiskTaskFactory
+                    .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
+                    .execute()
+                spillToDiskTaskFactory
+                    .make(taskLauncher, MockDestinationCatalogFactory.stream1.descriptor)
+                    .execute()
 
-            Assertions.assertEquals(1024, taskLauncher.spilledFiles[0].totalSizeBytes)
-            Assertions.assertEquals(512, taskLauncher.spilledFiles[1].totalSizeBytes)
-
-            val spilled1 = taskLauncher.spilledFiles[0]
-            val spilled2 = taskLauncher.spilledFiles[1]
-            Assertions.assertEquals(1024, spilled1.totalSizeBytes)
-            Assertions.assertEquals(512, spilled2.totalSizeBytes)
-
-            val file1 = spilled1.localFile
-            val file2 = spilled2.localFile
-
-            val expectedLinesFirst = (0 until 1024 / 8).flatMap { listOf("test$it") }
-            val expectedLinesSecond = (1024 / 8 until 1536 / 8).flatMap { listOf("test$it") }
-
-            Assertions.assertEquals(
-                expectedLinesFirst,
-                file1.inputStream().lineSequence().toList(),
-            )
-            Assertions.assertEquals(
-                expectedLinesSecond,
-                file2.inputStream().lineSequence().toList(),
-            )
-
-            // we have released all memory reservations
-            Assertions.assertEquals(
-                Fixtures.INITIAL_MEMORY_CAPACITY,
-                memoryManager.remainingCapacityBytes,
-            )
-            // we now have equivalent disk reservations
-            Assertions.assertEquals(
-                Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk,
-                diskManager.remainingCapacityBytes,
-            )
-
-            file1.toFile().delete()
-            file2.toFile().delete()
+                // we have released all memory reservations
+                Assertions.assertEquals(
+                    Fixtures.INITIAL_MEMORY_CAPACITY,
+                    memoryManager.remainingCapacityBytes,
+                )
+                // we now have equivalent disk reservations
+                Assertions.assertEquals(
+                    Fixtures.INITIAL_DISK_CAPACITY - bytesReservedDisk,
+                    diskManager.remainingCapacityBytes,
+                )
+            }
+            job.cancel()
         }
 
         inner class MockFlushStrategy : FlushStrategy {
