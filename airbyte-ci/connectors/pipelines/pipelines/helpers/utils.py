@@ -376,14 +376,11 @@ def dagger_directory_as_zip_file(dagger_client: Client, directory: Directory, di
     )
 
 
-async def raise_if_not_user(container: Container, user: str) -> Container:
+async def raise_if_not_user(container: Container, user: str) -> None:
     """Raise an error if the container is not running as the specified user.
 
     Args:
         container (Container): The container to check.
         user (str): The user to check.
-
-    Returns:
-        Container: The container.
     """
     assert (await container.with_exec(["whoami"]).stdout()).strip() == user, f"Container is not running as {user}."
