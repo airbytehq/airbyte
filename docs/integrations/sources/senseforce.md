@@ -87,6 +87,7 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.6 | 2024-12-12 | [49341](https://github.com/airbytehq/airbyte/pull/49341) | Update dependencies |
 | 0.2.5 | 2024-12-11 | [49100](https://github.com/airbytehq/airbyte/pull/49100) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.4 | 2024-11-04 | [48166](https://github.com/airbytehq/airbyte/pull/48166) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47765](https://github.com/airbytehq/airbyte/pull/47765) | Update dependencies |
