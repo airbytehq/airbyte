@@ -232,7 +232,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self._state = self._update_partition_state(stream_slice.partition, {self.cursor_field: max_cursor_value})
 
     def _update_partition_state(self, partition: Mapping[str, Any], cursor: Mapping[str, Any]) -> Mapping[str, Any]:
-        states = copy.deepcopy(self._state.get("states", []))
+        states = self._state.get("states", [])
         for state in states:
             if state.get("partition") == partition:
                 state.update({"cursor": cursor})
