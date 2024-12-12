@@ -223,7 +223,9 @@ def with_crane(
 
     # We use the debug image as it contains a shell which we need to properly use environment variables
     # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
-    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+    base_container = context.dagger_client.container().from_(
+        "gcr.io/go-containerregistry/crane/debug:c195f151efe3369874c72662cd69ad43ee485128@sha256:94f61956845714bea3b788445454ae4827f49a90dcd9dac28255c4cccb6220ad"
+    )
 
     if context.docker_hub_username and context.docker_hub_password:
         base_container = (
