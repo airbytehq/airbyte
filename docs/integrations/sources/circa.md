@@ -28,6 +28,7 @@ Airbyte connector for [SimpleCirca](https://www.simplecirca.com/) would enable s
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2024-12-12 | [49313](https://github.com/airbytehq/airbyte/pull/49313) | Update dependencies |
 | 0.0.3 | 2024-12-11 | [49034](https://github.com/airbytehq/airbyte/pull/49034) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-11-04 | [48268](https://github.com/airbytehq/airbyte/pull/48268) | Update dependencies |
 | 0.0.1 | 2024-10-21 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
