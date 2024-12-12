@@ -36,6 +36,7 @@ Follow [this guide](https://docs.rollbar.com/reference/getting-started-1#authent
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.4 | 2024-12-12 | [49335](https://github.com/airbytehq/airbyte/pull/49335) | Update dependencies |
 | 0.0.3 | 2024-12-11 | [49084](https://github.com/airbytehq/airbyte/pull/49084) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-11-04 | [47733](https://github.com/airbytehq/airbyte/pull/47733) | Update dependencies |
 | 0.0.1 | 2024-09-24 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
