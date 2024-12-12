@@ -1,0 +1,121 @@
+version: 6.7.0
+
+type: DeclarativeSource
+
+check:
+  stream_names: []
+  type: CheckStream
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      name: ""
+      primary_key: []
+      retriever:
+        paginator:
+          type: NoPagination
+        record_selector:
+          extractor:
+            field_path:
+              - valueRanges
+              - "*"
+            type: DpathExtractor
+          type: RecordSelector
+        requester:
+          $ref: "#/definitions/base_requester"
+          $parameters:
+            sheet_id: ""
+          http_method: GET
+          path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!2:202&majorDimension=ROWS&alt=json'
+        type: SimpleRetriever
+      schema_loader:
+        retriever:
+          paginator:
+            type: NoPagination
+          record_selector:
+            extractor:
+              field_path:
+                - sheets
+                - "*"
+                - data
+                - "*"
+                - rowData
+                - "*"
+              type: DpathExtractor
+            type: RecordSelector
+          requester:
+            $ref: "#/definitions/base_requester"
+            $parameters:
+              sheet_id: ""
+              parsed_spreadsheet_id: ""
+            http_method: GET
+            path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json'
+          type: SimpleRetriever
+        schema_type_identifier:
+          key_pointer:
+            - formattedValue
+          schema_pointer:
+            - values
+        type: DynamicSchemaLoader
+      type: DeclarativeStream
+    components_resolver:
+      components_mapping:
+        - field_path:
+            - name
+          type: ComponentMappingDefinition
+          value: "{{components_values['title']}}"
+        - field_path:
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['title']}}"
+        - field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['title']}}"
+      retriever:
+        paginator:
+          type: NoPagination
+        record_selector:
+          extractor:
+            field_path:
+              - sheets
+              - "*"
+              - properties
+            type: DpathExtractor
+          type: RecordSelector
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: GET
+          path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=false&alt=json'
+        type: SimpleRetriever
+      type: HttpComponentsResolver
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://sheets.googleapis.com/v4/spreadsheets/
+    authenticator: "#/definitions/authenticator"
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://www.googleapis.com/oauth2/v4/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/bearer_authenticator"
