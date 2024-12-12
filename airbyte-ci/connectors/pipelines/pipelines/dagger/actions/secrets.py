@@ -49,7 +49,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
 
 
 async def mounted_connector_secrets(
-    context: ConnectorContext, secret_directory_path: str, connector_secrets: List[Secret], owner: str = "root"
+    context: ConnectorContext, secret_directory_path: str, connector_secrets: List[Secret], owner: str | None = None
 ) -> Callable[[Container], Container]:
     """Returns an argument for a dagger container's with_ method which mounts all connector secrets in it.
 
@@ -57,7 +57,7 @@ async def mounted_connector_secrets(
         context (ConnectorContext): The context providing a connector object and its secrets.
         secret_directory_path (str): Container directory where the secrets will be mounted, as files.
         connector_secrets (List[secrets]): List of secrets to mount to the connector container.
-        owner (str): The owner of the mounted secrets.
+        owner (str, optional): The owner of the mounted secrets. Defaults to None.
     Returns:
         fn (Callable[[Container], Container]): A function to pass as argument to the connector container's with_ method.
     """

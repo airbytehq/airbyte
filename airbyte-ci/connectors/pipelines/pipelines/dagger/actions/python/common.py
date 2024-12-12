@@ -21,7 +21,7 @@ def with_python_package(
     package_source_code_path: str,
     exclude: Optional[List] = None,
     include: Optional[List] = None,
-    owner: str = "root",
+    owner: str | None = None,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
@@ -32,7 +32,7 @@ def with_python_package(
         additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
         exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
         include (Optional[List]): A list of file or directory to include from the python package source code.
-        owner (str): The user to use in the container. Defaults to "root".
+        owner (str, optional): The owner of the mounted directory. Defaults to None.
     Returns:
         Container: A python environment container with the python package source code.
     """
