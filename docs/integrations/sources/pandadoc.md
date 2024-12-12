@@ -33,6 +33,7 @@ Airbyte connector for PandaDoc allows users to extract data from PandaDoc and in
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.5 | 2024-12-12 | [49354](https://github.com/airbytehq/airbyte/pull/49354) | Update dependencies |
 | 0.0.4 | 2024-12-11 | [49064](https://github.com/airbytehq/airbyte/pull/49064) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [48210](https://github.com/airbytehq/airbyte/pull/48210) | Update dependencies |
 | 0.0.2 | 2024-10-29 | [47911](https://github.com/airbytehq/airbyte/pull/47911) | Update dependencies |
