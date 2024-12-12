@@ -1,0 +1,989 @@
+version: 6.10.0
+
+type: DeclarativeSource
+
+description: Add support for toggl API
+
+check:
+  type: CheckStream
+  stream_names:
+    - Projects
+
+definitions:
+  streams:
+    Projects:
+      type: DeclarativeStream
+      name: Projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/workspaces/{{ stream_partition.workspace_id }}/projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start_project_id
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get('projects', [])[-1].get('id') if
+              response.get('projects') else None }}
+            stop_condition: >-
+              {{ not response.get('projects') or response.get('projects')|length
+              == 0 }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: workspace_id
+              stream:
+                $ref: "#/definitions/streams/Workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Projects"
+    Organizations:
+      type: DeclarativeStream
+      name: Organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/me/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Organizations"
+    Workspaces:
+      type: DeclarativeStream
+      name: Workspaces
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Workspaces"
+    Tasks:
+      type: DeclarativeStream
+      name: Tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/workspaces/{{ stream_partition.workspace_id }}/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: workspace_id
+              stream:
+                $ref: "#/definitions/streams/Workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tasks"
+    Tags:
+      type: DeclarativeStream
+      name: Tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/workspaces/{{ stream_partition.workspace_id }}/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: workspace_id
+              stream:
+                $ref: "#/definitions/streams/Workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tags"
+    Clients:
+      type: DeclarativeStream
+      name: Clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/workspaces/{{ stream_partition.workspace_id }}/clients
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: workspace_id
+              stream:
+                $ref: "#/definitions/streams/Workspaces"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Clients"
+    Me:
+      type: DeclarativeStream
+      name: Me
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/me
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Me"
+    Preferences:
+      type: DeclarativeStream
+      name: Preferences
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/me/preferences
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Preferences"
+    Users:
+      type: DeclarativeStream
+      name: Users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v9/organizations/{{ stream_partition.organization_id }}/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/Organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.track.toggl.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/Organizations"
+  - $ref: "#/definitions/streams/Workspaces"
+  - $ref: "#/definitions/streams/Tasks"
+  - $ref: "#/definitions/streams/Tags"
+  - $ref: "#/definitions/streams/Clients"
+  - $ref: "#/definitions/streams/Me"
+  - $ref: "#/definitions/streams/Preferences"
+  - $ref: "#/definitions/streams/Users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Projects: true
+    Organizations: true
+    Workspaces: true
+    Tasks: true
+    Tags: true
+    Clients: true
+    Me: true
+    Preferences: true
+    Users: true
+  testedStreams:
+    Projects:
+      hasRecords: true
+      streamHash: 79432270c089ff39430c192ac477af7cefb8f28d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Organizations:
+      hasRecords: true
+      streamHash: 19bf031d5c53c48f25aebb8eba33119d4d176623
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Workspaces:
+      hasRecords: true
+      streamHash: 55be226c9724e84f6ed366c333d7f6ce77aa15e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Tasks:
+      streamHash: fb2812614165864f47f4e44308ff3977e1d5dda2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Tags:
+      hasRecords: true
+      streamHash: abfc6912af0e219e2fc61ebdba0284853611a94e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Clients:
+      hasRecords: true
+      streamHash: 7fed8e3d3b655dc1b20df41f7c0ebd5b97721932
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Me:
+      hasRecords: true
+      streamHash: 2835b4d9285892f1af81f897b953d78f0631a92e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Preferences:
+      hasRecords: true
+      streamHash: 2b748a1df83b47ecdb0d08d28b192900e7ae0387
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Users:
+      streamHash: 7fa679f6e16ab059be6a5fd9db1e245a9789832a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://engineering.toggl.com/docs/
+
+schemas:
+  Projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      auto_estimates:
+        type:
+          - boolean
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      can_track_time:
+        type:
+          - boolean
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_shared:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      recurring:
+        type:
+          - boolean
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tasks_count:
+        type:
+          - number
+          - "null"
+      template:
+        type:
+          - boolean
+          - "null"
+      wid:
+        type:
+          - number
+          - "null"
+      workspace_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      admin:
+        type:
+          - boolean
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_multi_workspace_enabled:
+        type:
+          - boolean
+          - "null"
+      is_unified:
+        type:
+          - boolean
+          - "null"
+      max_workspaces:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - boolean
+          - "null"
+      pricing_plan_enterprise:
+        type:
+          - boolean
+          - "null"
+      pricing_plan_id:
+        type:
+          - number
+          - "null"
+      pricing_plan_name:
+        type:
+          - string
+          - "null"
+      trial_info:
+        type:
+          - object
+          - "null"
+        properties:
+          can_have_trial:
+            type:
+              - boolean
+              - "null"
+          next_payment_date:
+            type:
+              - string
+              - "null"
+          trial:
+            type:
+              - boolean
+              - "null"
+          trial_available:
+            type:
+              - boolean
+              - "null"
+          trial_end_date:
+            type:
+              - string
+              - "null"
+          trial_plan_id:
+            type:
+              - number
+              - "null"
+      user_count:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_project_count:
+        type:
+          - number
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      api_token:
+        type:
+          - string
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      business_ws:
+        type:
+          - boolean
+          - "null"
+      default_currency:
+        type:
+          - string
+          - "null"
+      hide_start_end_times:
+        type:
+          - boolean
+          - "null"
+      ical_enabled:
+        type:
+          - boolean
+          - "null"
+      ical_url:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      last_modified:
+        type:
+          - string
+          - "null"
+      limit_public_project_data:
+        type:
+          - boolean
+          - "null"
+      logo_url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      only_admins_may_create_projects:
+        type:
+          - boolean
+          - "null"
+      only_admins_may_create_tags:
+        type:
+          - boolean
+          - "null"
+      only_admins_see_billable_rates:
+        type:
+          - boolean
+          - "null"
+      only_admins_see_team_dashboard:
+        type:
+          - boolean
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      premium:
+        type:
+          - boolean
+          - "null"
+      projects_billable_by_default:
+        type:
+          - boolean
+          - "null"
+      projects_enforce_billable:
+        type:
+          - boolean
+          - "null"
+      projects_private_by_default:
+        type:
+          - boolean
+          - "null"
+      reports_collapse:
+        type:
+          - boolean
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      rounding:
+        type:
+          - number
+          - "null"
+      rounding_minutes:
+        type:
+          - number
+          - "null"
+      te_constraints:
+        type:
+          - object
+          - "null"
+  Tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      estimated_seconds:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      recurring:
+        type:
+          - boolean
+          - "null"
+      tracked_seconds:
+        type:
+          - number
+          - "null"
+      workspace_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      at:
+        type:
+          - string
+          - "null"
+      creator_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - boolean
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      creator_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      wid:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  Me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      api_token:
+        type:
+          - string
+          - "null"
+      at:
+        type:
+          - string
+          - "null"
+      authorization_updated_at:
+        type:
+          - string
+          - "null"
+      beginning_of_week:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      default_workspace_id:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      fullname:
+        type:
+          - string
+          - "null"
+      has_password:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      image_url:
+        type:
+          - string
+          - "null"
+      intercom_hash:
+        type:
+          - string
+          - "null"
+      oauth_providers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      openid_enabled:
+        type:
+          - boolean
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      toggl_accounts_id:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  Preferences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      BeginningOfWeek:
+        type:
+          - number
+          - "null"
+      alpha_features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - boolean
+                - "null"
+      date_format:
+        type:
+          - string
+          - "null"
+      duration_format:
+        type:
+          - string
+          - "null"
+      pg_time_zone_name:
+        type:
+          - string
+          - "null"
+      record_timeline:
+        type:
+          - boolean
+          - "null"
+      send_daily_project_invites:
+        type:
+          - boolean
+          - "null"
+      send_product_emails:
+        type:
+          - boolean
+          - "null"
+      send_timer_notifications:
+        type:
+          - boolean
+          - "null"
+      send_weekly_report:
+        type:
+          - boolean
+          - "null"
+      timeofday_format:
+        type:
+          - string
+          - "null"
+  Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avatar_url:
+        type:
+          - string
+          - "null"
+      can_edit_email:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      inactive:
+        type:
+          - boolean
+          - "null"
+      joined:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      workspace_count:
+        type:
+          - number
+          - "null"
+      workspaces:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            admin:
+              type:
+                - boolean
+                - "null"
+            default_currency:
+              type:
+                - string
+                - "null"
+            inactive:
+              type:
+                - boolean
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            view_edit_billable_rates:
+              type:
+                - boolean
+                - "null"
+            view_edit_labor_costs:
+              type:
+                - boolean
+                - "null"
+            workspace_id:
+              type:
+                - number
+                - "null"
+            workspace_name:
+              type:
+                - string
+                - "null"
+            workspace_user_id:
+              type:
+                - number
+                - "null"
+    required:
+      - id
