@@ -4,6 +4,7 @@ products: oss-enterprise
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Implementation Guide
 
@@ -560,6 +561,60 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
+
+#### Use a custom image registry
+
+If your organization uses custom image registries, you can use them with Airbyte, too. Airbyte supports public image registries without secrets and private or public ones that use secrets.
+
+Implementing Airbyte this way has several advantages.
+
+- **Security**: Private custom image registries keep images in your network, reducing the risk of external threats.
+- **Access control**: You have more control over who can access and modify images.
+- **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
+
+<details>
+<summary>Use a public custom image registry without secrets</summary>
+
+1. Add images to your custom image registry. If you don't already use a custom image registry, see the docs for these common options.
+
+    <ContainerProviders/>
+
+2. Add the following customization to Airbyte's `values.yaml` file, replacing the `registry` value with your own registry location. This example demonstrates a custom image registry from GitHub.
+
+    ```yaml
+    global:
+      image:
+        registry: ghcr.io/NAMESPACE
+    ```
+
+</details>
+
+<details>
+<summary>Use a private or public custom image registry with secrets</summary>
+
+1. Add images to your custom image registry. If you don't already use a custom image registry, see the docs for these common options.
+
+    <ContainerProviders/>
+
+2. Create a Kubernetes secret. In this example, we create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
+
+    ```bash
+    kubectl create secret generic regcred \
+    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+    --type=kubernetes.io/dockerconfigjson
+    ```
+
+3. Add the following customization to Airbyte's `values.yaml` file, replacing the `registry` value with your own registry location, and the secrets names with your own. This example demonstrates a custom image registry on GitHub and using the `regcred` secret, created earlier.
+
+    ```yaml
+    global:
+      image:
+        registry: ghcr.io/NAMESPACE
+      imagePullSecrets:
+        - name: regcred
+      ```
+
+</details>
 
 ### Step 3: Deploy Self-Managed Enterprise
 
