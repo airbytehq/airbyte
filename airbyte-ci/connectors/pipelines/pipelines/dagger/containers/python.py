@@ -67,25 +67,25 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     )
 
 
-def with_pip_cache(container: Container, dagger_client: Client) -> Container:
+def with_pip_cache(container: Container, dagger_client: Client, owner="root") -> Container:
     """Mounts the pip cache in the container.
     Args:
         container (Container): A container with python installed
-
+        owner (str, optional): The owner of the cache. Defaults to "root".
     Returns:
         Container: A container with the pip cache mounted.
     """
     pip_cache_volume = dagger_client.cache_volume(PIP_CACHE_VOLUME_NAME)
-    return container.with_mounted_cache(PIP_CACHE_PATH, pip_cache_volume, sharing=CacheSharingMode.SHARED)
+    return container.with_mounted_cache(PIP_CACHE_PATH, pip_cache_volume, sharing=CacheSharingMode.SHARED, owner=owner)
 
 
-def with_poetry_cache(container: Container, dagger_client: Client) -> Container:
+def with_poetry_cache(container: Container, dagger_client: Client, owner: str = "root") -> Container:
     """Mounts the poetry cache in the container.
     Args:
         container (Container): A container with python installed
-
+        owner (str, optional): The owner of the cache. Defaults to "root".
     Returns:
         Container: A container with the poetry cache mounted.
     """
     poetry_cache_volume = dagger_client.cache_volume(POETRY_CACHE_VOLUME_NAME)
-    return container.with_mounted_cache(POETRY_CACHE_PATH, poetry_cache_volume, sharing=CacheSharingMode.SHARED)
+    return container.with_mounted_cache(POETRY_CACHE_PATH, poetry_cache_volume, sharing=CacheSharingMode.SHARED, owner=owner)
