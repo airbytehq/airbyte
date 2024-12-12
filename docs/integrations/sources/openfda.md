@@ -28,6 +28,7 @@ Docs:https://open.fda.gov/apis/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-12 | [49351](https://github.com/airbytehq/airbyte/pull/49351) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49090](https://github.com/airbytehq/airbyte/pull/49090) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-10-23 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
