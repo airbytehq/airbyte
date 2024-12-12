@@ -14,7 +14,7 @@ import requests_mock
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
-from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from source_amazon_seller_partner.streams import ReportProcessingStatus
 
 from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE, ConfigBuilder
