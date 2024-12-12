@@ -61,7 +61,7 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.0  | 2023-12-12 | []() | Update streams to API V5. Fix auth flow  |
+| 1.0.0  | 2023-12-12 | [49424](https://github.com/airbytehq/airbyte/pull/49424) | Update streams to API V5. Fix auth flow  |
 | 0.2.0  | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only  |
 | 0.1.22 | 2024-10-12 | [46778](https://github.com/airbytehq/airbyte/pull/46778) | Update dependencies |
 | 0.1.21 | 2024-10-05 | [46441](https://github.com/airbytehq/airbyte/pull/46441) | Update dependencies |
