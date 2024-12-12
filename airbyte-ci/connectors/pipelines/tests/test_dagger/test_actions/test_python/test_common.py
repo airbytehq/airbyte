@@ -72,6 +72,7 @@ async def test_with_python_connector_installed_from_setup(context_with_setup, py
     # Uninstall and reinstall the latest cdk version
     cdk_install_latest_output = (
         await container.with_env_variable("CACHEBUSTER", datetime.datetime.now().isoformat())
+        .with_user("root")
         .with_exec(["pip", "uninstall", "-y", f"airbyte-cdk=={latest_cdk_version}"])
         .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"])
         .stdout()
