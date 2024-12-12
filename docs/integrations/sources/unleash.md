@@ -58,6 +58,7 @@ The API key that you are assigned is rate-limited.
 
 | Version | Date       | Pull Request                                              | Subject                               |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------ |
+| 0.2.2 | 2024-12-12 | [49413](https://github.com/airbytehq/airbyte/pull/49413) | Update dependencies |
 | 0.2.1 | 2024-12-11 | [48326](https://github.com/airbytehq/airbyte/pull/48326) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.0 | 2024-10-06 | [46525](https://github.com/airbytehq/airbyte/pull/46525) | Converting to manifest-only format |
 | 0.1.18 | 2024-10-05 | [46490](https://github.com/airbytehq/airbyte/pull/46490) | Update dependencies |
