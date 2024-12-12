@@ -66,6 +66,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.2 | 2024-12-12 | [49333](https://github.com/airbytehq/airbyte/pull/49333) | Update dependencies |
 | 1.3.1 | 2024-12-11 | [49091](https://github.com/airbytehq/airbyte/pull/49091) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.3.0 | 2024-11-13 | [48474](https://github.com/airbytehq/airbyte/pull/48474) | Remove definition and schema redundancy, update to latest CDK and make compatibility with builder |
 | 1.2.0 | 2024-11-04 | [47290](https://github.com/airbytehq/airbyte/pull/47290) | Migrate to manifest only format |
