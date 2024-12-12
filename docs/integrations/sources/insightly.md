@@ -72,6 +72,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.4 | 2024-12-12 | [49243](https://github.com/airbytehq/airbyte/pull/49243) | Update dependencies |
 | 0.3.3 | 2024-12-11 | [48288](https://github.com/airbytehq/airbyte/pull/48288) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.2 | 2024-10-29 | [47917](https://github.com/airbytehq/airbyte/pull/47917) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
