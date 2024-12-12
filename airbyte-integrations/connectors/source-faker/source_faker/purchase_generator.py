@@ -4,13 +4,12 @@
 
 import datetime
 from multiprocessing import current_process
-from typing import Dict, List
 
-from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Datetime, Numeric
 
-from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
-from .utils import format_airbyte_time, now_millis
+from source_faker.models import AirbyteMessageWithCachedJSON
+from source_faker.models import AirbyteRecordMessage, Type
+from source_faker.utils import format_airbyte_time, now_millis
 
 
 class PurchaseGenerator:
@@ -18,7 +17,7 @@ class PurchaseGenerator:
         self.stream_name = stream_name
         self.seed = seed
 
-    def prepare(self):
+    def prepare(self) -> None:
         """
         Note: the instances of the mimesis generators need to be global.
         Yes, they *should* be able to be instance variables on this class, which should only instantiated once-per-worker, but that's not quite the case:
@@ -37,7 +36,9 @@ class PurchaseGenerator:
         numeric = Numeric(seed=seed_with_offset)
 
     def random_date_in_range(
-        self, start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()
+        self,
+        start_date: datetime.datetime,
+        end_date: datetime.datetime = datetime.datetime.now(),
     ) -> datetime.datetime:
         time_between_dates = end_date - start_date
         days_between_dates = time_between_dates.days
@@ -47,13 +48,12 @@ class PurchaseGenerator:
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
         return random_date
 
-    def generate(self, user_id: int) -> List[Dict]:
+    def generate(self, user_id: int) -> list[dict]:
         """
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
-
-        purchases: List[Dict] = []
+        purchases: list[dict] = []
         last_user_id_digit = int(repr(user_id)[-1])
         purchase_count = 1
         id_offset = 0
