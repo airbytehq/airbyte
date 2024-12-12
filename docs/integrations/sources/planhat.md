@@ -54,6 +54,7 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request | Subject                                              |
 | ------- | ---------- | ------------ | ---------------------------------------------------- |
+| 0.0.7 | 2024-12-12 | [49347](https://github.com/airbytehq/airbyte/pull/49347) | Update dependencies |
 | 0.0.6 | 2024-12-11 | [49102](https://github.com/airbytehq/airbyte/pull/49102) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-04 | [48157](https://github.com/airbytehq/airbyte/pull/48157) | Update dependencies |
 | 0.0.4 | 2024-10-29 | [47778](https://github.com/airbytehq/airbyte/pull/47778) | Update dependencies |
