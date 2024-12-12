@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
 class CdcPartitionsCreatorFactory<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
-    val globalLockResource: CdcGlobalLockResource,
     val debeziumOps: DebeziumOperations<T>,
 ) : PartitionsCreatorFactory {
 
@@ -42,7 +41,6 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
         }
         return CdcPartitionsCreator(
             concurrencyResource,
-            globalLockResource,
             feedBootstrap,
             debeziumOps,
             debeziumOps,
