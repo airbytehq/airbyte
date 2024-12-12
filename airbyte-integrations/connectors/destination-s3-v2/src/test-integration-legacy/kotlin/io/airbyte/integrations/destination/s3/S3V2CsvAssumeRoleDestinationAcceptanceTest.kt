@@ -25,5 +25,5 @@ class S3V2CsvAssumeRoleDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanc
 
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
-    override  fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testOverwriteSyncFailedResumedGeneration() {}
 }

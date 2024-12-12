@@ -18,5 +18,5 @@ class S3V2CsvGzipDestinationAcceptanceTest : S3BaseCsvGzipDestinationAcceptanceT
 
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
-    override  fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testOverwriteSyncFailedResumedGeneration() {}
 }

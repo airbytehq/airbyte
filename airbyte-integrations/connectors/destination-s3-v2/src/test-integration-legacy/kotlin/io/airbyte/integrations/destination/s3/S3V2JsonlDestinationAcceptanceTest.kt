@@ -18,5 +18,5 @@ class S3V2JsonlDestinationAcceptanceTest : S3BaseJsonlDestinationAcceptanceTest(
 
     // Disable these tests until we fix the incomplete stream handling behavior.
     override fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {}
-    override  fun testOverwriteSyncFailedResumedGeneration() {}
+    override fun testOverwriteSyncFailedResumedGeneration() {}
 }
