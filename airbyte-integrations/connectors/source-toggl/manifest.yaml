@@ -262,8 +262,8 @@ definitions:
     url_base: https://api.track.toggl.com
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+      username: "{{ config['api_token'] }}"
+      password: api_token
 
 streams:
   - $ref: "#/definitions/streams/Projects"
@@ -282,16 +282,12 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - username
+      - api_token
     properties:
-      username:
+      api_token:
         type: string
         order: 0
-        title: Username
-      password:
-        type: string
-        order: 1
-        title: Password
+        title: API Token
         always_show: true
         airbyte_secret: true
     additionalProperties: true
@@ -307,65 +303,68 @@ metadata:
     Me: true
     Preferences: true
     Users: true
+  yamlComponents:
+    global:
+      - authenticator
   testedStreams:
     Projects:
-      hasRecords: true
-      streamHash: 79432270c089ff39430c192ac477af7cefb8f28d
+      streamHash: 509946e1b0bd93dc4d600f410dc7d10120c21c97
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Organizations:
-      hasRecords: true
-      streamHash: 19bf031d5c53c48f25aebb8eba33119d4d176623
+      streamHash: 7c17f94dce17d692099b184b43bb64959d0e7d3c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Workspaces:
-      hasRecords: true
-      streamHash: 55be226c9724e84f6ed366c333d7f6ce77aa15e7
+      streamHash: 1dc5519d2a037d093e37dfcda04d7d94953dacdb
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Tasks:
-      streamHash: fb2812614165864f47f4e44308ff3977e1d5dda2
+      streamHash: cec3b3a76f743396372c10999b14da4f8f700f5d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Tags:
-      hasRecords: true
-      streamHash: abfc6912af0e219e2fc61ebdba0284853611a94e
+      streamHash: 68cecc866558ea2c8cab9f59e1bfc691a6f58742
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Clients:
-      hasRecords: true
-      streamHash: 7fed8e3d3b655dc1b20df41f7c0ebd5b97721932
+      streamHash: b6bdbb511edd7b329807f5c15c38aac120589c9b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Me:
-      hasRecords: true
-      streamHash: 2835b4d9285892f1af81f897b953d78f0631a92e
+      streamHash: a85ec5f579ce5a702d7827be5b1be9f5066699dd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Preferences:
-      hasRecords: true
-      streamHash: 2b748a1df83b47ecdb0d08d28b192900e7ae0387
+      streamHash: 88aaef16e13e203de460a838825a107a64ef3e51
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Users:
-      streamHash: 7fa679f6e16ab059be6a5fd9db1e245a9789832a
+      streamHash: 6b61933a24af1213ae3ecdbd9cc83972d3d3355d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
