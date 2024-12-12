@@ -9,7 +9,6 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordM
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, WriteMode
 
-
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
@@ -67,9 +66,6 @@ class DeepsetCloudFileWriter:
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message=(
-                        "Successfully uploaded a record to a deepset cloud workspace. "
-                        f"Uploaded {file_id = !s}, {workspace = }."
-                    ),
+                    message=("Successfully uploaded a record to a deepset cloud workspace. " f"Uploaded {file_id = !s}, {workspace = }."),
                 ),
             )

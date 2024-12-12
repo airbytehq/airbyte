@@ -13,7 +13,6 @@ from destination_deepset.api import DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, WriteMode
 from destination_deepset.writer import DeepsetCloudFileWriter, WriterError
 
-
 logger = logging.getLogger("airbyte")
 
 

@@ -5,10 +5,9 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile, WriteMode
 from httpx import HTTPError, HTTPStatusError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
-
-from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile, WriteMode
 
 
 class APIError(RuntimeError):
