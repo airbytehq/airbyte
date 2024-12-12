@@ -11,6 +11,7 @@ import io.minio.MakeBucketArgs
 import io.minio.MinioClient
 import io.minio.RemoveBucketArgs
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.test.fail
 import org.projectnessie.testing.nessie.NessieContainer
 import org.testcontainers.containers.Network
 import org.projectnessie.minio.MinioContainer
@@ -27,29 +28,29 @@ object NessieTestContainers {
     private val startRunOnce = AtomicBoolean(false)
 
     // Container instances
-    private val keycloakContainer =
-        KeycloakContainer("quay.io/keycloak/keycloak:26.0.5")
-            .withRealmImportFile("nessie/authn-keycloak/config/iceberg-realm.json")
-            .withNetwork(network)
-            .withNetworkAliases(KEYCLOAK_ALIAS)
-            .withEnv(
-                mapOf(
-                    "KC_HEALTH_ENABLED" to "true",
-                    "KC_BOOTSTRAP_ADMIN_USERNAME" to "admin",
-                    "KC_BOOTSTRAP_ADMIN_PASSWORD" to "admin",
-                ),
-            )
-            .withFeaturesEnabled("token-exchange")
-            //        .withCustomCommand("start-dev")
-            .withCustomCommand("--verbose")
+//    private val keycloakContainer =
+//        KeycloakContainer("quay.io/keycloak/keycloak:26.0.5")
+//            .withRealmImportFile("nessie/authn-keycloak/config/iceberg-realm.json")
+//            .withNetwork(network)
+//            .withNetworkAliases(KEYCLOAK_ALIAS)
+//            .withEnv(
+//                mapOf(
+//                    "KC_HEALTH_ENABLED" to "true",
+//                    "KC_BOOTSTRAP_ADMIN_USERNAME" to "admin",
+//                    "KC_BOOTSTRAP_ADMIN_PASSWORD" to "admin",
+//                ),
+//            )
+//            .withFeaturesEnabled("token-exchange")
+//            //        .withCustomCommand("start-dev")
+//            .withCustomCommand("--verbose")
+//
+//    private val minioContainer =
+//        MinioContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z", "minioadmin", "minioadmin", "demobucket")
+//            .withRegion("us-east-1")
+//            .withNetwork(network)
+//            .withNetworkAliases(MINIO_ALIAS)
 
-    private val minioContainer =
-        MinioContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z", "minioadmin", "minioadmin", "demobucket")
-            .withRegion("us-east-1")
-            .withNetwork(network)
-            .withNetworkAliases(MINIO_ALIAS)
-
-    private var nessieContainer: NessieContainer? = null
+//    private var nessieContainer: NessieContainer? = null
 
     fun start() {
         if (startRunOnce.setOnce()) {
@@ -57,10 +58,46 @@ object NessieTestContainers {
         }
     }
 
-    private fun createMinioBucket() {
+//    private fun createMinioBucket() {
+//        val minioClient: MinioClient =
+//            MinioClient.builder()
+//                .endpoint(getMinioUrl())
+//                .credentials("minioadmin", "minioadmin")
+//                .build()
+//
+//        val bucketName = "demobucket"
+//
+//        // Force remove bucket if it exists
+//        if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
+//            minioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build())
+//        }
+//
+//        // Create fresh bucket
+//        minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build())
+//        val bucketExists =
+//            minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())
+//        if (bucketExists) {
+//            println("Bucket was created")
+//        }
+//    }
+
+    private fun initializeAndStartContainers() {
+        val minioContainer =
+            MinioContainer(
+                "minio/minio:RELEASE.2024-11-07T00-52-20Z",
+                "minioadmin",
+                "minioadmin",
+                "demobucket"
+            )
+                .withRegion("us-east-1")
+                .withNetwork(network)
+                .withNetworkAliases(MINIO_ALIAS)
+        // Start MinIO first
+        minioContainer.start()
+
         val minioClient: MinioClient =
             MinioClient.builder()
-                .endpoint(getMinioUrl())
+                .endpoint("http://localhost:${minioContainer?.getMappedPort(9000)}")
                 .credentials("minioadmin", "minioadmin")
                 .build()
 
@@ -68,89 +105,77 @@ object NessieTestContainers {
 
         // Force remove bucket if it exists
         if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
-            minioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build())
+            fail("The bucket exists!")
         }
 
-        // Create fresh bucket
-        minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build())
-        val bucketExists =
-            minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())
-        if (bucketExists) {
-            println("Bucket was created")
-        }
+//        // Create MinIO bucket
+//        createMinioBucket()
+//
+//        // Start Keycloak and Nessie
+//        keycloakContainer.start()
+//        initializeAndStartNessie()
+//    }
+
+//    private fun initializeAndStartNessie() {
+//        // Initialize Nessie container
+//        nessieContainer =
+//            NessieContainer.builder()
+//                .dockerImage("ghcr.io/projectnessie/nessie:0.100.0")
+//                .build()
+//                .createContainer()
+//                .withNetwork(network)
+//                .withNetworkAliases(NESSIE_ALIAS)
+//                .withExposedPorts(19120, 9000)
+//                .withEnv(
+//                    mapOf(
+//                        // Version store settings
+//                        "nessie.version.store.type" to "IN_MEMORY",
+//
+//                        // Authentication settings
+//                        "nessie.server.authentication.enabled" to "false",
+//                        "quarkus.oidc.auth-server-url" to
+//                            "http://$KEYCLOAK_ALIAS:8080/realms/iceberg",
+//                        "quarkus.oidc.client-id" to "client1",
+//                        "quarkus.oidc.token.issuer" to "http://127.0.0.1:8080/realms/iceberg",
+//
+//                        // Object store settings
+//                        "nessie.catalog.default-warehouse" to "warehouse",
+//                        "nessie.catalog.warehouses.warehouse.location" to "s3://demobucket/",
+//                        "nessie.catalog.service.s3.default-options.region" to "us-east-1",
+//                        "nessie.catalog.service.s3.default-options.path-style-access" to "true",
+//                        "nessie.catalog.service.s3.default-options.access-key" to
+//                            "urn:nessie-secret:quarkus:nessie.catalog.secrets.access-key",
+//                        "nessie.catalog.secrets.access-key.name" to "minioadmin",
+//                        "nessie.catalog.secrets.access-key.secret" to "minioadmin",
+//                        "nessie.catalog.service.s3.default-options.endpoint" to
+//                            "http://$MINIO_ALIAS:9000/",
+//                        "nessie.catalog.service.s3.default-options.external-endpoint" to
+//                            "http://127.0.0.1:9002/",
+//
+//                        // Authorization settings
+//                        "nessie.server.authorization.enabled" to "false",
+//                        "nessie.server.authorization.rules.client1" to
+//                            "role=='service-account-client1'",
+//                        "nessie.server.authorization.rules.client2" to
+//                            "role=='service-account-client2' && !path.startsWith('sales')",
+//                        "nessie.server.authorization.rules.client3" to
+//                            "role=='service-account-client3' && !path.startsWith('eng')",
+//                    ),
+//                )
+//                .dependsOn(minioContainer)
+//                .dependsOn(keycloakContainer)
+//
+//        nessieContainer?.start()
+//    }
+
+        // External URLs (for test access)
+//    fun getKeycloakUrl(): String = keycloakContainer.authServerUrl
+//    fun getNessieUrl(): String = "http://localhost:${nessieContainer?.getMappedPort(19120)}"
+//    fun getMinioUrl(): String ="http://localhost:${minioContainer?.getMappedPort(9000)}"
+//
+//    // Internal URLs (for container-to-container communication)
+//    fun getInternalKeycloakUrl(): String = "http://$KEYCLOAK_ALIAS:8080"
+//    fun getInternalNessieUrl(): String = "http://$NESSIE_ALIAS:19120"
+//    fun getInternalMinioUrl(): String = "http://$MINIO_ALIAS:9000"
     }
-
-    private fun initializeAndStartContainers() {
-        // Start MinIO first
-        minioContainer.start()
-
-        // Create MinIO bucket
-        createMinioBucket()
-
-        // Start Keycloak and Nessie
-        keycloakContainer.start()
-        initializeAndStartNessie()
-    }
-
-    private fun initializeAndStartNessie() {
-        // Initialize Nessie container
-        nessieContainer =
-            NessieContainer.builder()
-                .dockerImage("ghcr.io/projectnessie/nessie:0.100.0")
-                .build()
-                .createContainer()
-                .withNetwork(network)
-                .withNetworkAliases(NESSIE_ALIAS)
-                .withExposedPorts(19120, 9000)
-                .withEnv(
-                    mapOf(
-                        // Version store settings
-                        "nessie.version.store.type" to "IN_MEMORY",
-
-                        // Authentication settings
-                        "nessie.server.authentication.enabled" to "false",
-                        "quarkus.oidc.auth-server-url" to
-                            "http://$KEYCLOAK_ALIAS:8080/realms/iceberg",
-                        "quarkus.oidc.client-id" to "client1",
-                        "quarkus.oidc.token.issuer" to "http://127.0.0.1:8080/realms/iceberg",
-
-                        // Object store settings
-                        "nessie.catalog.default-warehouse" to "warehouse",
-                        "nessie.catalog.warehouses.warehouse.location" to "s3://demobucket/",
-                        "nessie.catalog.service.s3.default-options.region" to "us-east-1",
-                        "nessie.catalog.service.s3.default-options.path-style-access" to "true",
-                        "nessie.catalog.service.s3.default-options.access-key" to
-                            "urn:nessie-secret:quarkus:nessie.catalog.secrets.access-key",
-                        "nessie.catalog.secrets.access-key.name" to "minioadmin",
-                        "nessie.catalog.secrets.access-key.secret" to "minioadmin",
-                        "nessie.catalog.service.s3.default-options.endpoint" to
-                            "http://$MINIO_ALIAS:9000/",
-                        "nessie.catalog.service.s3.default-options.external-endpoint" to
-                            "http://127.0.0.1:9002/",
-
-                        // Authorization settings
-                        "nessie.server.authorization.enabled" to "false",
-                        "nessie.server.authorization.rules.client1" to
-                            "role=='service-account-client1'",
-                        "nessie.server.authorization.rules.client2" to
-                            "role=='service-account-client2' && !path.startsWith('sales')",
-                        "nessie.server.authorization.rules.client3" to
-                            "role=='service-account-client3' && !path.startsWith('eng')",
-                    ),
-                )
-                .dependsOn(minioContainer)
-                .dependsOn(keycloakContainer)
-
-        nessieContainer?.start()
-    }
-
-    // External URLs (for test access)
-    fun getKeycloakUrl(): String = keycloakContainer.authServerUrl
-    fun getNessieUrl(): String = "http://localhost:${nessieContainer?.getMappedPort(19120)}"
-    fun getMinioUrl(): String ="http://localhost:${minioContainer?.getMappedPort(9000)}"
-
-    // Internal URLs (for container-to-container communication)
-    fun getInternalKeycloakUrl(): String = "http://$KEYCLOAK_ALIAS:8080"
-    fun getInternalNessieUrl(): String = "http://$NESSIE_ALIAS:19120"
-    fun getInternalMinioUrl(): String = "http://$MINIO_ALIAS:9000"
 }

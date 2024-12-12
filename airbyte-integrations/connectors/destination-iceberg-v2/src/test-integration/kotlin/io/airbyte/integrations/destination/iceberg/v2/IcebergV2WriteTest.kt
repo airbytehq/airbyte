@@ -109,7 +109,7 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
                     .add("scope", "profile")
                     .build()
 
-            val keycloakUrl = NessieTestContainers.getKeycloakUrl()
+            val keycloakUrl = "http://test"
             val request =
                 Request.Builder()
                     .url("$keycloakUrl/realms/iceberg/protocol/openid-connect/token")
@@ -130,8 +130,8 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
             //            val nessieEndpoint =
             // NessieTestContainers.testcontainers.getServiceHost("nessie", 19120)
 
-            val minioEndpoint = NessieTestContainers.getMinioUrl()
-            val nessieEndpoint = NessieTestContainers.getNessieUrl()
+            val minioEndpoint = "http://test"
+            val nessieEndpoint = "http://test"
 
             //            val authToken = getToken()
             return """
