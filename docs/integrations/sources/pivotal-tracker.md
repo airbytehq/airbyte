@@ -56,6 +56,7 @@ Use this to pull data from Pivotal Tracker.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.3.3 | 2024-12-12 | [49047](https://github.com/airbytehq/airbyte/pull/49047) | Update dependencies |
 | 0.3.2 | 2024-10-29 | [47679](https://github.com/airbytehq/airbyte/pull/47679) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-14 | [44087](https://github.com/airbytehq/airbyte/pull/44087) | Refactor connector to manifest-only format |
