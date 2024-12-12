@@ -1,0 +1,64 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "TransactionAccountingLine",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "account": { "type": ["integer", "null"] },
+            "accountingbook": { "type": ["integer", "null"] },
+            "amount": { "type": ["number", "null"] },
+            "amountlinked": { "type": ["number", "null"] },
+            "amountpaid": { "type": ["number", "null"] },
+            "amountunpaid": { "type": ["number", "null"] },
+            "catchupperiod": { "type": ["integer", "null"] },
+            "credit": { "type": ["number", "null"] },
+            "debit": { "type": ["number", "null"] },
+            "deferrevrec": { "type": ["string", "null"] },
+            "exchangerate": { "type": ["number", "null"] },
+            "glauditnumber": { "type": ["string", "null"] },
+            "glauditnumberdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "glauditnumbersequence": { "type": ["integer", "null"] },
+            "glauditnumbersetby": { "type": ["integer", "null"] },
+            "lastmodifieddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "netamount": { "type": ["number", "null"] },
+            "overheadparentitem": { "type": ["integer", "null"] },
+            "paymentamountunused": { "type": ["number", "null"] },
+            "paymentamountused": { "type": ["number", "null"] },
+            "posting": { "type": ["string", "null"] },
+            "processedbyrevcommit": { "type": ["string", "null"] },
+            "revrecenddate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "revrecschedule": { "type": ["integer", "null"] },
+            "revrecstartdate": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "transaction": { "type": ["integer", "null"] },
+            "transactionline": { "type": ["integer", "null"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastmodifieddate"],
+        "source_defined_primary_key": [
+          ["transactionline"],
+          ["transaction"],
+          ["accountingbook"]
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
