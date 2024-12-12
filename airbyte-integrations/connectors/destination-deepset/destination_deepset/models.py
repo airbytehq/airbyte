@@ -7,8 +7,10 @@ from enum import Enum, unique
 from pathlib import Path
 from typing import Any
 
-from airbyte_cdk.models import AirbyteRecordMessage
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.models import AirbyteRecordMessage, DestinationSyncMode
+
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -29,12 +31,26 @@ SUPPORTED_FILE_EXTENSIONS = [
     ".xml",
 ]
 
+SUPPORTED_DESTINATION_SYNC_MODES = [
+    DestinationSyncMode.append,
+    DestinationSyncMode.overwrite,
+]
+
 
 @unique
 class WriteMode(str, Enum):
     FAIL = "FAIL"
     KEEP = "KEEP"
     OVERWRITE = "OVERWRITE"
+
+    @classmethod
+    def from_destination_sync_mode(cls, destination_sync_mode: DestinationSyncMode) -> WriteMode:
+        fallback_write_mode = cls.KEEP
+        sync_mode_to_write_mode = {
+            cls.KEEP: DestinationSyncMode.append,
+            cls.OVERWRITE: DestinationSyncMode.overwrite,
+        }
+        return sync_mode_to_write_mode.get(destination_sync_mode, fallback_write_mode)
 
 
 class DeepsetCloudConfig(BaseModel):
@@ -45,16 +61,6 @@ class DeepsetCloudConfig(BaseModel):
         description="Base url of your deepset cloud instance. Configure this if using an on-prem instance.",
     )
     workspace: str = Field(title="Workspace", description="Name of workspace to which to sync the data.")
-    write_mode: WriteMode = Field(
-        default=WriteMode.KEEP,
-        title="Write Mode",
-        description="Specifies what to do when a file with the same name already exists in the workspace.",
-    )
-    sync: bool = Field(
-        default=True,
-        title="Sync",
-        description="Ensure that the files have been saved and are visible in deepset cloud.",
-    )
     retries: int = Field(10, title="Retries", description="Number of times to retry an action before giving up.")
 
 
