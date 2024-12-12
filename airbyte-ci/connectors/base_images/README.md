@@ -102,6 +102,9 @@ poetry run mypy base_images --check-untyped-defs
 
 ## CHANGELOG
 
+### 1.3.1
+- Update the crane image address. The previous address was deleted by the maintainer.
+
 ### 1.2.0
 - Improve new version prompt to pick bump type with optional pre-release version.
 

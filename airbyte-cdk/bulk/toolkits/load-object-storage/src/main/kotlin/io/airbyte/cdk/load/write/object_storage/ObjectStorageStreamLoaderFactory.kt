@@ -8,10 +8,10 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
-import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
@@ -31,33 +31,41 @@ import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Secondary
-class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>>(
+class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val client: ObjectStorageClient<T>,
-    private val compressionConfig: ObjectStorageCompressionConfigurationProvider<*>? = null,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
+    private val compressionConfigurationProvider:
+        ObjectStorageCompressionConfigurationProvider<U>? =
+        null,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    private val uploadConfigurationProvider: ObjectStorageUploadConfigurationProvider,
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
             stream,
             client,
-            compressionConfig?.objectStorageCompressionConfiguration?.compressor ?: NoopProcessor,
+            compressionConfigurationProvider?.objectStorageCompressionConfiguration?.compressor,
             pathFactory,
-            writerFactory,
-            destinationStateManager
+            bufferedWriterFactory,
+            destinationStateManager,
+            uploadConfigurationProvider.objectStorageUploadConfiguration.streamingUploadPartSize,
         )
     }
 }
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
+    justification = "Kotlin async continuation"
+)
 class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     override val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
-    private val compressor: StreamProcessor<U>,
+    private val compressor: StreamProcessor<U>?,
     private val pathFactory: ObjectStoragePathFactory,
-    private val writerFactory: ObjectStorageFormattingWriterFactory,
+    private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
+    private val partSize: Long,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
@@ -65,7 +73,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     data class RemoteObject<T>(
         override val state: Batch.State = Batch.State.COMPLETE,
         val remoteObject: T,
-        val partNumber: Long
+        val partNumber: Long,
+        override val groupId: String? = null
     ) : ObjectStorageBatch
 
     private val partNumber = AtomicLong(0L)
@@ -95,12 +104,18 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         )
 
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val obj =
-            client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                writerFactory.create(stream, outputStream).use { writer ->
-                    records.forEach { writer.accept(it) }
+        val upload = client.startStreamingUpload(key, metadata)
+        bufferedWriterFactory.create(stream).use { writer ->
+            records.forEach {
+                writer.accept(it)
+                if (writer.bufferSize >= partSize) {
+                    upload.uploadPart(writer.takeBytes())
                 }
             }
+            writer.finish()?.let { upload.uploadPart(it) }
+        }
+        val obj = upload.complete()
+
         log.info { "Finished writing records to $key, persisting state" }
         destinationStateManager.persistState(stream)
         return RemoteObject(remoteObject = obj, partNumber = partNumber)
@@ -110,8 +125,13 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         if (pathFactory.supportsStaging) {
             throw IllegalStateException("Staging is not supported for files")
         }
+        val fileUrl = file.fileMessage.fileUrl ?: ""
+        if (!File(fileUrl).exists()) {
+            log.error { "File does not exist: $fileUrl" }
+            throw IllegalStateException("File does not exist: $fileUrl")
+        }
         val key =
-            Path.of(pathFactory.getFinalDirectory(stream).toString(), file.fileMessage.fileUrl!!)
+            Path.of(pathFactory.getFinalDirectory(stream), "${file.fileMessage.fileRelativePath}")
                 .toString()
 
         val state = destinationStateManager.getState(stream)
@@ -122,13 +142,12 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             isStaging = false
         )
 
-        val localFile = createFile(file.fileMessage.fileUrl!!)
-
         val metadata = ObjectStorageDestinationState.metadataFor(stream)
         val obj =
             client.streamingUpload(key, metadata, streamProcessor = compressor) { outputStream ->
-                File(file.fileMessage.fileUrl!!).inputStream().use { it.copyTo(outputStream) }
+                File(fileUrl).inputStream().use { it.copyTo(outputStream) }
             }
+        val localFile = createFile(fileUrl)
         localFile.delete()
         return RemoteObject(remoteObject = obj, partNumber = 0)
     }

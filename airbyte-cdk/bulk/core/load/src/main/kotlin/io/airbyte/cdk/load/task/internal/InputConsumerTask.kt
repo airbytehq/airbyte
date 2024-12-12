@@ -34,13 +34,12 @@ import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.KillableScope
-import io.airbyte.cdk.load.task.SyncLevel
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface InputConsumerTask : SyncLevel, KillableScope
+interface InputConsumerTask : KillableScope
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @

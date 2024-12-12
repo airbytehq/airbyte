@@ -91,6 +91,8 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                           |
 |:--------| :--------- | :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.4 | 2024-12-12 | [49213](https://github.com/airbytehq/airbyte/pull/49213) | Update dependencies |
+| 1.1.3 | 2024-12-11 | [48159](https://github.com/airbytehq/airbyte/pull/48159) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.1.2 | 2024-10-29 | [47817](https://github.com/airbytehq/airbyte/pull/47817) | Update dependencies |
 | 1.1.1 | 2024-10-28 | [47670](https://github.com/airbytehq/airbyte/pull/47670) | Update dependencies |
 | 1.1.0 | 2024-10-14 | [46898](https://github.com/airbytehq/airbyte/pull/46898) | Promoting release candidate 1.1.0-rc1 to a main version. |

@@ -33,6 +33,8 @@ Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). R
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.4 | 2024-12-12 | [49237](https://github.com/airbytehq/airbyte/pull/49237) | Update dependencies |
+| 0.0.3 | 2024-12-11 | [48901](https://github.com/airbytehq/airbyte/pull/48901) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-10-28 | [47472](https://github.com/airbytehq/airbyte/pull/47472) | Update dependencies |
 | 0.0.1 | 2024-08-23 | | Initial release by [@Stockotaco](https://github.com/stockotaco) via Connector Builder |
 

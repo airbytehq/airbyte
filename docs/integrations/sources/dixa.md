@@ -54,6 +54,7 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.4.1 | 2024-12-12 | [49149](https://github.com/airbytehq/airbyte/pull/49149) | Update dependencies |
 | 0.4.0 | 2024-08-27 | [44818](https://github.com/airbytehq/airbyte/pull/44818) | Refactor connector to manifest-only format |
 | 0.3.14 | 2024-08-24 | [44666](https://github.com/airbytehq/airbyte/pull/44666) | Update dependencies |
 | 0.3.13 | 2024-08-17 | [44328](https://github.com/airbytehq/airbyte/pull/44328) | Update dependencies |

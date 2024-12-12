@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.InternalScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.airbyte.cdk.load.util.takeUntilInclusive
 import io.airbyte.cdk.load.util.use
 import io.airbyte.cdk.load.util.withNextAdjacentValue
@@ -34,7 +33,7 @@ import kotlin.io.path.outputStream
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
 
-interface SpillToDiskTask : StreamLevel, InternalScope
+interface SpillToDiskTask : InternalScope
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and is not
@@ -46,7 +45,7 @@ class DefaultSpillToDiskTask(
     private val spillFileProvider: SpillFileProvider,
     private val queue: QueueReader<Reserved<DestinationStreamEvent>>,
     private val flushStrategy: FlushStrategy,
-    override val streamDescriptor: DestinationStream.Descriptor,
+    val streamDescriptor: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher,
     private val diskManager: ReservationManager,
     private val timeWindow: TimeWindowTrigger,
@@ -70,13 +69,11 @@ class DefaultSpillToDiskTask(
                         reserved.use {
                             when (val wrapped = it.value) {
                                 is StreamRecordEvent -> {
-                                    // once we have received a record for the stream, consider the
                                     // aggregate opened.
                                     timeWindow.open()
 
                                     // reserve enough room for the record
                                     diskManager.reserve(wrapped.sizeBytes)
-
                                     // calculate whether we should flush
                                     val rangeProcessed = range.withNextAdjacentValue(wrapped.index)
                                     val bytesProcessed = sizeBytes + wrapped.sizeBytes
