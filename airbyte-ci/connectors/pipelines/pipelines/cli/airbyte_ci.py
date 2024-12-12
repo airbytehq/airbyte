@@ -140,6 +140,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
         "update": "pipelines.airbyte_ci.update.commands.update",
+        "cdk": "pipelines.airbyte_ci.cdk.commands.cdk",
     },
 )
 @click.version_option(__installed_version__)
