@@ -391,6 +391,8 @@ definitions:
         - sponsoredCampaign
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_campaign_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -398,8 +400,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_campaign_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CAMPAIGN)"
@@ -466,6 +466,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_creative_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -473,8 +475,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_creative_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CREATIVE)"
@@ -541,6 +541,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_impression_device_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -548,8 +550,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_impression_device_analytics
           request_parameters:
             q: analytics
             pivot: "(value:IMPRESSION_DEVICE_TYPE)"
@@ -616,6 +616,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_size_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -623,8 +625,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_size_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY_SIZE)"
@@ -691,6 +691,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_country_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -698,8 +700,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_country_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COUNTRY_V2)"
@@ -766,6 +766,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_function_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -773,8 +775,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_function_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_FUNCTION)"
@@ -841,6 +841,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_title_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -848,8 +850,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_title_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_TITLE)"
@@ -916,6 +916,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_industry_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -923,8 +925,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_industry_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_INDUSTRY)"
@@ -991,6 +991,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_seniority_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -998,8 +1000,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_seniority_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_SENIORITY)"
@@ -1066,6 +1066,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_region_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1073,8 +1075,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_region_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_REGION_V2)"
@@ -1141,6 +1141,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1148,8 +1150,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY)"
@@ -1249,6 +1249,29 @@ streams:
   - $ref: "#/definitions/streams/ad_member_region_analytics"
   - $ref: "#/definitions/streams/ad_member_company_analytics"
 
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/ad_campaign_analytics"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - ad_analytics_reports
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path: ["**", "name"]
+          value: "custom_{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "pivot"]
+          value: "(value:{{components_values['pivot_by']}})"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "timeGranularity"]
+          value: "(value:{{components_values['time_granularity']}})"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "record_selector", "**", "transformations", 1, "fields", 0, "value"]
+          value: "{{components_values['pivot_by']}}"
 spec:
   type: Spec
   connection_specification:
