@@ -38,6 +38,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.4 | 2024-12-12 | [49332](https://github.com/airbytehq/airbyte/pull/49332) | Update dependencies |
 | 0.3.3 | 2024-12-10 | [48871](https://github.com/airbytehq/airbyte/pull/48871) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.2 | 2024-10-29 | [47791](https://github.com/airbytehq/airbyte/pull/47791) | Update dependencies |
 | 0.3.1 | 2024-10-08 | [46652](https://github.com/airbytehq/airbyte/pull/46652) | Fix longitude regex matching |
