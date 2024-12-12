@@ -12,8 +12,8 @@ import io.minio.MinioClient
 import io.minio.RemoveBucketArgs
 import java.util.concurrent.atomic.AtomicBoolean
 import org.projectnessie.testing.nessie.NessieContainer
-import org.testcontainers.containers.MinIOContainer
 import org.testcontainers.containers.Network
+import org.projectnessie.minio.MinioContainer
 
 /** Shared test containers for all nessie tests, to avoid launching redundant docker containers. */
 object NessieTestContainers {
@@ -44,19 +44,10 @@ object NessieTestContainers {
             .withCustomCommand("--verbose")
 
     private val minioContainer =
-        MinIOContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z")
-            .withEnv(
-                mapOf(
-                    "MINIO_ROOT_USER" to "minioadmin",
-                    "MINIO_ROOT_PASSWORD" to "minioadmin",
-                    "MINIO_ADDRESS" to ":9000",
-                    "MINIO_CONSOLE_ADDRESS" to ":9090",
-                ),
-            )
+        MinioContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z", "minioadmin", "minioadmin", "demobucket")
+            .withRegion("us-east-1")
             .withNetwork(network)
             .withNetworkAliases(MINIO_ALIAS)
-            .withExposedPorts(9000)
-            .withCommand("server", "/data")
 
     private var nessieContainer: NessieContainer? = null
 
@@ -69,8 +60,8 @@ object NessieTestContainers {
     private fun createMinioBucket() {
         val minioClient: MinioClient =
             MinioClient.builder()
-                .endpoint(minioContainer.s3URL)
-                .credentials(minioContainer.userName, minioContainer.password)
+                .endpoint(getMinioUrl())
+                .credentials("minioadmin", "minioadmin")
                 .build()
 
         val bucketName = "demobucket"
@@ -156,7 +147,7 @@ object NessieTestContainers {
     // External URLs (for test access)
     fun getKeycloakUrl(): String = keycloakContainer.authServerUrl
     fun getNessieUrl(): String = "http://localhost:${nessieContainer?.getMappedPort(19120)}"
-    fun getMinioUrl(): String = minioContainer.s3URL
+    fun getMinioUrl(): String ="http://localhost:${minioContainer?.getMappedPort(9000)}"
 
     // Internal URLs (for container-to-container communication)
     fun getInternalKeycloakUrl(): String = "http://$KEYCLOAK_ALIAS:8080"
