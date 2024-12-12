@@ -21,8 +21,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-      message: All streams have been migrated to use Pardot API V5 in this release. The authentication flow, which was previously broken, should now work for new connections using this version.
-      upgradeDeadline: "2024-12-26"
+        message: Most streams have been migrated to use Pardot API V5 in this release. The authentication flow, which was previously broken, should now work for new connections using this version.
+        upgradeDeadline: "2024-12-26"
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
   tags:
     - language:manifest-only
