@@ -32,6 +32,7 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.2.7 | 2024-12-12 | [49362](https://github.com/airbytehq/airbyte/pull/49362) | Update dependencies |
 | 0.2.6 | 2024-12-11 | [49076](https://github.com/airbytehq/airbyte/pull/49076) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.5 | 2024-11-05 | [48360](https://github.com/airbytehq/airbyte/pull/48360) | Revert to source-declarative-manifest v5.17.0 |
 | 0.2.4 | 2024-11-05 | [48337](https://github.com/airbytehq/airbyte/pull/48337) | Update dependencies |
