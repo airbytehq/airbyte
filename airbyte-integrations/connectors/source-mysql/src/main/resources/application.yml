@@ -50,6 +50,14 @@ airbyte:
           output: Can not read data from MySQL server, will retry.
           reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
 
+        - pattern: (?i).*Failed to read remaining ([1-9]\d*) of ([1-9]\d*) bytes from position.*
+          input-example: >-
+            java.io.EOFException: Failed to read remaining 2 of 2 bytes from position 114. Block length: 0. Initial block length: 2.
+          error: transient
+          group: MySQL EOF Exception
+          output: Can not read data from MySQL server, will retry.
+          reference-links: -https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
         - pattern: (?i).*connection is not available, request timed out after.*
           input-example: >-
             java.sql.SQLTransientConnectionException: HikariPool-x - 
@@ -82,7 +90,7 @@ airbyte:
             please refresh your schema or reset the connection.
           reference-links: -https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
 
-        - pattern: |
+        - pattern: >-
             (?i).*vttablet: rpc error: code = Unavailable desc = error reading from server: EOF.*
           input-example: >-
             java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
