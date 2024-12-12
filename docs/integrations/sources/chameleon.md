@@ -40,6 +40,7 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 
 | Version          | Date       | Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.1.3 | 2024-12-12 | [49018](https://github.com/airbytehq/airbyte/pull/49018) | Update dependencies |
 | 0.1.2 | 2024-11-04 | [48250](https://github.com/airbytehq/airbyte/pull/48250) | Update dependencies |
 | 0.1.1 | 2024-10-29 | [47822](https://github.com/airbytehq/airbyte/pull/47822) | Update dependencies |
 | 0.1.0 | 2024-09-29 | [46248](https://github.com/airbytehq/airbyte/pull/46248) | Fix survey_responses stream schema and icon |
