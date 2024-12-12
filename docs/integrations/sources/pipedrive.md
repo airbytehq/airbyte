@@ -112,6 +112,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 2.2.27 | 2024-12-12 | [49041](https://github.com/airbytehq/airbyte/pull/49041) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.2.26 | 2024-11-04 | [48293](https://github.com/airbytehq/airbyte/pull/48293) | Update dependencies |
 | 2.2.25 | 2024-10-29 | [47743](https://github.com/airbytehq/airbyte/pull/47743) | Update dependencies |
 | 2.2.24 | 2024-10-28 | [47103](https://github.com/airbytehq/airbyte/pull/47103) | Update dependencies |
