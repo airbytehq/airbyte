@@ -83,7 +83,6 @@ spec:
       - region
       - access_key
       - secret_key
-      - target
     properties:
       queue_url:
         type: string
@@ -215,14 +214,17 @@ metadata:
 schemas:
   QueueMessages:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     properties:
-      id:
-        type: string
-      body:
-        type: string
       attributes:
         type:
           - object
           - "null"
-    additionalProperties: true
+      body:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
