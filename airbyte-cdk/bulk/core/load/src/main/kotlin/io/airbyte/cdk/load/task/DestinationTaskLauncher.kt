@@ -193,12 +193,12 @@ class DefaultDestinationTaskLauncher(
                 val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
                 enqueue(spillTask)
             }
-        }
 
-        repeat(config.numProcessRecordsWorkers) {
-            log.info { "Launching process records task $it" }
-            val task = processRecordsTaskFactory.make(this)
-            enqueue(task)
+            repeat(config.numProcessRecordsWorkers) {
+                log.info { "Launching process records task $it" }
+                val task = processRecordsTaskFactory.make(this)
+                enqueue(task)
+            }
         }
 
         // Start flush task
