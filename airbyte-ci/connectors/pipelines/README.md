@@ -854,6 +854,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.45.4  | [#49136](https://github.com/airbytehq/airbyte/pull/49136)      | Fix failed install of python components due to non-root permissions.    |
 | 4.45.3  | [#48927](https://github.com/airbytehq/airbyte/pull/48927)      | Fix bug in determine_changelog_entry_comment                                                                                 |
 | 4.45.2  | [#48868](https://github.com/airbytehq/airbyte/pull/48868)  | Fix ownership issues while using `--use-local-cdk`                                                                           |
 | 4.45.1  | [#48872](https://github.com/airbytehq/airbyte/pull/48872)  | Make the `connectors list` command write its output to a JSON file.                                                          |
