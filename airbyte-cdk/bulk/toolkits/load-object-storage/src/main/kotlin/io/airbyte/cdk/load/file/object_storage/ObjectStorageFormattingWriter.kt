@@ -38,6 +38,7 @@ import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecord)
+    fun flush()
 }
 
 @Singleton
@@ -86,6 +87,10 @@ class JsonFormattingWriter(
         outputStream.write("\n")
     }
 
+    override fun flush() {
+        outputStream.flush()
+    }
+
     override fun close() {
         outputStream.close()
     }
@@ -103,6 +108,10 @@ class CSVFormattingWriter(
         printer.printRecord(
             record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
         )
+    }
+
+    override fun flush() {
+        printer.flush()
     }
 
     override fun close() {
@@ -134,6 +143,10 @@ class AvroFormattingWriter(
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 
+    override fun flush() {
+        writer.flush()
+    }
+
     override fun close() {
         writer.close()
     }
@@ -161,6 +174,10 @@ class ParquetFormattingWriter(
         val dataMapped = pipeline.map(record.data, record.meta?.changes)
         val withMeta = dataMapped.withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
+    }
+
+    override fun flush() {
+        // Parquet writer does not support flushing
     }
 
     override fun close() {
@@ -197,14 +214,19 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.accept(record)
     }
 
-    fun takeBytes(): ByteArray {
+    fun takeBytes(): ByteArray? {
         wrappingBuffer.flush()
+        if (buffer.size() == 0) {
+            return null
+        }
+
         val bytes = buffer.toByteArray()
         buffer.reset()
         return bytes
     }
 
     fun finish(): ByteArray? {
+        writer.flush()
         writer.close()
         streamProcessor.partFinisher.invoke(wrappingBuffer)
         return if (buffer.size() > 0) {
@@ -212,6 +234,11 @@ class BufferedFormattingWriter<T : OutputStream>(
         } else {
             null
         }
+    }
+
+    override fun flush() {
+        writer.flush()
+        wrappingBuffer.flush()
     }
 
     override fun close() {

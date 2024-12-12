@@ -21,23 +21,37 @@ import io.airbyte.cdk.load.state.StreamIncompleteResult
  *
  * [processRecords] is called whenever a batch of records is available for processing, and only
  * after [start] has returned successfully. The return value is a client-defined implementation of @
- * [Batch] that the framework may pass to [processBatch] and/or [finalize]. (See @[Batch] for more
- * details.)
+ * [Batch] that the framework may pass to [processBatch]. (See @[Batch] for more details.)
  *
  * [processBatch] is called once per incomplete batch returned by either [processRecords] or
  * [processBatch] itself.
  *
- * [finalize] is called once after all records and batches have been processed successfully.
+ * [createBatchAccumulator] returns an optional new instance of a [BatchAccumulator] to use for
+ * record processing instead of this stream loader. By default, it returns a reference to the stream
+ * loader itself. Use this interface if you want each record processing worker to use a separate
+ * instance (with its own state, etc).
  *
  * [close] is called once after all records have been processed, regardless of success or failure.
  * If there are failed batches, they are passed in as an argument.
  */
-interface StreamLoader {
+interface StreamLoader : BatchAccumulator {
     val stream: DestinationStream
 
     suspend fun start() {}
-    suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
+    suspend fun createBatchAccumulator(): BatchAccumulator = this
+
     suspend fun processFile(file: DestinationFile): Batch
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamIncompleteResult? = null) {}
+}
+
+interface BatchAccumulator {
+    suspend fun processRecords(
+        records: Iterator<DestinationRecord>,
+        totalSizeBytes: Long,
+        endOfStream: Boolean = false
+    ): Batch =
+        throw NotImplementedError(
+            "processRecords must be implemented if createBatchAccumulator is overridden"
+        )
 }

@@ -6,20 +6,27 @@ package io.airbyte.cdk.load.write.object_storage
 
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
+import io.airbyte.cdk.load.file.object_storage.Part
+import io.airbyte.cdk.load.file.object_storage.PartFactory
+import io.airbyte.cdk.load.file.object_storage.PartMetadataAssembler
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
+import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -27,11 +34,15 @@ import jakarta.inject.Singleton
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CompletableDeferred
 
 @Singleton
 @Secondary
 class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
+    private val config: DestinationConfiguration,
     private val client: ObjectStorageClient<T>,
     private val pathFactory: ObjectStoragePathFactory,
     private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
@@ -49,7 +60,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             pathFactory,
             bufferedWriterFactory,
             destinationStateManager,
-            uploadConfigurationProvider.objectStorageUploadConfiguration.streamingUploadPartSize,
+            recordBatchSizeBytes = config.recordBatchSizeBytes
         )
     }
 }
@@ -65,60 +76,114 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val pathFactory: ObjectStoragePathFactory,
     private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
-    private val partSize: Long,
+    private val recordBatchSizeBytes: Long,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
     sealed interface ObjectStorageBatch : Batch
-    data class RemoteObject<T>(
-        override val state: Batch.State = Batch.State.COMPLETE,
-        val remoteObject: T,
-        val partNumber: Long,
-        override val groupId: String? = null
-    ) : ObjectStorageBatch
 
-    private val partNumber = AtomicLong(0L)
+    // An indexed bytearray containing an uploadable chunk of a file.
+    // Returned by the batch accumulator after processing records.
+    class LoadablePart(val part: Part) : ObjectStorageBatch {
+        override val groupId = null
+        override val state = Batch.State.LOCAL
+    }
+
+    // An UploadablePart that has been uploaded to an incomplete object.
+    // Returned by processBatch
+    data class IncompletePartialUpload(val key: String) : ObjectStorageBatch {
+        override val state: Batch.State = Batch.State.LOCAL
+        override val groupId: String = key
+    }
+
+    // An UploadablePart that has triggered a completed upload.
+    data class LoadedObject<T : RemoteObject<*>>(
+        val remoteObject: T,
+        val fileNumber: Long,
+    ) : ObjectStorageBatch {
+        override val state: Batch.State = Batch.State.COMPLETE
+        override val groupId = remoteObject.key
+    }
+
+    // Used for naming files. Distinct from part index, which is used to track uploads.
+    private val fileNumber = AtomicLong(0L)
 
     override suspend fun start() {
         val state = destinationStateManager.getState(stream)
         val nextPartNumber = state.nextPartNumber
         log.info { "Got next part number from destination state: $nextPartNumber" }
-        partNumber.set(nextPartNumber)
+        fileNumber.set(nextPartNumber)
     }
 
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
-    ): Batch {
-        val partNumber = partNumber.getAndIncrement()
-        val key =
-            pathFactory.getPathToFile(stream, partNumber, isStaging = pathFactory.supportsStaging)
+    data class ObjectInProgress<T : OutputStream>(
+        val partFactory: PartFactory,
+        val writer: BufferedFormattingWriter<T>,
+    )
 
-        log.info { "Writing records to $key" }
-        val state = destinationStateManager.getState(stream)
-        state.addObject(
-            stream.generationId,
-            key,
-            partNumber,
-            isStaging = pathFactory.supportsStaging
-        )
+    inner class PartAccumulator : BatchAccumulator {
+        private val currentObject = AtomicReference<ObjectInProgress<U>>()
 
-        val metadata = ObjectStorageDestinationState.metadataFor(stream)
-        val upload = client.startStreamingUpload(key, metadata)
-        bufferedWriterFactory.create(stream).use { writer ->
-            records.forEach {
-                writer.accept(it)
-                if (writer.bufferSize >= partSize) {
-                    upload.uploadPart(writer.takeBytes())
-                }
+        override suspend fun processRecords(
+            records: Iterator<DestinationRecord>,
+            totalSizeBytes: Long,
+            endOfStream: Boolean
+        ): Batch {
+            // Start a new object if there is not one in progress.
+            currentObject.compareAndSet(
+                null,
+                ObjectInProgress(
+                    partFactory =
+                        PartFactory(
+                            key =
+                                pathFactory.getPathToFile(
+                                    stream,
+                                    fileNumber.getAndIncrement(),
+                                    isStaging = pathFactory.supportsStaging
+                                ),
+                            fileNumber = fileNumber.get()
+                        ),
+                    writer = bufferedWriterFactory.create(stream),
+                )
+            )
+            val partialUpload = currentObject.get()
+
+            // Add all the records to the formatting writer.
+            log.info {
+                "Accumulating ${totalSizeBytes}b records for ${partialUpload.partFactory.key}"
             }
-            writer.finish()?.let { upload.uploadPart(it) }
-        }
-        val obj = upload.complete()
+            records.forEach { partialUpload.writer.accept(it) }
+            partialUpload.writer.flush()
 
-        log.info { "Finished writing records to $key, persisting state" }
-        destinationStateManager.persistState(stream)
-        return RemoteObject(remoteObject = obj, partNumber = partNumber)
+            // Check if we have reached the target size.
+            val newSize = partialUpload.partFactory.totalSize + partialUpload.writer.bufferSize
+            if (newSize >= recordBatchSizeBytes || endOfStream) {
+
+                // If we have reached target size, clear the object and yield a final part.
+                val bytes = partialUpload.writer.finish()
+                partialUpload.writer.close()
+                val part = partialUpload.partFactory.nextPart(bytes, isFinal = true)
+
+                log.info {
+                    "Size $newSize/${recordBatchSizeBytes}b reached (endOfStream=$endOfStream), yielding final part ${part.partIndex} (empty=${part.isEmpty})"
+                }
+
+                currentObject.set(null)
+                return LoadablePart(part)
+            } else {
+                // If we have not reached target size, just yield the next part.
+                val bytes = partialUpload.writer.takeBytes()
+                val part = partialUpload.partFactory.nextPart(bytes)
+                log.info {
+                    "Size $newSize/${recordBatchSizeBytes}b not reached, yielding part ${part.partIndex} (empty=${part.isEmpty})"
+                }
+
+                return LoadablePart(part)
+            }
+        }
+    }
+
+    override suspend fun createBatchAccumulator(): BatchAccumulator {
+        return PartAccumulator()
     }
 
     override suspend fun processFile(file: DestinationFile): Batch {
@@ -149,15 +214,62 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
             }
         val localFile = createFile(fileUrl)
         localFile.delete()
-        return RemoteObject(remoteObject = obj, partNumber = 0)
+        return LoadedObject(remoteObject = obj, fileNumber = 0)
     }
 
     @VisibleForTesting fun createFile(url: String) = File(url)
 
+    data class UploadInProgress<T : RemoteObject<*>>(
+        val streamingUpload: CompletableDeferred<StreamingUpload<T>> = CompletableDeferred(),
+        val partMetadataAssembler: PartMetadataAssembler = PartMetadataAssembler()
+    )
+
+    private val uploadsInProgress = ConcurrentHashMap<String, UploadInProgress<T>>()
     override suspend fun processBatch(batch: Batch): Batch {
-        throw NotImplementedError(
-            "All post-processing occurs in the close method; this should not be called"
-        )
+        batch as LoadablePart
+        val upload = uploadsInProgress[batch.part.key] ?: UploadInProgress()
+        if (upload.partMetadataAssembler.isEmpty) {
+            // Start the upload if we haven't already. Note that the `complete`
+            // here refers to the completable deferred, not the streaming upload.
+            val metadata = ObjectStorageDestinationState.metadataFor(stream)
+            upload.streamingUpload.complete(client.startStreamingUpload(batch.part.key, metadata))
+        }
+        val streamingUpload = upload.streamingUpload.await()
+
+        upload.partMetadataAssembler.add(batch.part)
+
+        log.info {
+            "Processing loadable part ${batch.part.partIndex} of ${batch.part.key} (empty=${batch.part.isEmpty})"
+        }
+
+        // Upload provided bytes and update indexes.
+        if (batch.part.bytes != null) {
+            streamingUpload.uploadPart(batch.part.bytes, batch.part.partIndex)
+        }
+        if (upload.partMetadataAssembler.isComplete) {
+            val obj = streamingUpload.complete()
+            uploadsInProgress.remove(batch.part.key)
+
+            val state = destinationStateManager.getState(stream)
+            state.addObject(
+                stream.generationId,
+                obj.key,
+                batch.part.fileNumber,
+                isStaging = pathFactory.supportsStaging
+            )
+            destinationStateManager.persistState(stream)
+
+            // Mark that we've completed the upload and persist the state before returning the
+            // persisted batch.
+            // Otherwise, we might lose track of the upload if the process crashes before
+            // persisting.
+            // TODO: Just move/del everything in staging on close, respecting the gen id, so we
+            // don't need this.
+            log.info { "Completed upload of ${obj.key}" }
+            return LoadedObject(remoteObject = obj, fileNumber = batch.part.fileNumber)
+        } else {
+            return IncompletePartialUpload(batch.part.key)
+        }
     }
 
     override suspend fun close(streamFailure: StreamIncompleteResult?) {

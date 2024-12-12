@@ -38,6 +38,16 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
 }
 
 interface StreamingUpload<T : RemoteObject<*>> {
-    suspend fun uploadPart(part: ByteArray)
+    /**
+     * Uploads a part of the object. Each part must have a unique index. The parts do not need to be
+     * uploaded in order. The index is 1-based.
+     */
+    suspend fun uploadPart(part: ByteArray, index: Int)
+
+    /**
+     * Completes a multipart upload. All parts must be uploaded before completing the upload, and
+     * there cannot be gaps in the indexes. Multiple calls will return the same object, but only the
+     * first call will have side effects.
+     */
     suspend fun complete(): T
 }

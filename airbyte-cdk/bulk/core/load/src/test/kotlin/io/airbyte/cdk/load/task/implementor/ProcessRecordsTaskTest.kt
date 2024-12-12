@@ -69,7 +69,8 @@ class ProcessRecordsTaskTest {
 
         override suspend fun processRecords(
             records: Iterator<DestinationRecord>,
-            totalSizeBytes: Long
+            totalSizeBytes: Long,
+            endOfStream: Boolean
         ): Batch {
             // Do a simple sum of the record values and count
             // To demonstrate that the primed data was actually processed
