@@ -65,6 +65,7 @@ Captain Data [API reference](https://docs.captaindata.co/#intro) has v3 at prese
 
 | Version | Date       | Pull Request                                            | Subject                                     |
 | :------ |:-----------| :------------------------------------------------------ |:--------------------------------------------|
+| 0.2.4 | 2024-12-12 | [49299](https://github.com/airbytehq/airbyte/pull/49299) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [48900](https://github.com/airbytehq/airbyte/pull/48900) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-11-04 | [48177](https://github.com/airbytehq/airbyte/pull/48177) | Update dependencies |
 | 0.2.1 | 2024-10-29 | [47769](https://github.com/airbytehq/airbyte/pull/47769) | Update dependencies |
