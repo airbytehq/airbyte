@@ -35,8 +35,11 @@ interface SyncManager {
     suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
     suspend fun getStreamLoaderOrNull(stream: DestinationStream.Descriptor): StreamLoader?
 
-    /** Suspend until all streams are complete. Returns false if any stream was failed/killed. */
-    suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean
+    /**
+     * Suspend until all streams are processed successfully. Returns false if processing failed for
+     * any stream.
+     */
+    suspend fun awaitAllStreamsProcessedSuccessfully(): Boolean
 
     suspend fun markInputConsumed()
     suspend fun markCheckpointsProcessed()
@@ -45,7 +48,7 @@ interface SyncManager {
 
     fun isActive(): Boolean
 
-    suspend fun awaitInputProcessingComplete(): Unit
+    suspend fun awaitInputProcessingComplete()
     suspend fun awaitSyncResult(): SyncResult
 }
 
@@ -87,8 +90,10 @@ class DefaultSyncManager(
         return streamLoaders[stream]?.await()?.getOrNull()
     }
 
-    override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
-        return streamManagers.all { (_, manager) -> manager.awaitStreamResult() is StreamSucceeded }
+    override suspend fun awaitAllStreamsProcessedSuccessfully(): Boolean {
+        return streamManagers.all { (_, manager) ->
+            manager.awaitStreamResult() is StreamProcessingSucceeded
+        }
     }
 
     override suspend fun markFailed(causedBy: Exception): SyncFailure {

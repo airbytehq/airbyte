@@ -41,43 +41,43 @@ class SyncManagerTest {
     //  deferred; B) It should probably move into a writer wrapper.
 
     @Test
-    fun testAwaitAllStreamsCompletedSuccessfully() = runTest {
+    fun testAwaitAllStreamsProcessedSuccessfully() = runTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
-        launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
+        launch { completionChannel.send(syncManager.awaitAllStreamsProcessedSuccessfully()) }
 
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(completionChannel.receive())
     }
 
     @Test
-    fun testAwaitAllStreamsCompletedSuccessfullyWithFailure() = runTest {
+    fun testAwaitAllStreamsProcessedSuccessfullyWithFailure() = runTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
 
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
+        launch { completionChannel.send(syncManager.awaitAllStreamsProcessedSuccessfully()) }
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
-        manager2.markFailed(RuntimeException())
+        manager2.markProcessingFailed(RuntimeException())
         Assertions.assertFalse(completionChannel.receive())
     }
 
@@ -86,13 +86,13 @@ class SyncManagerTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
         Assertions.assertTrue(syncManager.isActive())
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         Assertions.assertTrue(syncManager.isActive())
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(syncManager.isActive())
         syncManager.markSucceeded()
         Assertions.assertFalse(syncManager.isActive())
@@ -103,8 +103,8 @@ class SyncManagerTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
 
-        manager1.markEndOfStream()
-        manager2.markEndOfStream()
+        manager1.markEndOfStream(true)
+        manager2.markEndOfStream(true)
 
         val completionChannel = Channel<SyncResult>(Channel.UNLIMITED)
 
@@ -115,13 +115,13 @@ class SyncManagerTest {
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        manager1.markSucceeded()
+        manager1.markProcessingSucceeded()
         CoroutineTestUtils.assertThrows(IllegalStateException::class) {
             syncManager.markSucceeded()
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        manager2.markSucceeded()
+        manager2.markProcessingSucceeded()
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
         syncManager.markSucceeded()
@@ -131,7 +131,7 @@ class SyncManagerTest {
     @Test
     fun testCrashOnNoEndOfStream() = runTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
-        manager1.markEndOfStream()
+        manager1.markEndOfStream(true)
         // This should fail, because stream2 was not marked with end of stream
         val e = assertThrows<IllegalStateException> { syncManager.markInputConsumed() }
         assertEquals(

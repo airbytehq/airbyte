@@ -31,9 +31,9 @@ class DefaultTeardownTask(
     override suspend fun execute() {
         syncManager.awaitInputProcessingComplete()
 
-        log.info { "Teardown task awaiting stream completion" }
-        if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
-            log.info { "Streams failed to complete successfully, doing nothing." }
+        log.info { "Teardown task awaiting stream processing completion" }
+        if (!syncManager.awaitAllStreamsProcessedSuccessfully()) {
+            log.info { "Streams failed to be processed successfully, doing nothing." }
             return
         }
 
