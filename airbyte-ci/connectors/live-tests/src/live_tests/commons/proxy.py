@@ -8,6 +8,7 @@ import dagger
 
 from . import mitm_addons
 
+
 class Proxy:
     """
     This class is a wrapper around a mitmproxy container. It allows to declare a mitmproxy container,
@@ -45,18 +46,16 @@ class Proxy:
         return self.dagger_client.cache_volume(self.MITMPROXY_IMAGE)
 
     def generate_mitmconfig(self):
-         return (
-             self.dagger_client.container()
-             .from_(self.MITMPROXY_IMAGE)
+        return (
+            self.dagger_client.container()
+            .from_(self.MITMPROXY_IMAGE)
             # Mitmproxy generates its self signed certs at first run, we need to run it once to generate the certs
             # They are stored in /root/.mitmproxy
-             .with_exec(["timeout", "--preserve-status", "1" , "mitmdump"])
-             .directory("/root/.mitmproxy")
-            )
-    
-    async def get_container(
-        self, mitm_config: dagger.Directory
-    ) -> dagger.Container:
+            .with_exec(["timeout", "--preserve-status", "1", "mitmdump"])
+            .directory("/root/.mitmproxy")
+        )
+
+    async def get_container(self, mitm_config: dagger.Directory) -> dagger.Container:
         """Get a container for the mitmproxy service.
         If a stream for server replay is provided, it will be used to replay requests to the same URL.
 
@@ -134,11 +133,10 @@ class Proxy:
         requests_cert_path = f"/usr/local/lib/python{python_version_minor_only}/site-packages/certifi/cacert.pem"
         current_user = (await container.with_exec(["whoami"]).stdout()).strip()
         try:
-            return  await (
-                container
-                .with_user("root")
+            return await (
+                container.with_user("root")
                 # Overwrite the requests cert file with the mitmproxy self-signed certificate
-                .with_file(requests_cert_path, pem, owner=current_user)   
+                .with_file(requests_cert_path, pem, owner=current_user)
                 .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_user(current_user)
