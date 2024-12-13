@@ -8,6 +8,8 @@ from typing import Any, Dict
 
 import pytest
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
@@ -27,6 +29,7 @@ def init_kwargs() -> Dict[str, Any]:
 def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
     return {
         "stream_name": "GET_TEST_REPORT",
+        "authenticator": NoAuth({}),
         **init_kwargs
     }
 
