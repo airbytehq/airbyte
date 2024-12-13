@@ -12,8 +12,8 @@ import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.sql.JDBCType;
 import java.sql.Date;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -105,7 +105,7 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     final LocalDate date = LocalDate.parse(value);
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
-  
+
   @Override
   public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     switch (jdbcType) {
@@ -125,4 +125,5 @@ public class Db2SourceOperations extends JdbcSourceOperations {
         return super.getAirbyteType(jdbcType);
     }
   }
+
 }
