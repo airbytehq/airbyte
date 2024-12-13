@@ -171,6 +171,7 @@ class TestFullRefresh:
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
     def test_given_report_when_read_then_return_records(self, stream_name: str, data_format: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -194,6 +195,7 @@ class TestFullRefresh:
     def test_given_compressed_report_when_read_then_return_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -225,6 +227,7 @@ class TestFullRefresh:
     def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(
             _create_report_request(stream_name).build(),
@@ -251,6 +254,7 @@ class TestFullRefresh:
     def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -277,6 +281,7 @@ class TestFullRefresh:
     def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -303,6 +308,7 @@ class TestFullRefresh:
     def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -329,6 +335,7 @@ class TestFullRefresh:
     def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), response_with_status(status_code=HTTPStatus.FORBIDDEN))
@@ -346,6 +353,7 @@ class TestFullRefresh:
     def test_given_report_status_cancelled_when_read_then_stream_completed_successfully_and_warn_about_cancellation(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -365,6 +373,7 @@ class TestFullRefresh:
     def test_given_report_status_fatal_when_read_then_exception_raised(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -408,6 +417,7 @@ class TestFullRefresh:
     def test_given_report_with_incorrect_date_format_when_read_then_formatted(
         self, stream_name: str, date_field: str, expected_date_value: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -430,6 +440,7 @@ class TestFullRefresh:
     def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(
@@ -449,6 +460,7 @@ class TestFullRefresh:
     def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
             self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ):
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         response_body = {
             "errors": [
@@ -499,6 +511,7 @@ class TestIncremental:
     def test_given_report_when_read_then_default_cursor_field_added_to_every_record(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -524,6 +537,7 @@ class TestIncremental:
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
         _config = config()
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
@@ -581,6 +595,7 @@ class TestVendorSalesReportsFullRefresh:
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
     def test_given_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -607,6 +622,7 @@ class TestVendorSalesReportsFullRefresh:
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
     def test_given_compressed_report_when_read_then_return_records(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -643,6 +659,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_http_status_500_then_200_when_create_report_then_retry_and_return_records(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -671,6 +688,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_http_status_500_then_200_when_retrieve_report_then_retry_and_return_records(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -702,6 +720,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_http_status_500_then_200_when_get_document_url_then_retry_and_return_records(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -733,6 +752,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_http_status_500_then_200_when_download_document_then_retry_and_return_records(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -764,6 +784,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_report_access_forbidden_when_read_then_no_records_and_error_logged(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -785,6 +806,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_report_status_cancelled_when_read_then_stream_completed_successfully_and_warn_about_cancellation(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -806,6 +828,7 @@ class TestVendorSalesReportsFullRefresh:
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
     def test_given_report_status_fatal_when_read_then_exception_raised(self, selling_program: str, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
@@ -841,6 +864,7 @@ class TestVendorSalesReportsFullRefresh:
     def test_given_http_error_500_on_create_report_when_read_then_no_records_and_error_logged(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
