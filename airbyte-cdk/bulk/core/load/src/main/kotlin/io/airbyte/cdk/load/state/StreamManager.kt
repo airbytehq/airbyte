@@ -39,7 +39,7 @@ interface StreamManager {
      * [markProcessingSucceeded] will always occur after this, while [markProcessingFailed] can
      * occur before or after.
      */
-    fun markEndOfStream(complete: Boolean): Long
+    fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long
     fun endOfStreamRead(): Boolean
 
     /** Whether we received a stream complete message for the managed stream. */
@@ -126,11 +126,11 @@ class DefaultStreamManager(
         return recordCount.get()
     }
 
-    override fun markEndOfStream(complete: Boolean): Long {
+    override fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long {
         if (markedEndOfStream.getAndSet(true)) {
             throw IllegalStateException("Stream is closed for reading")
         }
-        receivedComplete.getAndSet(complete)
+        receivedComplete.getAndSet(receivedStreamCompleteMessage)
 
         return recordCount.get()
     }
