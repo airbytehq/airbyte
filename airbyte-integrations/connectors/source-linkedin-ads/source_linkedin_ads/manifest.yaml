@@ -24,6 +24,24 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,6 +86,24 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,6 +164,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -194,6 +248,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -342,6 +414,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -410,6 +500,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -485,6 +593,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -560,6 +686,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -635,6 +779,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -710,6 +872,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -785,6 +965,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -860,6 +1058,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -935,6 +1151,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1010,6 +1244,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1085,6 +1337,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1160,6 +1430,24 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    error_message_contains: "Temporary failure in name resolution"
+                    predicate: >-
+                      {{ "Temporary failure in name resolution" in
+                      response }}
+                    error_message: >-
+                      [Errno -3] Temporary failure in name resolution...
+                      Retrying
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
