@@ -40,6 +40,10 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
     systemProperties = project.test.systemProperties
     maxParallelForks = project.test.maxParallelForks
     maxHeapSize = project.test.maxHeapSize
+
+    testLogging() {
+        exceptionFormat 'full'
+    }
 }
 
 // These tests are lightweight enough to run on every PR.
