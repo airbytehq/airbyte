@@ -57,6 +57,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
                 ?: throw IllegalStateException("Received no metadata in the record.")
 
         val syncId = airbyteMeta.getField("sync_id") as? Long
+        @Suppress("UNCHECKED_CAST")
         val inputChanges =
             airbyteMeta.getField("changes") as? List<Record>
                 ?: throw IllegalStateException("Received no changes in the metadata.")
