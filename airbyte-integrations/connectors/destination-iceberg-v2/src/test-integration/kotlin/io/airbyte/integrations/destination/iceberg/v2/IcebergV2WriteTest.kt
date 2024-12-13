@@ -41,6 +41,9 @@ abstract class IcebergV2WriteTest(configContents: String) :
     }
 }
 
+@Disabled(
+    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
+)
 class IcebergNessieMinioWriteTest : IcebergV2WriteTest(getConfig()) {
     @Test
     @Disabled(

@@ -9,8 +9,6 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.containers.ComposeContainer
 
-
-
 /**
  * Shared test containers for all nessie tests, so that we don't launch redundant docker containers
  */
