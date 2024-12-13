@@ -273,6 +273,8 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
                 # TODO: Consider moving to Poetry-native installation:
                 # ["poetry", "add", cdk_mount_dir]
             )
+            # Switch back to the original user
+            .with_user(current_user)
         )
     elif context.use_cdk_ref:
         cdk_ref = context.use_cdk_ref
@@ -281,12 +283,16 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
 
         context.logger.info("Using CDK ref: '{cdk_ref}'")
         # Install the airbyte-cdk package from provided ref
-        connector_container = connector_container.with_exec(
-            [
-                "pip",
-                "install",
-                f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",
-            ],
+        connector_container = (
+            connector_container.with_user("root")
+            .with_exec(
+                [
+                    "pip",
+                    "install",
+                    f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",
+                ],
+            )
+            .with_user(current_user)
         )
     return connector_container
 
