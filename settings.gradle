@@ -176,7 +176,7 @@ if (bulkCdkToolkitPath.toFile().exists()) {
 // Include all java connector projects.
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
 integrationsPath.eachDir { dir ->
-    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+    def buildFiles = file(dir).list { file, name -> name.matches("build\\.gradle(?:\\.kts)?") }
     if (buildFiles.length != 1) {
         // Ignore python and other non-gradle connectors.
         return
