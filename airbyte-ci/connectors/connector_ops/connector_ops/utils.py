@@ -225,13 +225,12 @@ def get_all_gradle_dependencies(
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
+    valid_build_files = ["build.gradle", "build.gradle.kts"]
     for dependency_path in all_dependencies:
-        if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
-            found_dependencies.append(dependency_path)
-            get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
-        elif dependency_path not in found_dependencies and Path(dependency_path / "build.gradle.kts").exists():
-            found_dependencies.append(dependency_path)
-            get_all_gradle_dependencies(dependency_path / "build.gradle.kts", with_test_dependencies, found_dependencies)
+        for build_file in valid_build_files:
+            if dependency_path not in found_dependencies and Path(dependency_path / build_file).exists():
+                found_dependencies.append(dependency_path)
+                get_all_gradle_dependencies(dependency_path / build_file, with_test_dependencies, found_dependencies)
 
     return found_dependencies
 
