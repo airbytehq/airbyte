@@ -31,6 +31,7 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-12 | [49346](https://github.com/airbytehq/airbyte/pull/49346) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49080](https://github.com/airbytehq/airbyte/pull/49080) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-08 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
