@@ -76,18 +76,20 @@ from source_amazon_seller_partner.utils import AmazonConfigException
 # given the retention period: 730
 DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
 
+from source_amazon_seller_partner.components.auth import AmazonSPOauthAuthenticator
 
 class SourceAmazonSellerPartner(AbstractSource):
     @staticmethod
     def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
-        auth = AWSAuthenticator(
+        auth = AmazonSPOauthAuthenticator(
+            config=config,
+            parameters={},
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_id=config.get("lwa_app_id"),
             client_secret=config.get("lwa_client_secret"),
             refresh_token=config.get("refresh_token"),
             host=endpoint.replace("https://", ""),
-            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         start_date = config.get("replication_start_date")
