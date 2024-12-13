@@ -58,7 +58,11 @@ dependencies {
 
     integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
-    integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
+    integrationTestImplementation("io.minio:minio:8.5.14")
+    integrationTestImplementation("org.testcontainers:minio:1.20.4")
+    integrationTestImplementation("com.github.dasniko:testcontainers-keycloak:3.5.1")
+//    integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
+    integrationTestImplementation("org.projectnessie.nessie:nessie-nessie-testcontainer:0.83.0")
 }
 
 test {
