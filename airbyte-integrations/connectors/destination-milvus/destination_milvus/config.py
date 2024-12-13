@@ -6,7 +6,7 @@ from typing import Literal, Optional, Union
 
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class UsernamePasswordAuth(BaseModel):
