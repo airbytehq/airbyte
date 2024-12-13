@@ -254,7 +254,7 @@ definitions:
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202410"
             X-RestLi-Method: FINDER
           error_handler:
             type: CompositeErrorHandler
