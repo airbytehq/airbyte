@@ -87,7 +87,7 @@ class GradleTask(Step, ABC):
             "gradle",
             "gradlew",
             "settings.gradle",
-            "build.gradle",
+            "build.gradle.kts",
             "tools/gradle",
             "spotbugs-exclude-filter-file.xml",
             "buildSrc",

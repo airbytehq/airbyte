@@ -128,7 +128,7 @@ def has_local_cdk_ref(build_file: Path) -> bool:
     """Return true if the build file uses the local CDK.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
 
     Returns:
         bool: True if using local CDK.
@@ -148,7 +148,7 @@ def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
 
     Returns:
         str: The dependencies block of the Gradle file.
@@ -215,7 +215,7 @@ def get_all_gradle_dependencies(
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
     Args:
-        build_file (Path): Path to the build.gradle file of the project.
+        build_file (Path): Path to the build.gradle/build.gradle.kts file of the project.
         found_dependencies (List[Path]): List of dependencies that have already been found. Defaults to None.
 
     Returns:
@@ -229,6 +229,9 @@ def get_all_gradle_dependencies(
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
             found_dependencies.append(dependency_path)
             get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
+        elif dependency_path not in found_dependencies and Path(dependency_path / "build.gradle.kts").exists():
+            found_dependencies.append(dependency_path)
+            get_all_gradle_dependencies(dependency_path / "build.gradle.kts", with_test_dependencies, found_dependencies)
 
     return found_dependencies
 
@@ -706,10 +709,14 @@ class Connector:
     @functools.lru_cache(maxsize=2)
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
+        build_script = "build.gradle"
+        if Path(self.code_directory / "build.gradle.kts").exists():
+            build_script = "build.gradle.kts"
+
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk"), Path("./airbyte-cdk/bulk")]
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+                self.code_directory / build_script, with_test_dependencies=with_test_dependencies
             )
         return sorted(list(set(dependencies_paths)))
 
