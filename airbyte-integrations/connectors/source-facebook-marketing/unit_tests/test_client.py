@@ -6,9 +6,8 @@ import json
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos

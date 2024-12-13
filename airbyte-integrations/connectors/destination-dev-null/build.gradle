@@ -18,17 +18,13 @@ application {
 }
 
 dependencies {
-    // temporary dependency so that we can continue running the legacy test suite.
-    // eventually we should remove this + rely solely on the bulk CDK tests.
-    integrationTestJavaImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
-    // integrationTestJavaImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    // temporary dependencies so that we can continue running the legacy test suite.
+    // eventually we should remove those tests + rely solely on the bulk CDK tests.
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    // integrationTestLegacyImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
 }
 
 // Uncomment to run locally
 //run {
 //    standardInput = System.in
 //}
-
-integrationTestJava {
-    dependsOn assemble
-}

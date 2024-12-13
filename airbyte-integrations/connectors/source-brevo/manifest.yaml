@@ -501,29 +501,15 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: offset
+            field_name: page
           page_size_option:
             type: RequestOption
             field_name: limit
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 50
-            inject_on_first_request: true
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:

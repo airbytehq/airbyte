@@ -8,7 +8,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.4
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake

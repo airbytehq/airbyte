@@ -31,7 +31,6 @@ extend-exclude = """
     | integration_tests
     | unit_tests
     | generated
-    | airbyte-cdk/python/airbyte_cdk/sources/declarative/models
     | invalid
     | non_formatted_code
     | airbyte-integrations/connectors/destination-duckdb
@@ -84,7 +83,6 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",
     "**/invalid/**",
     "**/non_formatted_code/**",
     "**/connector_builder/generated/**",

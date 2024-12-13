@@ -259,6 +259,10 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 0.2.24 | 2024-11-25 | [48639](https://github.com/airbytehq/airbyte/pull/48639) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.23 | 2024-11-04 | [48274](https://github.com/airbytehq/airbyte/pull/48274) | Update dependencies |
+| 0.2.22 | 2024-10-28 | [47060](https://github.com/airbytehq/airbyte/pull/47060) | Update dependencies |
+| 0.2.21 | 2024-10-12 | [46177](https://github.com/airbytehq/airbyte/pull/46177) | Update dependencies |
 | 0.2.20 | 2024-09-21 | [45728](https://github.com/airbytehq/airbyte/pull/45728) | Update dependencies |
 | 0.2.19 | 2024-09-14 | [45583](https://github.com/airbytehq/airbyte/pull/45583) | Update dependencies |
 | 0.2.18 | 2024-09-07 | [45312](https://github.com/airbytehq/airbyte/pull/45312) | Update dependencies |
