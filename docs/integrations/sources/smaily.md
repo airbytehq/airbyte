@@ -39,6 +39,7 @@ The connector has a rate limit of 5 API requests per second per IP-address.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.3 | 2024-12-12 | [49394](https://github.com/airbytehq/airbyte/pull/49394) | Update dependencies |
 | 0.2.2 | 2024-12-11 | [47809](https://github.com/airbytehq/airbyte/pull/47809) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44065](https://github.com/airbytehq/airbyte/pull/44065) | Refactor connector to manifest-only format |
