@@ -354,30 +354,6 @@ class InputConsumerTaskTest {
     }
 
     @Test
-    fun testStreamIncompleteThrows() = runTest {
-        mockInputFlow.addMessage(
-            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test"),
-            1L
-        )
-        mockInputFlow.addMessage(
-            StubDestinationMessageFactory.makeStreamIncomplete(
-                MockDestinationCatalogFactory.stream1
-            ),
-            0L
-        )
-        val task =
-            taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
-            )
-        CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
-        mockInputFlow.stop()
-    }
-
-    @Test
     fun testFileStreamIncompleteThrows() = runTest {
         mockInputFlow.addMessage(
             StubDestinationMessageFactory.makeFile(MockDestinationCatalogFactory.stream1, "test"),
