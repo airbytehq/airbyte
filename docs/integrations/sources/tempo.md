@@ -49,6 +49,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.3 | 2024-12-12 | [49417](https://github.com/airbytehq/airbyte/pull/49417) | Update dependencies |
 | 0.4.2 | 2024-12-11 | [47545](https://github.com/airbytehq/airbyte/pull/47545) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.4.0 | 2024-08-14 | [44058](https://github.com/airbytehq/airbyte/pull/44058) | Refactor connector to manifest-only format |
