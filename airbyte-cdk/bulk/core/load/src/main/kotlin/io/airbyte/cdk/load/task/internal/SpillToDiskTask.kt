@@ -61,8 +61,7 @@ class DefaultSpillToDiskTask(
     override suspend fun execute() {
         val initialAccumulator = fileAccFactory.make()
 
-        val registration = outputQueue.registerProducer()
-        registration.use {
+        outputQueue.use {
             inputQueue.consume().fold(initialAccumulator) { acc, reserved ->
                 reserved.use {
                     when (val event = it.value) {
