@@ -40,6 +40,7 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.3 | 2024-12-12 | [48214](https://github.com/airbytehq/airbyte/pull/48214) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47918](https://github.com/airbytehq/airbyte/pull/47918) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47499](https://github.com/airbytehq/airbyte/pull/47499) | Update dependencies |
 | 0.2.0 | 2024-10-17 | [46959](https://github.com/airbytehq/airbyte/pull/46959) | Refactor connector to manifest-only format |

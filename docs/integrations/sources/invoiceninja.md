@@ -34,6 +34,8 @@ Docs : https://api-docs.invoicing.co/#overview--introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2024-12-12 | [49234](https://github.com/airbytehq/airbyte/pull/49234) | Update dependencies |
+| 0.0.2 | 2024-12-11 | [48917](https://github.com/airbytehq/airbyte/pull/48917) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-07 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>
