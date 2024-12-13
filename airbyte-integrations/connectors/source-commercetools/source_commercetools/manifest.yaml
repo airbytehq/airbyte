@@ -43,8 +43,6 @@ definitions:
       class_name: source_commercetools.components.CommerceToolsOauth2Authenticator
       client_id: "{{ config['client_id'] }}"
       client_secret: "{{ config['client_secret'] }}"
-      refresh_request_body:
-        scope: manage_project:{{ config['project_key'] }}
       token_refresh_endpoint: https://auth.{{ config['region'] }}.{{ config['host'] }}.commercetools.com/oauth/token
       grant_type: client_credentials
       access_token_name: access_token
@@ -176,3 +174,8 @@ spec:
         type: string
         examples: ["us-central1", "australia-southeast1"]
         order: 5
+      scopes:
+        title: Authenticated Scopes
+        description: "The comma-separated scopes required to authenticate with the API."
+        type: string
+        order: 6
