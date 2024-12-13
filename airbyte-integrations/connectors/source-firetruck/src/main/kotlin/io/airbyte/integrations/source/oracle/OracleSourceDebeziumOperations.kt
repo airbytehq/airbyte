@@ -44,14 +44,15 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.Base64
+import java.util.function.Supplier
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
 class OracleSourceDebeziumOperations(
-    val jdbcConnectionFactory: JdbcConnectionFactory,
     val configuration: OracleSourceConfiguration,
+    val oracleDatabaseStateSupplier: Supplier<CurrentDatabaseState>,
 ) : DebeziumOperations<OracleSourcePosition> {
 
     override fun deserialize(
@@ -201,24 +202,34 @@ class OracleSourceDebeziumOperations(
     }
 
     private val currentDatabaseState: CurrentDatabaseState by lazy {
-        jdbcConnectionFactory.get().use { connection: Connection ->
-            connection.createStatement().use { statement: Statement ->
-                statement.executeQuery(CurrentDatabaseState.SQL).use { rs: ResultSet ->
-                    require(rs.next())
-                    val isContainerDatabase: Boolean = rs.getString(1)?.uppercase() == "YES"
-                    val pluggableDatabaseName: String? =
-                        if (isContainerDatabase) rs.getString(2) else null
-                    CurrentDatabaseState(
-                        pluggableDatabaseName,
-                        databaseName = rs.getString(3)!!,
-                        position = OracleSourcePosition(rs.getLong(4)),
-                    )
-                }
-            }
-        }
+        oracleDatabaseStateSupplier.get()
     }
 
-    private data class CurrentDatabaseState(
+    @Singleton
+    class OracleDatabaseStateSupplier(val jdbcConnectionFactory: JdbcConnectionFactory) :
+        Supplier<CurrentDatabaseState> {
+
+        override fun get(): CurrentDatabaseState =
+            jdbcConnectionFactory.get().use { connection: Connection ->
+                connection.createStatement().use { statement: Statement ->
+                    statement.executeQuery(CurrentDatabaseState.SQL).use { rs: ResultSet ->
+                        require(rs.next())
+                        val isContainerDatabase: Boolean = rs.getString(1)?.uppercase() == "YES"
+                        val pluggableDatabaseName: String? =
+                            if (isContainerDatabase) rs.getString(2) else null
+                        CurrentDatabaseState(
+                            address = jdbcConnectionFactory.ensureTunnelSession().address,
+                            pluggableDatabaseName,
+                            databaseName = rs.getString(3)!!,
+                            position = OracleSourcePosition(rs.getLong(4)),
+                        )
+                    }
+                }
+            }
+    }
+
+    data class CurrentDatabaseState(
+        val address: InetSocketAddress,
         val pluggableDatabaseName: String?,
         val databaseName: String,
         val position: OracleSourcePosition,
@@ -240,7 +251,7 @@ class OracleSourceDebeziumOperations(
     }
 
     val commonProperties: Map<String, String> by lazy {
-        val address: InetSocketAddress = jdbcConnectionFactory.ensureTunnelSession().address
+        val address: InetSocketAddress = currentDatabaseState.address
         DebeziumPropertiesBuilder()
             .withDefault()
             .withOffset()
@@ -306,7 +317,7 @@ class OracleSourceDebeziumOperations(
         }
 
         private fun unzipSchemaHistory(gzippedSchemaHistoryBase64: String): ArrayNode =
-            unzipSchemaHistory(Jsons.readValue(gzippedSchemaHistoryBase64, ByteArray::class.java))
+            unzipSchemaHistory(Base64.getDecoder().decode(gzippedSchemaHistoryBase64))
 
         private fun unzipSchemaHistory(gzippedSchemaHistory: ByteArray): ArrayNode {
             val unzipped: ByteArray =
