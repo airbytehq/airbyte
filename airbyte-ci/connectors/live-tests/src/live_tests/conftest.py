@@ -135,6 +135,7 @@ def pytest_configure(config: Config) -> None:
     private_details_path = test_artifacts_directory / "private_details.html"
     config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY] = test_artifacts_directory
     dagger_log_path.touch()
+    LOGGER.info("Dagger log path: %s", dagger_log_path)
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
     _connection_id = config.getoption("--connection-id")
@@ -515,7 +516,10 @@ async def run_command_and_add_to_report(
         duckdb_path,
         runs_in_ci,
     )
-    test_report.add_control_execution_result(execution_result)
+    if connector.target_or_control is TargetOrControl.CONTROL:
+        test_report.add_control_execution_result(execution_result)
+    if connector.target_or_control is TargetOrControl.TARGET:
+        test_report.add_target_execution_result(execution_result)
     return execution_result, proxy
 
 
