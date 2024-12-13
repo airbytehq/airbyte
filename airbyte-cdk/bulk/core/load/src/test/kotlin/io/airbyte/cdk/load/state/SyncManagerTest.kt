@@ -94,7 +94,7 @@ class SyncManagerTest {
         Assertions.assertTrue(syncManager.isActive())
         manager2.markProcessingSucceeded()
         Assertions.assertTrue(syncManager.isActive())
-        syncManager.markSucceeded()
+        syncManager.markDestinationSucceeded()
         Assertions.assertFalse(syncManager.isActive())
     }
 
@@ -106,26 +106,26 @@ class SyncManagerTest {
         manager1.markEndOfStream(true)
         manager2.markEndOfStream(true)
 
-        val completionChannel = Channel<SyncResult>(Channel.UNLIMITED)
+        val completionChannel = Channel<DestinationResult>(Channel.UNLIMITED)
 
-        launch { completionChannel.send(syncManager.awaitSyncResult()) }
+        launch { completionChannel.send(syncManager.awaitDestinationResult()) }
 
         CoroutineTestUtils.assertThrows(IllegalStateException::class) {
-            syncManager.markSucceeded()
+            syncManager.markDestinationSucceeded()
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
         manager1.markProcessingSucceeded()
         CoroutineTestUtils.assertThrows(IllegalStateException::class) {
-            syncManager.markSucceeded()
+            syncManager.markDestinationSucceeded()
         }
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
         manager2.markProcessingSucceeded()
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
 
-        syncManager.markSucceeded()
-        Assertions.assertEquals(SyncSuccess, completionChannel.receive())
+        syncManager.markDestinationSucceeded()
+        Assertions.assertEquals(DestinationSuccess, completionChannel.receive())
     }
 
     @Test

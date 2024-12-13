@@ -42,6 +42,9 @@ interface StreamManager {
     fun markEndOfStream(complete: Boolean): Long
     fun endOfStreamRead(): Boolean
 
+    /** Whether we received a stream complete message for the managed stream. */
+    fun isComplete(): Boolean
+
     /**
      * Mark a checkpoint in the stream and return the current index and the number of records since
      * the last one.
@@ -103,7 +106,7 @@ class DefaultStreamManager(
     private val lastCheckpoint = AtomicLong(0L)
 
     private val markedEndOfStream = AtomicBoolean(false)
-    private val markedComplete = AtomicBoolean(false)
+    private val receivedComplete = AtomicBoolean(false)
 
     private val rangesState: ConcurrentHashMap<Batch.State, RangeSet<Long>> = ConcurrentHashMap()
 
@@ -127,13 +130,17 @@ class DefaultStreamManager(
         if (markedEndOfStream.getAndSet(true)) {
             throw IllegalStateException("Stream is closed for reading")
         }
-        markedComplete.getAndSet(complete)
+        receivedComplete.getAndSet(complete)
 
         return recordCount.get()
     }
 
     override fun endOfStreamRead(): Boolean {
         return markedEndOfStream.get()
+    }
+
+    override fun isComplete(): Boolean {
+        return receivedComplete.get()
     }
 
     override fun markCheckpoint(): Pair<Long, Long> {

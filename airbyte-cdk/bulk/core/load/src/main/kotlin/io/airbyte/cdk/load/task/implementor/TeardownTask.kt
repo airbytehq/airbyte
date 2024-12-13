@@ -41,7 +41,7 @@ class DefaultTeardownTask(
         log.info { "Starting teardown task" }
         destination.teardown()
         log.info { "Teardown task complete, marking sync succeeded." }
-        syncManager.markSucceeded()
+        syncManager.markDestinationSucceeded()
         taskLauncher.handleTeardownComplete()
     }
 }
