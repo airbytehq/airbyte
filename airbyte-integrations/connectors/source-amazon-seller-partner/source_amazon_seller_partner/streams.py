@@ -17,6 +17,8 @@ import dateparser
 import pendulum
 import requests
 import xmltodict
+
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
@@ -27,6 +29,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.models import FailureType
 from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -226,7 +229,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         *args,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
         self._url_base = url_base.rstrip("/") + "/"
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
@@ -235,6 +237,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._report_options = report_options
         self._http_method = "GET"
         self._stream_name = stream_name
+        super().__init__(*args, **kwargs)
 
         self.wait_to_avoid_fatal_errors = wait_to_avoid_fatal_errors
 
@@ -265,6 +268,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         Override to 0 for integration testing purposes
         """
         return 0 if IS_TESTING else 60.0
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ExponentialBackoffStrategy(config={}, parameters={}, factor=self.retry_factor)
 
     @property
     def url_base(self) -> str:
@@ -301,44 +307,55 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         request_headers = self.request_headers()
         report_data = self._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        self.http_method = "POST"
-        create_report_request = self._create_prepared_request(
-            path=f"{self.path_prefix}/reports",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+        _, report_response = self._http_client.send_request(
+            http_method="POST",
+            url=self._join_url(
+                self.url_base,
+                f"{self.path_prefix}/reports",
+            ),
+            request_kwargs={},
+            headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
             data=json.dumps(report_data),
         )
-        report_response = self._send_request(create_report_request, {})
-        self.http_method = "GET"  # rollback
         return report_response.json()
 
     def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
         request_headers = self.request_headers()
-        retrieve_report_request = self._create_prepared_request(
-            path=f"{self.path_prefix}/reports/{report_id}",
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+        _, retrieve_report_response = self._http_client.send_request(
+            http_method="GET",
+            url=self._join_url(
+                self.url_base,f"{self.path_prefix}/reports/{report_id}"),
+            request_kwargs={},
+            headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
+
         )
-        retrieve_report_response = self._send_request(retrieve_report_request, {})
         report_payload = retrieve_report_response.json()
 
         return report_payload
 
     def _retrieve_report_result(self, report_document_id: str) -> requests.Response:
         request_headers = self.request_headers()
-        request = self._create_prepared_request(
-            path=self.path(document_id=report_document_id),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url=self._join_url(
+                self.url_base,self.path(document_id=report_document_id)),
+            request_kwargs={},
+            headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
             params=self.request_params(),
         )
-        return self._send_request(request, {})
+        return response
 
     @default_backoff_handler(factor=5, max_tries=5)
     def download_and_decompress_report_document(self, payload: dict) -> str:
         """
         Unpacks a report document
         """
-
-        download_report_request = self._create_prepared_request(path=payload.get("url"))
-        report = self._send_request(download_report_request, {})
+        _, report = self._http_client.send_request(
+            http_method="GET",
+            url=self._join_url(
+                self.url_base, payload.get("url")),
+            request_kwargs={},
+            )
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
@@ -1170,7 +1187,6 @@ class Orders(IncrementalAmazonSPStream):
     replication_end_date_field = "LastUpdatedBefore"
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
-    default_backoff_time = 60
     use_cache = True
 
     def path(self, **kwargs) -> str:
@@ -1192,13 +1208,22 @@ class Orders(IncrementalAmazonSPStream):
     ) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get(self.name, [])
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return OrdersBackoffStrategy()
+
+
+class OrdersBackoffStrategy(BackoffStrategy):
+    default_backoff_time = 60
+    def backoff_time(
+            self,
+            response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+            attempt_count: int,
+    ) -> Optional[float]:
+        rate_limit = response_or_exception.headers.get("x-amzn-RateLimit-Limit", 0)
         if rate_limit:
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
-
 
 class OrderItems(IncrementalAmazonSPStream):
     """
@@ -1585,12 +1610,13 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
         while not complete:
             request_headers = self.request_headers()
-            get_reports = self._create_prepared_request(
-                path=f"{self.path_prefix}/reports",
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            _, report_response = self._http_client.send_request(
+                "GET",
+                url=self._join_url(self.url_base, f"{self.path_prefix}/reports"),
+                request_kwargs={},
+                headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
                 params=params,
             )
-            report_response = self._send_request(get_reports, {})
             response = report_response.json()
             data = response.get("reports", list())
             records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
