@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-smaily
   githubIssueLabel: source-smaily
   icon: smaily.svg
@@ -39,5 +39,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.9.2@sha256:ea8087899b36a891ce16e47035b10de8d52b0fb041b593b18e53ed2d699e3b46
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.11.0@sha256:318a47b604a592087dca781a9448a567b3df551a2f33ca0f17cf577af07cc33c
 metadataSpecVersion: "1.0"
