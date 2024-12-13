@@ -317,7 +317,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "payout_balance_transactions" }
     }
   }
