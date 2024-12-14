@@ -153,7 +153,12 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 6.1.0   | 2024-10-31 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5                                                                                                  |
+| 6.2.0   | 2024-11-12 | [48116](https://github.com/airbytehq/airbyte/pull/48116) | Migrate REST streams to low-code                                                                                |
+| 6.1.4   | 2024-11-12 | [48471](https://github.com/airbytehq/airbyte/pull/48471) | Bumped automatically in the pull request, please see PR description                                             |
+| 6.1.3   | 2024-11-05 | [48343](https://github.com/airbytehq/airbyte/pull/48343) | Set is_resumable only for FullRefresh streams                                                                   |
+| 6.1.2   | 2024-11-04 | [48138](https://github.com/airbytehq/airbyte/pull/48138) | Add error message for TooManyRequests exception                                                                 |
+| 6.1.1   | 2024-11-04 | [48128](https://github.com/airbytehq/airbyte/pull/48128) | Fix date parse in report streams                                                                                |
+| 6.1.0   | 2024-11-01 | [47940](https://github.com/airbytehq/airbyte/pull/47940) | Bump CDK to ^5                                                                                                  |
 | 6.0.0   | 2024-10-28 | [47366](https://github.com/airbytehq/airbyte/pull/47366) | Migrate stream `SponsoredDisplayReportStream` to Amazon Ads Reports v3                                          |
 | 5.0.20  | 2024-10-29 | [47032](https://github.com/airbytehq/airbyte/pull/47032) | Update dependencies                                                                                             |
 | 5.0.19  | 2024-10-12 | [46860](https://github.com/airbytehq/airbyte/pull/46860) | Update dependencies                                                                                             |

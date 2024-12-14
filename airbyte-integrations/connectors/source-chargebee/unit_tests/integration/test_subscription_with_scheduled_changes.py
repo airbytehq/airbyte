@@ -50,7 +50,7 @@ def _config() -> ConfigBuilder:
 
 
 def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
-    return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).with_stream("subscription", sync_mode).build()
+    return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
 def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[Dict[str, Any]]) -> SourceChargebee:
@@ -84,7 +84,6 @@ def _a_parent_response() -> HttpResponseBuilder:
 
 
 def _a_child_response() -> HttpResponseBuilder:
-
     return create_response_builder(
         find_template("subscription_with_scheduled_changes", __file__),
         FieldPath("list"),
@@ -118,8 +117,7 @@ class FullRefreshTest(TestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     @HttpMocker()
-    def test_given_valid_response_records_are_extracted_and_returned(self, http_mocker: HttpMocker) -> None:
-
+    def test_when_read_then_records_are_extracted(self, http_mocker: HttpMocker) -> None:
         parent_id = "subscription_test"
 
         http_mocker.get(
@@ -128,11 +126,50 @@ class FullRefreshTest(TestCase):
         )
         http_mocker.get(
             _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
-            _a_child_response().with_record(_a_child_record().with_id(parent_id)).build()
+            _a_child_response().with_record(_a_child_record()).build()
+        )
+
+        output = self._read(_config().with_start_date(self._start_date))
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_multiple_parents_when_read_then_fetch_for_each_parent(self, http_mocker: HttpMocker) -> None:
+        a_parent_id = "a_subscription_test"
+        another_parent_id = "another_subscription_test"
+
+
+        http_mocker.get(
+            _a_parent_request().with_any_query_params().build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(a_parent_id)).with_record(_a_parent_record().with_id(another_parent_id)).build()
+        )
+
+        http_mocker.get(
+            _a_child_request().with_parent_id(a_parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
+        )
+        http_mocker.get(
+            _a_child_request().with_parent_id(another_parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
         )
 
         output = self._read(_config().with_start_date(self._start_date))
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_when_read_then_primary_key_is_set(self, http_mocker: HttpMocker) -> None:
+        parent_id = "subscription_test"
+
+        http_mocker.get(
+            _a_parent_request().with_any_query_params().build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build()
+        )
+        http_mocker.get(
+            _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
+        )
+
+        output = self._read(_config().with_start_date(self._start_date))
+        assert "subscription_id" in output.records[0].record.data
 
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:

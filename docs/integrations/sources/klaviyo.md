@@ -95,6 +95,12 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.3 | 2024-12-12 | [49144](https://github.com/airbytehq/airbyte/pull/49144) | Update dependencies |
+| 2.11.2 | 2024-12-02 | [48748](https://github.com/airbytehq/airbyte/pull/48748) | Bump CDK to evict non retriable requests to avoid high memory usage |
+| 2.11.1 | 2024-11-26 | [48710](https://github.com/airbytehq/airbyte/pull/48710) | Retry on "Temporary failure in name resolution" |
+| 2.11.0 | 2024-11-18 | [48452](https://github.com/airbytehq/airbyte/pull/48452) | Enable concurrency for syncs that don't have client-side filtering |
+| 2.10.14 | 2024-11-07 | [48391](https://github.com/airbytehq/airbyte/pull/48391) | Remove custom datetime cursor dependency |
+| 2.10.13 | 2024-11-05 | [48331](https://github.com/airbytehq/airbyte/pull/48331) | Update dependencies |
 | 2.10.12 | 2024-10-29 | [47797](https://github.com/airbytehq/airbyte/pull/47797) | Update dependencies |
 | 2.10.11 | 2024-10-28 | [47043](https://github.com/airbytehq/airbyte/pull/47043) | Update dependencies |
 | 2.10.10 | 2024-10-14 | [46741](https://github.com/airbytehq/airbyte/pull/46741) | Add checkpointing to events stream to improve large syncs after clear data |

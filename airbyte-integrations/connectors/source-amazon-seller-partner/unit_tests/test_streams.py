@@ -85,6 +85,7 @@ class TestReportsAmazonSPStream:
     def test_stream_slices(self, report_init_kwargs, start_date, end_date, expected_slices):
         report_init_kwargs["replication_start_date"] = start_date
         report_init_kwargs["replication_end_date"] = end_date
+        report_init_kwargs["period_in_days"] = 365
 
         stream = SomeReportStream(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2023-01-01T00:00:00Z")):
@@ -301,6 +302,7 @@ class TestVendorFulfillment:
     def test_stream_slices(self, init_kwargs, start_date, end_date, stream_state, expected_slices):
         init_kwargs["replication_start_date"] = start_date
         init_kwargs["replication_end_date"] = end_date
+        init_kwargs["period_in_days"] = 365
 
         stream = VendorDirectFulfillmentShipping(**init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):

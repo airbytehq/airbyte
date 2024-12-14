@@ -96,6 +96,7 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.3 | 2024-12-12 | [47938](https://github.com/airbytehq/airbyte/pull/47938) | Update dependencies |
 | 1.1.2 | 2024-10-28 | [47676](https://github.com/airbytehq/airbyte/pull/47676) | Update dependencies |
 | 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-14 | [44057](https://github.com/airbytehq/airbyte/pull/44057) | Refactor connector to manifest-only format |

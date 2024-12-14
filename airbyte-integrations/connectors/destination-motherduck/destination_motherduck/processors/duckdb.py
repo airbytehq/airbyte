@@ -7,23 +7,25 @@ import logging
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
+from urllib.parse import parse_qsl, urlparse
 
 import pyarrow as pa
 from airbyte_cdk import DestinationSyncMode
 from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
 from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import Executable, TextClause, text
+from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
 
 BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
+MOTHERDUCK_SCHEME = "md"
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,16 @@ class DuckDBConfig(SqlConfig):
             message="duckdb-engine doesn't yet support reflection on indices",
             category=DuckDBEngineWarning,
         )
-        return SecretString(f"duckdb:///{self.db_path!s}")
+        parsed_db_path = urlparse(self.db_path)
+        if parsed_db_path.scheme == MOTHERDUCK_SCHEME:
+            path = f"{MOTHERDUCK_SCHEME}:{parsed_db_path.path}"
+        else:
+            path = parsed_db_path.path
+        return SecretString(f"duckdb:///{path!s}")
+
+    def get_duckdb_config(self) -> Dict[str, Any]:
+        """Get config dictionary to pass to duckdb"""
+        return dict(parse_qsl(urlparse(self.db_path).query))
 
     @overrides
     def get_database_name(self) -> str:
@@ -75,21 +86,30 @@ class DuckDBConfig(SqlConfig):
         return (
             ("/" in db_path_str or "\\" in db_path_str)
             and db_path_str != ":memory:"
-            and "md:" not in db_path_str
+            and f"{MOTHERDUCK_SCHEME}:" not in db_path_str
             and "motherduck:" not in db_path_str
         )
 
     @overrides
     def get_sql_engine(self) -> Engine:
-        """Return the SQL Alchemy engine.
+        """
+        Return a new SQL engine to use.
 
-        This method is overridden to ensure that the database parent directory is created if it
-        doesn't exist.
+        This method is overridden to:
+            - ensure that the database parent directory is created if it doesn't exist.
+            - pass the DuckDB query parameters (such as motherduck_token) via the config
         """
         if self._is_file_based_db():
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
 
-        return super().get_sql_engine()
+        return create_engine(
+            url=self.get_sql_alchemy_url(),
+            echo=DEBUG_MODE,
+            execution_options={
+                "schema_translate_map": {None: self.schema_name},
+            },
+            future=True,
+        )
 
 
 class DuckDBSqlProcessor(SqlProcessorBase):

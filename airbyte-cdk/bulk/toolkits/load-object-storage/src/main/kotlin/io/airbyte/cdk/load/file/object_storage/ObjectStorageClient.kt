@@ -32,4 +32,12 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
         streamProcessor: StreamProcessor<V>? = null,
         block: suspend (OutputStream) -> Unit
     ): T
+
+    /** Experimental sane replacement interface */
+    suspend fun startStreamingUpload(key: String, metadata: Map<String, String>): StreamingUpload<T>
+}
+
+interface StreamingUpload<T : RemoteObject<*>> {
+    suspend fun uploadPart(part: ByteArray)
+    suspend fun complete(): T
 }

@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read.cdc
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FieldValueChange
@@ -35,7 +34,23 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
      *
      * Returning null means that the event should be treated like a heartbeat.
      */
-    fun deserialize(key: DebeziumRecordKey, value: DebeziumRecordValue): DeserializedRecord?
+    fun deserialize(
+        key: DebeziumRecordKey,
+        value: DebeziumRecordValue,
+        stream: Stream,
+    ): DeserializedRecord?
+
+    /** Identifies the namespace of the stream that this event belongs to, if applicable. */
+    fun findStreamNamespace(
+        key: DebeziumRecordKey,
+        value: DebeziumRecordValue,
+    ): String?
+
+    /** Identifies the null of the stream that this event belongs to, if applicable. */
+    fun findStreamName(
+        key: DebeziumRecordKey,
+        value: DebeziumRecordValue,
+    ): String?
 
     /** Maps a [DebeziumState] to an [OpaqueStateValue]. */
     fun serialize(debeziumState: DebeziumState): OpaqueStateValue
@@ -49,7 +64,6 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
 
 /** [DeserializedRecord]s are used to generate Airbyte RECORD messages. */
 data class DeserializedRecord(
-    val streamID: StreamIdentifier,
     val data: ObjectNode,
     val changes: Map<Field, FieldValueChange>,
 )

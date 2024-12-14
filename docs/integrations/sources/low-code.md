@@ -9,6 +9,15 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 6.5.2 | 2024-11-08 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.5.2 |
+| 6.5.1 | 2024-11-08 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.5.1 |
+| 6.5.0 | 2024-11-08 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.5.0 |
+| 6.4.0 | 2024-11-07 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.4.0 |
+| 6.3.0 | 2024-11-07 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.3.0 |
+| 6.2.1 | 2024-11-05 | [48373](https://github.com/airbytehq/airbyte/pull/48373) | Add CDK v6 support to remote manifest mode |
+| 6.2.0 | 2024-11-05 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.2.0 |
+| 6.1.2 | 2024-11-05 | [48344](https://github.com/airbytehq/airbyte/pull/48344) | Fix discover failing on new CDK |
+| 6.1.1 | 2024-11-04 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.1.1 |
 | 6.1.0 | 2024-10-31 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.1.0 |
 | 6.0.0 | 2024-10-30 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 6.0.0 |
 | 5.17.0 | 2024-10-28 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.17.0 |

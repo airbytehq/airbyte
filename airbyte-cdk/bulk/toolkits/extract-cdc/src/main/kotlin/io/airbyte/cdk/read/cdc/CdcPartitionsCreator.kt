@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
@@ -26,6 +27,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
 
+    class OffsetInvalidNeedsResyncIllegalStateException() : IllegalStateException()
+
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire()
@@ -39,6 +42,12 @@ class CdcPartitionsCreator<T : Comparable<T>>(
     }
 
     override suspend fun run(): List<PartitionReader> {
+        if (CDCNeedsRestart) {
+            globalLockResource.markCdcAsComplete()
+            throw TransientErrorException(
+                "Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch."
+            )
+        }
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
@@ -60,6 +69,13 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                         log.error(ex) { "Existing state is invalid." }
                         globalLockResource.markCdcAsComplete()
                         throw ex
+                    } catch (_: OffsetInvalidNeedsResyncIllegalStateException) {
+                        // If deserialization concludes we need a re-sync we rollback stream states
+                        // and put the creator in a Need Restart mode.
+                        // The next round will throw a transient error to kickoff the resync
+                        feedBootstrap.stateQuerier.resetFeedStates()
+                        CDCNeedsRestart = true
+                        syntheticInput
                     }
                 }
             }
@@ -101,5 +117,9 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         // Handle common case.
         log.info { "Current position '$lowerBound' does not exceed target position '$upperBound'." }
         return listOf(partitionReader)
+    }
+
+    companion object {
+        var CDCNeedsRestart: Boolean = false
     }
 }

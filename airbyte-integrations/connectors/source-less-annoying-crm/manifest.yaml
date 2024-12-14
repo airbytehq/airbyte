@@ -1,0 +1,1113 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Less Annoying CRM connector  enables seamless data integration, allowing users
+  to easily sync customer relationship management data into their data
+  warehouses or analytics tools. This connector facilitates efficient tracking
+  of customer information, interactions, and leads, helping businesses
+  centralize CRM data for enhanced analysis and insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            Function: GetUsers
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - ContactId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            Function: GetContacts
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            Function: GetTasks
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 500
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: DateCreated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: StartDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: EndDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    pipeline_items:
+      type: DeclarativeStream
+      name: pipeline_items
+      primary_key:
+        - PipelineItemId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_parameters:
+            ContactId: "{{ stream_partition.Contact }}"
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            Function: GetPipelineItemsAttachedToContact
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - PipelineItems
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ContactId
+              partition_field: Contact
+              stream:
+                $ref: "#/definitions/streams/contacts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipeline_items"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - NoteId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_body_json:
+            Function: GetNotes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - TeamId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_body_json:
+            Function: GetTeams
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - EventId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_body_json:
+            Function: GetEvents
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 500
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: DateUpdated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: StartDate
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: EndDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    contact_events:
+      type: DeclarativeStream
+      name: contact_events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_parameters:
+            ContactId: "{{ stream_partition.Contact }}"
+          request_body_json:
+            Function: GetEventsAttachedToContact
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfResults
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ContactId
+              partition_field: Contact
+              stream:
+                $ref: "#/definitions/streams/contacts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contact_events"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.lessannoyingcrm.com/v2
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/pipeline_items"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/contact_events"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Manage and create your API keys on the Programmer API
+          settings page at https://account.lessannoyingcrm.com/app/Settings/Api.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    contacts: true
+    tasks: true
+    pipeline_items: true
+    notes: true
+    teams: true
+    events: true
+    contact_events: true
+  testedStreams:
+    users:
+      streamHash: af89a02af76ebc8f42f9d97b0b4fe1690835b3dc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: 0840e5dd7161d8b1da73c97d5cb4e59e8c63a62e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: baea4572b1e6b594c46ba5bf9e45d09f0af76bc2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pipeline_items:
+      streamHash: c9a4bdd21c0e3a6cb561185a171d9b58a1d0f8c9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notes:
+      streamHash: e959d84d3f3f2b16cf9f817b71e81cea1aa28fa1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: d1bb0444059525f8891bab62538a4a28bd9dee5f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 994ab2bb72df1a89e3a50a3e17d5f805e64b87d2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contact_events:
+      hasRecords: true
+      streamHash: 73d3307bb1704e7f2297a8dad7ad84e98e2ee5ab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: >-
+      https://account.lessannoyingcrm.com/api_docs/v2/Getting_Started/Introduction
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      FirstName:
+        type:
+          - string
+          - "null"
+      LastName:
+        type:
+          - string
+          - "null"
+      Timezone:
+        type:
+          - string
+          - "null"
+      UserId:
+        type:
+          - string
+          - "null"
+  contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Address:
+        type:
+          - array
+          - "null"
+      AssignedTo:
+        type:
+          - number
+          - "null"
+      Background Info:
+        type:
+          - string
+          - "null"
+      Company Name:
+        type:
+          - string
+          - "null"
+      CompanyId:
+        type:
+          - string
+          - "null"
+      CompanyMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          CompanyName:
+            type:
+              - string
+              - "null"
+      ContactId:
+        type: string
+      DateCreated:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - array
+          - "null"
+      IsCompany:
+        type:
+          - boolean
+          - "null"
+      Job Title:
+        type:
+          - string
+          - "null"
+      LastUpdate:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - object
+          - "null"
+        properties:
+          FirstName:
+            type:
+              - string
+              - "null"
+          LastName:
+            type:
+              - string
+              - "null"
+          MiddleName:
+            type:
+              - string
+              - "null"
+          Salutation:
+            type:
+              - string
+              - "null"
+          Suffix:
+            type:
+              - string
+              - "null"
+      Phone:
+        type:
+          - array
+          - "null"
+      UserMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          FirstName:
+            type:
+              - string
+              - "null"
+          LastName:
+            type:
+              - string
+              - "null"
+      Website:
+        type:
+          - array
+          - "null"
+    required:
+      - ContactId
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AssignedTo:
+        type:
+          - string
+          - "null"
+      AssignedToMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          FirstName:
+            type:
+              - string
+              - "null"
+          LastName:
+            type:
+              - string
+              - "null"
+      CalendarId:
+        type:
+          - string
+          - "null"
+      ContactId:
+        type:
+          - string
+          - "null"
+      ContactMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          AssignedTo:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      DateCreated:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      DueDate:
+        type:
+          - string
+          - "null"
+      IsCompleted:
+        type:
+          - boolean
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      TaskId:
+        type:
+          - string
+          - "null"
+    required:
+      - DateCreated
+  pipeline_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ContactId:
+        type:
+          - string
+          - "null"
+      ContactMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          AssignedTo:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      CreatedBy:
+        type:
+          - string
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      LastNote:
+        type:
+          - string
+          - "null"
+      LastUpdate:
+        type:
+          - string
+          - "null"
+      LastUpdatedBy:
+        type:
+          - string
+          - "null"
+      NumberOfUpdates:
+        type:
+          - number
+          - "null"
+      PipelineId:
+        type:
+          - string
+          - "null"
+      PipelineItemId:
+        type: string
+      PipelineMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+      StatusId:
+        type:
+          - string
+          - "null"
+      StatusMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+    required:
+      - PipelineItemId
+  notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ContactId:
+        type:
+          - string
+          - "null"
+      ContactMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          AssignedTo:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateDisplayedInHistory:
+        type:
+          - string
+          - "null"
+      IsRichText:
+        type:
+          - boolean
+          - "null"
+      Note:
+        type:
+          - string
+          - "null"
+      NoteId:
+        type: string
+      PipelineInfo:
+        type:
+          - object
+          - "null"
+        properties:
+          PipelineId:
+            type:
+              - string
+              - "null"
+          PipelineItemId:
+            type:
+              - string
+              - "null"
+          PipelineMetaData:
+            type:
+              - object
+              - "null"
+            properties:
+              Name:
+                type:
+                  - string
+                  - "null"
+          StatusId:
+            type:
+              - string
+              - "null"
+          StatusMetaData:
+            type:
+              - object
+              - "null"
+            properties:
+              Name:
+                type:
+                  - string
+                  - "null"
+      UserId:
+        type:
+          - string
+          - "null"
+      UserMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          FirstName:
+            type:
+              - string
+              - "null"
+          LastName:
+            type:
+              - string
+              - "null"
+    required:
+      - NoteId
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      DateCreated:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      TeamId:
+        type: string
+      UserIds:
+        type:
+          - array
+          - "null"
+    required:
+      - TeamId
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Attendees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            AttendanceStatus:
+              type:
+                - string
+                - "null"
+            AttendeeId:
+              type:
+                - string
+                - "null"
+            IsUser:
+              type:
+                - boolean
+                - "null"
+      CalendarMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+      ContactIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ContactMetaData:
+        type:
+          - array
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateUpdated:
+        type: string
+      Description:
+        type:
+          - string
+          - "null"
+      EndDate:
+        type:
+          - string
+          - "null"
+      EventId:
+        type: string
+      IsAllDay:
+        type:
+          - boolean
+          - "null"
+      IsRecurring:
+        type:
+          - boolean
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      RecurrenceRule:
+        type:
+          - string
+          - "null"
+      SeriesNumber:
+        type:
+          - number
+          - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      UserIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      UserMetaData:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            FirstName:
+              type:
+                - string
+                - "null"
+            LastName:
+              type:
+                - string
+                - "null"
+    required:
+      - EventId
+      - DateUpdated
+  contact_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Attendees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            AttendanceStatus:
+              type:
+                - string
+                - "null"
+            AttendeeId:
+              type:
+                - string
+                - "null"
+            IsUser:
+              type:
+                - boolean
+                - "null"
+      CalendarMetaData:
+        type:
+          - object
+          - "null"
+        properties:
+          Name:
+            type:
+              - string
+              - "null"
+      ContactIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ContactMetaData:
+        type:
+          - array
+          - "null"
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateUpdated:
+        type:
+          - string
+          - "null"
+      Description:
+        type:
+          - string
+          - "null"
+      EndDate:
+        type:
+          - string
+          - "null"
+      EventId:
+        type:
+          - string
+          - "null"
+      IsAllDay:
+        type:
+          - boolean
+          - "null"
+      IsRecurring:
+        type:
+          - boolean
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      RecurrenceRule:
+        type:
+          - string
+          - "null"
+      SeriesNumber:
+        type:
+          - number
+          - "null"
+      StartDate:
+        type:
+          - string
+          - "null"
+      UserIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      UserMetaData:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            FirstName:
+              type:
+                - string
+                - "null"
+            LastName:
+              type:
+                - string
+                - "null"

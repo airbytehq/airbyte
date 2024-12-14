@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -24,6 +25,9 @@ class MockBasicFunctionalityIntegrationTest :
         stringifySchemalessObjects = false,
         promoteUnionToObject = false,
         preserveUndeclaredFields = true,
+        commitDataIncrementally = false,
+        allTypesBehavior = Untyped,
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -31,7 +35,6 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
@@ -49,6 +52,16 @@ class MockBasicFunctionalityIntegrationTest :
     @Test
     override fun testTruncateRefresh() {
         super.testTruncateRefresh()
+    }
+
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
     }
 
     @Test
@@ -75,4 +88,11 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testUnions() {
         super.testUnions()
     }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test @Disabled override fun testBasicWriteFile() {}
 }
