@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
 import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
+import io.airbyte.integrations.destination.iceberg.v2.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.hadoop.conf.Configuration
@@ -51,19 +52,9 @@ private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
-/**
- * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
- * Iceberg [TableIdentifier].
- *
- * @return An Iceberg [TableIdentifier] representation of the stream descriptor.
- */
-fun DestinationStream.Descriptor.toIcebergTableIdentifier(): TableIdentifier {
-    return TableIdentifier.of(Namespace.of(this.namespace), this.name)
-}
-
 /** Collection of Iceberg related utilities. */
 @Singleton
-class IcebergUtil {
+class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     internal class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
@@ -117,7 +108,7 @@ class IcebergUtil {
         schema: Schema,
         properties: Map<String, String>
     ): Table {
-        val tableIdentifier = streamDescriptor.toIcebergTableIdentifier()
+        val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         synchronized(tableIdentifier.namespace()) {
             if (
                 catalog is SupportsNamespaces &&

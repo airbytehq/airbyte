@@ -126,7 +126,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
     }
 
     private fun getNessieCatalog(config: IcebergV2Configuration): NessieCatalog {
-        val catalogProperties = IcebergUtil().toCatalogProperties(config)
+        val catalogProperties = IcebergUtil(SimpleTableIdGenerator()).toCatalogProperties(config)
 
         val catalog = NessieCatalog()
         catalog.setConf(Configuration())
