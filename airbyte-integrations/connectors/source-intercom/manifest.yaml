@@ -659,7 +659,6 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/conversations"
-              incremental_dependency: true
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
@@ -720,7 +719,6 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/companies"
-              incremental_dependency: true
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
