@@ -131,6 +131,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.nltk_data_path)
         await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.CACHE_DIR_PATH)
         await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.CONFIG_PATH)
         await base_sanity_checks.check_user_cant_write_dir(container, self.USER, self.CACHE_DIR_PATH)
         await python_sanity_checks.check_poetry_version(container, "1.6.1")
         await python_sanity_checks.check_python_image_has_expected_env_vars(container)
