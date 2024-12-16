@@ -17,19 +17,17 @@ import dateparser
 import pendulum
 import requests
 import xmltodict
-
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.models import FailureType
 from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -323,11 +321,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         _, retrieve_report_response = self._http_client.send_request(
             http_method="GET",
-            url=self._join_url(
-                self.url_base,f"{self.path_prefix}/reports/{report_id}"),
+            url=self._join_url(self.url_base, f"{self.path_prefix}/reports/{report_id}"),
             request_kwargs={},
             headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
-
         )
         report_payload = retrieve_report_response.json()
 
@@ -337,8 +333,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         request_headers = self.request_headers()
         _, response = self._http_client.send_request(
             http_method="GET",
-            url=self._join_url(
-                self.url_base,self.path(document_id=report_document_id)),
+            url=self._join_url(self.url_base, self.path(document_id=report_document_id)),
             request_kwargs={},
             headers=dict(request_headers, **self._http_client._session.auth.get_auth_header()),
             params=self.request_params(),
@@ -352,10 +347,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         """
         _, report = self._http_client.send_request(
             http_method="GET",
-            url=self._join_url(
-                self.url_base, payload.get("url")),
+            url=self._join_url(self.url_base, payload.get("url")),
             request_kwargs={},
-            )
+        )
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
         return report.content.decode("iso-8859-1")
@@ -1214,16 +1208,18 @@ class Orders(IncrementalAmazonSPStream):
 
 class OrdersBackoffStrategy(BackoffStrategy):
     default_backoff_time = 60
+
     def backoff_time(
-            self,
-            response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
-            attempt_count: int,
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
     ) -> Optional[float]:
         rate_limit = response_or_exception.headers.get("x-amzn-RateLimit-Limit", 0)
         if rate_limit:
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
+
 
 class OrderItems(IncrementalAmazonSPStream):
     """

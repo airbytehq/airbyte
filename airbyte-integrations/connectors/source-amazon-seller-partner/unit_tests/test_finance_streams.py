@@ -8,11 +8,9 @@ from unittest import mock
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
-
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.models import FailureType
 from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 
 list_financial_event_groups_data = {

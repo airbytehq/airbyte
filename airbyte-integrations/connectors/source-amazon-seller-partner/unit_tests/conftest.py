@@ -7,7 +7,6 @@ import os
 from typing import Any, Dict
 
 import pytest
-
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 
 os.environ["DEPLOYMENT_MODE"] = "testing"

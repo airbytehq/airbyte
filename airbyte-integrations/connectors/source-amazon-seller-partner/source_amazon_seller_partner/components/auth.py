@@ -18,15 +18,16 @@ from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 logger = logging.getLogger("airbyte")
 import pendulum
 
+
 @dataclass
 class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
     """
     This class extends the DeclarativeOauth2Authenticator functionality
     and allows to pass custom headers to the refresh access token requests
     """
+
     host: str = None
     refresh_access_token_headers: Mapping[str, Any] = None
-
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {

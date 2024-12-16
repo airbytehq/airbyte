@@ -5,8 +5,8 @@
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
 
 START_DATE_1 = "2022-05-25T00:00:00Z"
 END_DATE_1 = "2022-05-26T00:00:00Z"

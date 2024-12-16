@@ -8,6 +8,7 @@ from typing import Any, Mapping
 import pendulum
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
+
 # TODO: remove
 class AWSAuthenticator(Oauth2Authenticator):
     def __init__(self, host: str, *args, **kwargs):
