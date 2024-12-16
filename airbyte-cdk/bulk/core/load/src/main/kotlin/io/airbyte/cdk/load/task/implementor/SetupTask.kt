@@ -5,13 +5,12 @@
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorTask
-import io.airbyte.cdk.load.task.SyncTask
+import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface SetupTask : SyncTask, ImplementorTask
+interface SetupTask : ImplementorScope
 
 /**
  * Wraps @[DestinationWriter.setup] and starts the open stream tasks.

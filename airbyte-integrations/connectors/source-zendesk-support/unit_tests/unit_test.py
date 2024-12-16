@@ -81,13 +81,6 @@ TEST_CONFIG = {
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
 }
 
-# raw old config
-TEST_OLD_CONFIG = {
-    "auth_method": {"auth_method": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
-    "subdomain": "sandbox",
-    "start_date": "2021-06-01T00:00:00Z",
-}
-
 TEST_CONFIG_WITHOUT_START_DATE = {
     "subdomain": "sandbox",
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
@@ -144,13 +137,13 @@ def test_token_authenticator():
     ids=["api_token", "oauth"],
 )
 def test_convert_config2stream_args(config):
-    result = SourceZendeskSupport().convert_config2stream_args(config)
+    result = SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
     assert "authenticator" in result
 
 
 @freezegun.freeze_time("2022-01-01")
 def test_default_start_date():
-    result = SourceZendeskSupport().convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
+    result = SourceZendeskSupport(config=TEST_CONFIG_WITHOUT_START_DATE, catalog=None, state=None).convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
     assert result["start_date"] == "2020-01-01T00:00:00Z"
 
 
@@ -159,26 +152,25 @@ def test_default_start_date():
     [
         (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
         (TEST_CONFIG_OAUTH, "test_access_token"),
-        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
     ],
-    ids=["api_token", "oauth", "old_config"],
+    ids=["api_token", "oauth"],
 )
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
-    result = SourceZendeskSupport().get_authenticator(config=config)
+    result = SourceZendeskSupport(config=config, catalog=None, state=None).get_authenticator(config=config)
     assert result._token == expected
 
 
 @pytest.mark.parametrize(
     "response, start_date, check_passed",
-    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-00T00:00:00Z", False)],
+    [([{"active_features": {"organization_access_enabled": True}}], "2020-01-01T00:00:00Z", True), ([], "2020-01-01T00:00:00Z", False)],
     ids=["check_successful", "invalid_start_date"],
 )
 def test_check(response, start_date, check_passed):
     config = copy.deepcopy(TEST_CONFIG)
     config["start_date"] = start_date
-    with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
+    with patch.object(UserSettingsStream, "read_records", return_value=response) as mock_method:
+        ok, _ = SourceZendeskSupport(config=config, catalog=None, state=None).check_connection(logger=logging.Logger, config=config)
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
@@ -211,7 +203,7 @@ def test_check(response, start_date, check_passed):
 )
 def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
-    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    result = SourceZendeskSupport(config=TEST_CONFIG, catalog=None, state=None).streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
     logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
     for msg in expected_warnings:
@@ -285,7 +277,7 @@ class TestAllStreams:
     def test_ticket_forms_exception_stream(self):
         with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             mocked_records.side_effect = Exception("The error")
-            streams = SourceZendeskSupport().streams(TEST_CONFIG)
+            streams = SourceZendeskSupport(config=TEST_CONFIG, catalog=None, state=None).streams(TEST_CONFIG)
             assert not any([isinstance(stream, TicketForms) for stream in streams])
 
     @pytest.mark.parametrize(

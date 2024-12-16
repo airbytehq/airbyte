@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Chat Spec",
     "type": "object",
-    "required": ["start_date"],
+    "required": ["subdomain", "start_date"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
@@ -18,7 +18,9 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
+        "description": "The unique subdomain of your Zendesk account (without https://). <a href=\"https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain\">See the Zendesk docs to find your subdomain</a>",
+        "pattern": "^(?!https://)",
+        "examples": ["myzendeskchat"],
         "default": ""
       },
       "credentials": {

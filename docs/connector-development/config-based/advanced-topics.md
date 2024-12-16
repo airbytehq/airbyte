@@ -17,12 +17,12 @@ will result in
 ```
 
 If the component definition is a mapping with a "type" field,
-the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
+the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte-python-cdk/blob/main//airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
 and instantiate the object from the resulting mapping
 
 If the component definition is a mapping with neither a "class_name" nor a "type" field,
 the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
-If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py),
+If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte-python-cdk/blob/main//airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py),
 then the factory will create an object of its default implementation.
 
 If the component definition is a list, then the factory will iterate over the elements of the list,
@@ -242,7 +242,7 @@ Additional information on jinja templating can be found at [https://jinja.pallet
 
 ## Component schema reference
 
-A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
 
 ## Custom components
 
@@ -318,4 +318,4 @@ When you receive this error, you can address this by defining the missing field 
 
 - [Record selector](./understanding-the-yaml-file/record-selector.md)
 - [Partition routers](./understanding-the-yaml-file/partition-router.md)
-- [Source schema](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
+- [Source schema](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)

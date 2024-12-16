@@ -309,7 +309,8 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
 def test_bulk_query(auth_config, query_class, filter_field, start, end, parent_stream_class, expected) -> None:
     if parent_stream_class:
         parent_stream = parent_stream_class(auth_config)
-        stream_query = query_class(auth_config, parent_stream.name, parent_stream.cursor_field)
+        parent_stream_cursor_alias = f"{parent_stream.name}_{parent_stream.cursor_field}"
+        stream_query = query_class(auth_config, parent_stream_cursor_alias)
     else:
         stream_query = query_class(auth_config)
 

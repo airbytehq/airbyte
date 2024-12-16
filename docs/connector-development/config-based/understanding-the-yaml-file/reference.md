@@ -6,7 +6,7 @@ import schema from "../../../../airbyte-cdk/python/airbyte_cdk/sources/declarati
 
 This page lists all components, interpolation variables and interpolation macros that can be used when defining a low code YAML file.
 
-For the technical JSON schema definition that low code manifests are validated against, see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
+For the technical JSON schema definition that low code manifests are validated against, see [here](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
 
 <ManifestYamlDefinitions />
 

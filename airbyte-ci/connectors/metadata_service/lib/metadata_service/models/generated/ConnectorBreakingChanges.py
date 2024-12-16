@@ -7,6 +7,7 @@ from datetime import date
 from typing import Any, Dict, List, Optional
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+from typing_extensions import Literal
 
 
 class StreamBreakingChangeScope(BaseModel):
@@ -27,6 +28,7 @@ class VersionBreakingChange(BaseModel):
 
     upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
     message: str = Field(..., description="Descriptive message detailing the breaking change.")
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",

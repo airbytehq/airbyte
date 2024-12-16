@@ -11,8 +11,8 @@ data:
   releaseStage: generally_available
   license: MIT
   releases:
-    isReleaseCandidate: true
     rolloutConfiguration:
+      enableProgressiveRollout: true
       initialPercentage: 5
       maxPercentage: 50
       advanceDelayMinutes: 60

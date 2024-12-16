@@ -2,6 +2,7 @@
 
 from unittest import TestCase
 
+from airbyte_cdk.models import AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -12,7 +13,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import SyncMode
 
 from .config import ACCOUNT_ID, ConfigBuilder
 from .request_builder import get_account_request, get_ad_sets_request, get_ads_request, get_campaigns_request
@@ -90,7 +90,7 @@ class TestIncludeDeleted(TestCase):
 
         output = self._read(config().with_ad_statuses(self.statuses), "ads")
         assert len(output.records) == 1
-        account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
+        account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2023-03-21T22:41:46-0700"}
 
@@ -140,7 +140,7 @@ class TestIncludeDeleted(TestCase):
         output = self._read(config().with_campaign_statuses(self.statuses), "campaigns")
         assert len(output.records) == 1
 
-        account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
+        account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-12T15:02:47-0700"}
 
@@ -184,6 +184,6 @@ class TestIncludeDeleted(TestCase):
         output = self._read(config().with_ad_set_statuses(self.statuses), "ad_sets")
         assert len(output.records) == 1
 
-        account_state = output.most_recent_state.dict()["stream_state"][self.account_id]
+        account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-02T15:02:47-0700"}

@@ -7,14 +7,13 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorTask
-import io.airbyte.cdk.load.task.StreamTask
+import io.airbyte.cdk.load.task.ImplementorScope
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface OpenStreamTask : StreamTask, ImplementorTask
+interface OpenStreamTask : ImplementorScope
 
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
@@ -24,14 +23,19 @@ interface OpenStreamTask : StreamTask, ImplementorTask
 class DefaultOpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher
+    val streamDescriptor: DestinationStream.Descriptor,
+    private val taskLauncher: DestinationTaskLauncher,
+    private val stream: DestinationStream,
 ) : OpenStreamTask {
     override suspend fun execute() {
         val streamLoader = destinationWriter.createStreamLoader(stream)
-        streamLoader.start()
-        syncManager.registerStartedStreamLoader(streamLoader)
-        taskLauncher.handleStreamStarted(stream)
+        val result = runCatching {
+            streamLoader.start()
+            streamLoader
+        }
+        syncManager.registerStartedStreamLoader(stream.descriptor, result)
+        result.getOrThrow() // throw after registering the failure
+        taskLauncher.handleStreamStarted(streamDescriptor)
     }
 }
 
@@ -49,6 +53,12 @@ class DefaultOpenStreamTaskFactory(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream
     ): OpenStreamTask {
-        return DefaultOpenStreamTask(destinationWriter, syncManager, stream, taskLauncher)
+        return DefaultOpenStreamTask(
+            destinationWriter,
+            syncManager,
+            stream.descriptor,
+            taskLauncher,
+            stream
+        )
     }
 }

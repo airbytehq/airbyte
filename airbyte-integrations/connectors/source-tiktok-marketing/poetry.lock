@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "5.12.0"
+version = "5.13.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-5.12.0-py3-none-any.whl", hash = "sha256:77d658418eef4b540b715d2315bb4797ce80ae661456eb7bcfc01bc6a5337464"},
-    {file = "airbyte_cdk-5.12.0.tar.gz", hash = "sha256:a8ba1bc70ceaf0bf0b61ded72e9df4bd1dc89e1bbda5b430c17575b76a45d83a"},
+    {file = "airbyte_cdk-5.13.0-py3-none-any.whl", hash = "sha256:b26c99631e797c0bdb8373a6a05c81bf62b7d7397ca41b6ee05702d1013bd389"},
+    {file = "airbyte_cdk-5.13.0.tar.gz", hash = "sha256:ab5799a238366dff61a8cded347b02deb63818513af4e61e2d1a51608a2280df"},
 ]
 
 [package.dependencies]
@@ -742,13 +742,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.132"
+version = "0.1.134"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.132-py3-none-any.whl", hash = "sha256:2320894203675c1c292b818cbecf68b69e47a9f7814d4e950237d1faaafd5dee"},
-    {file = "langsmith-0.1.132.tar.gz", hash = "sha256:007b8fac469138abdba89db931900a26c5d316640e27ff4660d28c92a766aae1"},
+    {file = "langsmith-0.1.134-py3-none-any.whl", hash = "sha256:ada98ad80ef38807725f32441a472da3dd28394010877751f48f458d3289da04"},
+    {file = "langsmith-0.1.134.tar.gz", hash = "sha256:23abee3b508875a0e63c602afafffc02442a19cfd88f9daae05b3e9054fd6b61"},
 ]
 
 [package.dependencies]

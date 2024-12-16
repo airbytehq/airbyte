@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.load.message.DestinationFile
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -15,38 +15,51 @@ import jakarta.inject.Singleton
 @Primary
 @Requires(env = ["MockTaskLauncher"])
 class MockTaskLauncher : DestinationTaskLauncher {
-    val spilledFiles = mutableListOf<BatchEnvelope<SpilledRawMessagesLocalFile>>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
     override suspend fun handleSetupComplete() {
         throw NotImplementedError()
     }
 
-    override suspend fun handleStreamStarted(stream: DestinationStream) {
+    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         throw NotImplementedError()
     }
 
-    override suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+    override suspend fun handleNewBatch(
+        stream: DestinationStream.Descriptor,
+        wrapped: BatchEnvelope<*>
     ) {
-        spilledFiles.add(wrapped)
-    }
-
-    override suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>) {
         batchEnvelopes.add(wrapped)
     }
 
-    override suspend fun handleStreamClosed(stream: DestinationStream) {
+    override suspend fun handleStreamClosed(stream: DestinationStream.Descriptor) {
         throw NotImplementedError()
     }
 
-    override suspend fun handleTeardownComplete() {
+    override suspend fun handleTeardownComplete(success: Boolean) {
         throw NotImplementedError()
     }
 
-    override suspend fun start() {
+    override suspend fun handleFile(
+        stream: DestinationStream.Descriptor,
+        file: DestinationFile,
+        index: Long
+    ) {
+        throw NotImplementedError("This destination does not support file transfer.")
+    }
+
+    override suspend fun handleException(e: Exception) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun handleFailStreamComplete(
+        stream: DestinationStream.Descriptor,
+        e: Exception
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun run() {
         throw NotImplementedError()
     }
 }
