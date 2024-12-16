@@ -34,3 +34,4 @@ TEST_ARTIFACT_DIRECTORY = pytest.StashKey[Path]()
 USER = pytest.StashKey[str]()
 WORKSPACE_ID = pytest.StashKey[str]()
 TEST_EVALUATION_MODE = pytest.StashKey[TestEvaluationMode]
+MAX_CONNECTIONS = pytest.StashKey[int | None]()
