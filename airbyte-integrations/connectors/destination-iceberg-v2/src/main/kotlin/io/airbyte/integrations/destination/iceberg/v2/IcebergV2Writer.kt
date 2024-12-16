@@ -21,8 +21,7 @@ class IcebergV2Writer(
 ) : DestinationWriter {
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val properties =
-            icebergUtil.toCatalogProperties(icebergConfiguration = icebergConfiguration)
+        val properties = icebergUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
         val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
@@ -43,7 +42,7 @@ class IcebergV2Writer(
             icebergUtil = icebergUtil,
             pipeline = pipeline,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
-            mainBranchName = icebergConfiguration.nessieServerConfiguration.mainBranchName,
+            mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
         )
     }
 
