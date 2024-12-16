@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote, urlparse
 
+from airbyte_cdk.models import AirbyteRecordMessage
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
@@ -17,8 +18,8 @@ if TYPE_CHECKING:
 __all__ = [
     "DeepsetCloudConfig",
     "DeepsetCloudFile",
-    "SharepointDocument",
-    "SharepointFiletypes",
+    "FileData",
+    "Filetypes",
     "SUPPORTED_FILE_EXTENSIONS",
 ]
 
@@ -37,8 +38,8 @@ SUPPORTED_FILE_EXTENSIONS = [
 
 
 @unique
-class SharepointFiletypes(str, Enum):
-    """Available stream formats for Airbyte's Microsoft SharePoint Source Connector"""
+class Filetypes(str, Enum):
+    """Available stream formats for Airbyte's source connectors"""
 
     AVRO = "avro"
     CSV = "csv"
@@ -47,7 +48,7 @@ class SharepointFiletypes(str, Enum):
     DOCUMENT = "unstructured"
 
 
-class SharepointDocument(BaseModel):
+class FileData(BaseModel):
     content: str = Field(
         title="Content",
         description="Markdown formatted text extracted from Markdown, TXT, PDF, Word, Powerpoint or Google documents.",
@@ -66,7 +67,7 @@ class SharepointDocument(BaseModel):
         None,
         alias="_ab_source_file_url",
         title="File URL",
-        description="The fully qualified URL to the file on Sharepoint server.",
+        description="The fully qualified URL to the file on the remote server.",
     )
     file_parse_error: str | None = Field(
         None,
@@ -75,7 +76,8 @@ class SharepointDocument(BaseModel):
         description="Error encountered while parsing the file.",
     )
 
-    def filename(self) -> str:
+    @property
+    def name(self) -> str:
         """Generate a name from the document key.
 
         Returns:
@@ -90,6 +92,15 @@ class SharepointDocument(BaseModel):
 
         # URL decode the filename to handle special characters
         return unquote(filename)
+
+    @property
+    def filename(self) -> str:
+        """The name of the file with Markdown extension.
+
+        Returns:
+            str: The unique file name with Markdown extension.
+        """
+        return Path(self.name).stem + ".md"
 
 
 class DeepsetCloudConfig(BaseModel):
@@ -118,10 +129,14 @@ class DeepsetCloudFile(BaseModel):
         return json.dumps(self.meta or {})
 
     @classmethod
-    def from_sharepoint_data(cls, data: dict[str, Any]) -> DeepsetCloudFile:
-        document = SharepointDocument.parse_obj(data)
+    def from_record(cls, record: AirbyteRecordMessage) -> DeepsetCloudFile:
+        data = FileData.parse_obj(record.data)
         return cls(
-            name=document.filename,
-            content=document.content,
-            meta=document.dict(exclude={"content"}),
+            name=data.filename,
+            content=data.content,
+            meta={
+                "emitted_at": record.emitted_at,
+                "source_file_extension": Path(data.name).suffix,
+                **data.json(exclude="content", exclude_none=True),
+            },
         )

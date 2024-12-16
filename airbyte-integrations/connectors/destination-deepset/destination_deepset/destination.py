@@ -12,7 +12,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Status, Type
 from destination_deepset import util
 from destination_deepset.api import DeepsetCloudApi
-from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, SharepointFiletypes
+from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, Filetypes
 from destination_deepset.writer import DeepsetCloudFileWriter, WriterError
 
 logger = logging.getLogger("airbyte")
@@ -50,10 +50,10 @@ class DestinationDeepset(Destination):
 
         streams: set[str] = set()
         for catalog_stream in configured_catalog.streams:
-            if util.get(stream := catalog_stream.stream, "format.filetype") == SharepointFiletypes.DOCUMENT:
+            if util.get(stream := catalog_stream.stream, "format.filetype") == Filetypes.DOCUMENT:
                 streams.add(stream.name)
             else:
-                logger.warning(f"Only SourceMicrosoftSharepoint Document File Type is currently supported! Got {stream = !s}")
+                logger.warning(f"Only sources that produce document file type formatted records are supported! Got {stream = !s}")
 
         for message in input_messages:
             match message.type:
@@ -65,7 +65,7 @@ class DestinationDeepset(Destination):
                         continue
 
                     try:
-                        file = DeepsetCloudFile.from_sharepoint_data(message.record.data)
+                        file = DeepsetCloudFile.from_record(message.record)
                     except ValueError:
                         yield AirbyteMessage(
                             type=Type.LOG,
