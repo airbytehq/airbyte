@@ -16,7 +16,7 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
-from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
+from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, InvalidConnectionError, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -99,6 +99,11 @@ def pytest_addoption(parser: Parser) -> None:
         default=ConnectionSubset.SANDBOXES.value,
         help="Whether to select from sandbox accounts only.",
     )
+    parser.addoption(
+        "--max-connections",
+        default=None,
+        help="The maximum number of connections to retrieve and use for testing.",
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -130,6 +135,7 @@ def pytest_configure(config: Config) -> None:
     private_details_path = test_artifacts_directory / "private_details.html"
     config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY] = test_artifacts_directory
     dagger_log_path.touch()
+    LOGGER.info("Dagger log path: %s", dagger_log_path)
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
     _connection_id = config.getoption("--connection-id")
@@ -143,6 +149,10 @@ def pytest_configure(config: Config) -> None:
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
     config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode(config.getoption("--test-evaluation-mode", "strict"))
+    config.stash[stash_keys.MAX_CONNECTIONS] = config.getoption("--max-connections")
+    config.stash[stash_keys.MAX_CONNECTIONS] = (
+        int(config.stash[stash_keys.MAX_CONNECTIONS]) if config.stash[stash_keys.MAX_CONNECTIONS] else None
+    )
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(config.getoption("--should-read-with-state"))
@@ -170,12 +180,12 @@ def pytest_configure(config: Config) -> None:
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
-            fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
             connector_version=config.stash[stash_keys.CONTROL_VERSION],
             auto_select_connections=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
             selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
             connection_subset=config.stash[stash_keys.CONNECTION_SUBSET],
+            max_connections=config.stash[stash_keys.MAX_CONNECTIONS],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, InvalidConnectionError) as exc:
@@ -188,15 +198,17 @@ def pytest_configure(config: Config) -> None:
     if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
         pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
 
-    config.stash[stash_keys.TEST_REPORT] = TestReport(
-        report_path,
-        config,
-    )
-
     config.stash[stash_keys.PRIVATE_DETAILS_REPORT] = PrivateDetailsReport(
         private_details_path,
         config,
     )
+
+    config.stash[stash_keys.TEST_REPORT] = TestReport(
+        report_path,
+        config,
+        private_details_url=config.stash[stash_keys.PRIVATE_DETAILS_REPORT].path.resolve().as_uri(),
+    )
+
     webbrowser.open_new_tab(config.stash[stash_keys.TEST_REPORT].path.resolve().as_uri())
 
 
@@ -215,6 +227,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 def pytest_terminal_summary(terminalreporter: SugarTerminalReporter, exitstatus: int, config: Config) -> None:
     config.stash[stash_keys.TEST_REPORT].update(ReportState.FINISHED)
+    config.stash[stash_keys.PRIVATE_DETAILS_REPORT].update(ReportState.FINISHED)
     if not config.stash.get(stash_keys.IS_PERMITTED_BOOL, False):
         # Don't display the prompt if the tests were not run due to inability to fetch config
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
@@ -495,6 +508,7 @@ async def run_command_and_add_to_report(
     duckdb_path: Path,
     runs_in_ci,
     test_report: TestReport,
+    private_details_report: PrivateDetailsReport,
 ) -> ExecutionResult:
     """Run the given command for the given connector and connection objects and add the results to the test report."""
     execution_result, proxy = await run_command(
@@ -506,7 +520,12 @@ async def run_command_and_add_to_report(
         duckdb_path,
         runs_in_ci,
     )
-    test_report.add_control_execution_result(execution_result)
+    if connector.target_or_control is TargetOrControl.CONTROL:
+        test_report.add_control_execution_result(execution_result)
+        private_details_report.add_control_execution_result(execution_result)
+    if connector.target_or_control is TargetOrControl.TARGET:
+        test_report.add_target_execution_result(execution_result)
+        private_details_report.add_target_execution_result(execution_result)
     return execution_result, proxy
 
 
@@ -539,6 +558,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.DUCKDB_PATH],
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
+                request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
             )
 
             yield execution_results
@@ -561,6 +581,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.DUCKDB_PATH],
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
+                request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
             )
 
             yield execution_results

@@ -41,9 +41,11 @@ class BaseReport(ABC):
         self.path = path
         self.pytest_config = pytest_config
         self.created_at = datetime.datetime.utcnow()
+        self.updated_at = self.created_at
+
         self.control_execution_results_per_command: dict[Command, List[ExecutionResult]] = {command: [] for command in Command}
         self.target_execution_results_per_command: dict[Command, List[ExecutionResult]] = {command: [] for command in Command}
-        self._state = ReportState.INITIALIZING
+        self.update(ReportState.INITIALIZING)
 
     @abstractmethod
     def render(self) -> None:
@@ -72,9 +74,8 @@ class PrivateDetailsReport(BaseReport):
     SPEC_SECRET_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
 
     def __init__(self, path: Path, pytest_config: Config) -> None:
-        super().__init__(path, pytest_config)
         self.secret_properties = self.get_secret_properties()
-        self.render()
+        super().__init__(path, pytest_config)
 
     def get_secret_properties(self) -> list:
         response = requests.get(self.SPEC_SECRET_MASK_URL)
@@ -162,16 +163,10 @@ class PrivateDetailsReport(BaseReport):
 class TestReport(BaseReport):
     TEMPLATE_NAME = "report.html.j2"
 
-    def __init__(self, path: Path, pytest_config: Config) -> None:
-        super().__init__(path, pytest_config)
-        self.updated_at = self.created_at
+    def __init__(self, path: Path, pytest_config: Config, private_details_url: Optional[str] = None) -> None:
+        self.private_details_url = private_details_url
         self.test_results: list[dict[str, Any]] = []
-        self.update(ReportState.INITIALIZING)
-
-    def update(self, state: ReportState = ReportState.RUNNING) -> None:
-        self._state = state
-        self.updated_at = datetime.datetime.utcnow()
-        self.render()
+        super().__init__(path, pytest_config)
 
     def add_test_result(self, test_report: pytest.TestReport, test_documentation: Optional[str] = None) -> None:
         cut_properties: list[tuple[str, str]] = []
@@ -219,6 +214,7 @@ class TestReport(BaseReport):
             record_count_per_command_and_stream=self.get_record_count_per_stream(),
             test_results=self.test_results,
             max_lines=MAX_LINES_IN_REPORT,
+            private_details_url=self.private_details_url,
         )
         self.path.write_text(rendered)
 
@@ -242,7 +238,7 @@ class TestReport(BaseReport):
         return {
             "Available in catalog": str(catalog_stream_count),
             "In use (in configured catalog)": str(configured_catalog_stream_count),
-            "Coverage": f"{coverage:.2f}%",
+            "Coverage": f"{coverage * 100:.2f}%",
         }
 
     def get_record_count_per_stream(
