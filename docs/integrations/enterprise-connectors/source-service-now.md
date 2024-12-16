@@ -18,6 +18,8 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 1. Enter your ServiceNow environment as the Base URL.
 2. Enter the username and password for a ServiceNow user account that has access to all tables that you want to include in the connection.
 
+![ServiceNow Connector setup with credentials](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/service-now-setup.png)
+
 ## Supported streams
 
 ### Configuration Management Database (CMDB)
@@ -42,7 +44,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 - cmdb_ci_server
 - cmdb_ci_net_app_server
 
-### Software Asset Management
+### Software Asset Management (SAM)
 
 - cmdb_model_category
 - sam_sw_product_lifecycle
