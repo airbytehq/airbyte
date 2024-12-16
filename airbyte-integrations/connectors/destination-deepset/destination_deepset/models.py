@@ -48,6 +48,17 @@ class Filetypes(str, Enum):
     DOCUMENT = "unstructured"
 
 
+class DeepsetCloudConfig(BaseModel):
+    api_key: str = Field(title="API Key", description="Your deepset cloud API key")
+    base_url: str = Field(
+        default="https://api.cloud.deepset.ai/",
+        title="Base URL",
+        description="Base url of your deepset cloud instance. Configure this if using an on-prem instance.",
+    )
+    workspace: str = Field(title="Workspace", description="Name of workspace to which to sync the data.")
+    retries: int = Field(5, title="Retries", description="Number of times to retry an action before giving up.")
+
+
 class FileData(BaseModel):
     content: str = Field(
         title="Content",
@@ -101,17 +112,6 @@ class FileData(BaseModel):
             str: The unique file name with Markdown extension.
         """
         return Path(self.name).stem + ".md"
-
-
-class DeepsetCloudConfig(BaseModel):
-    api_key: str = Field(title="API Key", description="Your deepset cloud API key")
-    base_url: str = Field(
-        default="https://api.cloud.deepset.ai/",
-        title="Base URL",
-        description="Base url of your deepset cloud instance. Configure this if using an on-prem instance.",
-    )
-    workspace: str = Field(title="Workspace", description="Name of workspace to which to sync the data.")
-    retries: int = Field(10, title="Retries", description="Number of times to retry an action before giving up.")
 
 
 class DeepsetCloudFile(BaseModel):

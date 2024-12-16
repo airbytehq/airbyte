@@ -24,7 +24,7 @@
       },
       "retries": {
         "type": "number",
-        "default": 10,
+        "default": 5,
         "description": "Number of times to retry an action before giving up."
       }
     }
