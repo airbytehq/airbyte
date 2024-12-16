@@ -1,0 +1,551 @@
+version: 6.6.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "bases"
+
+definitions:
+  streams:
+    bases:
+      type: DeclarativeStream
+      name: bases
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bases
+          record_filter:
+            type: RecordFilter
+            condition: '{{ record.get("permissionLevel") }}'
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bases"
+    tables:
+      type: DeclarativeStream
+      name: tables
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases/{{ stream_partition.base_id }}/tables
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tables
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: base_id
+              extra_fields:
+                - [name]
+                - [id]
+              stream:
+                $ref: "#/definitions/streams/bases"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tables"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - base_name
+              value: "{{ stream_slice.extra_fields.name }}"
+        - type: AddFields
+          fields:
+            - path:
+                - base_id
+              value: "{{ stream_slice.extra_fields.id }}"
+    airtable_stream:
+      type: DeclarativeStream
+      name: airtable_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: ""
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_airtable.components.FieldsExtractor
+            field_path:
+              - records
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          $ref: "#/definitions/streams/airtable_stream/retriever"
+        schema_type_identifier:
+          type: SchemaTypeIdentifier
+          key_pointer: []
+          schema_pointer: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - _airtable_table_name
+              value: ""
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.airtable.com/v0/
+    authenticator:
+      type: CustomAuthenticator
+      class_name: source_airtable.auth.AirtableAuth
+      config: "{{ config }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - predicate: "{{ response.status_code == 403 and response.get('error', {}).get('type') == 'INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "{{ 'Personal Access Token does not have required permissions, please add all required permissions to existed one or create new PAT, see docs for more info: https://docs.airbyte.com/integrations/sources/airtable#step-1-set-up-airtable' if config.get('credentials', {}). get('auth_method', '') == 'api_key' else 'Access Token does not have required permissions, please reauthenticate.' }}"
+        - predicate: "{{ response.status_code == 403 }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Permission denied or entity is unprocessable."
+        - predicate: "{{ response.status_code == 422 }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Permission denied or entity is unprocessable."
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/airtable_stream"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meta/bases/{{ stream_partition.base_id }}/tables
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("offset", {}) }}'
+            stop_condition: '{{ not response.get("offset", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: base_id
+              extra_fields:
+                - [name]
+                - [id]
+              stream:
+                $ref: "#/definitions/streams/bases"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path: [name]
+          value: "{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - path
+          value: "{{ stream_slice.extra_fields.id }}/{{ components_values.id }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - path
+          value: "{{ stream_slice.extra_fields.id }}/{{ components_values.id }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - transformations
+            - 0
+            - fields
+            - 0
+            - value
+          value: "{{ components_values.name }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      credentials:
+        title: Authentication
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_method:
+                type: string
+                const: oauth2.0
+              client_id:
+                type: string
+                title: Client ID
+                description: The client ID of the Airtable developer application.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The client secret of the Airtable developer application.
+                airbyte_secret: true
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                description: The date-time when the access token should be refreshed.
+                format: date-time
+              refresh_token:
+                type: string
+                title: Refresh token
+                description: The key to refresh the expired access token.
+                airbyte_secret: true
+          - type: object
+            title: Personal Access Token
+            required:
+              - api_key
+            properties:
+              auth_method:
+                type: string
+                const: api_key
+              api_key:
+                type: string
+                description: The Personal Access Token for the Airtable account. See the <a href="https://airtable.com/developers/web/guides/personal-access-tokens">Support Guide</a> for more information on how to obtain this token.
+                title: Personal Access Token
+                airbyte_secret: true
+                examples: ["key1234567890"]
+    additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_method
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+schemas:
+  bases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissionLevel:
+        type:
+          - string
+          - "null"
+  tables:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - object
+                - "null"
+              properties:
+                choices:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      color:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+                dateFormat:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    format:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                durationFormat:
+                  type:
+                    - string
+                    - "null"
+                fieldIdInLinkedTable:
+                  type:
+                    - string
+                    - "null"
+                formula:
+                  type:
+                    - string
+                    - "null"
+                icon:
+                  type:
+                    - string
+                    - "null"
+                inverseLinkFieldId:
+                  type:
+                    - string
+                    - "null"
+                isReversed:
+                  type:
+                    - boolean
+                    - "null"
+                isValid:
+                  type:
+                    - boolean
+                    - "null"
+                linkedTableId:
+                  type:
+                    - string
+                    - "null"
+                max:
+                  type:
+                    - number
+                    - "null"
+                precision:
+                  type:
+                    - number
+                    - "null"
+                prefersSingleRecordLink:
+                  type:
+                    - boolean
+                    - "null"
+                recordLinkFieldId:
+                  type:
+                    - string
+                    - "null"
+                referencedFieldIds:
+                  type:
+                    - array
+                    - "null"
+                result:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    options:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        dateFormat:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            format:
+                              type:
+                                - string
+                                - "null"
+                            name:
+                              type:
+                                - string
+                                - "null"
+                        precision:
+                          type:
+                            - number
+                            - "null"
+                        timeFormat:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            format:
+                              type:
+                                - string
+                                - "null"
+                            name:
+                              type:
+                                - string
+                                - "null"
+                        timeZone:
+                          type:
+                            - string
+                            - "null"
+                symbol:
+                  type:
+                    - string
+                    - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      primaryFieldId:
+        type:
+          - string
+          - "null"
+      views:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+  airtable_stream:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
