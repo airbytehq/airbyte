@@ -88,6 +88,7 @@ class TestCommon:
         error_resolution = stream.get_error_handler().interpret_response(response)
         error_resolution.response_action == expected_action
 
+
 class TestFullRefreshStreams:
     def generate_records(self, stream_name, count) -> Union[Mapping[str, List[Mapping[str, Any]]], Mapping[str, Any]]:
         if not stream_name:

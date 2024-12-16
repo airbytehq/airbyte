@@ -22,12 +22,7 @@ def check_connection_url(config):
     return get_url_to_mock(export_stream)
 
 
-@pytest.mark.parametrize(
-    "response_code,expect_success,response_json",
-    [
-        (400, False, {"error": "Request error"})
-    ]
-)
+@pytest.mark.parametrize("response_code,expect_success,response_json", [(400, False, {"error": "Request error"})])
 def test_check_connection(requests_mock, check_connection_url, config_raw, response_code, expect_success, response_json):
     # requests_mock.register_uri("GET", check_connection_url, setup_response(response_code, response_json))
     requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
@@ -135,7 +130,7 @@ def test_streams_string_date(requests_mock, config_raw):
                 "select_properties_by_default": True,
                 "region": "EU",
                 "date_window_size": 10,
-                "page_size": 1000
+                "page_size": 1000,
             },
             True,
             None,
@@ -143,9 +138,9 @@ def test_streams_string_date(requests_mock, config_raw):
     ),
 )
 def test_config_validation(config, success, expected_error_message, requests_mock):
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
+    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
     try:
         is_success, message = SourceMixpanel().check_connection(None, config)
     except AirbyteTracedException as e:

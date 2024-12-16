@@ -84,7 +84,8 @@ def is_ssh_ready(ip, port):
 @pytest.fixture(scope="session")
 def move_sample_files_to_tmp():
     """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
-    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
+    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory.
+    """
     sample_files = Path(HERE / "sample_files")
     shutil.copytree(sample_files, "/tmp/s3_sample_files")
     yield True

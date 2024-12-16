@@ -10,9 +10,10 @@ from metadata_service.spec_cache import CachedSpec, Registries, SpecCache, get_d
 
 @pytest.fixture
 def mock_spec_cache():
-    with patch("google.cloud.storage.Client.create_anonymous_client") as MockClient, patch(
-        "google.cloud.storage.Client.bucket"
-    ) as MockBucket:
+    with (
+        patch("google.cloud.storage.Client.create_anonymous_client") as MockClient,
+        patch("google.cloud.storage.Client.bucket") as MockBucket,
+    ):
 
         # Create stub mock client and bucket
         MockClient.return_value

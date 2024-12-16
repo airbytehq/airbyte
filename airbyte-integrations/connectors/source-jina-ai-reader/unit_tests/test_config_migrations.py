@@ -16,7 +16,7 @@ def test_should_migrate():
 def test__modify_and_save():
     source = SourceJinaAiReader()
     user_config = {"search_prompt": "What is AI"}
-    expected = {"search_prompt": "What%20is%20AI" }
+    expected = {"search_prompt": "What%20is%20AI"}
     modified_config = JinaAiReaderConfigMigration.modify_and_save(config_path=TEST_CONFIG_PATH, source=source, config=user_config)
     assert modified_config["search_prompt"] == expected["search_prompt"]
     assert modified_config.get("search_prompt")

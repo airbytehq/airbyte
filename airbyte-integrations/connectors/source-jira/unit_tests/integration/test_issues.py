@@ -40,6 +40,7 @@ def _response_template() -> Dict[str, Any]:
     with open(os.path.join(os.path.dirname(__file__), "..", "responses", "issues.json")) as response_file_handler:
         return json.load(response_file_handler)
 
+
 def _create_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=_response_template(),
@@ -60,15 +61,19 @@ class IssuesTest(TestCase):
         config = _create_config().build()
         datetime_with_timezone = "2023-11-01T00:00:00.000-0800"
         timestamp_with_timezone = 1698825600000
-        state = StateBuilder().with_stream_state(
-            "issues",
-            {
-                "use_global_cursor":False,
-                "state": {"updated": datetime_with_timezone},
-                "lookback_window": 2,
-                "states": [{"partition":{"parent_slice":{},"project_id":"10025"},"cursor":{"updated": datetime_with_timezone}}]
-            }
-        ).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "issues",
+                {
+                    "use_global_cursor": False,
+                    "state": {"updated": datetime_with_timezone},
+                    "lookback_window": 2,
+                    "states": [{"partition": {"parent_slice": {}, "project_id": "10025"}, "cursor": {"updated": datetime_with_timezone}}],
+                },
+            )
+            .build()
+        )
         http_mocker.get(
             HttpRequest(
                 f"https://{_DOMAIN}/rest/api/3/search",
@@ -77,7 +82,7 @@ class IssuesTest(TestCase):
                     "jql": f"updated >= {timestamp_with_timezone} ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                     "maxResults": "50",
-                }
+                },
             ),
             _create_response().with_record(_create_record()).with_record(_create_record()).build(),
         )

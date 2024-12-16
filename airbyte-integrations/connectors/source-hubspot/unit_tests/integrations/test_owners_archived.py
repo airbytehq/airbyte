@@ -16,6 +16,7 @@ class TestOwnersArchivedStream(HubspotTestCase):
     The test case contains a single test - this is just a sanity check, as the tested
     stream is identical to the `Owners` stream (which is covered by acceptance tests), except for a single url param.
     """
+
     SCOPES = ["crm.objects.owners.read"]
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "owners_archived"
@@ -28,10 +29,10 @@ class TestOwnersArchivedStream(HubspotTestCase):
         return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME)
 
     def response(self, with_pagination: bool = False):
-        record = self.record_builder(self.STREAM_NAME, FieldPath(self.CURSOR_FIELD)).with_field(
-            FieldPath(self.CURSOR_FIELD), self.dt_str(self.updated_at())
-        ).with_field(
-            FieldPath("id"), self.OBJECT_ID
+        record = (
+            self.record_builder(self.STREAM_NAME, FieldPath(self.CURSOR_FIELD))
+            .with_field(FieldPath(self.CURSOR_FIELD), self.dt_str(self.updated_at()))
+            .with_field(FieldPath("id"), self.OBJECT_ID)
         )
         response = self.response_builder.with_record(record)
         if with_pagination:
@@ -54,7 +55,7 @@ class TestOwnersArchivedStream(HubspotTestCase):
         self.mock_response(
             http_mocker,
             self.request().with_page_token(self.response_builder.pagination_strategy.NEXT_PAGE_TOKEN).build(),
-            self.response().build()
+            self.response().build(),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
         assert len(output.records) == 2

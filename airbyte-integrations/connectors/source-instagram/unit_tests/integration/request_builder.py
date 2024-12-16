@@ -94,4 +94,3 @@ class RequestBuilder:
     def _item_path(self) -> str:
         path_for_resource = "/" if self._item_id_is_sub_path else ""
         return f"{self._item_id}{path_for_resource}" if self._item_id else ""
-

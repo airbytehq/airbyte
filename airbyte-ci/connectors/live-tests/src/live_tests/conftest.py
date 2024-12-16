@@ -108,11 +108,11 @@ def pytest_configure(config: Config) -> None:
         prompt_for_confirmation(user_email)
 
     track_usage(
-        "production-ci"
-        if config.stash[stash_keys.IS_PRODUCTION_CI]
-        else "local-ci"
-        if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]
-        else user_email,
+        (
+            "production-ci"
+            if config.stash[stash_keys.IS_PRODUCTION_CI]
+            else "local-ci" if config.stash[stash_keys.RUN_IN_AIRBYTE_CI] else user_email
+        ),
         vars(config.option),
     )
     config.stash[stash_keys.AIRBYTE_API_KEY] = get_airbyte_api_key()

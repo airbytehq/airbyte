@@ -136,7 +136,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-
     """
     docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
     """

@@ -34,6 +34,7 @@ def config(request: Any) -> Dict[str, str]:
     }
     return args
 
+
 @fixture()
 def legacy_config():
     args = {
@@ -44,6 +45,7 @@ def legacy_config():
         "engine": "my_engine",
     }
     return args
+
 
 @fixture
 def config_external_table() -> Dict[str, str]:

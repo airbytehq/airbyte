@@ -168,6 +168,7 @@ class TestMigrateIncludeDeletedToStatusFilters:
         migration_instance = MigrateIncludeDeletedToStatusFilters()
         assert not migration_instance.should_migrate(new_config)
 
+
 class TestMigrateSecretsPathInConnector:
     OLD_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_old_access_token_config.json")
     NEW_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_new_access_token_config.json")
@@ -178,7 +179,7 @@ class TestMigrateSecretsPathInConnector:
     def revert_migration(config_path: str) -> None:
         with open(config_path, "r") as test_config:
             config = json.load(test_config)
-            credentials = config.pop("credentials",{})
+            credentials = config.pop("credentials", {})
             credentials.pop("auth_type", None)
             with open(config_path, "w") as updated_config:
                 config = json.dumps({**config, **credentials})
@@ -202,7 +203,7 @@ class TestMigrateSecretsPathInConnector:
         assert original_config["access_token"] == credentials["access_token"]
         # revert the test_config to the starting point
         self.revert_migration(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
-    
+
     def test_migrate_client_config(self):
         migration_instance = MigrateSecretsPathInConnector()
         original_config = load_config(self.OLD_TEST_CONFIG_PATH_CLIENT)
@@ -228,7 +229,7 @@ class TestMigrateSecretsPathInConnector:
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_CLIENT)
         migration_instance = MigrateSecretsPathInConnector()
         assert not migration_instance._should_migrate(new_config)
-    
+
     def test_should_not_migrate_new_access_token_config(self):
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_ACCESS_TOKEN)
         migration_instance = MigrateSecretsPathInConnector()

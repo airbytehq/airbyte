@@ -62,9 +62,7 @@ class TestGroupsStreamFullRefresh(TestCase):
             api_token_authenticator,
         )
 
-        state_value = {
-            "updated_at": datetime_to_string(pendulum.now(tz="UTC").subtract(years=1, weeks=50))
-        }
+        state_value = {"updated_at": datetime_to_string(pendulum.now(tz="UTC").subtract(years=1, weeks=50))}
 
         state = StateBuilder().with_stream_state("groups", state_value).build()
 

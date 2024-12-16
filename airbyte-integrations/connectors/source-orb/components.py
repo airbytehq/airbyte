@@ -63,7 +63,6 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-
         """
         This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
         if a grouping key is provided. This is because the API only supports a

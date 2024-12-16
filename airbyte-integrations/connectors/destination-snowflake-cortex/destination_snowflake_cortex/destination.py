@@ -30,9 +30,7 @@ BATCH_SIZE = 150
 class DestinationSnowflakeCortex(Destination):
     sql_processor: cortex_processor.SnowflakeCortexSqlProcessor
 
-    def _init_sql_processor(
-        self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
-    ):
+    def _init_sql_processor(self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None):
         self.sql_processor = cortex_processor.SnowflakeCortexSqlProcessor(
             sql_config=cortex_processor.SnowflakeCortexConfig(
                 host=config.indexing.host,
@@ -73,9 +71,7 @@ class DestinationSnowflakeCortex(Destination):
             self.sql_processor.sql_config.connect()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
-            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(

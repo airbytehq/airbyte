@@ -35,7 +35,13 @@ def mock_response():
 
 @pytest.fixture
 def mock_analytics_cursor_params():
-    return {"start_datetime": MagicMock(), "cursor_field": MagicMock(), "datetime_format": "%s", "config": MagicMock(), "parameters": MagicMock()}
+    return {
+        "start_datetime": MagicMock(),
+        "cursor_field": MagicMock(),
+        "datetime_format": "%s",
+        "config": MagicMock(),
+        "parameters": MagicMock(),
+    }
 
 
 @pytest.fixture

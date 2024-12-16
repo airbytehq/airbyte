@@ -29,21 +29,24 @@ _STREAM_NAME = "user_lifetime_insights"
 def _get_request() -> RequestBuilder:
     return (
         RequestBuilder.get_user_lifetime_insights_endpoint(item_id=BUSINESS_ACCOUNT_ID)
-        .with_custom_param("metric", "follower_demographics").with_custom_param("period", "lifetime").with_custom_param("metric_type", "total_value").with_limit(100)
+        .with_custom_param("metric", "follower_demographics")
+        .with_custom_param("period", "lifetime")
+        .with_custom_param("metric_type", "total_value")
+        .with_limit(100)
     )
 
 
 def _get_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath('data'),
+        records_path=FieldPath("data"),
     )
 
 
 def _record() -> RecordBuilder:
     return create_record_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath('data'),
+        records_path=FieldPath("data"),
         record_id_path=FieldPath("id"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
@@ -76,4 +79,3 @@ class TestFullRefresh(TestCase):
         output = self._read(config_=config())
         # each breakdown should produce a record
         assert len(output.records) == 3
-

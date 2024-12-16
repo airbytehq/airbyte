@@ -17,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 
 resp = Response()
 
+
 class TestPinterestOauthAuthenticator:
     """
     Test class for custom PinterestOauthAuthenticator, derived from the CDK's Oauth2Authenticator class.
@@ -69,7 +70,9 @@ class TestPinterestOauthAuthenticator:
         mocker.patch.object(resp, "status_code", 400)
         mocker.patch.object(oauth, "_wrap_refresh_token_exception", return_value=True)
 
-        with pytest.raises(AirbyteTracedException, match="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."):
+        with pytest.raises(
+            AirbyteTracedException, match="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+        ):
             oauth.refresh_access_token()
 
 

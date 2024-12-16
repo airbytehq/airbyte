@@ -29,7 +29,8 @@ _FIELDS = [
     "id",
     "ig_id",
     "is_comment_enabled",
-    "like_count","media_type",
+    "like_count",
+    "media_type",
     "media_product_type",
     "media_url",
     "owner",
@@ -38,44 +39,21 @@ _FIELDS = [
     "thumbnail_url",
     "timestamp",
     "username",
-    "children"
+    "children",
 ]
 
-_CHILDREN_FIELDS = [
-    "id",
-    "ig_id",
-    "media_type",
-    "media_url",
-    "owner",
-    "permalink",
-    "shortcode",
-    "thumbnail_url",
-    "timestamp",
-    "username"
-    ]
+_CHILDREN_FIELDS = ["id", "ig_id", "media_type", "media_url", "owner", "permalink", "shortcode", "thumbnail_url", "timestamp", "username"]
 
-_CHILDREN_IDS = [
-    "07608776690540123",
-    "52896800415362123",
-    "39559889460059123",
-    "17359925580923123"
-        ]
+_CHILDREN_IDS = ["07608776690540123", "52896800415362123", "39559889460059123", "17359925580923123"]
 _STREAM_NAME = "media"
 
 
 def _get_request() -> RequestBuilder:
-    return (
-        RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID)
-        .with_limit(100)
-        .with_fields(_FIELDS)
-    )
+    return RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(_FIELDS)
 
 
-def _get_children_request(media_id:str) -> RequestBuilder:
-    return(
-        RequestBuilder.get_media_children_endpoint(item_id=media_id)
-        .with_fields(_CHILDREN_FIELDS)
-    )
+def _get_children_request(media_id: str) -> RequestBuilder:
+    return RequestBuilder.get_media_children_endpoint(item_id=media_id).with_fields(_CHILDREN_FIELDS)
 
 
 def _get_response() -> HttpResponseBuilder:
@@ -92,6 +70,7 @@ def _record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_id_path=FieldPath("id"),
     )
+
 
 class TestFullRefresh(TestCase):
 
@@ -162,15 +141,12 @@ class TestFullRefresh(TestCase):
             get_account_request().build(),
             get_account_response(),
         )
-        http_mocker.get(
-            _get_request().build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
-        )
+        http_mocker.get(_get_request().build(), HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200))
 
         for children_id in _CHILDREN_IDS:
             http_mocker.get(
                 _get_children_request(children_id).build(),
-                HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_children_for_{test}", __file__)), 200)
+                HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_children_for_{test}", __file__)), 200),
             )
 
         output = self._read(config_=config())

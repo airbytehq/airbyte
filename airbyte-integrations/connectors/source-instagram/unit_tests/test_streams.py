@@ -30,7 +30,6 @@ def test_state_is_not_outdated(api, config):
     assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
 
 
-
 def test_user_insights_read(api, config, user_insight_data, requests_mock):
     test_id = "test_id"
 
@@ -40,7 +39,6 @@ def test_user_insights_read(api, config, user_insight_data, requests_mock):
 
     records = read_incremental(stream, {})
     assert records
-
 
 
 @pytest.mark.parametrize(

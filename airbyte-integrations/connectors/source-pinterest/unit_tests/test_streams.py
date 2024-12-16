@@ -80,7 +80,8 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
@@ -122,7 +123,9 @@ def test_response_action(requests_mock, patch_base_class, http_status, expected_
     ),
 )
 @patch("time.sleep", return_value=None)
-def test_declarative_stream_response_action_on_max_rate_limit_error(mock_sleep, requests_mock, test_response, status_code, expected_response_action):
+def test_declarative_stream_response_action_on_max_rate_limit_error(
+    mock_sleep, requests_mock, test_response, status_code, expected_response_action
+):
     response_mock = create_requests_response(requests_mock, status_code, {})
     error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
     assert error_handler.interpret_response(response_mock).response_action == expected_response_action

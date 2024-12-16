@@ -162,12 +162,19 @@ class AssigneesTest(TestCase):
         per_partition_state_1 = {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}}
         per_partition_state_2 = {"partition": {"repository": "airbytehq/mock-test-2"}, "cursor": {"__ab_full_refresh_sync_complete": True}}
 
-        incoming_state = StateBuilder().with_stream_state("assignees", {
-            "states": [
-                {"partition": {"repository": "airbytehq/mock-test-0"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-                {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-            ]
-        }).build()
+        incoming_state = (
+            StateBuilder()
+            .with_stream_state(
+                "assignees",
+                {
+                    "states": [
+                        {"partition": {"repository": "airbytehq/mock-test-0"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+                        {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+                    ]
+                },
+            )
+            .build()
+        )
 
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), state=incoming_state)

@@ -26,14 +26,8 @@ transformer = ManifestComponentTransformer()
 def test_migrate_a_valid_legacy_state_to_per_partition():
     input_state = {
         "states": [
-            {
-                "partition": {"parent_id": "13506132"},
-                "cursor": {"last_changed": "2023-12-27T08:34:39+00:00"}
-            },
-            {
-                "partition": {"parent_id": "14351124"},
-                "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
-            },
+            {"partition": {"parent_id": "13506132"}, "cursor": {"last_changed": "2023-12-27T08:34:39+00:00"}},
+            {"partition": {"parent_id": "14351124"}, "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}},
         ]
     }
 
@@ -61,14 +55,10 @@ def _migrator():
                 parent_key="{{ parameters['parent_key_id'] }}",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
-                    type="DeclarativeStream",
-                    retriever=CustomRetriever(
-                        type="CustomRetriever",
-                        class_name="a_class_name"
-                    )
-                )
+                    type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+                ),
             )
-        ]
+        ],
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",

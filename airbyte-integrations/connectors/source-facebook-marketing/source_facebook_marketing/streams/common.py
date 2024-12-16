@@ -91,7 +91,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
-        According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
+        According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry.
+        """
         pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
         return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
 

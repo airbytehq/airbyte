@@ -337,7 +337,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             for i in range(1)
         ]
 
-         # initial sync with replace
+        # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 3
@@ -364,8 +364,6 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert second_written_record["DOCUMENT_CONTENT"] == '"Dogs are"'
         assert third_written_record["DOCUMENT_ID"] == "Stream_mystream_Key_0"
         assert third_written_record["DOCUMENT_CONTENT"] == '"number 0"'
-       
-
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
@@ -391,20 +389,24 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         cur = conn.cursor()
         document_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
 
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TEMPORARY TABLE temp_document_content (
             document_content STRING
         )
-        """)
+        """
+        )
         cur.executemany(
             "INSERT INTO temp_document_content (document_content) VALUES (%s)",
             document_content_list,
         )
 
-        cur.execute("""
+        cur.execute(
+            """
         SELECT snowflake.cortex.embed_text('e5-base-v2', document_content) AS embedding
         FROM temp_document_content
-        """)
+        """
+        )
         processed_data = cur.fetchall()
         self.assertTrue(processed_data, "No data found in the database")
         cur.execute("DROP TABLE temp_document_content")

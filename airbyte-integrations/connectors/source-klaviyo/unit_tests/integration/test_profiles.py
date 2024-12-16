@@ -37,11 +37,11 @@ def _a_profile_request(start_date: datetime) -> HttpRequest:
     return HttpRequest(
         url=f"https://a.klaviyo.com/api/profiles",
         query_params={
-          "additional-fields[profile]": "predictive_analytics",
-          "page[size]": "100",
-          "filter": f"greater-than(updated,{start_date.strftime('%Y-%m-%dT%H:%M:%S%z')})",
-          "sort": "updated"
-        }
+            "additional-fields[profile]": "predictive_analytics",
+            "page[size]": "100",
+            "filter": f"greater-than(updated,{start_date.strftime('%Y-%m-%dT%H:%M:%S%z')})",
+            "sort": "updated",
+        },
     )
 
 

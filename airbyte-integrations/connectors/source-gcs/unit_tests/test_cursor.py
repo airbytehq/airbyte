@@ -125,9 +125,6 @@ def test_add_file_zip_files(mocked_reader, zip_file, logger):
     cursor = Cursor(stream_config=FileBasedStreamConfig(name="test", globs=["**/*.zip"], format={"filetype": "csv"}))
     cursor.add_file(zip_file)
 
-    saved_history_cursor = datetime.strptime(
-        cursor._file_to_datetime_history[zip_file.displayed_uri],
-        cursor.DATE_TIME_FORMAT
-    )
+    saved_history_cursor = datetime.strptime(cursor._file_to_datetime_history[zip_file.displayed_uri], cursor.DATE_TIME_FORMAT)
 
     assert saved_history_cursor == zip_file.last_modified

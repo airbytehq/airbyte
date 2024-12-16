@@ -63,8 +63,9 @@ def zip_file():
         uri=str(Path(__file__).parent / "resource/files/test.csv.zip"),
         last_modified=datetime.today(),
         mime_type=".zip",
-        displayed_uri="resource/files/test.csv.zip"
+        displayed_uri="resource/files/test.csv.zip",
     )
+
 
 @pytest.fixture
 def mocked_blob():

@@ -29,9 +29,7 @@ class StreamGenerationTest(TestCase):
     def setUp(self) -> None:
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN).build()
         self._source = SourceSalesforce(
-            CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
-            self._config,
-            StateBuilder().build()
+            CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(), self._config, StateBuilder().build()
         )
 
         self._http_mocker = HttpMocker()
@@ -48,10 +46,7 @@ class StreamGenerationTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/sobjects/{_STREAM_NAME}/describe"),
-            [
-                HttpResponse("", status_code=406),
-                SalesforceDescribeResponseBuilder().field("a_field_name").build()
-            ]
+            [HttpResponse("", status_code=406), SalesforceDescribeResponseBuilder().field("a_field_name").build()],
         )
 
         streams = self._source.streams(self._config)

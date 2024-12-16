@@ -134,9 +134,7 @@ class LegacyConfigTransformer:
                 raise ValueError(
                     "The config options you selected are no longer supported.\n" + f"advanced_options={advanced_options}"
                     if advanced_options
-                    else "" + f"additional_reader_options={additional_reader_options}"
-                    if additional_reader_options
-                    else ""
+                    else "" + f"additional_reader_options={additional_reader_options}" if additional_reader_options else ""
                 )
 
             return csv_options

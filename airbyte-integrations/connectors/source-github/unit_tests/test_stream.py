@@ -102,10 +102,34 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
 @pytest.mark.parametrize(
     ("http_status", "response_headers", "text", "response_action", "error_message"),
     [
-        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}', ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.OK}. Retrying..."),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
+        (
+            HTTPStatus.OK,
+            {"X-RateLimit-Resource": "graphql"},
+            '{"errors": [{"type": "RATE_LIMITED"}]}',
+            ResponseAction.RATE_LIMITED,
+            f"Response status code: {HTTPStatus.OK}. Retrying...",
+        ),
+        (
+            HTTPStatus.FORBIDDEN,
+            {"X-RateLimit-Remaining": "0"},
+            "",
+            ResponseAction.RATE_LIMITED,
+            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+        ),
+        (
+            HTTPStatus.FORBIDDEN,
+            {"Retry-After": "0"},
+            "",
+            ResponseAction.RATE_LIMITED,
+            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+        ),
+        (
+            HTTPStatus.FORBIDDEN,
+            {"Retry-After": "60"},
+            "",
+            ResponseAction.RATE_LIMITED,
+            f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying...",
+        ),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "Internal server error."),
         (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "Bad gateway."),
         (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", ResponseAction.RETRY, "Service unavailable."),
@@ -451,18 +475,18 @@ def test_stream_commits_incremental_read():
                 "name": "branch",
                 "commit": {
                     "sha": "74445338726f0f8e1c27c10dce90ca00c5ae2858",
-                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858"
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858",
                 },
-                "protected": False
+                "protected": False,
             },
             {
                 "name": "main",
                 "commit": {
                     "sha": "c27c10dce90ca00c5ae285874445338726f0f8e1",
-                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1"
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1",
                 },
-                "protected": False
-            }
+                "protected": False,
+            },
         ],
         status=200,
     )
@@ -1361,11 +1385,7 @@ def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response):
     }
     stream = ProjectsV2(**repository_args_with_start_date)
     resp = responses.add(
-        responses.POST,
-        "https://api.github.com/graphql",
-        json={"errors": "not found"},
-        status=200,
-        headers={'Retry-After': '5'}
+        responses.POST, "https://api.github.com/graphql", json={"errors": "not found"}, status=200, headers={"Retry-After": "5"}
     )
 
     backoff_strategy = GithubStreamABCBackoffStrategy(stream)

@@ -121,9 +121,7 @@ class SqlConfig(BaseModel, abc.ABC):
 
         Raises `NotImplementedError` if a custom vendor client is not defined.
         """
-        raise NotImplementedError(
-            f"The type '{type(self).__name__}' does not define a custom client."
-        )
+        raise NotImplementedError(f"The type '{type(self).__name__}' does not define a custom client.")
 
 
 class SqlProcessorBase(RecordProcessorBase):
@@ -287,9 +285,7 @@ class SqlProcessorBase(RecordProcessorBase):
         query. To ignore the cache and force a refresh, set 'force_refresh' to True.
         """
         if force_refresh and shallow_okay:
-            raise exc.PyAirbyteInternalError(
-                message="Cannot force refresh and use shallow query at the same time."
-            )
+            raise exc.PyAirbyteInternalError(message="Cannot force refresh and use shallow query at the same time.")
 
         if force_refresh and table_name in self._cached_table_definitions:
             self._invalidate_table_cache(table_name)
@@ -330,9 +326,7 @@ class SqlProcessorBase(RecordProcessorBase):
 
         if DEBUG_MODE:
             found_schemas = self._get_schemas_list()
-            assert (
-                schema_name in found_schemas
-            ), f"Schema {schema_name} was not created. Found: {found_schemas}"
+            assert schema_name in found_schemas, f"Schema {schema_name} was not created. Found: {found_schemas}"
 
     def _quote_identifier(self, identifier: str) -> str:
         """Return the given identifier, quoted."""
@@ -391,8 +385,7 @@ class SqlProcessorBase(RecordProcessorBase):
         return [
             found_schema.split(".")[-1].strip('"')
             for found_schema in found_schemas
-            if "." not in found_schema
-            or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
+            if "." not in found_schema or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
         ]
 
     def _ensure_final_table_exists(
@@ -549,9 +542,7 @@ class SqlProcessorBase(RecordProcessorBase):
         Returns a mapping of batch IDs to batch handles, for those processed batches.
         """
         batches_to_finalize: list[BatchHandle] = self.file_writer.get_pending_batches(stream_name)
-        state_messages_to_finalize: list[AirbyteStateMessage] = self._pending_state_messages[
-            stream_name
-        ].copy()
+        state_messages_to_finalize: list[AirbyteStateMessage] = self._pending_state_messages[stream_name].copy()
         self._pending_state_messages[stream_name].clear()
 
         progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
@@ -610,9 +601,7 @@ class SqlProcessorBase(RecordProcessorBase):
         for file_path in files:
             dataframe = pd.read_json(file_path, lines=True)
 
-            sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(
-                stream_name
-            )
+            sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(stream_name)
 
             # Remove fields that are not in the schema
             for col_name in dataframe.columns:
@@ -650,10 +639,7 @@ class SqlProcessorBase(RecordProcessorBase):
     ) -> None:
         """Add a column to the given table."""
         self._execute_sql(
-            text(
-                f"ALTER TABLE {self._fully_qualified(table.name)} "
-                f"ADD COLUMN {column_name} {column_type}"
-            ),
+            text(f"ALTER TABLE {self._fully_qualified(table.name)} " f"ADD COLUMN {column_name} {column_type}"),
         )
 
     def _add_missing_columns_to_table(
@@ -711,9 +697,7 @@ class SqlProcessorBase(RecordProcessorBase):
             )
 
         if write_strategy == WriteStrategy.AUTO:
-            configured_destination_sync_mode: DestinationSyncMode = (
-                self.catalog_provider.get_destination_sync_mode(stream_name)
-            )
+            configured_destination_sync_mode: DestinationSyncMode = self.catalog_provider.get_destination_sync_mode(stream_name)
             if configured_destination_sync_mode == DestinationSyncMode.overwrite:
                 write_strategy = WriteStrategy.REPLACE
             elif configured_destination_sync_mode == DestinationSyncMode.append:
@@ -838,12 +822,13 @@ class SqlProcessorBase(RecordProcessorBase):
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
-        commands = "\n".join([
-            f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME " f"TO {deletion_name};",
-            f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME "
-            f"TO {final_table_name};",
-            f"DROP TABLE {self._fully_qualified(deletion_name)};",
-        ])
+        commands = "\n".join(
+            [
+                f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME " f"TO {deletion_name};",
+                f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME " f"TO {final_table_name};",
+                f"DROP TABLE {self._fully_qualified(deletion_name)};",
+            ]
+        )
         self._execute_sql(commands)
 
     def _merge_temp_table_to_final_table(
@@ -917,23 +902,16 @@ class SqlProcessorBase(RecordProcessorBase):
         temp_table = self._get_table_by_name(temp_table_name)
         pk_columns = self._get_primary_keys(stream_name)
 
-        columns_to_update: set[str] = self._get_sql_column_definitions(
-            stream_name=stream_name
-        ).keys() - set(pk_columns)
+        columns_to_update: set[str] = self._get_sql_column_definitions(stream_name=stream_name).keys() - set(pk_columns)
 
         # Create a dictionary mapping columns in users_final to users_stage for updating
         update_values = {
-            self._get_column_by_name(final_table, column): (
-                self._get_column_by_name(temp_table, column)
-            )
-            for column in columns_to_update
+            self._get_column_by_name(final_table, column): (self._get_column_by_name(temp_table, column)) for column in columns_to_update
         }
 
         # Craft the WHERE clause for composite primary keys
         join_conditions = [
-            self._get_column_by_name(final_table, pk_column)
-            == self._get_column_by_name(temp_table, pk_column)
-            for pk_column in pk_columns
+            self._get_column_by_name(final_table, pk_column) == self._get_column_by_name(temp_table, pk_column) for pk_column in pk_columns
         ]
         join_clause = and_(*join_conditions)
 
@@ -948,9 +926,7 @@ class SqlProcessorBase(RecordProcessorBase):
         where_not_exists_clause = self._get_column_by_name(final_table, pk_columns[0]) == null()
 
         # Select records from temp_table that are not in final_table
-        select_new_records_stmt = (
-            select([temp_table]).select_from(joined_table).where(where_not_exists_clause)
-        )
+        select_new_records_stmt = select([temp_table]).select_from(joined_table).where(where_not_exists_clause)
 
         # Craft the INSERT statement using the select statement
         insert_new_records_stmt = insert(final_table).from_select(

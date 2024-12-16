@@ -236,9 +236,7 @@ class RecordProcessorBase(abc.ABC):
                 stream_name = record_msg.stream
 
                 if stream_name not in stream_schemas:
-                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(
-                        stream_name=stream_name
-                    )
+                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(stream_name=stream_name)
 
                 self.process_record_message(
                     record_msg,

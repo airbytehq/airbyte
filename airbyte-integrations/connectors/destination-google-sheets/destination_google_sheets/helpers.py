@@ -39,7 +39,6 @@ def get_streams_from_catalog(catalog: ConfiguredAirbyteCatalog, limit: int = STR
 
 
 class ConnectionTest:
-
     """
     Performs connection test write operation to ensure the target spreadsheet is available for writing.
     Initiating the class itself, performs the connection test and stores the result in ConnectionTest.result property.

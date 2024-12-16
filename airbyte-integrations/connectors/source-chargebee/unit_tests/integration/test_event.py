@@ -57,23 +57,18 @@ def _a_record() -> RecordBuilder:
         find_template(_STREAM_NAME, __file__),
         FieldPath("list"),
         record_id_path=NestedPath([_STREAM_NAME, _PRIMARY_KEY]),
-        record_cursor_path=NestedPath([_STREAM_NAME, _CURSOR_FIELD])
+        record_cursor_path=NestedPath([_STREAM_NAME, _CURSOR_FIELD]),
     )
 
 
 def _a_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template(_STREAM_NAME, __file__),
-        FieldPath("list"),
-        pagination_strategy=ChargebeePaginationStrategy()
+        find_template(_STREAM_NAME, __file__), FieldPath("list"), pagination_strategy=ChargebeePaginationStrategy()
     )
 
 
 def _read(
-    config_builder: ConfigBuilder,
-    sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
@@ -98,8 +93,7 @@ class FullRefreshTest(TestCase):
     def test_given_valid_response_records_are_extracted_and_returned(self, http_mocker: HttpMocker) -> None:
         # Tests simple read and record extraction
         http_mocker.get(
-            _a_request().with_any_query_params().build(),
-            _a_response().with_record(_a_record()).with_record(_a_record()).build()
+            _a_request().with_any_query_params().build(), _a_response().with_record(_a_record()).with_record(_a_record()).build()
         )
         output = self._read(_config().with_start_date(self._start_date))
         assert len(output.records) == 2
@@ -109,11 +103,15 @@ class FullRefreshTest(TestCase):
         # Tests pagination
         http_mocker.get(
             _a_request().with_sort_by_asc(_CURSOR_FIELD).with_occurred_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
-            _a_response().with_record(_a_record()).with_pagination().build()
+            _a_response().with_record(_a_record()).with_pagination().build(),
         )
         http_mocker.get(
-            _a_request().with_sort_by_asc(_CURSOR_FIELD).with_occurred_at_btw([self._start_date_in_seconds, self._now_in_seconds]).with_offset("[1707076198000,57873868]").build(),
-            _a_response().with_record(_a_record()).build()
+            _a_request()
+            .with_sort_by_asc(_CURSOR_FIELD)
+            .with_occurred_at_btw([self._start_date_in_seconds, self._now_in_seconds])
+            .with_offset("[1707076198000,57873868]")
+            .build(),
+            _a_response().with_record(_a_record()).build(),
         )
 
         self._read(_config().with_start_date(self._start_date))
@@ -187,8 +185,7 @@ class IncrementalTest(TestCase):
         # Tests setting state when no initial state is provided
         cursor_value = self._start_date_in_seconds + 1
         http_mocker.get(
-            _a_request().with_any_query_params().build(),
-            _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
+            _a_request().with_any_query_params().build(), _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
         most_recent_state = output.most_recent_state
@@ -200,7 +197,7 @@ class IncrementalTest(TestCase):
         # Tests updating query param with state
         state_cursor_value = int((self._now - timedelta(days=5)).timestamp())
         record_cursor_value = self._now_in_seconds - 1
-        state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
             _a_request().with_sort_by_asc(_CURSOR_FIELD).with_occurred_at_btw([state_cursor_value, self._now_in_seconds]).build(),
             _a_response().with_record(_a_record().with_cursor(record_cursor_value)).build(),

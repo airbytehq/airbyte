@@ -30,8 +30,7 @@ def test_check_connection_expired_token(requests_mock, test_config):
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (
         False,
-        "Unable to connect to stream boards - 401 Client Error: None "
-        "for url: https://api.pinterest.com/v5/oauth/token",
+        "Unable to connect to stream boards - 401 Client Error: None " "for url: https://api.pinterest.com/v5/oauth/token",
     )
 
 

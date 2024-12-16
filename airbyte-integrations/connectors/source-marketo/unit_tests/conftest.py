@@ -98,9 +98,7 @@ def file_generator(faker):
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> DeclarativeStream:
     source = SourceMarketo()
-    matches_by_name = [
-        stream_config for stream_config in source._get_declarative_streams(config) if stream_config.name == stream_name
-    ]
+    matches_by_name = [stream_config for stream_config in source._get_declarative_streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
     return matches_by_name[0]

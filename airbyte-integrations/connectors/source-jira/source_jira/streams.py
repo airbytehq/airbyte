@@ -173,7 +173,6 @@ class JiraStream(HttpStream, ABC):
 
 
 class FullRefreshJiraStream(JiraStream):
-
     """
     This is a temporary solution to avoid incorrect state handling.
     See comments below for more info:

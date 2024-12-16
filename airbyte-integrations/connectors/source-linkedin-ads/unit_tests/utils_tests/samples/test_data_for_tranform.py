@@ -65,7 +65,7 @@ input_test_data = [
             }
         },
         "pivot": "TEST_PIVOT_VALUE",
-        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"]
+        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"],
     }
 ]
 
@@ -144,6 +144,6 @@ output_test_data = [
         "end_date": "2021-08-13",
         "_pivot": "TEST_PIVOT_VALUE",
         "string_of_pivot_values": "TEST_PIVOT_VALUE_1,TEST_PIVOT_VALUE_2",
-        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"]
+        "pivotValues": ["TEST_PIVOT_VALUE_1", "TEST_PIVOT_VALUE_2"],
     }
 ]
