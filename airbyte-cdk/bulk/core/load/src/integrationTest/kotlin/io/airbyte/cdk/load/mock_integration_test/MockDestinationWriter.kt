@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -28,17 +28,21 @@ class MockDestinationWriter : DestinationWriter {
 }
 
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    data class LocalBatch(val records: List<DestinationRecord>) : Batch {
+    abstract class MockBatch : Batch {
+        override val groupId: String? = null
+    }
+
+    data class LocalBatch(val records: List<DestinationRecord>) : MockBatch() {
         override val state = Batch.State.LOCAL
     }
-    data class LocalFileBatch(val file: DestinationFile) : Batch {
+    data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
         override val state = Batch.State.LOCAL
     }
-    data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
+    data class PersistedBatch(val records: List<DestinationRecord>) : MockBatch() {
         override val state = Batch.State.PERSISTED
     }
 
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {

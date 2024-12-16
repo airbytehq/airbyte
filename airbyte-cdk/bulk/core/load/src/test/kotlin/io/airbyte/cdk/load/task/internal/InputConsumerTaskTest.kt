@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamEndEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -144,11 +144,11 @@ class InputConsumerTaskTest {
 
         Assertions.assertEquals(expectedRecords, messages1.map { it.value })
         Assertions.assertEquals(expectedRecords.map { _ -> 1L }, messages1.map { it.bytesReserved })
-        Assertions.assertEquals(StreamCompleteEvent(10), streamComplete1.value)
+        Assertions.assertEquals(StreamEndEvent(10), streamComplete1.value)
         Assertions.assertEquals(1, streamComplete1.bytesReserved)
         Assertions.assertEquals(10L, manager1.recordCount())
         Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue1.consume().toList())
-        Assertions.assertEquals(StreamCompleteEvent(0), streamComplete2.value)
+        Assertions.assertEquals(StreamEndEvent(0), streamComplete2.value)
         Assertions.assertEquals(emptyList<DestinationStreamEvent>(), queue2.consume().toList())
         Assertions.assertEquals(0L, manager2.recordCount())
         mockInputFlow.stop()
@@ -208,7 +208,7 @@ class InputConsumerTaskTest {
                         "test"
                     )
                 ),
-                StreamCompleteEvent(1)
+                StreamEndEvent(1)
             ),
             queue2.consume().toList().map { it.value }
         )
@@ -220,7 +220,7 @@ class InputConsumerTaskTest {
         queue1.close()
         val messages1 = queue1.consume().toList()
         Assertions.assertEquals(11, messages1.size)
-        Assertions.assertEquals(messages1[10].value, StreamCompleteEvent(10))
+        Assertions.assertEquals(messages1[10].value, StreamEndEvent(10))
         Assertions.assertEquals(
             mockInputFlow.initialMemory - 11,
             mockInputFlow.memoryManager.remainingCapacityBytes,
@@ -350,30 +350,6 @@ class InputConsumerTaskTest {
         mockInputFlow.addMessage(
             StubDestinationMessageFactory.makeStreamComplete(MockDestinationCatalogFactory.stream2)
         )
-        mockInputFlow.stop()
-    }
-
-    @Test
-    fun testStreamIncompleteThrows() = runTest {
-        mockInputFlow.addMessage(
-            StubDestinationMessageFactory.makeRecord(MockDestinationCatalogFactory.stream1, "test"),
-            1L
-        )
-        mockInputFlow.addMessage(
-            StubDestinationMessageFactory.makeStreamIncomplete(
-                MockDestinationCatalogFactory.stream1
-            ),
-            0L
-        )
-        val task =
-            taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
-            )
-        CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
         mockInputFlow.stop()
     }
 
