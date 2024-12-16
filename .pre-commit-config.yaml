@@ -1,18 +1,25 @@
 exclude: |
-  (?x)^(
-    .*/__init__\.py|
-    .*/.venv|
-    .*/charts|
-    airbyte-integrations/bases/base-normalization|
-    .*/node_modules|
-    .*/pnpm-lock\.yaml|
-    .*/normalization_test_output|
-    .*/source-amplitude/unit_tests/api_data/zipped\.json|
-    airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/.*|
-    .*/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid|
-    airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code|
-    .*/airbyte-integrations/connectors/destination-.*/expected-spec\.json
-  )$
+  (?x)(
+    # Python/system files
+    ^.*/__init__\.py$|
+    ^.*?/\.venv/.*$|
+    ^.*?/node_modules/.*$|
+    
+    # Specific directories
+    ^.*?/charts/.*$|
+    ^airbyte-integrations/bases/base-normalization/.*$|
+    ^.*?/normalization_test_output/.*$|
+    
+    # Specific files
+    ^.*?/pnpm-lock\.yaml$|
+    ^.*?/source-amplitude/unit_tests/api_data/zipped\.json$|
+    
+    # Generated/test files
+    ^airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/.*$|
+    ^.*?/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid/.*$|
+    ^airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
+    ^.*?/airbyte-integrations/connectors/destination-.*/expected-spec\.json$
+  )
 
 repos:
   - repo: https://github.com/psf/black-pre-commit-mirror
