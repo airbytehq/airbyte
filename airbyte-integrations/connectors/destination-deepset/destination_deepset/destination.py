@@ -11,7 +11,7 @@ from typing import Any
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Status, Type
 from destination_deepset import util
-from destination_deepset.api import DeepsetCloudApi
+from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, Filetypes
 from destination_deepset.writer import DeepsetCloudFileWriter, WriterError
 
@@ -95,10 +95,12 @@ class DestinationDeepset(Destination):
         """
         try:
             writer = DeepsetCloudFileWriter.factory(config=config)
+            writer.client.health_check()
+        except APIError:
+            logger.exception("Failed to connect to deepset cloud API!")
         except WriterError:
-            logger.exception("Failed to initialize writer!")
+            logger.exception("Failed to initialize writer due to invalid configuration!")
         else:
-            if writer.client.health_check():
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-        return AirbyteConnectionStatus(status=Status.FAILED, message="Connection is down.")
+        return AirbyteConnectionStatus(status=Status.FAILED, message="Failed to connect to deepset cloud!")

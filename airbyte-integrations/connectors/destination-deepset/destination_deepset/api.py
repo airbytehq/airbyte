@@ -11,7 +11,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ra
 
 
 class APIError(RuntimeError):
-    pass
+    """Raised when any error occurs while using the API."""
 
 
 class ConfigurationError(ValueError, APIError):
@@ -62,11 +62,11 @@ class DeepsetCloudApi:
 
         return self._client
 
-    def health_check(self) -> bool:
+    def health_check(self) -> None:
         """Check the health of deepset cloud API
 
-        Returns:
-            bool: Returns `True` if the health check was successful, `False` otherwise
+        Raises:
+            APIError: Raised when an error is encountered.
         """
         try:
             with retry(
@@ -75,12 +75,10 @@ class DeepsetCloudApi:
                 wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
                 reraise=True,
             ):
-                response = self.client.get("/health")
+                response = self.client.get(f"/api/v1/workspaces/{self.config.workspace}/files")
                 response.raise_for_status()
-        except Exception:
-            return False
-        else:
-            return True
+        except Exception as ex:
+            raise APIError from ex
 
     def upload(self, file: DeepsetCloudFile) -> UUID:
         """Upload file to deepset Cloud.

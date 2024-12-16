@@ -11,21 +11,26 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "Your deepset cloud API key"
+        "description": "Your deepset cloud API key",
+        "airbyte_secret": true,
+        "order": 0
       },
       "base_url": {
         "type": "string",
         "default": "https://api.cloud.deepset.ai/",
-        "description": "Base url of your deepset cloud instance. Configure this if using an on-prem instance."
+        "description": "Base url of your deepset cloud instance. Configure this if using an on-prem instance.",
+        "order": 1
       },
       "workspace": {
         "type": "string",
-        "description": "Name of workspace to which to sync the data."
+        "description": "Name of workspace to which to sync the data.",
+        "order": 2
       },
       "retries": {
         "type": "number",
         "default": 5,
-        "description": "Number of times to retry an action before giving up."
+        "description": "Number of times to retry an action before giving up.",
+        "order": 3
       }
     }
   }
