@@ -60,6 +60,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0.2.3 | 2024-12-14 | [49561](https://github.com/airbytehq/airbyte/pull/49561) | Update dependencies |
 | 0.2.2 | 2024-12-12 | [47751](https://github.com/airbytehq/airbyte/pull/47751) | Update dependencies |
 | 0.2.1 | 2024-11-08 | [48440](https://github.com/airbytehq/airbyte/pull/48440) | Set authentication grant_type to client_credentials |
 | 0.2.0 | 2024-10-01 | [46288](https://github.com/airbytehq/airbyte/pull/46288) | Migrate to Manifest-only |

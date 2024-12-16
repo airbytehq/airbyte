@@ -125,7 +125,7 @@ class DefaultDestinationTaskLauncher(
     // File transfer
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 
-    // Input Comsumer requirements
+    // Input Consumer requirements
     private val inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,

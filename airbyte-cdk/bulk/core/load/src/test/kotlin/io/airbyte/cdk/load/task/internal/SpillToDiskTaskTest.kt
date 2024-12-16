@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.message.DestinationStreamEventQueue
 import io.airbyte.cdk.load.message.DestinationStreamQueueSupplier
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.MultiProducerChannel
-import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamEndEvent
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
@@ -111,7 +111,7 @@ class SpillToDiskTaskTest {
 
         @Test
         fun `publishes 'spilled file' aggregates on stream complete event`() = runTest {
-            val completeMsg = StreamCompleteEvent(0L)
+            val completeMsg = StreamEndEvent(0L)
             inputQueue.publish(Reserved(value = completeMsg))
 
             val job = launch {
@@ -267,7 +267,7 @@ class SpillToDiskTaskTest {
             queue.publish(
                 memoryManager.reserve(
                     0L,
-                    StreamCompleteEvent(index = maxRecords),
+                    StreamEndEvent(index = maxRecords),
                 ),
             )
             return recordsWritten

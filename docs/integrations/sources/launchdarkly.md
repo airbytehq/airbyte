@@ -37,6 +37,7 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.5 | 2024-12-14 | [49642](https://github.com/airbytehq/airbyte/pull/49642) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [49257](https://github.com/airbytehq/airbyte/pull/49257) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [47856](https://github.com/airbytehq/airbyte/pull/47856) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-10-28 | [47620](https://github.com/airbytehq/airbyte/pull/47620) | Update dependencies |

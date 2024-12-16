@@ -37,6 +37,7 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 0.0.7 | 2024-12-14 | [49596](https://github.com/airbytehq/airbyte/pull/49596) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49270](https://github.com/airbytehq/airbyte/pull/49270) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48941](https://github.com/airbytehq/airbyte/pull/48941) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-10-31 | [47997](https://github.com/airbytehq/airbyte/pull/47997) | Remove `audit_logs` and update auth remove `application_id_uri` parameter |

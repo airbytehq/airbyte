@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.message.StreamCompleteEvent
+import io.airbyte.cdk.load.message.StreamEndEvent
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.state.FlushStrategy
@@ -61,13 +61,12 @@ class DefaultSpillToDiskTask(
     override suspend fun execute() {
         val initialAccumulator = fileAccFactory.make()
 
-        val registration = outputQueue.registerProducer()
-        registration.use {
+        outputQueue.use {
             inputQueue.consume().fold(initialAccumulator) { acc, reserved ->
                 reserved.use {
                     when (val event = it.value) {
                         is StreamRecordEvent -> accRecordEvent(acc, event)
-                        is StreamCompleteEvent -> accStreamCompleteEvent(acc, event)
+                        is StreamEndEvent -> accStreamEndEvent(acc, event)
                         is StreamFlushEvent -> accFlushEvent(acc)
                     }
                 }
@@ -117,12 +116,12 @@ class DefaultSpillToDiskTask(
     }
 
     /**
-     * Handles accumulation of stream completion events, triggering a final flush if the aggregate
-     * isn't empty.
+     * Handles accumulation of stream end events (complete or incomplete), triggering a final flush
+     * if the aggregate isn't empty.
      */
-    private suspend fun accStreamCompleteEvent(
+    private suspend fun accStreamEndEvent(
         acc: FileAccumulator,
-        event: StreamCompleteEvent,
+        event: StreamEndEvent,
     ): FileAccumulator {
         val (spillFile, outputStream, timeWindow, range, sizeBytes) = acc
         if (sizeBytes == 0L) {

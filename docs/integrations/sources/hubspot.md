@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.3 | 2024-12-14 | [48984](https://github.com/airbytehq/airbyte/pull/48984) | Update dependencies |
 | 4.4.2 | 2024-12-10 | [48480](https://github.com/airbytehq/airbyte/pull/48480) | Adds individual read scopes to LineItems Stream |
 | 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |
