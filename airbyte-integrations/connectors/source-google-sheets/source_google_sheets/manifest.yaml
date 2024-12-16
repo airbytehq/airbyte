@@ -13,17 +13,40 @@ dynamic_streams:
       name: ""
       primary_key: []
       retriever:
-        $parameters:
-          row_count: 0
-        class_name: "source_google_sheets.components.RangeRetriever"
+        type: SimpleRetriever
+        partition_router:
+          type: CustomPartitionRouter
+          $parameters:
+            row_count: 0
+            batch_size: 0
+          class_name: source_google_sheets.components.RangePartitionRouter
+          description: Partition router that generates ranges for batch fetching.
         paginator:
           type: NoPagination
         record_selector:
           extractor:
+            type: CustomRecordExtractor
+            class_name: source_google_sheets.components.FieldMatchingExtractor
+            description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
             field_path:
               - valueRanges
               - "*"
-            type: DpathExtractor
+            $parameters:
+              # We use these parameters to work with the response in the record selector
+              sheet_data_values_path:
+                ["sheets", "*", "data", "*", "rowData", "*", "values", "*"]
+              fields_to_match_key: "formattedValue"
+              values_to_match_key: "values"
+              fields_to_match_origin:
+                $ref: "#/definitions/base_requester"
+                $parameters:
+                  # Sheet id is provided by components_resolver
+                  sheet_id: ""
+                  name: "headers_requester"
+                http_method: GET
+                use_cache: True
+                path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json'
+
           type: RecordSelector
           $parameters:
             name: ""
@@ -34,13 +57,10 @@ dynamic_streams:
             name: ""
           http_method: GET
           path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"]}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json'
-        #        stream_slicer:
-        #          class_name: source_google_sheets.components.RangePartitionRouter
-        #          type: CustomStreamSlicer
-        type: CustomRetriever
-      #        type: SimpleRetriever
       schema_loader:
+        type: DynamicSchemaLoader
         retriever:
+          type: SimpleRetriever
           paginator:
             type: NoPagination
           record_selector:
@@ -58,20 +78,18 @@ dynamic_streams:
             $ref: "#/definitions/base_requester"
             $parameters:
               sheet_id: ""
-              parsed_spreadsheet_id: ""
             http_method: GET
             path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"]}}!1:1&alt=json'
-          type: SimpleRetriever
         schema_type_identifier:
           key_pointer:
             - formattedValue
           schema_pointer:
             - values
-        type: DynamicSchemaLoader
     components_resolver:
       type: HttpComponentsResolver
       description: We use spreadsheet information (sheets) to create streams.
       retriever:
+        type: SimpleRetriever
         paginator:
           type: NoPagination
         record_selector:
@@ -87,19 +105,12 @@ dynamic_streams:
           description: spreadsheet_id can be either the full url to spreadsheet or the spreadsheet id.
           http_method: GET
           path: '{% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=false&alt=json'
-        type: SimpleRetriever
       components_mapping:
         - field_path:
             - name
           type: ComponentMappingDefinition
           value: "{{components_values['title']}}"
-        - field_path:
-            - retriever
-            - requester
-            - $parameters
-            - sheet_id
-          type: ComponentMappingDefinition
-          value: "{{components_values['title']}}"
+          description: name for dynamic stream.
         - field_path:
             - schema_loader
             - retriever
@@ -108,12 +119,42 @@ dynamic_streams:
             - sheet_id
           type: ComponentMappingDefinition
           value: "{{components_values['title']}}"
+          description: sheet_id for dynamic schema loader requester.
         - field_path:
             - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['title']}}"
+          description: sheet_id for dynamic stream retriever requester.
+        - field_path:
+            - retriever
+            - record_selector
+            - extractor
+            - $parameters
+            - fields_to_match_origin
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{components_values['title']}}"
+          description: sheet_id for for extractor requester that will get correct order of record values.
+        - field_path:
+            - retriever
+            - partition_router
             - $parameters
             - row_count
           type: ComponentMappingDefinition
           value: "{{components_values['gridProperties']['rowCount']}}"
+          description: rows count for dynamic stream partition router (slicer).
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - batch_size
+          type: ComponentMappingDefinition
+          value: "{{config['batch_size']}}"
+          description: rows count for dynamic stream partition router (slicer).
 
 definitions:
   base_requester:
