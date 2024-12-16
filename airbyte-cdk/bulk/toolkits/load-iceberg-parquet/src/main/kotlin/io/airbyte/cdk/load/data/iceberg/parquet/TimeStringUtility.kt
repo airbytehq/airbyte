@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.data.iceberg.parquet
 
 import io.airbyte.cdk.load.data.TimeStringToInteger
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
@@ -13,6 +14,10 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class TimeStringUtility {
+
+    fun toLocalDate(dateString: String): LocalDate {
+        return LocalDate.parse(dateString, TimeStringToInteger.DATE_TIME_FORMATTER)
+    }
 
     fun toOffset(timeString: String): LocalTime {
         return try {
