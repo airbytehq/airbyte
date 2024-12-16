@@ -52,7 +52,7 @@ data:
         message: Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated to match Amazon Seller Partner. Users will need to refresh the source schema and reset this stream after upgrading.
         upgradeDeadline: "2024-03-11"
       5.0.0:
-        message: The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed to prevent incorrect record deduplication in sync mode. Users will need to refresh the source schema and reset this stream after upgrading.
+        message: The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed to prevent incorrect record deduplication in Full Refresh (Overwrite + Deduped) and Incremental (Append + Deduped) sync modes. Users will need to refresh the source schema and reset this stream after upgrading.
         upgradeDeadline: "2024-11-20"
         deadlineAction: "auto_upgrade"
   supportLevel: certified

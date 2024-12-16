@@ -2,10 +2,10 @@
 
 ## Upgrading to 5.0.0
 
-The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed, as none composition of the fields could be used as a primary key.
+The PK for the stream `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` has been removed, as no composition of the fields could be used as a primary key
 
-After upgrading, users will need to refresh the source schema and reset this stream if it was previously used in deduplication mode. 
-And if you notice missing data before upgrade, resetting may resolve the issue for the stream.
+After upgrading, users will need to refresh the source schema and reset `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` stream if it was previously used in deduplication mode. 
+If you are experiencing missing data prior to the 5.0.0 upgrade, resetting data may resolve issues for the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` stream.
 
 ### Refresh affected schemas and reset data
 
