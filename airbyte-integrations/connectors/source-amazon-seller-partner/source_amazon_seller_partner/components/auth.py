@@ -3,12 +3,13 @@
 #
 
 import logging
-from base64 import standard_b64encode
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
 
 import backoff
 import requests
+
+from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -26,19 +27,23 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
     and allows to pass custom headers to the refresh access token requests
     """
 
-    host: str = None
-    refresh_access_token_headers: Mapping[str, Any] = None
+    host: Union[InterpolatedString, str] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._host = InterpolatedString.create(
+            self.host, parameters=parameters
+        )
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {
-            "host": self.host,
+            "host": self._host.eval(self.config),
             "user-agent": "python-requests",
             "x-amz-access-token": self.get_access_token(),
             "x-amz-date": pendulum.now("utc").strftime("%Y%m%dT%H%M%SZ"),
         }
 
     def get_refresh_access_token_headers(self) -> Mapping[str, Any]:
-        # creds_encoded = standard_b64encode(f"{self.get_client_id()}:{self.get_client_secret()}".encode("ascii")).decode("ascii")
         return {"Content-Type": "application/x-www-form-urlencoded"}
 
     @backoff.on_exception(

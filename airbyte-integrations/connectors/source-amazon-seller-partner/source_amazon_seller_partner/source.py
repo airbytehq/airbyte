@@ -78,7 +78,15 @@ DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
 from source_amazon_seller_partner.components.auth import AmazonSPOauthAuthenticator
 
 
-class SourceAmazonSellerPartner(AbstractSource):
+class SourceAmazonSellerPartner(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
+    @staticmethod
+    def get_aws_config_settings(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
+        return {"endpoint": endpoint, "marketplace_id": marketplace_id}
+
     @staticmethod
     def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
