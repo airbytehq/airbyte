@@ -44,7 +44,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: LastUpdatedAfter
@@ -82,8 +82,75 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.nextToken }}"
 
+    order_items:
+      type: DeclarativeStream
+      name: OrderItems
+      primary_key:
+        - OrderItemId
+      ignore_stream_slicer_parameters_on_paginated_requests: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdateDate
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [ "AmazonOrderId" ]
+              value: "{{ stream_slice['AmazonOrderId'] }}"
+        - type: AddFields
+          fields:
+            - path: [ "LastUpdateDate" ]
+              value: '{{ stream_slice.extra_fields["LastUpdateDate"] }}'
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "orders/v0/orders/{{ stream_slice['AmazonOrderId'] }}/orderItems"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "AmazonOrderId"
+              stream: "#/definitions/streams/orders"
+              partition_field: "AmazonOrderId"
+              extra_fields:
+                - [ "LastUpdateDate" ]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
 streams:
   - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/order_items"
 
 concurrency_level:
   type: ConcurrencyLevel
