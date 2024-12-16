@@ -53,6 +53,7 @@ Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more detai
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.5 | 2024-12-14 | [49788](https://github.com/airbytehq/airbyte/pull/49788) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49440](https://github.com/airbytehq/airbyte/pull/49440) | Update dependencies |
 | 0.0.3 | 2024-12-11 | [49120](https://github.com/airbytehq/airbyte/pull/49120) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-11-04 | [47658](https://github.com/airbytehq/airbyte/pull/47658) | Update dependencies |

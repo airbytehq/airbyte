@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 
 /**
  * Implementor interface. The framework calls open and close once per stream at the beginning and
@@ -39,5 +39,5 @@ interface StreamLoader {
     suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
     suspend fun processFile(file: DestinationFile): Batch
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
-    suspend fun close(streamFailure: StreamIncompleteResult? = null) {}
+    suspend fun close(streamFailure: StreamProcessingFailed? = null) {}
 }
