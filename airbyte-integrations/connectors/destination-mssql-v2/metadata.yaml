@@ -6,7 +6,6 @@ data:
   dockerRepository: airbyte/destination-mssql-v2
   githubIssueLabel: destination-mssql-v2
   icon: icon.svg
-  language: java
   license: ELv2
   name: MSSQL V2 Destination
   registryOverrides:
