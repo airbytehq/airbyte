@@ -4,14 +4,25 @@
 from __future__ import annotations
 
 import logging
+import traceback
 from collections.abc import Iterable, Mapping
 from typing import Any
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    Level,
+    Status,
+    Type,
+)
+from destination_deepset import util
 from destination_deepset.api import DeepsetCloudApi
-from destination_deepset.models import DeepsetCloudConfig, WriteMode
+from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, SharepointFiletypes
 from destination_deepset.writer import DeepsetCloudFileWriter, WriterError
+
 
 logger = logging.getLogger("airbyte")
 
@@ -45,21 +56,38 @@ class DestinationDeepset(Destination):
             Iterable[AirbyteMessage]: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         writer = DeepsetCloudFileWriter.factory(config=config)
-        streams = {s.stream.name: s.destination_sync_mode for s in configured_catalog.streams}
+
+        streams: set[str] = set()
+        for catalog_stream in configured_catalog.streams:
+            if util.get(stream := catalog_stream.stream, "format.filetype") == SharepointFiletypes.DOCUMENT:
+                streams.add(stream.name)
+            else:
+                logger.warning(
+                    f"Only SourceMicrosoftSharepoint Document File Type is currently supported! Got {stream = !s}"
+                )
 
         for message in input_messages:
             match message.type:
                 case Type.STATE:
                     yield message
                 case Type.RECORD:
-                    if (stream := message.record.stream) not in streams:
-                        logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                    if (stream_name := message.record.stream) not in streams:
+                        logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                         continue
 
-                    destination_sync_mode = streams[stream]
-                    write_mode = WriteMode.from_destination_sync_mode(destination_sync_mode)
-
-                    yield writer.write(message=message, write_mode=write_mode)
+                    try:
+                        file = DeepsetCloudFile.from_sharepoint_data(message.record.data)
+                    except ValueError:
+                        yield AirbyteMessage(
+                            type=Type.LOG,
+                            log=AirbyteLogMessage(
+                                level=Level.WARN,
+                                message="Failed to parse data into deepset cloud file instance.",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        )
+                    else:
+                        yield writer.write(file=file)
                 case _:
                     continue
 

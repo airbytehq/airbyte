@@ -5,15 +5,22 @@ from __future__ import annotations
 import json
 from enum import Enum, unique
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+from urllib.parse import unquote, urlparse
 
-from airbyte_cdk.models import AirbyteRecordMessage, DestinationSyncMode
 from pydantic import BaseModel, Field
+
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
 
 __all__ = [
     "DeepsetCloudConfig",
     "DeepsetCloudFile",
-    "WriteMode",
+    "SharepointDocument",
+    "SharepointFiletypes",
+    "SUPPORTED_FILE_EXTENSIONS",
 ]
 
 SUPPORTED_FILE_EXTENSIONS = [
@@ -31,22 +38,59 @@ SUPPORTED_FILE_EXTENSIONS = [
 
 
 @unique
-class WriteMode(str, Enum):
-    FAIL = "FAIL"
-    KEEP = "KEEP"
-    OVERWRITE = "OVERWRITE"
+class SharepointFiletypes(str, Enum):
+    """Available stream formats for Airbyte's Microsoft SharePoint Source Connector"""
 
-    @classmethod
-    def from_destination_sync_mode(cls, destination_sync_mode: DestinationSyncMode) -> WriteMode:
-        return SUPPORTED_DESTINATION_SYNC_MODES.get(destination_sync_mode, FALLBACK_FILE_WRITE_MODE)
+    AVRO = "avro"
+    CSV = "csv"
+    JSONL = "jsonl"
+    PARQUET = "parquet"
+    DOCUMENT = "unstructured"
 
 
-FALLBACK_FILE_WRITE_MODE = WriteMode.KEEP
+class SharepointDocument(BaseModel):
+    content: str = Field(
+        title="Content",
+        description="Markdown formatted text extracted from Markdown, TXT, PDF, Word, Powerpoint or Google documents.",
+    )
+    document_key: str = Field(
+        title="Document Key",
+        description="A unique identifier for the processed file which can be used as a primary key.",
+    )
+    last_modified: datetime | None = Field(
+        None,
+        alias="_ab_source_file_last_modified",
+        title="Last Modified",
+        description="The last modified timestamp of the file.",
+    )
+    file_url: str | None = Field(
+        None,
+        alias="_ab_source_file_url",
+        title="File URL",
+        description="The fully qualified URL to the file on Sharepoint server.",
+    )
+    file_parse_error: str | None = Field(
+        None,
+        alias="_ab_source_file_parse_error",
+        title="File Parse Error",
+        description="Error encountered while parsing the file.",
+    )
 
-SUPPORTED_DESTINATION_SYNC_MODES = {
-    DestinationSyncMode.append: WriteMode.KEEP,
-    DestinationSyncMode.overwrite: WriteMode.OVERWRITE,
-}
+    def filename(self) -> str:
+        """Generate a name from the document key.
+
+        Returns:
+            str: The unique name of the document.
+        """
+        # Parse URL and get path segments
+        parsed = urlparse(self.document_key)
+        path_segments = parsed.path.strip("/").split("/")
+
+        # Join segments with underscores to create filename
+        filename = "_".join(path_segments)
+
+        # URL decode the filename to handle special characters
+        return unquote(filename)
 
 
 class DeepsetCloudConfig(BaseModel):
@@ -75,6 +119,10 @@ class DeepsetCloudFile(BaseModel):
         return json.dumps(self.meta or {})
 
     @classmethod
-    def from_message(cls, message: AirbyteRecordMessage) -> DeepsetCloudFile:
-        # @todo[abraham]: implement me!
-        pass
+    def from_sharepoint_data(cls, data: dict[str, Any]) -> DeepsetCloudFile:
+        document = SharepointDocument.parse_obj(data)
+        return cls(
+            name=document.filename,
+            content=document.content,
+            meta=document.dict(exclude={"content"}),
+        )
