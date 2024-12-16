@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import com.google.common.collect.Range
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -22,6 +23,7 @@ import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
+import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.SimpleBatch
@@ -34,9 +36,11 @@ import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 interface InputConsumerTask : KillableScope
@@ -61,6 +65,7 @@ class DefaultInputConsumerTask(
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     private val destinationTaskLauncher: DestinationTaskLauncher,
+    @Named("fileMessageQueue") private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
@@ -95,15 +100,17 @@ class DefaultInputConsumerTask(
             }
             is DestinationFile -> {
                 val index = manager.countRecordIn()
-                destinationTaskLauncher.handleFile(stream, message, index)
+                // destinationTaskLauncher.handleFile(stream, message, index)
+                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
+                fileTransferQueue.close()
                 val envelope =
                     BatchEnvelope(
                         SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream
+                        streamDescriptor = message.stream,
                     )
                 destinationTaskLauncher.handleNewBatch(stream, envelope)
             }
@@ -196,6 +203,7 @@ interface InputConsumerTaskFactory {
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
+        fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     ): InputConsumerTask
 }
 
@@ -210,6 +218,7 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
             MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
+        fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
     ): InputConsumerTask {
         return DefaultInputConsumerTask(
             catalog,
@@ -217,7 +226,8 @@ class DefaultInputConsumerTaskFactory(private val syncManager: SyncManager) :
             recordQueueSupplier,
             checkpointQueue,
             syncManager,
-            destinationTaskLauncher
+            destinationTaskLauncher,
+            fileTransferQueue,
         )
     }
 }

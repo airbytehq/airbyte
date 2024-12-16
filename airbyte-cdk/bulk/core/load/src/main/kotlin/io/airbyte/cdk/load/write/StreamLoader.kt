@@ -6,10 +6,13 @@ package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.task.DestinationTaskLauncher
 
 /**
  * Implementor interface.
@@ -45,6 +48,8 @@ interface StreamLoader : BatchAccumulator {
 
     suspend fun start() {}
     suspend fun createBatchAccumulator(): BatchAccumulator = this
+    suspend fun createFileBatchAccumulator(taskLauncher: DestinationTaskLauncher,
+                                           outputQueue: MultiProducerChannel<BatchEnvelope<*>>,): BatchAccumulator = this
 
     suspend fun processFile(file: DestinationFile): Batch
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
@@ -57,6 +62,11 @@ interface BatchAccumulator {
         totalSizeBytes: Long,
         endOfStream: Boolean = false
     ): Batch =
+        throw NotImplementedError(
+            "processRecords must be implemented if createBatchAccumulator is overridden"
+        )
+
+    suspend fun processFilePart(file: DestinationFile, index: Long): Unit =
         throw NotImplementedError(
             "processRecords must be implemented if createBatchAccumulator is overridden"
         )

@@ -9,12 +9,15 @@ import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoader.ObjectInProgress
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 import java.io.OutputStream
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -83,4 +86,6 @@ class RecordToPartAccumulator<U : OutputStream>(
             return LoadablePart(part)
         }
     }
+
+
 }

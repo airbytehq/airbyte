@@ -48,7 +48,7 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         upload.partMetadataAssembler.add(batch.part)
 
         log.info {
-            "Processing loadable part ${batch.part.partIndex} of ${batch.part.key} (empty=${batch.part.isEmpty})"
+            "Processing loadable part ${batch.part.partIndex} of ${batch.part.key} (empty=${batch.part.isEmpty} of size ${batch.part.bytes?.size})"
         }
 
         // Upload provided bytes and update indexes.
