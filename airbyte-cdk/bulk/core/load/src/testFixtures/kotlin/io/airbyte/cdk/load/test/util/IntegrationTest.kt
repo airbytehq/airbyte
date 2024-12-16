@@ -62,8 +62,7 @@ abstract class IntegrationTest(
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
-        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(DateTimeFormatter.ofPattern("YYYYMMDD"))
+        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC).format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
 
@@ -262,6 +261,9 @@ abstract class IntegrationTest(
     }
 
     companion object {
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
         private val hasRunCleaner = AtomicBoolean(false)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,

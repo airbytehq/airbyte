@@ -11,12 +11,14 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
-import java.util.Base64
-import okhttp3.*
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
+import java.util.Base64
 
 abstract class IcebergV2WriteTest(
     configContents: String,
@@ -26,7 +28,7 @@ abstract class IcebergV2WriteTest(
         configContents,
         IcebergV2Specification::class.java,
         IcebergV2DataDumper,
-        NoopDestinationCleaner,
+        destinationCleaner,
         NoopExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         supportsDedup = false,
@@ -36,19 +38,11 @@ abstract class IcebergV2WriteTest(
         commitDataIncrementally = false,
         supportFileTransfer = false,
         allTypesBehavior = StronglyTyped(),
-    ) {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            NessieTestContainers.start()
-        }
-    }
-}
+    )
 
 class IcebergGlueWriteTest : IcebergV2WriteTest(
     Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
-    NoopDestinationCleaner,
+    IcebergDestinationCleaner(IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)),
 ) {
     @Test
     override fun testBasicWrite() {
@@ -158,6 +152,12 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(
                 "access_token": "$authToken"
             }
             """.trimIndent()
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            NessieTestContainers.start()
         }
     }
 }
