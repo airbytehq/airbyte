@@ -10,7 +10,6 @@ from urllib.parse import unquote, urlparse
 
 from pydantic import BaseModel, Field
 
-
 if TYPE_CHECKING:
     from datetime import datetime
 
