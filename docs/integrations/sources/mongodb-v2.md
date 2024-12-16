@@ -142,7 +142,10 @@ In addtion MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
-Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+- Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+- CDC incremental syncing is only available for tables with at least one primary key. Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
+  For more information on CDC limitations, refer to our [CDC Limitations doc](https://docs.airbyte.com/understanding-airbyte/cdc#limitations).
+
 
 ### Full Refresh
 
