@@ -1,26 +1,9 @@
 exclude: |
   (?x)^(
     .*/__init__\.py|
-    .*/__pycache__|
-    .*/.eggs|
-    .*/.git|
-    .*/.gradle|
-    .*/.mypy_cache|
-    .*/.pytest_cache|
-    .*/.tox|
     .*/.venv|
-    .*/.*.egg-info|
-    .*/build|
     .*/charts|
-    .*/dbt_test_config|
-    .*/dbt-project-template-clickhouse|
-    .*/dbt-project-template-duckdb|
-    .*/dbt-project-template-mssql|
-    .*/dbt-project-template-mysql|
-    .*/dbt-project-template-oracle|
-    .*/dbt-project-template-snowflake|
-    .*/dbt-project-template-tidb|
-    .*/dbt-project-template|
+    airbyte-integrations/bases/base-normalization|
     .*/node_modules|
     .*/pnpm-lock\.yaml|
     .*/normalization_test_output|
@@ -32,12 +15,11 @@ exclude: |
   )$
 
 repos:
-  # Python formatting
-  - repo: https://github.com/psf/black
-    rev: 24.2.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.8.0
     hooks:
       - id: black
-        files: \.py$
+        language_version: python3.10
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -45,7 +27,6 @@ repos:
       - id: isort
         files: \.py$
 
-  # JavaScript/JSON/YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.3
     hooks:
@@ -54,12 +35,11 @@ repos:
         additional_dependencies:
           - prettier@3.0.3
 
-  # License headers and Java formatting as local hooks
   - repo: local
     hooks:
       - id: addlicense
         name: Add license headers
-        entry: addlicense -c "Airbyte, Inc." -l apache
+        entry: addlicense -c "Airbyte, Inc." -l apache -v -f LICENSE_SHORT
         language: golang
         additional_dependencies: [github.com/google/addlicense@v1.1.1]
         files: \.(java|kt|py)$
