@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
@@ -42,7 +42,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val state = Batch.State.PERSISTED
     }
 
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             when (val importType = stream.importType) {
                 is Append -> {
