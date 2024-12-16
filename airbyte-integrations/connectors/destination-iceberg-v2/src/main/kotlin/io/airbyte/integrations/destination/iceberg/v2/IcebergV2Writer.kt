@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
+import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.iceberg.v2.io.IcebergTableWriterFactory
@@ -23,7 +23,7 @@ class IcebergV2Writer(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val properties = icebergUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val pipeline = IcebergParquetPipelineFactory().create(stream)
         val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         val table =
             icebergUtil.createTable(

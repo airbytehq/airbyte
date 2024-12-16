@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
@@ -68,5 +69,14 @@ class SyncBeanFactory {
         log.info { "Creating file aggregate queue with limit $capacity" }
         val channel = Channel<FileAggregateMessage>(capacity)
         return MultiProducerChannel(streamCount.toLong(), channel)
+    }
+
+    @Singleton
+    @Named("batchQueue")
+    fun batchQueue(
+        config: DestinationConfiguration,
+    ): MultiProducerChannel<BatchEnvelope<*>> {
+        val channel = Channel<BatchEnvelope<*>>(config.batchQueueDepth)
+        return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel)
     }
 }
