@@ -11,14 +11,14 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
+import java.nio.file.Files
+import java.util.Base64
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import java.util.Base64
 
 abstract class IcebergV2WriteTest(
     configContents: String,
@@ -88,19 +88,23 @@ abstract class IcebergV2WriteTest(
     }
 }
 
-class IcebergGlueWriteTest : IcebergV2WriteTest(
-    Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
-    IcebergDestinationCleaner(IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)),
-)
+class IcebergGlueWriteTest :
+    IcebergV2WriteTest(
+        Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+        IcebergDestinationCleaner(
+            IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
+        ),
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
 )
-class IcebergNessieMinioWriteTest : IcebergV2WriteTest(
-    getConfig(),
-    // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-    NoopDestinationCleaner
-) {
+class IcebergNessieMinioWriteTest :
+    IcebergV2WriteTest(
+        getConfig(),
+        // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
+        NoopDestinationCleaner
+    ) {
     companion object {
         private fun getToken(): String {
             val client = OkHttpClient()

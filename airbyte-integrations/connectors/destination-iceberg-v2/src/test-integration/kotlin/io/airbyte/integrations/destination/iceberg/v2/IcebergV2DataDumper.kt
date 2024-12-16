@@ -11,17 +11,13 @@ import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.LinkedHashMap
 import java.util.UUID
-import org.apache.hadoop.conf.Configuration
-import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.data.Record
-import org.apache.iceberg.nessie.NessieCatalog
 
 object IcebergV2DataDumper : DestinationDataDumper {
 

@@ -63,7 +63,8 @@ abstract class IntegrationTest(
 
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
-        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC).format(randomizedNamespaceDateFormatter)
+        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+            .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
 
@@ -274,10 +275,8 @@ abstract class IntegrationTest(
         fun isNamespaceOld(namespace: String, retentionDays: Long = 30): Boolean {
             val cleanupCutoffDate = LocalDate.now().minusDays(retentionDays)
             val matchResult = randomizedNamespaceRegex.find(namespace)
-            val namespaceCreationDate = LocalDate.parse(
-                matchResult!!.groupValues[1],
-                randomizedNamespaceDateFormatter
-            )
+            val namespaceCreationDate =
+                LocalDate.parse(matchResult!!.groupValues[1], randomizedNamespaceDateFormatter)
             return namespaceCreationDate.isBefore(cleanupCutoffDate)
         }
 

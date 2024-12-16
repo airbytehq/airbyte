@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.iceberg.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -8,8 +12,8 @@ import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
 
 /**
- * Convert our internal stream descriptor to an Iceberg [TableIdentifier].
- * Implementations should handle catalog-specific naming restrictions.
+ * Convert our internal stream descriptor to an Iceberg [TableIdentifier]. Implementations should
+ * handle catalog-specific naming restrictions.
  */
 // TODO accept default namespace in config as a val here
 interface TableIdGenerator {
@@ -21,9 +25,7 @@ class SimpleTableIdGenerator : TableIdGenerator {
         tableIdOf(stream.namespace!!, stream.name)
 }
 
-/**
- * AWS Glue requires lowercase database+table names.
- */
+/** AWS Glue requires lowercase database+table names. */
 class GlueTableIdGenerator : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier =
         tableIdOf(stream.namespace!!.lowercase(), stream.name.lowercase())

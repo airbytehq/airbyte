@@ -13,11 +13,14 @@ import java.nio.file.Path
 
 object IcebergV2TestUtil {
     // TODO this is just here as an example, we should remove it + add real configs
-    val MINIMAL_CONFIG_PATH: Path = Path.of(getResourceUri("iceberg_dest_v2_minimal_required_config.json"))
+    val MINIMAL_CONFIG_PATH: Path =
+        Path.of(getResourceUri("iceberg_dest_v2_minimal_required_config.json"))
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
 
     fun parseConfig(path: Path) =
-        getConfig(ValidatedJsonUtils.parseOne(IcebergV2Specification::class.java, Files.readString(path)))
+        getConfig(
+            ValidatedJsonUtils.parseOne(IcebergV2Specification::class.java, Files.readString(path))
+        )
 
     fun getConfig(spec: ConfigurationSpecification) =
         IcebergV2ConfigurationFactory().makeWithoutExceptionHandling(spec as IcebergV2Specification)

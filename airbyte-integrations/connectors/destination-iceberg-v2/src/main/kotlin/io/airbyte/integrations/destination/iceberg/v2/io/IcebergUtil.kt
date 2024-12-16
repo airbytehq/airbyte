@@ -41,9 +41,7 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
-import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
-import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 import org.projectnessie.client.NessieConfigConstants
