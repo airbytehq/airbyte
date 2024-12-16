@@ -12,18 +12,18 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
-private val log = KotlinLogging.logger {}
-
 /** Mysql implementation of [JdbcSelectQuerier], which sets fetch size differently */
 @Singleton
 @Primary
 class MysqlSelectQuerier(
-    jdbcConnectionFactory: JdbcConnectionFactory,
-) : JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
+) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val log = KotlinLogging.logger {}
+
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): Result = MysqlResult(jdbcConnectionFactory, q, parameters)
+    ): SelectQuerier.Result = MysqlResult(jdbcConnectionFactory, q, parameters)
 
     inner class MysqlResult(
         jdbcConnectionFactory: JdbcConnectionFactory,
