@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.Untyped
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MockBasicFunctionalityIntegrationTest :
@@ -26,6 +27,7 @@ class MockBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -91,4 +93,6 @@ class MockBasicFunctionalityIntegrationTest :
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
+
+    @Test @Disabled override fun testBasicWriteFile() {}
 }

@@ -889,7 +889,9 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created"],
       "source_defined_primary_key": [["id"]],
       "is_resumable": true
     },
@@ -3289,6 +3291,10 @@
             "description": "The timestamp when the account was created.",
             "type": ["null", "integer"]
           },
+          "updated": {
+            "description": "The timestamp when the account was updated.",
+            "type": ["null", "integer"]
+          },
           "default_currency": {
             "description": "The default currency used for transactions.",
             "type": ["null", "string"]
@@ -3839,9 +3845,10 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_primary_key": [["id"]],
-      "is_resumable": true
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "shipping_rates",
@@ -3965,6 +3972,48 @@
       "source_defined_cursor": true,
       "default_cursor_field": ["created"],
       "source_defined_primary_key": [["id"]]
+    },
+    {
+      "name": "payout_balance_transactions",
+      "json_schema": {
+        "type": ["null", "object"],
+        "properties": {
+          "fee": { "type": ["null", "integer"] },
+          "currency": { "type": ["null", "string"] },
+          "source": { "type": ["null", "string"] },
+          "fee_details": {
+            "type": ["null", "array"],
+            "items": {
+              "properties": {
+                "application": { "type": ["null", "string"] },
+                "type": { "type": ["null", "string"] },
+                "description": { "type": ["null", "string"] },
+                "amount": { "type": ["null", "integer"] },
+                "currency": { "type": ["null", "string"] }
+              },
+              "type": ["null", "object"]
+            }
+          },
+          "available_on": { "type": ["null", "integer"] },
+          "status": { "type": ["null", "string"] },
+          "description": { "type": ["null", "string"] },
+          "net": { "type": ["null", "integer"] },
+          "exchange_rate": { "type": ["null", "number"] },
+          "type": { "type": ["null", "string"] },
+          "id": { "type": ["null", "string"] },
+          "object": { "type": ["null", "string"] },
+          "created": { "type": ["null", "integer"] },
+          "updated": { "type": ["null", "integer"] },
+          "amount": { "type": ["null", "integer"] },
+          "reporting_category": { "type": ["null", "string"] },
+          "payout": { "type": ["null", "string"] }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "source_defined_primary_key": [["payout"], ["id"]],
+      "user_defined_primary_key": [["payout"], ["id"]]
     },
     {
       "name": "files",
@@ -12503,12 +12552,22 @@
                 }
               }
             }
+          },
+          "created": {
+            "description": "Timestamp for when the parent invoice was created",
+            "type": ["null", "integer"]
+          },
+          "updated": {
+            "description": "Timestamp for when the parent invoice was last updated",
+            "type": ["null", "integer"]
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "is_resumable": true
     },
     {
       "name": "subscription_items",
@@ -12796,12 +12855,18 @@
               "unit_amount": { "type": ["null", "integer"] },
               "unit_amount_decimal": { "type": ["null", "string"] }
             }
+          },
+          "updated": {
+            "description": "Timestamp for when the parent subscription was last updated",
+            "type": ["null", "integer"]
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated"],
+      "is_resumable": true
     },
     {
       "name": "transfer_reversals",
@@ -12854,9 +12919,11 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created"],
       "source_defined_primary_key": [["id"]],
-      "is_resumable": false
+      "is_resumable": true
     },
     {
       "name": "usage_records",

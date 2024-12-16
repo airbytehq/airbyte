@@ -56,14 +56,12 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
 
         table.newScan().planFiles().use { tasks ->
             tasks
-                .filter { task ->
-                    genIdsToDelete.any { id -> task.file().path().toString().contains(id) }
-                }
+                .filter { task -> genIdsToDelete.any { id -> task.file().location().contains(id) } }
                 .forEach { task ->
                     table
                         .newDelete()
                         .toBranch(stagingBranchName)
-                        .deleteFile(task.file().path())
+                        .deleteFile(task.file().location())
                         .commit()
                 }
         }
