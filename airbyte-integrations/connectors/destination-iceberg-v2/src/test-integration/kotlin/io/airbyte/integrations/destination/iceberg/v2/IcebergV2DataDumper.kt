@@ -112,6 +112,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
             }
         }
 
+        // some catalogs (e.g. Nessie) have a close() method. Call it here.
         if (catalog is AutoCloseable) {
             catalog.close()
         }
