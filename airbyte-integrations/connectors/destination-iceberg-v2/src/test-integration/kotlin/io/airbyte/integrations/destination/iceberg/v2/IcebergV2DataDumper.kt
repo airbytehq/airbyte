@@ -83,15 +83,13 @@ object IcebergV2DataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config =
-            IcebergV2ConfigurationFactory()
-                .makeWithoutExceptionHandling(spec as IcebergV2Specification)
+        val config = IcebergV2TestUtil.getConfig(spec)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
         val schema = pipeline.finalSchema as ObjectType
-        val catalog = getNessieCatalog(config)
+        val catalog = IcebergV2TestUtil.getCatalog(config)
         val table =
             catalog.loadTable(
-                TableIdentifier.of(stream.descriptor.namespace, stream.descriptor.name)
+                TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)
             )
 
         val outputRecords = mutableListOf<OutputRecord>()
@@ -114,7 +112,9 @@ object IcebergV2DataDumper : DestinationDataDumper {
             }
         }
 
-        catalog.close()
+        if (catalog is AutoCloseable) {
+            catalog.close()
+        }
         return outputRecords
     }
 
@@ -123,14 +123,5 @@ object IcebergV2DataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
-    }
-
-    private fun getNessieCatalog(config: IcebergV2Configuration): NessieCatalog {
-        val catalogProperties = IcebergUtil(SimpleTableIdGenerator()).toCatalogProperties(config)
-
-        val catalog = NessieCatalog()
-        catalog.setConf(Configuration())
-        catalog.initialize("nessie", catalogProperties)
-        return catalog
     }
 }
