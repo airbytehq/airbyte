@@ -1,0 +1,34 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-box-file-text
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 852b8bda-6a51-4fc6-854e-6beace1614a8
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/source-box-file-text
+  githubIssueLabel: source-box-file-text
+  icon: box-file-text.svg
+  license: MIT
+  name: Box Files Source
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/box-file-text
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

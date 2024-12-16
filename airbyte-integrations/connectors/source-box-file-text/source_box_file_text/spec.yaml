@@ -1,0 +1,57 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Box File Text Extraction Spec
+  type: object
+  required:
+    - client_id
+    - client_secret
+    - box_subject_type
+    - box_subject_id
+    - folder_id
+    # - file_id
+  properties:
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    client_id:
+      type: string
+      title: Client ID
+      description: >-
+        You Box App client ID.
+        Find yours in the <a href="https://app.box.com/developers/console">developer console</a>.
+      order: 0
+    client_secret:
+      type: string
+      title: Client Secret
+      description: >-
+        You Box App client secret.
+        Find yours in the <a href="https://app.box.com/developers/console">developer console</a>.
+      airbyte_secret: true
+      order: 1
+    box_subject_type:
+      type: string
+      title: Box Subject Type
+      description: >-
+        Represents the type of user to login as ("user" or "enterprise").
+        Enterprise will login with the application service account.
+        User will login with the user if app can impersonate users.
+      order: 2
+    box_subject_id:
+      type: string
+      title: Box Subject ID
+      description: >-
+        If subject type is "enterprise", use your enterprise ID
+        If subject type is "user", use the user id to login as.
+      order: 3
+    folder_id:
+      type: string
+      title: Folder ID
+      description: >-
+        Folder to retreive data from.
+      order: 4
+    # file_id:
+    #   type: string
+    #   title: File ID
+    #   description: >-
+    #     File to retreive data from.
+    #   order: 5
+
