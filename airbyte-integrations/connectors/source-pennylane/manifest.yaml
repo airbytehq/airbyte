@@ -1,8 +1,8 @@
-version: 4.3.2
+version: 6.5.2
 
 type: DeclarativeSource
 
-description: ""
+description: Add missing fields to `customer_invoices` stream.
 
 check:
   type: CheckStream
@@ -12,6 +12,42 @@ check:
 streams:
   - type: DeclarativeStream
     name: supplier_invoices
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        path: supplier_invoices
+        url_base: https://app.pennylane.com/api/external/v1/
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          filter: >-
+            '[{"field": "updated_at", "operator": "gteq", "value":  "{{
+            stream_interval.start_time }}" }]'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - invoices
     primary_key:
       - id
     schema_loader:
@@ -20,125 +56,48 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          amount:
-            type: string
-          categories:
-            type: array
-          currency:
-            type: string
-          currency_amount:
-            type: string
-          currency_amount_before_tax:
-            type: string
-          currency_tax:
+          id:
             type: string
           date:
+            type: string
+          paid:
+            type: boolean
+          label:
+            type: string
+          amount:
+            type: string
+          source:
+            type: string
+          currency:
             type: string
           deadline:
             type: string
           discount:
             type: string
-          discount_type:
-            type: string
-          exchange_rate:
-            type: number
           file_url:
             type: string
           filename:
             type: string
-          id:
-            type: string
-          invoice_number:
-            type: string
           is_draft:
             type: boolean
-          label:
-            type: string
           language:
-            type: string
-          line_items:
-            type: array
-            items:
-              type: object
-              properties:
-                description:
-                  type: string
-                amount:
-                  type: string
-                currency_amount:
-                  type: string
-                currency_price_before_tax:
-                  type: string
-                currency_tax:
-                  type: string
-                id:
-                  type: number
-                label:
-                  type: string
-                quantity:
-                  type: string
-                vat_rate:
-                  type: string
-          matched_transactions:
-            type: array
-            items:
-              type: object
-              properties:
-                amount:
-                  type: string
-                currency:
-                  type: string
-                date:
-                  type: string
-                group_uuid:
-                  type: string
-                label:
-                  type: string
-          paid:
-            type: boolean
-          payment_status:
-            type: string
-          pdf_invoice_free_text:
-            type: string
-          pdf_invoice_subject:
-            type: string
-          quote_group_uuid:
-            type: string
-          remaining_amount:
-            type: string
-          source:
             type: string
           supplier:
             type: object
             properties:
-              billing_address:
-                type: object
-                properties:
-                  address:
-                    type: string
-                  city:
-                    type: string
-                  country_alpha2:
-                    type: string
-                  postal_code:
-                    type: string
-              billing_iban:
-                type: string
-              emails:
-                type: array
               iban:
                 type: string
               name:
                 type: string
-              payment_conditions:
-                type: string
               phone:
+                type: string
+              emails:
+                type: array
+              reg_no:
                 type: string
               recipient:
                 type: string
               reference:
-                type: string
-              reg_no:
                 type: string
               source_id:
                 type: string
@@ -146,63 +105,140 @@ streams:
                 type: string
               vat_number:
                 type: string
+              billing_iban:
+                type: string
+              billing_address:
+                type: object
+                properties:
+                  city:
+                    type: string
+                  address:
+                    type: string
+                  postal_code:
+                    type: string
+                  country_alpha2:
+                    type: string
+              payment_conditions:
+                type: string
+          categories:
+            type: array
+          line_items:
+            type: array
+            items:
+              type: object
+              properties:
+                description:
+                  type: string
+                id:
+                  type: number
+                label:
+                  type: string
+                amount:
+                  type: string
+                quantity:
+                  type: string
+                vat_rate:
+                  type: string
+                currency_tax:
+                  type: string
+                currency_amount:
+                  type: string
+                currency_price_before_tax:
+                  type: string
+          updated_at:
+            type: string
+          currency_tax:
+            type: string
+          discount_type:
+            type: string
+          exchange_rate:
+            type: number
+          invoice_number:
+            type: string
+          payment_status:
+            type: string
+          currency_amount:
+            type: string
+          quote_group_uuid:
+            type: string
+          remaining_amount:
+            type: string
+          pdf_invoice_subject:
+            type: string
+          matched_transactions:
+            type: array
+            items:
+              type: object
+              properties:
+                date:
+                  type: string
+                label:
+                  type: string
+                amount:
+                  type: string
+                currency:
+                  type: string
+                group_uuid:
+                  type: string
+          pdf_invoice_free_text:
+            type: string
           transactions_reference:
             type: object
             properties: {}
-          updated_at:
+          currency_amount_before_tax:
             type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: suppliers
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: suppliers
         url_base: https://app.pennylane.com/api/external/v1/
-        path: supplier_invoices
         http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
         request_parameters:
           filter: >-
             '[{"field": "updated_at", "operator": "gteq", "value":  "{{
             stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - invoices
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 1000
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: suppliers
+            - suppliers
     primary_key:
       - source_id
     schema_loader:
@@ -211,49 +247,34 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          billing_address:
-            type: object
-            properties:
-              address:
-                type: string
-              city:
-                type: string
-              country_alpha2:
-                type: string
-              postal_code:
-                type: string
-          billing_iban:
-            type: string
-          emails:
-            type: array
           iban:
             type: string
           name:
             type: string
-          payment_conditions:
-            type: string
           phone:
+            type: string
+          emails:
+            type: array
+          reg_no:
             type: string
           plan_item:
             type: object
             properties:
               description:
                 type: string
-              country_alpha2:
-                type: string
-              enabled:
-                type: boolean
               label:
                 type: string
               number:
                 type: string
+              enabled:
+                type: boolean
               vat_rate:
+                type: string
+              country_alpha2:
                 type: string
           recipient:
             type: string
           reference:
-            type: string
-          reg_no:
             type: string
           source_id:
             type: string
@@ -261,58 +282,70 @@ streams:
             type: string
           vat_number:
             type: string
+          billing_iban:
+            type: string
+          billing_address:
+            type: object
+            properties:
+              city:
+                type: string
+              address:
+                type: string
+              postal_code:
+                type: string
+              country_alpha2:
+                type: string
+          payment_conditions:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: plan_items
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: https://app.pennylane.com/api/external/v1/plan_items
         url_base: https://app.pennylane.com/api/external/v1/
-        path: suppliers
         http_method: GET
-        request_parameters:
-          filter: >-
-            '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-            stream_interval.start_time }}" }]'
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
+        request_headers: {}
         request_body_json: {}
+        request_parameters: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - suppliers
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 100
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: plan_items
+            - plan_items
     primary_key:
       - number
     schema_loader:
@@ -323,51 +356,54 @@ streams:
         properties:
           description:
             type: string
-          country_alpha2:
-            type: string
-          enabled:
-            type: boolean
           label:
             type: string
           number:
             type: string
+          enabled:
+            type: boolean
           vat_rate:
             type: string
+          country_alpha2:
+            type: string
+  - type: DeclarativeStream
+    name: customers
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: customers
         url_base: https://app.pennylane.com/api/external/v1/
-        path: https://app.pennylane.com/api/external/v1/plan_items
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
+        request_headers: {}
         request_body_json: {}
+        request_parameters:
+          filter: >-
+            '[{"field": "updated_at", "operator": "gteq", "value":  "{{
+            stream_interval.start_time }}" }]'
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - plan_items
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 1000
-          start_from_page: 1
-  - type: DeclarativeStream
-    name: customers
+            - customers
     primary_key:
       - source_id
     schema_loader:
@@ -376,58 +412,32 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          billing_address:
-            type: object
-            properties:
-              address:
-                type: string
-              city:
-                type: string
-              country_alpha2:
-                type: string
-              postal_code:
-                type: string
-          customer_type:
-            type: string
-          delivery_address:
-            type: object
-            properties:
-              address:
-                type: string
-              city:
-                type: string
-              country_alpha2:
-                type: string
-              postal_code:
-                type: string
-          emails:
-            type: array
           name:
             type: string
-          payment_conditions:
-            type: string
           phone:
+            type: string
+          emails:
+            type: array
+          reg_no:
             type: string
           plan_item:
             type: object
             properties:
               description:
                 type: string
-              country_alpha2:
-                type: string
-              enabled:
-                type: boolean
               label:
                 type: string
               number:
                 type: string
+              enabled:
+                type: boolean
               vat_rate:
+                type: string
+              country_alpha2:
                 type: string
           recipient:
             type: string
           reference:
-            type: string
-          reg_no:
             type: string
           source_id:
             type: string
@@ -435,58 +445,84 @@ streams:
             type: string
           vat_number:
             type: string
+          customer_type:
+            type: string
+          billing_address:
+            type: object
+            properties:
+              city:
+                type: string
+              address:
+                type: string
+              postal_code:
+                type: string
+              country_alpha2:
+                type: string
+          delivery_address:
+            type: object
+            properties:
+              city:
+                type: string
+              address:
+                type: string
+              postal_code:
+                type: string
+              country_alpha2:
+                type: string
+          payment_conditions:
+            type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: customer_invoices
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: customer_invoices
         url_base: https://app.pennylane.com/api/external/v1/
-        path: customers
         http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
         request_parameters:
           filter: >-
             '[{"field": "updated_at", "operator": "gteq", "value":  "{{
             stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - customers
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 100
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: customer_invoices
+            - invoices
     primary_key:
       - id
     schema_loader:
@@ -495,60 +531,36 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
+          id:
+            type: string
+          date:
+            type: string
+          paid:
+            type: boolean
+          label:
+            type: string
           amount:
             type: string
-          categories:
-            type: array
-          credit_notes:
-            type: array
+          source:
+            type: string
+          status:
+            type: string
           currency:
-            type: string
-          currency_amount:
-            type: string
-          currency_amount_before_tax:
-            type: string
-          currency_tax:
             type: string
           customer:
             type: object
             properties:
-              billing_address:
-                type: object
-                properties:
-                  address:
-                    type: string
-                  city:
-                    type: string
-                  country_alpha2:
-                    type: string
-                  postal_code:
-                    type: string
-              customer_type:
-                type: string
-              delivery_address:
-                type: object
-                properties:
-                  address:
-                    type: string
-                  city:
-                    type: string
-                  country_alpha2:
-                    type: string
-                  postal_code:
-                    type: string
-              emails:
-                type: array
               name:
                 type: string
-              payment_conditions:
-                type: string
               phone:
+                type: string
+              emails:
+                type: array
+              reg_no:
                 type: string
               recipient:
                 type: string
               reference:
-                type: string
-              reg_no:
                 type: string
               source_id:
                 type: string
@@ -556,30 +568,46 @@ streams:
                 type: string
               vat_number:
                 type: string
-          date:
-            type: string
+              customer_type:
+                type: string
+              billing_address:
+                type: object
+                properties:
+                  city:
+                    type: string
+                  address:
+                    type: string
+                  postal_code:
+                    type: string
+                  country_alpha2:
+                    type: string
+              delivery_address:
+                type: object
+                properties:
+                  city:
+                    type: string
+                  address:
+                    type: string
+                  postal_code:
+                    type: string
+                  country_alpha2:
+                    type: string
+              payment_conditions:
+                type: string
           deadline:
             type: string
           discount:
             type: string
-          discount_type:
-            type: string
-          exchange_rate:
-            type: number
           file_url:
             type: string
           filename:
             type: string
-          id:
-            type: string
-          invoice_number:
-            type: string
           is_draft:
             type: boolean
-          label:
-            type: string
           language:
             type: string
+          categories:
+            type: array
           line_items:
             type: array
             items:
@@ -587,34 +615,94 @@ streams:
               properties:
                 description:
                   type: string
+                id:
+                  type: number
+                unit:
+                  type: string
+                label:
+                  type: string
                 amount:
+                  type: string
+                discount:
+                  type: string
+                quantity:
+                  type: string
+                vat_rate:
+                  type: string
+                product_id:
+                  type: string
+                currency_tax:
+                  type: string
+                section_rank:
+                  type: number
+                discount_type:
+                  type: string
+                currency_amount:
+                  type: string
+                raw_currency_unit_price:
+                  type: string
+                currency_price_before_tax:
+                  type: string
+          public_url:
+            type: string
+          updated_at:
+            type: string
+          credit_notes:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                tax:
+                  type: string
+                draft:
+                  type: boolean
+                v2_id:
+                  type: integer
+                amount:
+                  type: string
+                currency:
+                  type: string
+                currency_tax:
+                  type: string
+                invoice_number:
                   type: string
                 currency_amount:
                   type: string
                 currency_price_before_tax:
                   type: string
-                currency_tax:
-                  type: string
-                discount:
-                  type: string
-                discount_type:
-                  type: string
-                id:
-                  type: number
-                label:
-                  type: string
-                product_id:
-                  type: string
-                quantity:
-                  type: string
-                raw_currency_unit_price:
-                  type: string
-                section_rank:
-                  type: number
-                unit:
-                  type: string
-                vat_rate:
-                  type: string
+          currency_tax:
+            type: string
+          discount_type:
+            type: string
+          exchange_rate:
+            type: number
+          invoice_number:
+            type: string
+          currency_amount:
+            type: string
+          special_mention:
+            type: string
+          quote_group_uuid:
+            type: string
+          remaining_amount:
+            type: string
+          pdf_invoice_subject:
+            type: string
+          billing_subscription:
+            type: object
+            properties:
+              id:
+                type: integer
+              v2_id:
+                type: integer
+          matched_transactions:
+            type: array
+          pdf_invoice_free_text:
+            type: string
+          currency_amount_before_tax:
+            type: string
           line_items_sections_attributes:
             type: array
             items:
@@ -626,80 +714,89 @@ streams:
                   type: number
                 title:
                   type: string
-          matched_transactions:
-            type: array
-          paid:
+          imputation_dates:
+            type: object
+            properties:
+              end_date:
+                type: string
+              start_date:
+                type: string
+          is_estimate:
             type: boolean
-          pdf_invoice_free_text:
-            type: string
-          pdf_invoice_subject:
-            type: string
-          public_url:
-            type: string
-          quote_group_uuid:
-            type: string
-          remaining_amount:
-            type: string
-          source:
-            type: string
-          special_mention:
-            type: string
-          status:
-            type: string
-          updated_at:
-            type: string
+          payments:
+            type: array
+            items:
+              type: object
+              properties:
+                created_at:
+                  type: string
+                currency_amount:
+                  type: string
+                label:
+                  type: string
+          transactions_reference:
+            type: object
+            properties:
+              banking_provider:
+                type: string
+              provider_field_name:
+                type: string
+              provider_field_value:
+                type: string
+          v2_id:
+            type: integer
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: products
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: products
         url_base: https://app.pennylane.com/api/external/v1/
-        path: customer_invoices
         http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
         request_parameters:
           filter: >-
             '[{"field": "updated_at", "operator": "gteq", "value":  "{{
             stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - invoices
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 1000
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: products
+            - products
     primary_key:
       - source_id
     schema_loader:
@@ -710,80 +807,80 @@ streams:
         properties:
           description:
             type: string
-          created_at:
-            type: string
-          currency:
+          unit:
             type: string
           label:
             type: string
           price:
             type: number
-          price_before_tax:
-            type: number
+          currency:
+            type: string
+          vat_rate:
+            type: string
           reference:
             type: string
           source_id:
             type: string
           substance:
             type: string
-          unit:
+          created_at:
             type: string
           updated_at:
             type: string
-          vat_rate:
-            type: string
+          price_before_tax:
+            type: number
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: category_groups
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: category_groups
         url_base: https://app.pennylane.com/api/external/v1/
-        path: products
         http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
         request_parameters:
           filter: >-
             '[{"field": "updated_at", "operator": "gteq", "value":  "{{
             stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - products
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 100
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: category_groups
+            - category_groups
     primary_key:
       - id
     schema_loader:
@@ -792,83 +889,83 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          categories:
-            type: array
-            items:
-              type: object
-              properties:
-                created_at:
-                  type: string
-                group_label:
-                  type: string
-                group_source_id:
-                  type: string
-                is_editable:
-                  type: boolean
-                label:
-                  type: string
-                source_id:
-                  type: string
-                updated_at:
-                  type: string
           id:
             type: number
           label:
             type: string
           source_id:
             type: string
+          categories:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                source_id:
+                  type: string
+                created_at:
+                  type: string
+                updated_at:
+                  type: string
+                group_label:
+                  type: string
+                is_editable:
+                  type: boolean
+                group_source_id:
+                  type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: categories
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
       requester:
         type: HttpRequester
+        path: categories
         url_base: https://app.pennylane.com/api/external/v1/
-        path: category_groups
         http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        request_headers: {}
+        request_body_json: {}
         request_parameters:
           filter: >-
             '[{"field": "updated_at", "operator": "gteq", "value":  "{{
             stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
-            - category_groups
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 1000
-          start_from_page: 1
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: categories
+            - categories
     primary_key:
       - source_id
     schema_loader:
@@ -877,72 +974,36 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         properties:
-          created_at:
-            type: string
-          group_label:
-            type: string
-          group_source_id:
-            type: string
           id:
             type: number
-          is_editable:
-            type: boolean
           label:
             type: string
           source_id:
             type: string
+          created_at:
+            type: string
           updated_at:
             type: string
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://app.pennylane.com/api/external/v1/
-        path: categories
-        http_method: GET
-        request_parameters:
-          filter: >-
-            '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-            stream_interval.start_time }}" }]'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - categories
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: per_page
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 100
-          start_from_page: 1
+          group_label:
+            type: string
+          is_editable:
+            type: boolean
+          group_source_id:
+            type: string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
 
 spec:
   type: Spec
@@ -953,26 +1014,48 @@ spec:
       - start_time
       - api_key
     properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
       start_time:
         type: string
         order: 0
         title: Start time
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-      api_key:
-        type: string
-        title: API Key
-        airbyte_secret: true
-        order: 1
     additionalProperties: true
 
 metadata:
+  testedStreams:
+    products:
+      streamHash: 55335278fdfc1d1064d3a671f752f91dd11db12a
+    customers:
+      streamHash: 4b803145fe4bfe87bc5cbd1bf2cb837ca205a9bb
+    suppliers:
+      streamHash: e7f0a9defc293ea050e2e7e196182e4fe4aa0420
+    categories:
+      streamHash: b18b123782bfd8174ad406a4aacc6a2a306278df
+    plan_items:
+      streamHash: e7a504d4e438d4ac44224b6647ff3dd132306ec8
+    category_groups:
+      streamHash: ce745318d00284e660f86896ab035789dc6ec734
+    customer_invoices:
+      streamHash: 7c09cc05d2de4e85b651a4d819661cae953b1d19
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    supplier_invoices:
+      streamHash: bd424386e0c0cef02c8e9def035e2c54f8bd9fa8
   autoImportSchema:
-    supplier_invoices: true
-    suppliers: true
-    plan_items: true
-    customers: true
-    customer_invoices: true
     products: true
-    category_groups: true
+    customers: true
+    suppliers: true
     categories: true
+    plan_items: true
+    category_groups: true
+    customer_invoices: true
+    supplier_invoices: true
