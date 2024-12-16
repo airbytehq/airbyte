@@ -274,6 +274,20 @@ class SourceStripe(ConcurrentSourceAdapter):
             **args,
         )
 
+        payouts = IncrementalStripeStream(
+            name="payouts",
+            path="payouts",
+            event_types=[
+                "payout.canceled",
+                "payout.created",
+                "payout.failed",
+                "payout.paid",
+                "payout.reconciliation_completed",
+                "payout.updated",
+            ],
+            **args,
+        )
+
         streams = [
             checkout_sessions,
             Events(**incremental_args),
@@ -400,17 +414,18 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
-                name="payouts",
-                path="payouts",
-                event_types=[
-                    "payout.canceled",
-                    "payout.created",
-                    "payout.failed",
-                    "payout.paid",
-                    "payout.reconciliation_completed",
-                    "payout.updated",
-                ],
+            payouts,
+            ParentIncrementalStripeSubStream(
+                name="payout_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: "balance_transactions",
+                parent=payouts,
+                cursor_field="updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "payout": stream_slice["parent"]["id"],
+                    "updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
+                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout": f"{stream_slice['parent']['id']}"},
                 **args,
             ),
             IncrementalStripeStream(

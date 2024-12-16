@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.config
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
@@ -51,7 +53,9 @@ class SyncBeanFactory {
     fun fileAggregateQueue(
         @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
         config: DestinationConfiguration,
+        catalog: DestinationCatalog
     ): MultiProducerChannel<FileAggregateMessage> {
+        val streamCount = catalog.size()
         // total batches by disk capacity
         val maxBatchesThatFitOnDisk = (availableBytes / config.recordBatchSizeBytes).toInt()
         // account for batches in flight processing by the workers
@@ -64,6 +68,15 @@ class SyncBeanFactory {
         val capacity = min(maxBatchesMinusUploadOverhead, idealDepth)
         log.info { "Creating file aggregate queue with limit $capacity" }
         val channel = Channel<FileAggregateMessage>(capacity)
-        return MultiProducerChannel(channel)
+        return MultiProducerChannel(streamCount.toLong(), channel)
+    }
+
+    @Singleton
+    @Named("batchQueue")
+    fun batchQueue(
+        config: DestinationConfiguration,
+    ): MultiProducerChannel<BatchEnvelope<*>> {
+        val channel = Channel<BatchEnvelope<*>>(config.batchQueueDepth)
+        return MultiProducerChannel(config.numProcessRecordsWorkers.toLong(), channel)
     }
 }

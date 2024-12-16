@@ -26,6 +26,7 @@ class CheckConnectorUsesHTTPSOnly(SecurityCheck):
         "tests",
         "unit_tests",
         "integration_tests",
+        "test-integration",
         "build",
         "source-file",
         ".pytest_cache",

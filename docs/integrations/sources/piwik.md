@@ -41,6 +41,7 @@ Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#gene
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.7 | 2024-12-14 | [49728](https://github.com/airbytehq/airbyte/pull/49728) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49356](https://github.com/airbytehq/airbyte/pull/49356) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [49103](https://github.com/airbytehq/airbyte/pull/49103) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-11-04 | [48305](https://github.com/airbytehq/airbyte/pull/48305) | Update dependencies |
