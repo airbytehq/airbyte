@@ -192,10 +192,6 @@ class DefaultDestinationTaskLauncher(
 
         // TODO: pluggable file transfer
         if (!fileTransferEnabled) {
-            // TODO: Close the task queues as part of shutdown
-            // so that it is not necessary to initialize
-            // every task before enqueueing.
-
             // Start a spill-to-disk task for each record stream
             catalog.streams.forEach { stream ->
                 log.info { "Starting spill-to-disk task for $stream" }
@@ -269,9 +265,9 @@ class DefaultDestinationTaskLauncher(
                 enqueue(flushCheckpointsTaskFactory.make())
             }
 
-            if (wrapped.batch.state == Batch.State.COMPLETE && streamManager.isBatchProcessingComplete()) {
+            if (streamManager.isBatchProcessingComplete()) {
                 log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for $stream"
+                    "Batch processing complete: Starting close stream task for $stream"
                 }
 
                 val task = closeStreamTaskFactory.make(this, stream)

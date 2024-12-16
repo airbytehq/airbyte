@@ -36,6 +36,9 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
  * [processRecords] never returns a non-[Batch.State.COMPLETE] batch, [processBatch] will never be
  * called.
  *
+ * NOTE: even if [processBatch] returns a not-[Batch.State.COMPLETE] batch, it will be
+ * called again. TODO: allow the client to specify subsequent processing stages instead.
+ *
  * [close] is called once after all records have been processed, regardless of success or failure,
  * but only if [start] returned successfully. If any exception was thrown during processing, it is
  * passed as an argument to [close].

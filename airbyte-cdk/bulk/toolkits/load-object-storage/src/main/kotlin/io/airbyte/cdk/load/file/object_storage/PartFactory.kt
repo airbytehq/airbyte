@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.file.object_storage
 
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
+import org.apache.mina.util.ConcurrentHashSet
 
 /**
  * Generates part w/ metadata for a multi-part upload for a given key and file no. parts are
@@ -66,22 +67,27 @@ data class Part(
 }
 
 class PartMetadataAssembler {
-    private val partIndexes = ConcurrentLinkedQueue<Int>()
+    private val partIndexes = ConcurrentHashSet<Int>()
     private var finalIndex = AtomicReference<Int>(null)
 
     val isEmpty: Boolean
         get() = partIndexes.isEmpty()
 
     fun add(part: Part) {
+        println("Adding part: $part")
         // Only add non-empty parts
         if (part.bytes != null) {
-            partIndexes.add(part.partIndex)
+            if (!partIndexes.add(part.partIndex)) {
+                throw IllegalStateException("Part index ${part.partIndex} already seen")
+            }
         }
 
         // The final part conveys the last
         // index even if it is empty.
         if (part.isFinal) {
-            finalIndex.set(part.partIndex)
+            if (!finalIndex.compareAndSet(null, part.partIndex)) {
+                throw IllegalStateException("Final part already seen")
+            }
         }
     }
 
@@ -93,4 +99,10 @@ class PartMetadataAssembler {
      */
     val isComplete: Boolean
         get() = finalIndex.get()?.let { it == partIndexes.size } ?: false
+
+    // TODO: remove
+    fun dump() {
+        println("Part indexes: $partIndexes")
+        println("Final index: ${finalIndex.get()}")
+    }
 }

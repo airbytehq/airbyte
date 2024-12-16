@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PartFactory
@@ -12,11 +13,17 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.write.BatchAccumulator
-import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoader.ObjectInProgress
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.OutputStream
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
+
+data class ObjectInProgress<T : OutputStream>(
+    val partFactory: PartFactory,
+    val writer: BufferedFormattingWriter<T>,
+)
 
 class RecordToPartAccumulator<U : OutputStream>(
     private val pathFactory: ObjectStoragePathFactory,
@@ -25,8 +32,10 @@ class RecordToPartAccumulator<U : OutputStream>(
     private val stream: DestinationStream,
     private val fileNumber: AtomicLong,
 ) : BatchAccumulator {
+    private val id = UUID.randomUUID().toString()
     private val log = KotlinLogging.logger {}
-    private val currentObject = ConcurrentHashMap<Long, ObjectInProgress<U>>()
+    // Hack because AtomicReference doesn't support lazily evaluated blocks.
+    private val currentObject = ConcurrentHashMap<String, ObjectInProgress<U>>()
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
@@ -34,9 +43,9 @@ class RecordToPartAccumulator<U : OutputStream>(
         endOfStream: Boolean
     ): Batch {
         // Start a new object if there is not one in progress.
-        val fileNo = fileNumber.get()
         val partialUpload =
-            currentObject.getOrPut(fileNo) {
+            currentObject.getOrPut(id) {
+                val fileNo = fileNumber.getAndIncrement()
                 ObjectInProgress(
                     partFactory =
                         PartFactory(
@@ -70,7 +79,7 @@ class RecordToPartAccumulator<U : OutputStream>(
                 "Size $newSize/${recordBatchSizeBytes}b reached (endOfStream=$endOfStream), yielding final part ${part.partIndex} (empty=${part.isEmpty})"
             }
 
-            currentObject.remove(fileNumber.getAndIncrement())
+            currentObject.remove(id)
             return LoadablePart(part)
         } else {
             // If we have not reached target size, just yield the next part.

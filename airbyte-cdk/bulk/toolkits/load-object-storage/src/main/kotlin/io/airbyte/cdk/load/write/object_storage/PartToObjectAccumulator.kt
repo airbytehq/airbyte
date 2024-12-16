@@ -56,12 +56,15 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
             streamingUpload.uploadPart(batch.part.bytes, batch.part.partIndex)
         }
         if (upload.partMetadataAssembler.isComplete) {
+            println("isComplete")
             val obj = streamingUpload.complete()
             uploadsInProgress.remove(batch.part.key)
 
             log.info { "Completed upload of ${obj.key}" }
             return LoadedObject(remoteObject = obj, fileNumber = batch.part.fileNumber)
         } else {
+            println("!isComplete")
+            upload.partMetadataAssembler.dump()
             return IncompletePartialUpload(batch.part.key)
         }
     }

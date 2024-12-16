@@ -83,11 +83,6 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         fileNumber.set(nextPartNumber)
     }
 
-    data class ObjectInProgress<T : OutputStream>(
-        val partFactory: PartFactory,
-        val writer: BufferedFormattingWriter<T>,
-    )
-
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         return RecordToPartAccumulator(
             pathFactory,
