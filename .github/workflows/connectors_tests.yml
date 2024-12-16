@@ -95,7 +95,7 @@ jobs:
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd

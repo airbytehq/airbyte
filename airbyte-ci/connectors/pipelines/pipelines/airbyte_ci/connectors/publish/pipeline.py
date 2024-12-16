@@ -19,7 +19,7 @@ from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.metadata.pipeline import MetadataRollbackReleaseCandidate, MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
 from pipelines.airbyte_ci.steps.bump_version import SetConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
@@ -425,7 +425,7 @@ class DisableProgressiveRollout(StepModifyingFiles):
     title = "Disable progressive rollout in metadata file"
 
     async def _run(self) -> StepResult:
-        raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=METADATA_FILE_NAME), METADATA_FILE_NAME)
+        raw_metadata = await dagger_read_file(await self.context.get_connector_dir(include=[METADATA_FILE_NAME]), METADATA_FILE_NAME)
         current_metadata = yaml.safe_load(raw_metadata)
         enable_progressive_rollout = (
             current_metadata.get("data", {}).get("releases", {}).get("rolloutConfiguration", {}).get("enableProgressiveRollout", False)

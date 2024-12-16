@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "date": {
+      "type": ["null", "string"]
+    },
+    "brandName": {
+      "type": ["null", "string"]
+    },
+    "marketplace": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "productAsin": {
+      "type": ["null", "string"]
+    },
+    "productConversionType": {
+      "type": ["null", "string"]
+    },
+    "advertiserName": {
+      "type": ["null", "string"]
+    },
+    "adGroupId": {
+      "type": ["null", "string"]
+    },
+    "creativeId": {
+      "type": ["null", "string"]
+    },
+    "productName": {
+      "type": ["null", "string"]
+    },
+    "productCategory": {
+      "type": ["null", "string"]
+    },
+    "productSubcategory": {
+      "type": ["null", "string"]
+    },
+    "productGroup": {
+      "type": ["null", "string"]
+    },
+    "publisher": {
+      "type": ["null", "string"]
+    },
+    "Click-throughs": {
+      "type": ["null", "string"]
+    },
+    "attributedDetailPageViewsClicks14d": {
+      "type": ["null", "string"]
+    },
+    "attributedAddToCartClicks14d": {
+      "type": ["null", "string"]
+    },
+    "attributedPurchases14d": {
+      "type": ["null", "string"]
+    },
+    "unitsSold14d": {
+      "type": ["null", "string"]
+    },
+    "attributedSales14d": {
+      "type": ["null", "string"]
+    },
+    "attributedTotalDetailPageViewsClicks14d": {
+      "type": ["null", "string"]
+    },
+    "attributedTotalAddToCartClicks14d": {
+      "type": ["null", "string"]
+    },
+    "attributedTotalPurchases14d": {
+      "type": ["null", "string"]
+    },
+    "totalUnitsSold14d": {
+      "type": ["null", "string"]
+    },
+    "totalAttributedSales14d": {
+      "type": ["null", "string"]
+    },
+    "brb_bonus_amount": {
+      "type": ["null", "string"]
+    },
+    "brandHaloDetailPageViewsClicks14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloAttributedAddToCartClicks14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloAttributedPurchases14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloUnitsSold14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloAttributedSales14d": {
+      "type": ["null", "string"]
+    },
+    "attributedNewToBrandPurchases14d": {
+      "type": ["null", "string"]
+    },
+    "attributedNewToBrandUnitsSold14d": {
+      "type": ["null", "string"]
+    },
+    "attributedNewToBrandSales14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloNewToBrandPurchases14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloNewToBrandUnitsSold14d": {
+      "type": ["null", "string"]
+    },
+    "brandHaloNewToBrandSales14d": {
+      "type": ["null", "string"]
+    }
+  },
+  "title": "attribution_report_performance_adgroup",
+  "type": ["null", "object"]
+}

@@ -11,10 +11,10 @@ from urllib.parse import urlparse
 
 import _csv
 import pendulum
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_protocol.models import SyncMode
 from bingads import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord

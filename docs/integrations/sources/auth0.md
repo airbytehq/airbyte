@@ -60,6 +60,8 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.6.2 | 2024-10-29 | [47807](https://github.com/airbytehq/airbyte/pull/47807) | Update dependencies |
+| 0.6.1 | 2024-10-28 | [47624](https://github.com/airbytehq/airbyte/pull/47624) | Update dependencies |
 | 0.6.0 | 2024-08-23 | [44590](https://github.com/airbytehq/airbyte/pull/44590) | Refactor connector to manifest-only format |
 | 0.5.16 | 2024-08-17 | [44211](https://github.com/airbytehq/airbyte/pull/44211) | Update dependencies |
 | 0.5.15 | 2024-08-12 | [43746](https://github.com/airbytehq/airbyte/pull/43746) | Update dependencies |

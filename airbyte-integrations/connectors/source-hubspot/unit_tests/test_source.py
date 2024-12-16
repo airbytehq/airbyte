@@ -86,7 +86,7 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 34
+    assert len(streams) == 35
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
@@ -94,7 +94,7 @@ def test_streams_incremental(requests_mock, config_experimental):
 
     streams = SourceHubspot().streams(config_experimental)
 
-    assert len(streams) == 46
+    assert len(streams) == 47
 
 
 def test_custom_streams(config_experimental):
