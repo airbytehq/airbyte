@@ -38,26 +38,7 @@ abstract class IcebergV2WriteTest(
         commitDataIncrementally = false,
         supportFileTransfer = false,
         allTypesBehavior = StronglyTyped(),
-    )
-
-class IcebergGlueWriteTest : IcebergV2WriteTest(
-    Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
-    IcebergDestinationCleaner(IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)),
-) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
-
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
-class IcebergNessieMinioWriteTest : IcebergV2WriteTest(
-    getConfig(),
-    // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-    NoopDestinationCleaner
-) {
+    ) {
     @Test
     @Disabled(
         "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
@@ -105,7 +86,21 @@ class IcebergNessieMinioWriteTest : IcebergV2WriteTest(
     override fun testUnions() {
         super.testUnions()
     }
+}
 
+class IcebergGlueWriteTest : IcebergV2WriteTest(
+    Files.readString(IcebergV2TestUtil.GLUE_CONFIG_PATH),
+    IcebergDestinationCleaner(IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)),
+)
+
+@Disabled(
+    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
+)
+class IcebergNessieMinioWriteTest : IcebergV2WriteTest(
+    getConfig(),
+    // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
+    NoopDestinationCleaner
+) {
     companion object {
         private fun getToken(): String {
             val client = OkHttpClient()
