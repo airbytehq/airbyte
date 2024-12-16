@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple
 

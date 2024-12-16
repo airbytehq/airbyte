@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -172,7 +173,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
           // If a numeric_array column precision is not 0 AND scale is 0,
           // then we know the precision and scale are purposefully chosen
           if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
-            putBigIntArray(json, columnName, resultSet, colIndex);
+            putBigIntegerArray(json, columnName, resultSet, colIndex);
           } else {
             putBigDecimalArray(json, columnName, resultSet, colIndex);
           }
@@ -197,7 +198,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
             case NUMERIC, DECIMAL -> {
               if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
-                putBigInt(json, columnName, resultSet, colIndex);
+                putBigInteger(json, columnName, resultSet, colIndex);
               } else {
                 putBigDecimal(json, columnName, resultSet, colIndex);
               }
@@ -362,6 +363,16 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final long value = DataTypeUtils.throwExceptionIfInvalid(() -> arrayResultSet.getLong(2));
+      arrayNode.add(value);
+    }
+    node.set(columnName, arrayNode);
+  }
+
+  private void putBigIntegerArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
+    final ArrayNode arrayNode = Jsons.arrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final BigInteger value = DataTypeUtils.throwExceptionIfInvalid(() -> arrayResultSet.getBigDecimal(2).toBigInteger());
       arrayNode.add(value);
     }
     node.set(columnName, arrayNode);

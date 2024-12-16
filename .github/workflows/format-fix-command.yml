@@ -76,6 +76,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "format fix all"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored

@@ -145,7 +145,7 @@ map[key:JOB_MAIN_CONTAINER_CPU_REQUEST name:airbyte-abctl-airbyte-env]]]
 - Error: `connection refused`
 
 ```shell
-nable to initialize local command: error communicating with kubernetes:
+unable to initialize local command: error communicating with kubernetes:
  unable to fetch kubernetes server version: Get "https://127.0.0.1:50124/version":
   dial tcp 127.0.0.1:[PORT]: connect: connection refused
 ```
@@ -203,6 +203,12 @@ kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
 ```
 
 For more troubleshooting information review the troubleshooting section in [Uploading Customer Connectors](../../operator-guides/using-custom-connectors#troubleshooting)
+
+### How do I connect from a container to a service on the host?
+
+> The host has a changing IP address, or none if you have no network access. We recommend that you connect to the special DNS name host.docker.internal, which resolves to the internal IP address used by the host.
+
+https://docs.docker.com/desktop/faqs/general/#how-do-i-connect-from-a-container-to-a-service-on-the-host
 
 ## Additional Resources
 

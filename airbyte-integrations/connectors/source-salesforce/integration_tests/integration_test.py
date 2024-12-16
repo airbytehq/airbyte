@@ -13,7 +13,7 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
@@ -22,7 +22,7 @@ HERE = Path(__file__).parent
 NOTE_CONTENT = "It's the note for integration test"
 UPDATED_NOTE_CONTENT = "It's the updated note for integration test"
 
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = CatalogBuilder().build()
 _ANY_CONFIG = {}
 _ANY_STATE = {}
 

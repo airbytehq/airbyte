@@ -1,6 +1,10 @@
 # Amazon Seller Partner
 
-This page contains the setup guide and reference information for the Amazon Seller Partner source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Amazon Seller Partner](https://developer.amazonservices.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -30,7 +34,7 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 <!-- /env:oss -->
 
-## Setup Guide
+## Setup guide
 
 ## Step 1: Set up Amazon Seller Partner
 
@@ -50,11 +54,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Amazon Seller Partner** from the **Source type** dropdown.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown.
 4. Enter a name for the Amazon Seller Partner connector.
 5. Click `Authenticate your account`.
 6. Log in and Authorize to your Amazon Seller Partner account.
@@ -68,12 +72,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 <!-- env:oss -->
 
-**For Airbyte Open Source:**
+#### For Airbyte Open Source:
 
-1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
-2. Go to local Airbyte page.
-3. On the Set up the source page, select **Amazon Seller Partner** from the **Source type** dropdown.
-4. Enter a name for the Amazon Seller Partner connector.
+1. Navigate to the Airbyte Open Source dashboard.
+2. On the Set up the source page, select Amazon Seller Partner from the Source type dropdown. 
+3. Enter a name for the Amazon Seller Partner connector. 
+4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
@@ -84,12 +88,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 ## Supported sync modes
 
-The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 - [Active Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [All Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
@@ -158,8 +162,8 @@ Report options can be assigned on a per-stream basis that alter the behavior whe
 For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 
 Certain report types have required parameters that must be defined.
-For `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams maximum value for `period_in_days` 30 days and 60 days.
-So, for any value that exceeds the limit, the `period_in_days` will be automatically reduced to the limit for the stream.
+For the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL`, `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams, the maximum allowable value for `period_in_days` is 30 days, 30 days, and 60 days, respectively. 
+If the specified `period_in_days` exceeds these limits, it will be automatically adjusted to the maximum value for the respective stream, or set to 365 days if not provided.
 
 For the Vendor Forecasting Report, we have two streams - `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` which use the same `GET_VENDOR_FORECASTING_REPORT` Amazon's report,
 but with different options for the `sellingProgram` parameter - `FRESH` and `RETAIL` respectively.
@@ -171,7 +175,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Data type map
 
 | Integration Type         | Airbyte Type |
-| :----------------------- | :----------- |
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -224,20 +228,26 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
-| 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
-| 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
-| 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
-| 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
-| 4.3.8 | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751) | Improve error messaging and turning on alerting |
-| 4.3.7 | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990) | Update dependencies |
-| 4.3.6 | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590) | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date. |
-| 4.3.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
-| 4.3.4 | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384) | Update dependencies |
-| 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
-| 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
-| 4.3.1 | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969) | [autopull] Upgrade base image to v1.2.1 |
-| 4.3.0   | 2024-05-24 | [#00000](https://github.com/airbytehq/airbyte/pull/00000) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
+| 4.4.7   | 2024-11-14 | [47691](https://github.com/airbytehq/airbyte/pull/47691)  | Fix `period_in_days` definition                                                                                                                                                     |
+| 4.4.6   | 2024-11-25 | [48644](https://github.com/airbytehq/airbyte/pull/48644)  | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64                                                                                                                                                                 |
+| 4.4.5   | 2024-11-04 | [47049](https://github.com/airbytehq/airbyte/pull/47049)  | Update dependencies                                                                                                                                                                 |
+| 4.4.4   | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817)  | Update dependencies                                                                                                                                                                 |
+| 4.4.3   | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473)  | Update dependencies                                                                                                                                                                 |
+| 4.4.2   | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748)  | Update dependencies                                                                                                                                                                 |
+| 4.4.1   | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739)  | Update dependencies                                                                                                                                                                 |
+| 4.4.0   | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052)  | Add waiting between requests logic to avoid failed report requests                                                                                                                  |
+| 4.3.11  | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873)  | Update dependencies                                                                                                                                                                 |
+| 4.3.10  | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345)  | Update dependencies                                                                                                                                                                 |
+| 4.3.9   | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158)  | Update dependencies                                                                                                                                                                 |
+| 4.3.8   | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751)  | Improve error messaging and turning on alerting                                                                                                                                     |
+| 4.3.7   | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990)  | Update dependencies                                                                                                                                                                 |
+| 4.3.6   | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590)  | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date.                                       |
+| 4.3.5   | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215)  | Replaced deprecated AirbyteLogger with logging.Logger                                                                                                                               |
+| 4.3.4   | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384)  | Update dependencies                                                                                                                                                                 |
+| 4.3.3   | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008)  | Update dependencies                                                                                                                                                                 |
+| 4.3.2   | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441)  | Update state handling for incremental streams                                                                                                                                       |
+| 4.3.1   | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969)  | [autopull] Upgrade base image to v1.2.1                                                                                                                                             |
+| 4.3.0   | 2024-05-24 | [#38657](https://github.com/airbytehq/airbyte/pull/38657) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
 | 4.2.4   | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
 | 4.2.3   | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
 | 4.2.2   | 2024-04-24 | [#36630](https://github.com/airbytehq/airbyte/pull/36630) | Schema descriptions and CDK 0.80.0                                                                                                                                                  |

@@ -4,11 +4,11 @@ import json
 from unittest import TestCase
 
 import pytest
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType, SyncMode
 from config_builder import ConfigBuilder
 from integration.utils import create_base_url, given_authentication, given_stream
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder

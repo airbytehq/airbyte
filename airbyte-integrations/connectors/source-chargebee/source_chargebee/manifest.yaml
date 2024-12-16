@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: 5.8.0
 
 definitions:
   nested_selector:
@@ -21,10 +21,11 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - error_message_contains: "This API operation is not enabled for this site"
+            - predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
               action: IGNORE
               error_message: "Stream is available only for Product Catalog 1.0"
         - type: DefaultErrorHandler
+          max_retries: 10
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: "Retry-After"
@@ -34,8 +35,8 @@ definitions:
       datetime: "{{ format_datetime(config['start_date'], '%s') }}"
       datetime_format: "%s"
     end_datetime:
-      datetime: "{{ now_utc().strftime('%s') }}"
-      datetime_format: "%s"
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     datetime_format: "%s"
     cursor_granularity: PT1S
     step: P1M
@@ -111,6 +112,7 @@ definitions:
             stream: "#/definitions/item_stream"
             parent_key: "id"
             partition_field: "item_id"
+            incremental_dependency: true
     $parameters:
       name: "attached_item"
       primary_key: "id"
@@ -133,6 +135,7 @@ definitions:
             stream: "#/definitions/customer_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
       requester:
         $ref: "#/definitions/requester"
         error_handler:
@@ -309,9 +312,14 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: source_chargebee.components.CustomFieldTransformation
+      - type: AddFields
+        fields:
+          - path: ["subscription_id"]
+            value_type: string
+            value: "{{ stream_slice.subscription_id }}"
     $parameters:
       name: "subscription_with_scheduled_changes"
-      primary_key: "id"
+      primary_key: "subscription_id"
       path: "/subscriptions/{{ stream_slice.subscription_id }}/retrieve_with_scheduled_changes"
   transaction_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -360,6 +368,7 @@ definitions:
             stream: "#/definitions/quote_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
       requester:
         $ref: "#/definitions/requester"
         error_handler:
@@ -461,3 +470,15 @@ streams:
 check:
   stream_names:
     - "event"
+
+# Chargebee offers three tiers of rate limits:
+# - Starter: 150 req/min (2.5 req/sec)
+# - Performance: 1000 req/min (16 req/sec)
+# - Enterprise: 3500 req/min (58 req/sec)
+#
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 50

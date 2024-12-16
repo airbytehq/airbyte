@@ -1,0 +1,1155 @@
+version: 5.14.0
+
+type: DeclarativeSource
+
+description: >-
+  API Documentation:
+  https://api-docs.mailtrap.io/docs/mailtrap-api-docs/5tjdeg9545058-mailtrap-api
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    billing_usage:
+      type: DeclarativeStream
+      name: billing_usage
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/billing/usage
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uuid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/billing_usage"
+    resources:
+      type: DeclarativeStream
+      name: resources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/permissions/resources
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/resources"
+    sending_domains:
+      type: DeclarativeStream
+      name: sending_domains
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/sending_domains
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sending_domains"
+    inboxes:
+      type: DeclarativeStream
+      name: inboxes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/inboxes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/inboxes"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            accounts/{{ stream_partition.account_id }}/inboxes/{{
+            stream_partition.inbox_id }}/messages
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: account_id
+                stream:
+                  $ref: "#/definitions/streams/accounts"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: inbox_id
+                stream:
+                  $ref: "#/definitions/streams/inboxes"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ stream_partition.account_id }}/projects
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 2
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+  base_requester:
+    type: HttpRequester
+    url_base: https://mailtrap.io/api/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/billing_usage"
+  - $ref: "#/definitions/streams/resources"
+  - $ref: "#/definitions/streams/sending_domains"
+  - $ref: "#/definitions/streams/inboxes"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/projects"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: API token to use. Find it at https://mailtrap.io/account
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: true
+    billing_usage: true
+    resources: true
+    sending_domains: true
+    inboxes: true
+    messages: true
+    projects: true
+  testedStreams:
+    accounts:
+      hasRecords: true
+      streamHash: e5312e6c96d51bb45ad0910a266c2a8a12893f65
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    billing_usage:
+      hasRecords: true
+      streamHash: a7d463733dea7e568d8fd727cbde0af816e06c45
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    resources:
+      hasRecords: true
+      streamHash: 08e015bb3f7c5625c5a75063e366b5452e63b6b4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sending_domains:
+      hasRecords: true
+      streamHash: dd3d752192bccdc0a2b271323ce61dfe5331ccdd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    inboxes:
+      hasRecords: true
+      streamHash: 387ee5198b1fcd6c2cd7e474c678e8562c8c4051
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    messages:
+      hasRecords: true
+      streamHash: ee5d6c933ba155fa4309c80a2cd29723987829d6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 550f74784aa329550a3d52b8b7ddee52f4d17ba9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://api-docs.mailtrap.io/docs/mailtrap-api-docs/82708d3cc9606-general
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access_levels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  billing_usage:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing:
+        type:
+          - object
+          - "null"
+        properties:
+          cycle_end:
+            type:
+              - string
+              - "null"
+          cycle_start:
+            type:
+              - string
+              - "null"
+      sending:
+        type:
+          - object
+          - "null"
+        properties:
+          plan:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+          usage:
+            type:
+              - object
+              - "null"
+            properties:
+              sent_messages_count:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  current:
+                    type:
+                      - number
+                      - "null"
+                  limit:
+                    type:
+                      - number
+                      - "null"
+      testing:
+        type:
+          - object
+          - "null"
+        properties:
+          plan:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+          usage:
+            type:
+              - object
+              - "null"
+            properties:
+              forwarded_messages_count:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  current:
+                    type:
+                      - number
+                      - "null"
+                  limit:
+                    type:
+                      - number
+                      - "null"
+              sent_messages_count:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  current:
+                    type:
+                      - number
+                      - "null"
+                  limit:
+                    type:
+                      - number
+                      - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+  resources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      access_level:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      resources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            access_level:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            resources:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  access_level:
+                    type:
+                      - number
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  resources:
+                    type:
+                      - array
+                      - "null"
+    required:
+      - id
+  sending_domains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      auto_bcc_config:
+        type:
+          - object
+          - "null"
+        properties:
+          emails:
+            type:
+              - array
+              - "null"
+          headers:
+            type:
+              - array
+              - "null"
+      auto_unsubscribe_link_enabled:
+        type:
+          - boolean
+          - "null"
+      click_tracking_enabled:
+        type:
+          - boolean
+          - "null"
+      compliance_status:
+        type:
+          - string
+          - "null"
+      critical_alerts_enabled:
+        type:
+          - boolean
+          - "null"
+      custom_domain_tracking_enabled:
+        type:
+          - boolean
+          - "null"
+      demo:
+        type:
+          - boolean
+          - "null"
+      dns_records:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            domain:
+              type:
+                - string
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      dns_verified:
+        type:
+          - boolean
+          - "null"
+      domain_name:
+        type:
+          - string
+          - "null"
+      health_alerts_enabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      open_tracking_enabled:
+        type:
+          - boolean
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          can_destroy:
+            type:
+              - boolean
+              - "null"
+          can_read:
+            type:
+              - boolean
+              - "null"
+          can_update:
+            type:
+              - boolean
+              - "null"
+      tracking_domain_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  inboxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      api_domain:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      email_domain:
+        type:
+          - string
+          - "null"
+      email_username:
+        type:
+          - string
+          - "null"
+      email_username_enabled:
+        type:
+          - boolean
+          - "null"
+      emails_count:
+        type:
+          - number
+          - "null"
+      emails_unread_count:
+        type:
+          - number
+          - "null"
+      forward_from_email_address:
+        type:
+          - string
+          - "null"
+      forwarded_messages_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      max_message_size:
+        type:
+          - number
+          - "null"
+      max_size:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      password:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          can_destroy:
+            type:
+              - boolean
+              - "null"
+          can_leave:
+            type:
+              - boolean
+              - "null"
+          can_read:
+            type:
+              - boolean
+              - "null"
+          can_update:
+            type:
+              - boolean
+              - "null"
+      pop3_domain:
+        type:
+          - string
+          - "null"
+      pop3_ports:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      sent_messages_count:
+        type:
+          - number
+          - "null"
+      smtp_ports:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      status:
+        type:
+          - string
+          - "null"
+      used:
+        type:
+          - boolean
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blacklists_report_info:
+        type:
+          - object
+          - "null"
+        properties:
+          domain:
+            type:
+              - string
+              - "null"
+          ip:
+            type:
+              - string
+              - "null"
+          report:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                in_black_list:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          result:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      download_path:
+        type:
+          - string
+          - "null"
+      email_size:
+        type:
+          - number
+          - "null"
+      from_email:
+        type:
+          - string
+          - "null"
+      from_name:
+        type:
+          - string
+          - "null"
+      html_body_size:
+        type:
+          - number
+          - "null"
+      html_path:
+        type:
+          - string
+          - "null"
+      html_source_path:
+        type:
+          - string
+          - "null"
+      human_size:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      inbox_id:
+        type:
+          - number
+          - "null"
+      is_read:
+        type:
+          - boolean
+          - "null"
+      raw_path:
+        type:
+          - string
+          - "null"
+      sent_at:
+        type:
+          - string
+          - "null"
+      smtp_information:
+        type:
+          - object
+          - "null"
+        properties:
+          ok:
+            type:
+              - boolean
+              - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      text_body_size:
+        type:
+          - number
+          - "null"
+      to_email:
+        type:
+          - string
+          - "null"
+      to_name:
+        type:
+          - string
+          - "null"
+      txt_path:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      inboxes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            api_domain:
+              type:
+                - string
+                - "null"
+            domain:
+              type:
+                - string
+                - "null"
+            email_domain:
+              type:
+                - string
+                - "null"
+            email_username:
+              type:
+                - string
+                - "null"
+            email_username_enabled:
+              type:
+                - boolean
+                - "null"
+            emails_count:
+              type:
+                - number
+                - "null"
+            emails_unread_count:
+              type:
+                - number
+                - "null"
+            forward_from_email_address:
+              type:
+                - string
+                - "null"
+            forwarded_messages_count:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            last_message_sent_at:
+              type:
+                - string
+                - "null"
+            max_message_size:
+              type:
+                - number
+                - "null"
+            max_size:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            password:
+              type:
+                - string
+                - "null"
+            permissions:
+              type:
+                - object
+                - "null"
+              properties:
+                can_destroy:
+                  type:
+                    - boolean
+                    - "null"
+                can_leave:
+                  type:
+                    - boolean
+                    - "null"
+                can_read:
+                  type:
+                    - boolean
+                    - "null"
+                can_update:
+                  type:
+                    - boolean
+                    - "null"
+            pop3_domain:
+              type:
+                - string
+                - "null"
+            pop3_ports:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+            project_id:
+              type:
+                - number
+                - "null"
+            sent_messages_count:
+              type:
+                - number
+                - "null"
+            smtp_ports:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+            status:
+              type:
+                - string
+                - "null"
+            used:
+              type:
+                - boolean
+                - "null"
+            username:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          can_destroy:
+            type:
+              - boolean
+              - "null"
+          can_leave:
+            type:
+              - boolean
+              - "null"
+          can_read:
+            type:
+              - boolean
+              - "null"
+          can_update:
+            type:
+              - boolean
+              - "null"
+      share_links:
+        type:
+          - object
+          - "null"
+        properties:
+          admin:
+            type:
+              - string
+              - "null"
+          viewer:
+            type:
+              - string
+              - "null"
+    required:
+      - id

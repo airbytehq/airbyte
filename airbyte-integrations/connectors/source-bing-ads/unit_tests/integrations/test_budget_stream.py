@@ -38,7 +38,7 @@ class TestBudgetStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "budget_with_cursor_value")
         assert len(output.records) == 8
-        assert output.most_recent_state.stream_state.dict().get(self.account_id) == {self.cursor_field: "2024-01-01T12:54:12.028+00:00"}
+        assert output.most_recent_state.stream_state.__dict__.get(self.account_id) == {self.cursor_field: "2024-01-01T12:54:12.028+00:00"}
 
     @HttpMocker()
     @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
@@ -47,9 +47,9 @@ class TestBudgetStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, service_call_mock = self.read_stream(self.stream_name, SyncMode.incremental, self._config, "budget_with_state", state)
         assert len(output.records) == 8
-        assert output.most_recent_state.stream_state.dict().get(self.account_id) == {self.cursor_field: "2024-01-30T12:54:12.028+00:00"}
+        assert output.most_recent_state.stream_state.__dict__.get(self.account_id) == {self.cursor_field: "2024-01-30T12:54:12.028+00:00"}
 
-        previous_state = state[0].stream.stream_state.dict()
+        previous_state = state[0].stream.stream_state.__dict__
         # gets DownloadParams object
         assert service_call_mock.call_args.args[0].last_sync_time_in_utc == pendulum.parse(
             previous_state[self.account_id][self.cursor_field]

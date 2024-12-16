@@ -103,8 +103,14 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.3.1   | 2024-12-03 | [48770](https://github.com/airbytehq/airbyte/pull/48770) | Remove duplication in manifest, fix query param updated_at[gt] |
+| 1.3.0  | 2024-11-04 | [47298](https://github.com/airbytehq/airbyte/pull/47298) | Migrate to manifest only format |
+| 1.2.24 | 2024-10-29 | [47048](https://github.com/airbytehq/airbyte/pull/47048) | Update dependencies |
+| 1.2.23 | 2024-10-12 | [46833](https://github.com/airbytehq/airbyte/pull/46833) | Update dependencies |
+| 1.2.22 | 2024-10-05 | [46491](https://github.com/airbytehq/airbyte/pull/46491) | Update dependencies |
+| 1.2.21 | 2024-09-28 | [46186](https://github.com/airbytehq/airbyte/pull/46186) | Update dependencies |
 | 1.2.20 | 2024-09-21 | [45726](https://github.com/airbytehq/airbyte/pull/45726) | Update dependencies |
 | 1.2.19 | 2024-09-14 | [45500](https://github.com/airbytehq/airbyte/pull/45500) | Update dependencies |
 | 1.2.18 | 2024-09-07 | [45238](https://github.com/airbytehq/airbyte/pull/45238) | Update dependencies |

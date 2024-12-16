@@ -3,6 +3,7 @@
 import json
 from typing import Any, Dict, Optional
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
@@ -10,7 +11,6 @@ from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from config_builder import ConfigBuilder
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce

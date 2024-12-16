@@ -42,6 +42,7 @@ jobs:
           context: "pull_request"
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "format check all"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
 
       - name: Run airbyte-ci format check [WORKFLOW DISPATCH]
         id: airbyte_ci_format_check_all_manual
@@ -52,6 +53,7 @@ jobs:
           context: "manual"
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "format check all"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
 
       - name: Match GitHub User to Slack User [MASTER]
         if: github.ref == 'refs/heads/master'

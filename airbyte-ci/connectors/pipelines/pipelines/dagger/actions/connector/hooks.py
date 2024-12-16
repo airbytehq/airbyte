@@ -56,8 +56,8 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         context.logger.info(f"{context.connector.technical_name} has finalize_build.sh script, running it to finalize build...")
         connector_container = (
             connector_container.with_file("/tmp/finalize_build.sh", connector_dir_with_finalize_script.file("finalize_build.sh"))
-            .with_entrypoint("sh")
-            .with_exec(["/tmp/finalize_build.sh"])
+            .with_entrypoint(["sh"])
+            .with_exec(["/tmp/finalize_build.sh"], use_entrypoint=True)
         )
 
     return connector_container.with_entrypoint(original_entrypoint)

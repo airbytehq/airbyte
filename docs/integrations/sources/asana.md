@@ -104,8 +104,15 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                           |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                             |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 1.3.1 | 2024-12-14 | [48966](https://github.com/airbytehq/airbyte/pull/48966) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.3.0 | 2024-12-06 | [48712](https://github.com/airbytehq/airbyte/pull/48712) | Upgrade to process full refresh and non-incremental substreams using concurrent CDK |
+| 1.2.14 | 2024-11-04 | [48175](https://github.com/airbytehq/airbyte/pull/48175) | Update dependencies |
+| 1.2.13 | 2024-10-28 | [47026](https://github.com/airbytehq/airbyte/pull/47026) | Update dependencies |
+| 1.2.12 | 2024-10-12 | [46825](https://github.com/airbytehq/airbyte/pull/46825) | Update dependencies |
+| 1.2.11 | 2024-10-05 | [46501](https://github.com/airbytehq/airbyte/pull/46501) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46166](https://github.com/airbytehq/airbyte/pull/46166) | Update dependencies |
 | 1.2.9 | 2024-09-21 | [45754](https://github.com/airbytehq/airbyte/pull/45754) | Update dependencies |
 | 1.2.8 | 2024-09-14 | [45547](https://github.com/airbytehq/airbyte/pull/45547) | Update dependencies |
 | 1.2.7 | 2024-09-07 | [45277](https://github.com/airbytehq/airbyte/pull/45277) | Update dependencies |

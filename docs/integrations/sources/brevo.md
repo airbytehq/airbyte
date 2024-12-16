@@ -26,7 +26,7 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 | contacts_lists_contacts |  | DefaultPaginator | ✅ |  ✅  |
 | contacts_lists | id | DefaultPaginator | ✅ |  ❌  |
 | senders | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ✅  |
+| companies | id | DefaultPaginator | ✅ |  ❌ |
 | companies_attributes |  | DefaultPaginator | ✅ |  ❌  |
 | crm_pipeline_stages | id | DefaultPaginator | ✅ |  ❌  |
 | crm_pipeline_details_all | pipeline | DefaultPaginator | ✅ |  ❌  |
@@ -47,8 +47,11 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-11 |[45382](https://github.com/airbytehq/airbyte/pull/45382)|Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.1.2 | 2024-10-29 | [47922](https://github.com/airbytehq/airbyte/pull/47922) | Update dependencies |
+| 0.1.1 | 2024-10-28 | [47622](https://github.com/airbytehq/airbyte/pull/47622) | Update dependencies |
+| 0.1.0 | 2024-10-08 | [46587](https://github.com/airbytehq/airbyte/pull/46587) | Fix Companies stream paginator+ remove incremental |
+| 0.0.1 | 2024-09-11 | [45382](https://github.com/airbytehq/airbyte/pull/45382) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

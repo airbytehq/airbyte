@@ -1,0 +1,545 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Dropbox Sign is a simple, easy-to-use way to get documents signed securely
+  online.
+
+check:
+  type: CheckStream
+  stream_names:
+    - signature_requests
+
+definitions:
+  streams:
+    signature_requests:
+      type: DeclarativeStream
+      name: signature_requests
+      primary_key:
+        - signature_request_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/signature_request/list
+          http_method: GET
+          request_parameters:
+            query: >-
+              created:[{{ stream_interval.start_time }} TO {{
+              stream_interval.end_time }}]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - signature_requests
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signature_requests"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - template_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/template/list
+          http_method: GET
+          request_parameters:
+            query: >-
+              created:[{{ stream_interval.start_time }} TO {{
+              stream_interval.end_time }}]
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.hellosign.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/signature_requests"
+  - $ref: "#/definitions/streams/templates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          API key to use. Find it at
+          https://app.hellosign.com/home/myAccount#api
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    signature_requests: true
+    templates: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    signature_requests:
+      hasRecords: true
+      streamHash: 43fab0ac4be134377b739437042ce443a94a41a9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    templates:
+      hasRecords: true
+      streamHash: 3fedb9e7e0081b15325880f4377e4b76100ba7d7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.hellosign.com/
+
+schemas:
+  signature_requests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      cc_email_addresses:
+        type:
+          - array
+          - "null"
+      created_at:
+        type: number
+      custom_fields:
+        type:
+          - array
+          - "null"
+      details_url:
+        type:
+          - string
+          - "null"
+      files_url:
+        type:
+          - string
+          - "null"
+      final_copy_uri:
+        type:
+          - string
+          - "null"
+      has_error:
+        type:
+          - boolean
+          - "null"
+      is_complete:
+        type:
+          - boolean
+          - "null"
+      is_declined:
+        type:
+          - boolean
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      original_title:
+        type:
+          - string
+          - "null"
+      requester_email_address:
+        type:
+          - string
+          - "null"
+      response_data:
+        type:
+          - array
+          - "null"
+      signature_request_id:
+        type: string
+      signatures:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            has_pin:
+              type:
+                - boolean
+                - "null"
+            has_sms_auth:
+              type:
+                - boolean
+                - "null"
+            has_sms_delivery:
+              type:
+                - boolean
+                - "null"
+            order:
+              type:
+                - number
+                - "null"
+            signature_id:
+              type:
+                - string
+                - "null"
+            signer_email_address:
+              type:
+                - string
+                - "null"
+            signer_name:
+              type:
+                - string
+                - "null"
+            status_code:
+              type:
+                - string
+                - "null"
+      signing_url:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      test_mode:
+        type:
+          - boolean
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - signature_request_id
+      - created_at
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      accounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            account_id:
+              type:
+                - string
+                - "null"
+            email_address:
+              type:
+                - string
+                - "null"
+            is_locked:
+              type:
+                - boolean
+                - "null"
+            is_paid_hf:
+              type:
+                - boolean
+                - "null"
+            is_paid_hs:
+              type:
+                - boolean
+                - "null"
+            quotas:
+              type:
+                - object
+                - "null"
+              properties:
+                api_signature_requests_left:
+                  type:
+                    - number
+                    - "null"
+                documents_left:
+                  type:
+                    - number
+                    - "null"
+                templates_left:
+                  type:
+                    - number
+                    - "null"
+                templates_total:
+                  type:
+                    - number
+                    - "null"
+      can_edit:
+        type:
+          - boolean
+          - "null"
+      cc_roles:
+        type:
+          - array
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            custom_fields:
+              type:
+                - array
+                - "null"
+            field_groups:
+              type:
+                - array
+                - "null"
+            form_fields:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  api_id:
+                    type:
+                      - string
+                      - "null"
+                  fontSize:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  required:
+                    type:
+                      - boolean
+                      - "null"
+                  signer:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  x:
+                    type:
+                      - number
+                      - "null"
+                  "y":
+                    type:
+                      - number
+                      - "null"
+            index:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      is_creator:
+        type:
+          - boolean
+          - "null"
+      is_embedded:
+        type:
+          - boolean
+          - "null"
+      is_locked:
+        type:
+          - boolean
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      named_form_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            api_id:
+              type:
+                - string
+                - "null"
+            fontSize:
+              type:
+                - number
+                - "null"
+            height:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            required:
+              type:
+                - boolean
+                - "null"
+            signer:
+              type:
+                - string
+                - "null"
+            width:
+              type:
+                - number
+                - "null"
+            x:
+              type:
+                - number
+                - "null"
+            "y":
+              type:
+                - number
+                - "null"
+      reusable_form_id:
+        type:
+          - string
+          - "null"
+      signer_roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+      template_id:
+        type: string
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: number
+    required:
+      - template_id
+      - updated_at

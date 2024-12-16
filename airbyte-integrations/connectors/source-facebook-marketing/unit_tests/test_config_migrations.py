@@ -50,7 +50,7 @@ class TestMigrateAccountIdToArray:
                 config = json.dumps(config)
                 updated_config.write(config)
 
-    def test_migrate_config(self):
+    def test_migrate_config(self, capsys):
         migration_instance = MigrateAccountIdToArray()
         original_config = load_config(self.TEST_CONFIG_PATH)
         # migrate the test_config
@@ -68,15 +68,15 @@ class TestMigrateAccountIdToArray:
         # load the old custom reports VS migrated
         assert [original_config["account_id"]] == test_migrated_config["account_ids"]
         # test CONTROL MESSAGE was emitted
-        control_msg = migration_instance.message_repository._message_queue[0]
-        assert control_msg.type == Type.CONTROL
-        assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+        control_msg = json.loads(capsys.readouterr().out)
+        assert control_msg["type"] == Type.CONTROL.value
+        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
         # old custom_reports are stil type(str)
-        assert isinstance(control_msg.control.connectorConfig.config["account_id"], str)
+        assert isinstance(control_msg["control"]["connectorConfig"]["config"]["account_id"], str)
         # new custom_reports are type(list)
-        assert isinstance(control_msg.control.connectorConfig.config["account_ids"], list)
+        assert isinstance(control_msg["control"]["connectorConfig"]["config"]["account_ids"], list)
         # check the migrated values
-        assert control_msg.control.connectorConfig.config["account_ids"] == ["01234567890"]
+        assert control_msg["control"]["connectorConfig"]["config"]["account_ids"] == ["01234567890"]
         # revert the test_config to the starting point
         self.revert_migration()
 
@@ -131,7 +131,7 @@ class TestMigrateIncludeDeletedToStatusFilters:
         "old_config_path, new_config_path, include_deleted",
         [(OLD_TEST1_CONFIG_PATH, NEW_TEST1_CONFIG_PATH, False), (OLD_TEST2_CONFIG_PATH, NEW_TEST2_CONFIG_PATH, True)],
     )
-    def test_migrate_config(self, old_config_path, new_config_path, include_deleted):
+    def test_migrate_config(self, old_config_path, new_config_path, include_deleted, capsys):
         migration_instance = MigrateIncludeDeletedToStatusFilters()
         # migrate the test_config
         migration_instance.migrate([CMD, "--config", old_config_path], SOURCE)
@@ -151,9 +151,9 @@ class TestMigrateIncludeDeletedToStatusFilters:
         assert not migration_instance.should_migrate(test_migrated_config)
         if include_deleted:
             # test CONTROL MESSAGE was emitted
-            control_msg = migration_instance.message_repository._message_queue[0]
-            assert control_msg.type == Type.CONTROL
-            assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+            control_msg = json.loads(capsys.readouterr().out)
+            assert control_msg["type"] == Type.CONTROL.value
+            assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
             # revert the test_config to the starting point
             self.revert_migration(old_config_path)
 
