@@ -241,6 +241,7 @@ class S3ClientFactory(
                 region = bucketConfig.s3BucketConfiguration.s3BucketRegion.name
                 credentialsProvider = credsProvider
                 endpointUrl = bucketConfig.s3BucketConfiguration.s3Endpoint?.let { Url.parse(it) }
+                retryStrategy { maxAttempts = 5 }
             }
 
         return S3Client(
