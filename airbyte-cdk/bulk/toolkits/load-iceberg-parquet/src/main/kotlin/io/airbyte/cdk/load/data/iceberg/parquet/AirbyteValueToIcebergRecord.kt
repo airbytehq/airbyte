@@ -20,9 +20,6 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
 
 class AirbyteValueToIcebergRecord {
-
-    private val timeStringUtility = TimeStringUtility()
-
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
         when (airbyteValue) {
             is ObjectValue -> {
@@ -61,14 +58,14 @@ class AirbyteValueToIcebergRecord {
                 return array
             }
             is BooleanValue -> return airbyteValue.value
-            is DateValue -> return timeStringUtility.toLocalDate(airbyteValue.value)
+            is DateValue -> return TimeStringUtility.toLocalDate(airbyteValue.value)
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
             is TimeValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIME -> timeStringUtility.toOffset(airbyteValue.value)
+                    Type.TypeID.TIME -> TimeStringUtility.toOffset(airbyteValue.value)
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimeValue"
@@ -76,7 +73,7 @@ class AirbyteValueToIcebergRecord {
                 }
             is TimestampValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIMESTAMP -> timeStringUtility.toOffsetDateTime(airbyteValue.value)
+                    Type.TypeID.TIMESTAMP -> TimeStringUtility.toOffsetDateTime(airbyteValue.value)
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimestampValue"

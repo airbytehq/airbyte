@@ -13,7 +13,7 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class TimeStringUtility {
+object TimeStringUtility {
 
     fun toLocalDate(dateString: String): LocalDate {
         return LocalDate.parse(dateString, TimeStringToInteger.DATE_TIME_FORMATTER)
@@ -44,12 +44,12 @@ class TimeStringUtility {
     }
 
     private fun toOffsetDateTimeWithTimezone(timestampString: String): OffsetDateTime {
-        val zdt = ZonedDateTime.parse(timestampString, TimeStringToInteger.DATE_TIME_FORMATTER)
-        return zdt.toOffsetDateTime()
+        return ZonedDateTime.parse(timestampString, TimeStringToInteger.DATE_TIME_FORMATTER)
+            .toOffsetDateTime()
     }
 
     private fun toOffsetDateTimeWithoutTimezone(timestampString: String): OffsetDateTime {
-        val dt = LocalDateTime.parse(timestampString, TimeStringToInteger.DATE_TIME_FORMATTER)
-        return dt.atOffset(ZoneOffset.UTC)
+        return LocalDateTime.parse(timestampString, TimeStringToInteger.DATE_TIME_FORMATTER)
+            .atOffset(ZoneOffset.UTC)
     }
 }
