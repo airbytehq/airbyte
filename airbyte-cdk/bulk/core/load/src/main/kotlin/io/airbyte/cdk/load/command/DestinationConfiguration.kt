@@ -84,6 +84,10 @@ abstract class DestinationConfiguration : Configuration {
      */
     open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
 
+    open val numProcessRecordsWorkers: Int = 2
+    open val numProcessBatchWorkers: Int = 5
+    open val batchQueueDepth: Int = 10
+
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.

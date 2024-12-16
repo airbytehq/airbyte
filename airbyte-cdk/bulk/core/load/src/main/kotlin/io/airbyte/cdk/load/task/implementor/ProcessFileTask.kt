@@ -11,15 +11,14 @@ import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
-import io.airbyte.cdk.load.task.StreamLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessFileTask : StreamLevel, ImplementorScope
+interface ProcessFileTask : ImplementorScope
 
 class DefaultProcessFileTask(
-    override val streamDescriptor: DestinationStream.Descriptor,
+    private val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val syncManager: SyncManager,
     private val file: DestinationFile,
@@ -32,7 +31,7 @@ class DefaultProcessFileTask(
 
         val batch = streamLoader.processFile(file)
 
-        val wrapped = BatchEnvelope(batch, Range.singleton(index))
+        val wrapped = BatchEnvelope(batch, Range.singleton(index), streamDescriptor)
         taskLauncher.handleNewBatch(streamDescriptor, wrapped)
     }
 }

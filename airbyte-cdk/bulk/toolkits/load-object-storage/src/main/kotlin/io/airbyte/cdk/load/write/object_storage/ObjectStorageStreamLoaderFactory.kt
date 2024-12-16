@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.state.DestinationStateManager
-import io.airbyte.cdk.load.state.StreamIncompleteResult
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -160,7 +160,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         )
     }
 
-    override suspend fun close(streamFailure: StreamIncompleteResult?) {
+    override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure != null) {
             log.info { "Sync failed, persisting destination state for next run" }
             destinationStateManager.persistState(stream)
