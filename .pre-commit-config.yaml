@@ -1,10 +1,72 @@
+exclude: |
+  (?x)^(
+    .*/__init__\.py|
+    .*/__pycache__|
+    .*/.eggs|
+    .*/.git|
+    .*/.gradle|
+    .*/.mypy_cache|
+    .*/.pytest_cache|
+    .*/.tox|
+    .*/.venv|
+    .*/.*.egg-info|
+    .*/build|
+    .*/charts|
+    .*/dbt_test_config|
+    .*/dbt-project-template-clickhouse|
+    .*/dbt-project-template-duckdb|
+    .*/dbt-project-template-mssql|
+    .*/dbt-project-template-mysql|
+    .*/dbt-project-template-oracle|
+    .*/dbt-project-template-snowflake|
+    .*/dbt-project-template-tidb|
+    .*/dbt-project-template|
+    .*/node_modules|
+    .*/pnpm-lock\.yaml|
+    .*/normalization_test_output|
+    .*/source-amplitude/unit_tests/api_data/zipped\.json|
+    airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/.*|
+    .*/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid|
+    airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code|
+    .*/airbyte-integrations/connectors/destination-.*/expected-spec\.json
+  )$
+
 repos:
+  # Python formatting
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        files: \.py$
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        files: \.py$
+
+  # JavaScript/JSON/YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        types_or: [json, yaml]
+        additional_dependencies:
+          - prettier@3.0.3
+
+  # License headers and Java formatting as local hooks
   - repo: local
     hooks:
-      - id: format-fix-all-on-push
-        always_run: true
-        entry: airbyte-ci --disable-update-check format fix all
-        language: system
-        name: Run airbyte-ci format fix on git push (~30s)
-        pass_filenames: false
-        stages: [push]
+      - id: addlicense
+        name: Add license headers
+        entry: addlicense -c "Airbyte, Inc." -l apache
+        language: golang
+        additional_dependencies: [github.com/google/addlicense@v1.1.1]
+        files: \.(java|kt|py)$
+
+      # - id: spotless
+      #   name: Format Java files with Spotless
+      #   entry: mvn -f spotless-maven-pom.xml spotless:apply
+      #   language: system
+      #   files: \.(java|kt|gradle)$
+      #   pass_filenames: false
