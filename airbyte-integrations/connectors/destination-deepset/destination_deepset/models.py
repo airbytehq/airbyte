@@ -135,8 +135,13 @@ class DeepsetCloudFile(BaseModel):
             name=data.filename,
             content=data.content,
             meta={
-                "emitted_at": record.emitted_at,
+                "airbyte": {
+                    "stream": record.stream,
+                    "emitted_at": record.emitted_at,
+                    **({"namespace": record.namespace} if record.namespace else {}),
+                    **({"file_parse_error": data.file_parse_error} if data.file_parse_error else {}),
+                },
                 "source_file_extension": Path(data.name).suffix,
-                **data.json(exclude="content", exclude_none=True),
+                **data.json(exclude={"content", "file_parse_error"}, exclude_none=True),
             },
         )
