@@ -18,11 +18,11 @@ packages = [{ include = "destination_deepset" }, { include = "main.py" }]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 httpx = "^0.28.1"
+tenacity = "^9.0.0"
 
 [tool.poetry.scripts]
 destination-deepset = "destination_deepset.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "*"
-pytest-mock = "*"
 pytest = "*"
+pytest-httpx = "*"

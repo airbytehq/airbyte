@@ -5,9 +5,10 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
-from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 from httpx import HTTPError, HTTPStatusError
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
+from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_random_exponential
+
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 
 
 class APIError(RuntimeError):
@@ -55,7 +56,7 @@ class DeepsetCloudApi:
                 headers={
                     "Accept": "application/json",
                     "Authorization": f"Bearer {self.config.api_key}",
-                    "X-Client-Source": "deepset-cloud-airbyte",
+                    "X-Client-Source": "airbyte-destination-deepset",
                 },
                 follow_redirects=True,
             )
@@ -69,14 +70,15 @@ class DeepsetCloudApi:
             APIError: Raised when an error is encountered.
         """
         try:
-            with retry(
+            for attempt in Retrying(
                 retry=retry_if_exception_type(HTTPError),
                 stop=stop_after_attempt(self.config.retries),
                 wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
                 reraise=True,
             ):
-                response = self.client.get(f"/api/v1/workspaces/{self.config.workspace}/files")
-                response.raise_for_status()
+                with attempt:
+                    response = self.client.get(f"/api/v1/workspaces/{self.config.workspace}/files")
+                    response.raise_for_status()
         except Exception as ex:
             raise APIError from ex
 
@@ -96,19 +98,20 @@ class DeepsetCloudApi:
             raise FileTypeError
 
         try:
-            with retry(
+            for attempt in Retrying(
                 retry=retry_if_exception_type(HTTPError),
                 stop=stop_after_attempt(self.config.retries),
                 wait=wait_random_exponential(multiplier=self.multiplier, max=self.max),
                 reraise=True,
             ):
-                response = self.client.post(
-                    f"/api/v1/workspaces/{self.config.workspace}/files",
-                    files={"file": (file.name, file.content)},
-                    data={"meta": file.meta_as_string},
-                    params={"write_mode": "OVERWRITE"},
-                )
-                response.raise_for_status()
+                with attempt:
+                    response = self.client.post(
+                        f"/api/v1/workspaces/{self.config.workspace}/files",
+                        files={"file": (file.name, file.content)},
+                        data={"meta": file.meta_as_string},
+                        params={"write_mode": "OVERWRITE"},
+                    )
+                    response.raise_for_status()
 
             if file_id := response.json().get("file_id"):
                 return UUID(file_id)
