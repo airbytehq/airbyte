@@ -17,6 +17,9 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
+    fun resetFeedStates()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -37,18 +40,15 @@ class StateManager(
                     .mapKeys { it.key.id }
         } else {
             val globalStreams: Map<Stream, OpaqueStateValue?> =
-                global.streams.associateWith { initialStreamStates[it] }
+                global.streams.associateWith { initialStreamStates[it] } +
+                    initialStreamStates.filterKeys { global.streams.contains(it).not() }
             this.global =
                 GlobalStateManager(
                     global = global,
                     initialGlobalState = initialGlobalState,
                     initialStreamStates = globalStreams,
                 )
-            nonGlobal =
-                initialStreamStates
-                    .filterKeys { !globalStreams.containsKey(it) }
-                    .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.id }
+            nonGlobal = emptyMap()
         }
     }
 
@@ -58,6 +58,10 @@ class StateManager(
             nonGlobal.values.map { it.feed }
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
+
+    override fun resetFeedStates() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+    }
 
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =

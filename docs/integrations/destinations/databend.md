@@ -72,6 +72,7 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.30 | 2024-11-25 | [48664](https://github.com/airbytehq/airbyte/pull/48664) | Update dependencies |
 | 0.1.29 | 2024-10-19 | [46992](https://github.com/airbytehq/airbyte/pull/46992) | add ssl param for databend destination |
 | 0.1.28 | 2024-11-04 | [48272](https://github.com/airbytehq/airbyte/pull/48272) | Update dependencies |
 | 0.1.27 | 2024-10-28 | [47069](https://github.com/airbytehq/airbyte/pull/47069) | Update dependencies |

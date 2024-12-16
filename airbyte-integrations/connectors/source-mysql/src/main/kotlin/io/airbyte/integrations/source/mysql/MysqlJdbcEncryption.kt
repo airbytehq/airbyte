@@ -11,7 +11,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.MalformedURLException
 import java.net.URI
 import java.nio.file.FileSystems
-import java.util.*
+import java.util.UUID
 
 private val log = KotlinLogging.logger {}
 

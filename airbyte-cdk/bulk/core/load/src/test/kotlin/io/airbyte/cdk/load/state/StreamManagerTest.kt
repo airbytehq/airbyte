@@ -322,4 +322,11 @@ class StreamManagerTest {
         // Can close now
         Assertions.assertDoesNotThrow(manager::markSucceeded)
     }
+
+    @Test
+    fun testEmptyCompletedStreamYieldsBatchProcessingComplete() {
+        val manager = DefaultStreamManager(stream1)
+        manager.markEndOfStream()
+        Assertions.assertTrue(manager.isBatchProcessingComplete())
+    }
 }

@@ -224,8 +224,8 @@ class IncrementalJiraStream(StartDateJiraStream, CheckpointMixin, ABC):
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
         if compare_date:
-            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
-            return f"{self.cursor_field} >= '{compare_date}'"
+            compare_date_epoch = compare_date.int_timestamp * 1000
+            return f"{self.cursor_field} >= {compare_date_epoch}"
 
     def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
         if self.cursor_field not in self._starting_point_cache:

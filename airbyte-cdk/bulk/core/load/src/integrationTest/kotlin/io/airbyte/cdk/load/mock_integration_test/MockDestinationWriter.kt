@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamIncompleteResult
@@ -28,6 +29,9 @@ class MockDestinationWriter : DestinationWriter {
 
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     data class LocalBatch(val records: List<DestinationRecord>) : Batch {
+        override val state = Batch.State.LOCAL
+    }
+    data class LocalFileBatch(val file: DestinationFile) : Batch {
         override val state = Batch.State.LOCAL
     }
     data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
@@ -65,6 +69,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         totalSizeBytes: Long
     ): Batch {
         return LocalBatch(records.asSequence().toList())
+    }
+
+    override suspend fun processFile(file: DestinationFile): Batch {
+        return LocalFileBatch(file)
     }
 
     override suspend fun processBatch(batch: Batch): Batch {

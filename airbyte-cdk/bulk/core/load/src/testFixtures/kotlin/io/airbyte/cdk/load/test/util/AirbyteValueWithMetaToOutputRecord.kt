@@ -29,15 +29,17 @@ class AirbyteValueWithMetaToOutputRecord {
                     (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT]
                             as IntegerValue)
                         .value
+                        .toLong()
                 ),
             loadedAt = null,
             data = value.values[DestinationRecord.Meta.COLUMN_NAME_DATA] as ObjectValue,
             generationId =
                 (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue)
-                    .value,
+                    .value
+                    .toLong(),
             airbyteMeta =
                 OutputRecord.Meta(
-                    syncId = (meta.values["sync_id"] as IntegerValue).value,
+                    syncId = (meta.values["sync_id"] as IntegerValue).value.toLong(),
                     changes =
                         (meta.values["changes"] as ArrayValue)
                             .values

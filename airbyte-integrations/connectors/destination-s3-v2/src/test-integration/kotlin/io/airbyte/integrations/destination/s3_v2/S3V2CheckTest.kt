@@ -8,11 +8,12 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 
 class S3V2CheckTest :
     CheckIntegrationTest<S3V2Specification>(
-        S3V2Specification::class.java,
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
@@ -39,6 +40,7 @@ class S3V2CheckTest :
         failConfigFilenamesAndFailureReasons = emptyMap()
     ) {
     @Test
+    @Timeout(5, unit = TimeUnit.MINUTES)
     override fun testSuccessConfigs() {
         super.testSuccessConfigs()
     }

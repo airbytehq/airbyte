@@ -49,12 +49,7 @@ class AirbyteValueIdentityMapperTest {
         val (inputValues, inputSchema, _) =
             ValueTestBuilder<SchemaRecordBuilder<Root>>()
                 .with(StringValue("a"), StringType)
-                .with(
-                    TimestampValue("2021-01-01T12:00:00Z"),
-                    TimeTypeWithTimezone,
-                    nameOverride = "bad",
-                    nullable = true
-                )
+                .with(IntegerValue(1000), BooleanType, nameOverride = "bad", nullable = true)
                 .build()
         val mapper = AirbyteValueIdentityMapper()
         val (values, changes) = mapper.map(inputValues, inputSchema)

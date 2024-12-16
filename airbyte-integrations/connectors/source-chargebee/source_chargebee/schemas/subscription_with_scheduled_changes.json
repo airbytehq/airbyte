@@ -3,7 +3,7 @@
   "name": "Subscription",
   "type": "object",
   "properties": {
-    "id": {
+    "subscription_id": {
       "description": "The unique ID of the subscription.",
       "type": ["string", "null"]
     },

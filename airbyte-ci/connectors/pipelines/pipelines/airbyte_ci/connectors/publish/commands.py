@@ -187,6 +187,7 @@ async def publish(
                 s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
                 use_local_cdk=ctx.obj.get("use_local_cdk"),
+                use_cdk_ref=ctx.obj.get("use_cdk_ref"),
                 python_registry_token=python_registry_token,
                 python_registry_url=python_registry_url,
                 python_registry_check_url=python_registry_check_url,

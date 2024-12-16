@@ -61,7 +61,7 @@ interface S3PathSpecification {
     @get:JsonPropertyDescription(
         "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files."
     )
-    @get:JsonProperty("s3_staging_prefix", defaultValue = "{s3_bucket_path}/__airbyte_tmp")
+    @get:JsonProperty("s3_staging_prefix")
     @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"]}""")
     val s3StagingPrefix: String?
 

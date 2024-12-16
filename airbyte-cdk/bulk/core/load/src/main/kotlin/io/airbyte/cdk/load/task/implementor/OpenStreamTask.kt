@@ -24,14 +24,15 @@ interface OpenStreamTask : StreamLevel, ImplementorScope
 class DefaultOpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    override val stream: DestinationStream,
-    private val taskLauncher: DestinationTaskLauncher
+    override val streamDescriptor: DestinationStream.Descriptor,
+    private val taskLauncher: DestinationTaskLauncher,
+    private val stream: DestinationStream,
 ) : OpenStreamTask {
     override suspend fun execute() {
         val streamLoader = destinationWriter.createStreamLoader(stream)
         streamLoader.start()
         syncManager.registerStartedStreamLoader(streamLoader)
-        taskLauncher.handleStreamStarted(stream)
+        taskLauncher.handleStreamStarted(streamDescriptor)
     }
 }
 
@@ -49,6 +50,12 @@ class DefaultOpenStreamTaskFactory(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream
     ): OpenStreamTask {
-        return DefaultOpenStreamTask(destinationWriter, syncManager, stream, taskLauncher)
+        return DefaultOpenStreamTask(
+            destinationWriter,
+            syncManager,
+            stream.descriptor,
+            taskLauncher,
+            stream
+        )
     }
 }

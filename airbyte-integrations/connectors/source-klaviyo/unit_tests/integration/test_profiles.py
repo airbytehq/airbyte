@@ -3,6 +3,7 @@ import datetime
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -15,7 +16,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, SyncMode
 from integration.config import KlaviyoConfigBuilder
 from source_klaviyo import SourceKlaviyo
 
@@ -66,7 +66,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(SourceKlaviyo(), config, catalog, state, expecting_exception)
+    return read(SourceKlaviyo(catalog, config, state), config, catalog, state, expecting_exception)
 
 
 class FullRefreshTest(TestCase):

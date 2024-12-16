@@ -55,6 +55,7 @@ definitions:
       name: account_users
       primary_key:
         - account
+        - user
       retriever:
         type: SimpleRetriever
         requester:
@@ -387,6 +388,7 @@ definitions:
       primary_key:
         - string_of_pivot_values
         - end_date
+        - sponsoredCampaign
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
         requester:

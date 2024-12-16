@@ -23,22 +23,22 @@ class DefaultFailStreamTask(
     private val exceptionHandler: DestinationTaskExceptionHandler<*, *>,
     private val exception: Exception,
     private val syncManager: SyncManager,
-    private val stream: DestinationStream,
+    private val stream: DestinationStream.Descriptor,
     private val kill: Boolean,
 ) : FailStreamTask {
     val log = KotlinLogging.logger {}
 
     override suspend fun execute() {
-        val streamManager = syncManager.getStreamManager(stream.descriptor)
+        val streamManager = syncManager.getStreamManager(stream)
         if (kill) {
             if (!streamManager.markKilled(exception)) {
-                log.info { "Stream ${stream.descriptor} already complete, skipping kill." }
+                log.info { "Stream $stream already complete, skipping kill." }
                 return
             }
         } else {
             if (!streamManager.markFailed(exception)) {
                 throw IllegalStateException(
-                    "Cannot fail stream ${stream.descriptor}, which is already complete."
+                    "Cannot fail stream $stream, which is already complete."
                 )
             }
             // Stream failure implies sync failure
@@ -55,10 +55,8 @@ class DefaultFailStreamTask(
         // TODO: Bit of smell here, suggests we should be fetching the StreamLoader
         // lazily+unconditionally
         //  through the DestinationWriter (via an injected wrapper?)
-        syncManager.getStreamLoaderOrNull(stream.descriptor)?.close(incompleteResult)
-            ?: log.warn {
-                "StreamLoader not found for stream ${stream.descriptor}, cannot call close."
-            }
+        syncManager.getStreamLoaderOrNull(stream)?.close(incompleteResult)
+            ?: log.warn { "StreamLoader not found for stream $stream, cannot call close." }
     }
 }
 
@@ -66,7 +64,7 @@ interface FailStreamTaskFactory {
     fun make(
         exceptionHandler: DestinationTaskExceptionHandler<*, *>,
         exception: Exception,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         kill: Boolean,
     ): FailStreamTask
 }
@@ -77,7 +75,7 @@ class DefaultFailStreamTaskFactory(private val syncManager: SyncManager) : FailS
     override fun make(
         exceptionHandler: DestinationTaskExceptionHandler<*, *>,
         exception: Exception,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         kill: Boolean,
     ): FailStreamTask {
         return DefaultFailStreamTask(exceptionHandler, exception, syncManager, stream, kill)

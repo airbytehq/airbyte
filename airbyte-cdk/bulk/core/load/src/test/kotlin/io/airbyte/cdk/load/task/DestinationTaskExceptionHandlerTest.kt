@@ -45,12 +45,13 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     @Primary
     @Requires(env = ["DestinationTaskLauncherExceptionHandlerTest"])
     class MockFailStreamTaskFactory : FailStreamTaskFactory {
-        val didRunFor = Channel<Triple<DestinationStream, Exception, Boolean>>(Channel.UNLIMITED)
+        val didRunFor =
+            Channel<Triple<DestinationStream.Descriptor, Exception, Boolean>>(Channel.UNLIMITED)
 
         override fun make(
             exceptionHandler: DestinationTaskExceptionHandler<*, *>,
             exception: Exception,
-            stream: DestinationStream,
+            stream: DestinationStream.Descriptor,
             kill: Boolean
         ): FailStreamTask {
             return object : FailStreamTask {
@@ -91,7 +92,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor = MockDestinationCatalogFactory.stream1.descriptor
                 override suspend fun execute() {
                     throw RuntimeException("StreamTask failure")
                 }
@@ -100,7 +101,7 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         val wrappedTask = exceptionHandler.withExceptionHandling(mockTask as T)
         wrappedTask.execute()
         val (stream, exception) = mockFailStreamTaskFactory.didRunFor.receive()
-        Assertions.assertEquals(MockDestinationCatalogFactory.stream1, stream)
+        Assertions.assertEquals(MockDestinationCatalogFactory.stream1.descriptor, stream)
         Assertions.assertTrue(exception is RuntimeException)
     }
 
@@ -126,8 +127,8 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
                 stream to Pair(exception, kill)
             }
         catalog.streams.forEach { stream ->
-            Assertions.assertTrue(streamResults[stream]!!.first is RuntimeException)
-            Assertions.assertTrue(streamResults[stream]!!.second)
+            Assertions.assertTrue(streamResults[stream.descriptor]!!.first is RuntimeException)
+            Assertions.assertTrue(streamResults[stream.descriptor]!!.second)
         }
     }
 
@@ -198,7 +199,8 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
         val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor: DestinationStream.Descriptor =
+                    MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {
                     innerTaskRan.send(true)
@@ -234,7 +236,8 @@ class DestinationTaskExceptionHandlerTest<T> where T : LeveledTask, T : ScopedTa
     ) = runTest {
         val mockTask =
             object : StreamLevel, ImplementorScope {
-                override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
+                override val streamDescriptor: DestinationStream.Descriptor =
+                    MockDestinationCatalogFactory.stream1.descriptor
 
                 override suspend fun execute() {
                     // do nothing

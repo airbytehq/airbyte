@@ -20,6 +20,9 @@ import java.nio.file.Path
  *
  * - Add any required custom fields to the spec w/ jackson annotations
  *
+ * - Add annotation overrides (note that this will replace the original annotation, so to extend an
+ * existing annotation, you must copy the original annotation and add the new fields).
+ *
  * - Create a class `{MyDestination}Configuration` extending [DestinationConfiguration]
  *
  * - Add the corresponding mixin `...ConfigurationProvider`s for any added spec mixins
@@ -64,7 +67,7 @@ abstract class DestinationConfiguration : Configuration {
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
     open val estimatedRecordMemoryOverheadRatio: Double =
-        0.1 // 0 => No overhead, 1.0 => 100% overhead
+        1.1 // 1.0 => No overhead, 2.0 => 100% overhead
 
     /**
      * If we have not flushed state checkpoints in this amount of time, make a best-effort attempt
