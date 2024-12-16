@@ -47,6 +47,7 @@ import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 import org.projectnessie.client.NessieConfigConstants
+import software.amazon.awssdk.services.glue.model.ConcurrentModificationException
 
 private val logger = KotlinLogging.logger {}
 
@@ -123,6 +124,11 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                     // One thread may create the namespace successfully, causing the other threads
                     // to encounter this exception
                     // when they also try to create the namespace.
+                    logger.info {
+                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
+                    }
+                } catch (e: ConcurrentModificationException) {
+                    // do the same for AWS Glue
                     logger.info {
                         "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
                     }
