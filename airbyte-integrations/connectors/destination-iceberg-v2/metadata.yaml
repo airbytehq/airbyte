@@ -33,4 +33,13 @@ data:
   supportsRefreshes: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_CONFIG
+          fileName: glue.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
