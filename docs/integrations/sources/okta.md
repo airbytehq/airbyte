@@ -9,17 +9,20 @@ Okta is the complete identity solution for all your apps and people that’s uni
 ## Airbyte Open Source
 
 - Name
-- Okta-Domain
-- Start Date
 - Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
+- Okta Domain (example : `myorg`)
+- Okta Environment Domain (example : `okta.com`)
+- Start Date
 
 ## Airbyte Cloud
 
 - Name
-- Start Date
 - Client ID (received when application was added).
 - Client Secret (received when application was added).
 - Refresh Token (received when application was added)
+- Okta Domain (example : `myorg`)
+- Okta Environment Domain (example : `okta.com`)
+- Start Date
 
 ## Setup guide
 
@@ -35,13 +38,15 @@ Okta is the complete identity solution for all your apps and people that’s uni
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
-4. Add **Name**
-5. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
-6. Add **Start date** (defaults to 7 days if no date is included)
-7. Choose the method of authentication
-8. If you select Token authentication - fill the field **Personal Api Token**
-9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. Click `Set up source`.
+4. Add **Source Name**
+5. Choose the method of authentication : **Authorization Method**
+    - If you select Token authentication - fill the field **Personal Api Token**
+    - If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+    - If you select OAuth2.0 with private key authorization - fill the fields **Client ID**, **Key ID**, **Private Key**, **Scope**
+6. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
+7. Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
+8. Add **Start date** (defaults to 7 days if no date is included)
+9. Click `Set up source`.
 
 ### For Airbyte Open Source:
 
@@ -51,10 +56,13 @@ Okta is the complete identity solution for all your apps and people that’s uni
 4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 5. On the Set up the source page select **Okta** from the Source type dropdown.
 6. Add **Name**
-7. Add **Okta-Domain**
-8. Add **Start date**
-9. Paste all data to required fields fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. Click `Set up source`.
+7. Choose the method of authentication : **Authorization Method**
+    - If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+    - If you select OAuth2.0 with private key authorization - fill the fields **Client ID**, **Key ID**, **Private Key**, **Scope**
+8. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
+9. Add **Okta Environment Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta environment domain.)
+10. Add **Start date** (defaults to 7 days if no date is included)
+11. Click `Set up source`.
 
 ## Supported sync modes
 
@@ -86,10 +94,11 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.4.0 | 2024-10-21 | [46540](https://github.com/airbytehq/airbyte/pull/46540) | Support for custom okta domains |
 | 0.3.13 | 2024-12-14 | [49264](https://github.com/airbytehq/airbyte/pull/49264) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.12 | 2024-12-12 | [49145](https://github.com/airbytehq/airbyte/pull/49145) | Update dependencies |
 | 0.3.11 | 2024-11-04 | [47900](https://github.com/airbytehq/airbyte/pull/47900) | Update dependencies |
-| 0.3.10 | 2024-10-28 | [47058](https://github.com/airbytehq/airbyte/pull/47058) | Update dependencies |
+| 0.3.10 | 2024-10-28 | [47058](https://github.com/airbytehq/airbyte/pull/47058) | Update dependencies 
 | 0.3.9 | 2024-10-12 | [46804](https://github.com/airbytehq/airbyte/pull/46804) | Update dependencies |
 | 0.3.8 | 2024-10-05 | [46481](https://github.com/airbytehq/airbyte/pull/46481) | Update dependencies |
 | 0.3.7 | 2024-09-28 | [46148](https://github.com/airbytehq/airbyte/pull/46148) | Update dependencies |

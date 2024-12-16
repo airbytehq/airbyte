@@ -108,6 +108,7 @@ scan-journal.log
 
 # mvn
 target/
+**/file::memory:?cache=shared
 
 # CDK load artifacts
 airbyte-cdk/bulk/core/load/airbyte-cdk-load/
