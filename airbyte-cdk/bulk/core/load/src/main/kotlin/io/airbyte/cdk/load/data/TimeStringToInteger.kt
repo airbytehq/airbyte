@@ -19,11 +19,11 @@ import java.time.temporal.ChronoUnit
  */
 class TimeStringToInteger : AirbyteValueIdentityMapper() {
     companion object {
-        private val DATE_TIME_FORMATTER: DateTimeFormatter =
+        val DATE_TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern(
                 "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
             )
-        private val TIME_FORMATTER: DateTimeFormatter =
+        val TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern(
                 "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
             )

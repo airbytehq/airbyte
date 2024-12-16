@@ -20,6 +20,9 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
 
 class AirbyteValueToIcebergRecord {
+
+    private val timeStringUtility = TimeStringUtility()
+
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
         when (airbyteValue) {
             is ObjectValue -> {
@@ -65,9 +68,21 @@ class AirbyteValueToIcebergRecord {
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
             is TimeValue ->
-                throw IllegalArgumentException("String-based time types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIME -> timeStringUtility.toOffset(airbyteValue.value)
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimeValue"
+                        )
+                }
             is TimestampValue ->
-                throw IllegalArgumentException("String-based timestamp types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIMESTAMP -> timeStringUtility.toOffsetDateTime(airbyteValue.value)
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimestampValue"
+                        )
+                }
             is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
