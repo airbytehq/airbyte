@@ -23,54 +23,38 @@ class SapHanaSourceOperations :
         }
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
-        // This mapping includes literals returned by the JDBC driver as well as
-        // *_TYPE_NAME column values from queries to ALL_* system tables.
         return when (type.typeName) {
-            "BINARY_FLOAT" -> FloatFieldType
-            "BINARY_DOUBLE" -> DoubleFieldType
+            "BOOLEAN" -> BooleanFieldType
+            "TINYINT",
+            "SMALLINT", -> ShortFieldType
+            "DOUBLE" -> DoubleFieldType
             "FLOAT",
-            "DOUBLE PRECISION",
-            "REAL", -> BigDecimalFieldType
-            "NUMBER",
-            "NUMERIC",
+            "REAL",
+            "SMALLDECIMAL",
             "DECIMAL",
             "DEC", -> BigDecimalFieldType
             "INTEGER",
-            "INT",
-            "SMALLINT", -> BigIntegerFieldType
-            "BOOLEAN",
-            "BOOL", -> BooleanFieldType
+            "BIGINT", -> BigIntegerFieldType
             "CHAR",
-            "VARCHAR2",
             "VARCHAR",
-            "CHARACTER",
-            "CHARACTER VARYING",
-            "CHAR VARYING", -> StringFieldType
+            "ALPHANUM", -> StringFieldType
             "NCHAR",
-            "NVARCHAR2",
-            "NCHAR VARYING",
-            "NATIONAL CHARACTER VARYING",
-            "NATIONAL CHARACTER",
-            "NATIONAL CHAR VARYING",
-            "NATIONAL CHAR", -> NStringFieldType
+            "NVARCHAR",
+            "SHORTTEXT", -> NStringFieldType
+            "BINARY",
+            "VARBINARY",
+            "REAL_VECTOR", -> BinaryStreamFieldType
+            "TIME" -> LocalTimeFieldType
+            "DATE" -> LocalDateTimeFieldType
+            "SECONDDATE",
+            "TIMESTAMP", -> OffsetDateTimeFieldType
             "BLOB" -> BinaryStreamFieldType
             "CLOB" -> ClobFieldType
-            "NCLOB" -> NClobFieldType
-            "BFILE" -> BinaryStreamFieldType
-            "DATE" -> LocalDateTimeFieldType
-            "INTERVALDS",
-            "INTERVAL DAY TO SECOND",
-            "INTERVALYM",
-            "INTERVAL YEAR TO MONTH", -> StringFieldType
-            "JSON" -> JsonStringFieldType
-            "LONG",
-            "LONG RAW",
-            "RAW", -> BinaryStreamFieldType
-            "TIMESTAMP",
-            "TIMESTAMP WITH LOCAL TIME ZONE",
-            "TIMESTAMP WITH LOCAL TZ", -> LocalDateTimeFieldType
-            "TIMESTAMP WITH TIME ZONE",
-            "TIMESTAMP WITH TZ", -> OffsetDateTimeFieldType
+            "NCLOB",
+            "TEXT",
+            "BINTEXT", -> NClobFieldType
+            "ST_POINT",
+            "ST_GEOMETRY", -> BinaryStreamFieldType
             else -> PokemonFieldType
         }
     }
