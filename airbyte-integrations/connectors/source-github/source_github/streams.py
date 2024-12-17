@@ -664,6 +664,11 @@ class Commits(IncrementalMixin, GithubStream):
         self.branches_stream = Branches(**kwargs)
         self.repositories_stream = RepositoryStats(**kwargs)
 
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        repository = stream_slice["repository"]
+        branch = stream_slice["branch"]
+        return f"repos/{repository}/commits"
+
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         since = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
@@ -725,6 +730,31 @@ class Commits(IncrementalMixin, GithubStream):
             if not repo_branches:
                 repo_branches = [default_branches[repo]]
             self.branches_to_repos[repo] = repo_branches
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        commits = response.json()
+        for commit in commits:
+            # Fetch detailed commit information including files
+            commit_detail_response = self._session.get(commit["url"])
+            commit_detail = commit_detail_response.json()
+
+            # Include files data in the commit record
+            commit["files"] = commit_detail.get("files", [])
+
+            # Handle pagination for files if necessary
+            while 'next' in commit_detail_response.links:
+                next_url = commit_detail_response.links['next']['url']
+                commit_detail_response = self._session.get(next_url)
+                commit_detail = commit_detail_response.json()
+                # Append the additional files to the existing list
+                commit["files"].extend(commit_detail.get("files", []))
+            yield commit
 
 
 class Issues(IncrementalMixin, GithubStream):
