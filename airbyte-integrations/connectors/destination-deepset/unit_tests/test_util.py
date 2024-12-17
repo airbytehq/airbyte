@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from airbyte_cdk.models import AirbyteMessage, FailureType, Level, TraceType, Type
 from destination_deepset import util
 from pydantic import BaseModel
 
@@ -45,3 +46,33 @@ def test_get_ignores_fallback_value_if_match_found() -> None:
 def test_get_returns_fallback_value_if_no_match_found() -> None:
     fallback = "I Fall Back"
     assert util.get(obj={}, key_path="a.b.c", default=fallback) == fallback
+
+
+@pytest.mark.parametrize(
+    ("message", "exception", "expected"),
+    [
+        ("Hello", None, ("Hello", None)),
+        ("Hello", Exception("World"), ("Hello", "World")),
+    ],
+)
+def test_get_trace_message(message: str, exception: Exception | None, expected: tuple[str, str | None]) -> None:
+    error_message, internal_error_message = expected
+    airbyte_message = util.get_trace_message(message, exception=exception)
+
+    assert isinstance(airbyte_message, AirbyteMessage)
+    assert airbyte_message.type == Type.TRACE
+    assert airbyte_message.trace.type == TraceType.ERROR
+    assert airbyte_message.trace.error.message == error_message
+    assert airbyte_message.trace.error.internal_message == internal_error_message
+    assert airbyte_message.trace.error.failure_type == FailureType.transient_error
+
+
+def test_get_log_message() -> None:
+    log_message = "Hello, World!"
+    airbyte_message = util.get_log_message(log_message)
+
+    assert isinstance(airbyte_message, AirbyteMessage)
+    assert airbyte_message.type == Type.LOG
+    assert airbyte_message.log.level == Level.INFO
+    assert airbyte_message.log.message == log_message
+    assert airbyte_message.log.stack_trace is None
