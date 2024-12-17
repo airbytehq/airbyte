@@ -19,7 +19,7 @@ from typing_extensions import override
 
 
 class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
-    FILE_SIZE_LIMIT = 1_000_000_000
+    FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
         super().__init__()
