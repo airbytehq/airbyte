@@ -34,7 +34,6 @@ repos:
       - id: isort
         files: \.py$
         require_serial: true
-        # args: [--settings-file=pyproject.toml]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.3
