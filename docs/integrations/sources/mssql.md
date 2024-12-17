@@ -101,7 +101,9 @@ approaches CDC.
 - The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot
   enable CDC on the SQL Server master database.
 - Using variables with partition switching on databases or tables with change data capture \(CDC\)
-  is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement
+  is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement.
+- CDC incremental syncing is only available for tables with at least one primary key. Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
+  For more information on CDC limitations, refer to our [CDC Limitations doc](https://docs.airbyte.com/understanding-airbyte/cdc#limitations).
 - Our CDC implementation uses at least once delivery for all change records.
 - Read more on CDC limitations in the
   [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).

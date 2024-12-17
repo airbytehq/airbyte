@@ -36,19 +36,24 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         self.logger.info(f"Building connector from base image {base_image_name}")
         return self.dagger_client.container(platform=platform).from_(base_image_name)
 
-    async def _create_builder_container(self, base_container: Container) -> Container:
+    async def _create_builder_container(self, base_container: Container, user: str) -> Container:
         """Pre install the connector dependencies in a builder container.
 
         Args:
             base_container (Container): The base container to use to build the connector.
-
+            user (str): The user to use in the container.
         Returns:
             Container: The builder container, with installed dependencies.
         """
         ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
 
         builder = await with_python_connector_installed(
-            self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
+            self.context,
+            base_container,
+            str(self.context.connector.code_directory),
+            user,
+            install_root_package=False,
+            include=ONLY_BUILD_FILES,
         )
         return builder
 
@@ -60,11 +65,11 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         """
         self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
-        user = await self._get_image_user(base)
+        user = await self.get_image_user(base)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
         main_file_name = build_customization.get_main_file_name(self.context.connector)
 
-        builder = await self._create_builder_container(customized_base)
+        builder = await self._create_builder_container(customized_base, user)
 
         # The snake case name of the connector corresponds to the python package name of the connector
         # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
@@ -97,7 +102,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
         )
         container = self.dagger_client.container(platform=platform).build(await self.context.get_connector_dir())
-        container = await apply_python_development_overrides(self.context, container)
+        container = await apply_python_development_overrides(self.context, container, "root")
         return container
 
 

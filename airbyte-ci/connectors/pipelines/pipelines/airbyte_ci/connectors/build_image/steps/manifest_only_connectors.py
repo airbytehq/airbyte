@@ -46,7 +46,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
         # Mount manifest file
         base_container = self._get_base_container(platform)
-        user = await self._get_image_user(base_container)
+        user = await self.get_image_user(base_container)
         base_container = base_container.with_file(
             f"source_declarative_manifest/{MANIFEST_FILE_PATH}",
             (await self.context.get_connector_dir(include=[MANIFEST_FILE_PATH])).file(MANIFEST_FILE_PATH),
@@ -62,7 +62,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
                 owner=user,
             )
         connector_container = build_customization.apply_airbyte_entrypoint(base_container, self.context.connector)
-        connector_container = await apply_python_development_overrides(self.context, connector_container)
+        connector_container = await apply_python_development_overrides(self.context, connector_container, user)
         return connector_container
 
 

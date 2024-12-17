@@ -178,3 +178,19 @@ async def check_user_can_write_dir(container: dagger.Container, user: str, dir_p
         await container.with_user(user).with_exec(["touch", f"{dir_path}/foo.txt"])
     except dagger.ExecError:
         raise errors.SanityCheckError(f"{dir_path} is not writable by the {user}.")
+
+
+async def check_file_exists(container: dagger.Container, file_path: str):
+    """Check that a file exists in the container.
+
+    Args:
+        container (dagger.Container): The container on which the sanity checks should run.
+        file_path (str): The file path to check.
+
+    Raises:
+        errors.SanityCheckError: Raised if the file does not exist.
+    """
+    try:
+        await container.with_exec(["test", "-f", file_path])
+    except dagger.ExecError:
+        raise errors.SanityCheckError(f"{file_path} does not exist.")
