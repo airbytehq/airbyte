@@ -2,7 +2,7 @@
 products: oss-community
 ---
 
-# Using an EC2 Instance with abctl
+# Deploy Airbyte to AWS EC2
 
 <!-- This topic has been preserved from the original Quickstart guide, unchanged. It may be used later in rewritten deployment docs. -->
 
