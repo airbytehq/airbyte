@@ -7,12 +7,10 @@ package io.airbyte.integrations.destination.iceberg.v2
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.math.BigDecimal
 import java.time.Instant
 import java.util.LinkedHashMap
 import java.util.UUID
@@ -21,28 +19,22 @@ import org.apache.iceberg.data.Record
 
 object IcebergV2DataDumper : DestinationDataDumper {
 
-    private fun convert(value: Any?, type: AirbyteType): AirbyteValue {
-        return if (value == null) {
-            NullValue
-        } else {
-            when (type) {
-                StringType -> StringValue(value as String)
-                is ArrayType -> ArrayValue((value as List<*>).map { convert(it, type.items.type) })
-                BooleanType -> BooleanValue(value as Boolean)
-                IntegerType -> IntegerValue(value as Long)
-                NumberType -> NumberValue(BigDecimal(value as Double))
-                else ->
-                    throw IllegalArgumentException("Object type with empty schema is not supported")
-            }
-        }
-    }
-
-    private fun getCastedData(schema: ObjectType, record: Record): ObjectValue {
+    private fun toAirbyteValue(record: Record): ObjectValue {
         return ObjectValue(
             LinkedHashMap(
-                schema.properties
-                    .map { (name, field) -> name to convert(record.getField(name), field.type) }
-                    .toMap()
+                record
+                    .struct()
+                    .fields()
+                    .filterNot { DestinationRecord.Meta.COLUMN_NAMES.contains(it.name()) }
+                    .associate { field ->
+                        val name = field.name()
+                        val airbyteValue =
+                            when (val value = record.getField(field.name())) {
+                                is Record -> toAirbyteValue(value)
+                                else -> AirbyteValue.from(value)
+                            }
+                        name to airbyteValue
+                    }
             )
         )
     }
@@ -80,8 +72,6 @@ object IcebergV2DataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = IcebergV2TestUtil.getConfig(spec)
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = pipeline.finalSchema as ObjectType
         val catalog = IcebergV2TestUtil.getCatalog(config)
         val table =
             catalog.loadTable(
@@ -108,7 +98,7 @@ object IcebergV2DataDumper : DestinationDataDumper {
                         generationId =
                             record.getField(DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID)
                                 as Long,
-                        data = getCastedData(schema, record),
+                        data = toAirbyteValue(record),
                         airbyteMeta = getMetaData(record)
                     )
                 )

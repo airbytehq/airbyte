@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import java.nio.file.Files
@@ -29,7 +28,7 @@ abstract class IcebergV2WriteTest(
         IcebergV2Specification::class.java,
         IcebergV2DataDumper,
         destinationCleaner,
-        NoopExpectedRecordMapper,
+        IcebergRecordMapper,
         isStreamSchemaRetroactive = true,
         supportsDedup = false,
         stringifySchemalessObjects = true,
@@ -38,19 +37,10 @@ abstract class IcebergV2WriteTest(
         commitDataIncrementally = false,
         supportFileTransfer = false,
         allTypesBehavior = StronglyTyped(),
+        nullEqualsUnset = true,
     ) {
     @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
-    @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
+    @Disabled("This is currently hanging forever and we should look into why")
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
@@ -62,29 +52,21 @@ abstract class IcebergV2WriteTest(
     }
 
     @Test
-    @Disabled
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
+    @Disabled("This is currently hanging forever and we should look into why")
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
     @Test
-    @Disabled("This is expected")
-    override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
+    //    @Disabled
+    override fun testContainerTypes() {
+        super.testContainerTypes()
     }
 
     @Test
-    @Disabled
-    override fun testUnions() {
-        super.testUnions()
+    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
@@ -96,7 +78,12 @@ class IcebergGlueWriteTest :
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
             )
         ),
-    )
+    ) {
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
@@ -142,15 +129,18 @@ class IcebergNessieMinioWriteTest :
             val authToken = getToken()
             return """
             {
+                "catalog_type": {
+                  "catalog_type": "NESSIE",
+                  "server_uri": "http://$nessieEndpoint:19120/api/v1",
+                  "access_token": "$authToken"
+                },
                 "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
                 "access_key_id": "minioadmin",
                 "secret_access_key": "minioadmin",
                 "s3_endpoint": "http://$minioEndpoint:9002",
-                "server_uri": "http://$nessieEndpoint:19120/api/v1",
                 "warehouse_location": "s3://demobucket/",
-                "main_branch_name": "main",
-                "access_token": "$authToken"
+                "main_branch_name": "main"
             }
             """.trimIndent()
         }
