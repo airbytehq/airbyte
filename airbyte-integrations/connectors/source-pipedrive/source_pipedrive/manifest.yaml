@@ -427,13 +427,13 @@ spec:
 # and it does not impact actions performed directly within the Pipedrive user interface.
 # 30,000 base tokens × subscription plan multiplier × number of seats
 
-# | Plan	        | Plan multiplier |
-# |-----------------------------------|
-# | Essential       | 1               |
-# | Advanced	    | 2               |
-# | Professional    | 3               |
-# | Power	    | 5               |
-# | Enterprise      | 7               |
+#| Plan	        | Plan multiplier |
+#|:-------------|-----------------|
+#| Essential    | 1               |
+#| Advanced     | 2               |
+#| Professional | 3               |
+#| Power        | 5               |
+#| Enterprise   | 7               |
 
 # API Requests:
 
