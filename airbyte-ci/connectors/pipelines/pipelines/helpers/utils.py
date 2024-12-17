@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import contextlib
 import datetime
+import functools
 import os
 import re
 import sys
 import unicodedata
+import warnings
 import xml.sax.saxutils
 from io import TextIOWrapper
 from pathlib import Path
@@ -388,3 +390,15 @@ async def raise_if_not_user(container: Container, expected_user: str) -> None:
     assert (
         actual_user == expected_user
     ), f"Container is not running as the expected user '{expected_user}', it is running as '{actual_user}'."
+
+
+def deprecated(reason: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            warnings.warn(f"{func.__name__} is deprecated: {reason}", DeprecationWarning, stacklevel=2)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
