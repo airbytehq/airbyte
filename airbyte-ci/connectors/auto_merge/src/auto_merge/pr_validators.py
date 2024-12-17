@@ -48,12 +48,14 @@ def head_commit_passes_all_required_checks(
     return True, None
 
 
-# A PR is considered auto-mergeable if:
+# A standard PR is considered auto-mergeable if:
 #     - it has the AUTO_MERGE_LABEL
 #     - it targets the BASE_BRANCH
 #     - it touches only files in CONNECTOR_PATH_PREFIXES
 #     - the head commit passes all required checks
 
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
-# Let's declared faster checks first as the  check_if_pr_is_auto_mergeable function fails fast.
-ENABLED_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_passes_all_required_checks]
+# Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
+DEFAULT_ENABLED_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_passes_all_required_checks]
+
+PROMOTED_RC_PR_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors]

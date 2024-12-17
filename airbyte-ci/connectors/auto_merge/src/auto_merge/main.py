@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD
+from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, AUTO_MERGE_PROMOTED_RC_LABEL, BASE_BRANCH, MERGE_METHOD
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
-from .pr_validators import ENABLED_VALIDATORS
+from .pr_validators import DEFAULT_ENABLED_VALIDATORS, PROMOTED_RC_PR_VALIDATORS
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -49,7 +49,8 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     Returns:
         bool: True if the PR is auto-mergeable, False otherwise
     """
-    for validator in ENABLED_VALIDATORS:
+    validators = PROMOTED_RC_PR_VALIDATORS if AUTO_MERGE_PROMOTED_RC_LABEL in pr.labels else DEFAULT_ENABLED_VALIDATORS
+    for validator in validators:
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
             if error:

@@ -750,7 +750,7 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
                     all_modified_files.update(
                         await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
                     )
-                post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+                post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=True, labels=["auto-merge", "auto-merge/promoted-rc"])
                 pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                     all_modified_files, context, results, current_version, promoted_version
                 )
