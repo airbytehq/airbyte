@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import StateMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
@@ -111,7 +111,7 @@ class Customers({{properCase name}}Stream):
 
 
 # Basic incremental stream
-class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
+class Incremental{{properCase name}}Stream({{properCase name}}Stream, StateMixin, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
          if you do not need to implement incremental sync for any streams, remove this class.
@@ -131,12 +131,24 @@ class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
         """
         return []
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
         """
         return {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        """State setter, accept state serialized by state getter."""
 
 
 class Employees(Incremental{{properCase name}}Stream):
