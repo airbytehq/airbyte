@@ -5,16 +5,16 @@ Source connector for HoorayHR (https://hoorayhr.io). The connector uses https://
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `hoorayhrusername` | `string` | HoorayHR Username.  |  |
 | `hoorayhrpassword` | `string` | HoorayHR Password.  |  |
+| `hoorayhrusername` | `string` | HoorayHR Username.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Sick Leaves | id | No pagination | ✅ |  ❌  |
-| Time Off | id | No pagination | ✅ |  ❌  |
-| Leave Types | id | No pagination | ✅ |  ❌  |
-| Users | id | No pagination | ✅ |  ❌  |
+| sick-leaves | id | No pagination | ✅ |  ❌  |
+| time-off | id | No pagination | ✅ |  ❌  |
+| leave-types | id | No pagination | ✅ |  ❌  |
+| users | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
