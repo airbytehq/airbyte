@@ -4,33 +4,52 @@
 
 package io.airbyte.integrations.destination.iceberg.v2.io
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.data.MapperPipeline
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
+import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
+import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
+import io.airbyte.integrations.destination.iceberg.v2.SECRET_ACCESS_KEY
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogProperties.URI
 import org.apache.iceberg.CatalogProperties.WAREHOUSE_LOCATION
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE
+import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
+import org.apache.iceberg.aws.AwsClientProperties
+import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
+import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.Record
+import org.apache.iceberg.exceptions.AlreadyExistsException
+import org.projectnessie.client.NessieConfigConstants
 
 private val logger = KotlinLogging.logger {}
+
+const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 /**
  * Extension function for the[DestinationStream.Descriptor] class that converts the descriptor to an
@@ -43,10 +62,12 @@ fun DestinationStream.Descriptor.toIcebergTableIdentifier(): TableIdentifier {
 }
 
 /** Collection of Iceberg related utilities. */
-object IcebergUtil {
+@Singleton
+class IcebergUtil {
     internal class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
+
     fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
         if (!generationIdRegex.matches(generationId)) {
             throw InvalidFormatException(
@@ -97,11 +118,25 @@ object IcebergUtil {
         properties: Map<String, String>
     ): Table {
         val tableIdentifier = streamDescriptor.toIcebergTableIdentifier()
-        if (
-            catalog is SupportsNamespaces && !catalog.namespaceExists(tableIdentifier.namespace())
-        ) {
-            catalog.createNamespace(tableIdentifier.namespace())
-            logger.info { "Created namespace '${tableIdentifier.namespace()}'." }
+        synchronized(tableIdentifier.namespace()) {
+            if (
+                catalog is SupportsNamespaces &&
+                    !catalog.namespaceExists(tableIdentifier.namespace())
+            ) {
+                try {
+                    catalog.createNamespace(tableIdentifier.namespace())
+                    logger.info { "Created namespace '${tableIdentifier.namespace()}'." }
+                } catch (e: AlreadyExistsException) {
+                    // This exception occurs when multiple threads attempt to write to the same
+                    // namespace in parallel.
+                    // One thread may create the namespace successfully, causing the other threads
+                    // to encounter this exception
+                    // when they also try to create the namespace.
+                    logger.info {
+                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
+                    }
+                }
+            }
         }
 
         return if (!catalog.tableExists(tableIdentifier)) {
@@ -142,42 +177,100 @@ object IcebergUtil {
         // TODO figure out how to detect the actual operation value
         return RecordWrapper(
             delegate = dataMapped.toIcebergRecord(tableSchema),
-            operation = Operation.INSERT
+            operation = getOperation(record = record, importType = stream.importType)
         )
     }
 
     /**
      * Creates the Iceberg [Catalog] configuration properties from the destination's configuration.
      *
-     * @param icebergConfiguration The destination's configuration
+     * @param config The destination's configuration
      * @return The Iceberg [Catalog] configuration properties.
      */
-    fun toCatalogProperties(icebergConfiguration: IcebergV2Configuration): Map<String, String> {
-        return mutableMapOf(
-                // TODO make configurable?
-                ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
-                URI to icebergConfiguration.nessieServerConfiguration.serverUri,
-                "nessie.ref" to "main",
-                WAREHOUSE_LOCATION to
-                    icebergConfiguration.nessieServerConfiguration.warehouseLocation,
-                // Use Iceberg's S3FileIO for file operations
-                CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
-                "s3.access-key-id" to icebergConfiguration.awsAccessKeyConfiguration.accessKeyId!!,
-                "s3.secret-access-key" to
-                    icebergConfiguration.awsAccessKeyConfiguration.secretAccessKey!!,
-                "s3.region" to icebergConfiguration.s3BucketConfiguration.s3BucketRegion.toString(),
-                "s3.endpoint" to icebergConfiguration.s3BucketConfiguration.s3Endpoint!!,
-                "s3.path-style-access" to "true" // Required for MinIO
-            )
-            .apply {
-                if (icebergConfiguration.nessieServerConfiguration.accessToken != null) {
-                    put("nessie.authentication.type", "BEARER")
-                    put(
-                        "nessie.authentication.token",
-                        icebergConfiguration.nessieServerConfiguration.accessToken!!
-                    )
-                }
+    fun toCatalogProperties(config: IcebergV2Configuration): Map<String, String> {
+        val icebergCatalogConfig = config.icebergCatalogConfiguration
+        val catalogConfig = icebergCatalogConfig.catalogConfiguration
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID cannot be null"
             }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key cannot be null"
+            }
+
+        // Common S3/Iceberg properties shared across all catalog types.
+        // The S3 endpoint is optional; if provided, it will be included.
+        val s3CommonProperties =
+            mutableMapOf<String, String>(
+                    CatalogProperties.FILE_IO_IMPL to S3FileIO::class.java.name,
+                    S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                    S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+                    // Required for MinIO or other S3-compatible stores using path-style access.
+                    S3FileIOProperties.PATH_STYLE_ACCESS to "true"
+                )
+                .apply {
+                    config.s3BucketConfiguration.s3Endpoint?.let { endpoint ->
+                        this[S3FileIOProperties.ENDPOINT] = endpoint
+                    }
+                }
+
+        return when (catalogConfig) {
+            is NessieCatalogConfiguration -> {
+                // Nessie relies on the AWS region being set as a system property.
+                System.setProperty("aws.region", config.s3BucketConfiguration.s3BucketRegion.region)
+
+                val nessieProperties =
+                    mutableMapOf(
+                        ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
+                        URI to catalogConfig.serverUri,
+                        NessieConfigConstants.CONF_NESSIE_REF to
+                            icebergCatalogConfig.mainBranchName,
+                        WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
+                    )
+
+                // Add optional Nessie auth token if provided.
+                catalogConfig.accessToken?.let { token ->
+                    nessieProperties[NessieConfigConstants.CONF_NESSIE_AUTH_TYPE] = "BEARER"
+                    nessieProperties[NessieConfigConstants.CONF_NESSIE_AUTH_TOKEN] = token
+                }
+
+                nessieProperties + s3CommonProperties
+            }
+            is GlueCatalogConfiguration -> {
+                val clientCredentialsProviderPrefix =
+                    AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER + "."
+
+                val glueProperties =
+                    mapOf(
+                        ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_GLUE,
+                        WAREHOUSE_LOCATION to icebergCatalogConfig.warehouseLocation,
+                        AwsProperties.GLUE_CATALOG_ID to catalogConfig.glueId,
+                        AwsClientProperties.CLIENT_REGION to
+                            config.s3BucketConfiguration.s3BucketRegion.region,
+                        AwsClientProperties.CLIENT_CREDENTIALS_PROVIDER to
+                            GlueCredentialsProvider::class.java.name,
+                        "${clientCredentialsProviderPrefix}${ACCESS_KEY_ID}" to awsAccessKeyId,
+                        "${clientCredentialsProviderPrefix}${SECRET_ACCESS_KEY}" to
+                            awsSecretAccessKey
+                    )
+
+                glueProperties + s3CommonProperties
+            }
+            else ->
+                throw IllegalArgumentException(
+                    "Unknown catalog type: ${catalogConfig::class.java.name}"
+                )
+        }
+    }
+
+    fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
+        val primaryKeys =
+            when (stream.importType) {
+                is Dedupe -> (stream.importType as Dedupe).primaryKey
+                else -> emptyList()
+            }
+        return pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
@@ -185,4 +278,20 @@ object IcebergUtil {
         schema.identifierFieldNames().forEach { builder.asc(it) }
         return builder.build()
     }
+
+    private fun getOperation(
+        record: DestinationRecord,
+        importType: ImportType,
+    ): Operation =
+        if (
+            record.data is ObjectValue &&
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null &&
+                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] !is NullValue
+        ) {
+            Operation.DELETE
+        } else if (importType is Dedupe) {
+            Operation.UPDATE
+        } else {
+            Operation.INSERT
+        }
 }

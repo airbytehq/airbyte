@@ -40,7 +40,10 @@ class ProcessFileTaskTest {
         defaultProcessFileTask.execute()
 
         coVerify {
-            taskLauncher.handleNewBatch(stream, BatchEnvelope(batch, Range.singleton(index)))
+            taskLauncher.handleNewBatch(
+                stream,
+                BatchEnvelope(batch, Range.singleton(index), stream)
+            )
         }
     }
 }

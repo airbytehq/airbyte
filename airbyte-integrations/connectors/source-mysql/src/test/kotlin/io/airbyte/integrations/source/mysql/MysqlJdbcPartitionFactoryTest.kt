@@ -15,6 +15,7 @@ import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
@@ -87,6 +88,20 @@ class MysqlJdbcPartitionFactoryTest {
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                 configuredPrimaryKey = listOf(binaryFieldId),
                 configuredCursor = binaryFieldId,
+            )
+
+        val datetimeFieldId = Field("id4", LocalDateTimeFieldType)
+
+        val datetimeStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("stream4")
+                    ),
+                schema = setOf(datetimeFieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(datetimeFieldId),
+                configuredCursor = datetimeFieldId,
             )
 
         private fun sharedState(
@@ -231,6 +246,37 @@ class MysqlJdbcPartitionFactoryTest {
 
         assertEquals(
             Jsons.valueToTree("2025-09-02T05:23:35.000000Z"),
+            (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
+        )
+    }
+
+    @Test
+    fun testResumeFromCompletedCursorBasedReadTimestampWithoutTimezone() {
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+                  "cursor": "2024-11-21T11:59:57.123",
+                  "version": 2,
+                  "state_type": "cursor_based",
+                  "stream_name": "stream4",
+                  "cursor_field": [
+                    "id4"
+                  ],
+                  "stream_namespace": "test",
+                  "cursor_record_count": 1 
+              } 
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            mysqlJdbcPartitionFactory.create(
+                streamFeedBootstrap(datetimeStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+
+        assertEquals(
+            Jsons.valueToTree("2024-11-21T11:59:57.123000"),
             (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }

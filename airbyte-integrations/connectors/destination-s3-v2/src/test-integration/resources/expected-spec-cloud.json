@@ -332,26 +332,6 @@
         "title" : "File Name Pattern",
         "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
         "order" : 9
-      },
-      "use_staging_directory" : {
-        "type" : "boolean",
-        "default" : false,
-        "description" : "Whether to use a staging directory in the bucket based on the s3_staging_prefix. If this is not set, airbyte will maintain sync integrity by adding metadata to each object.",
-        "title" : "Use a Staging Directory",
-        "order" : 10
-      },
-      "s3_staging_prefix" : {
-        "type" : "string",
-        "description" : "Path to use when staging data in the bucket directory. Airbyte will stage data here during sync and/or write small manifest/recovery files.",
-        "title" : "S3 Staging Prefix",
-        "examples" : [ "__staging/data_sync/test" ],
-        "order" : 11
-      },
-      "max_concurrent_uploads" : {
-        "type" : "integer"
-      },
-      "upload_part_size" : {
-        "type" : "integer"
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "format" ]

@@ -58,6 +58,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.14 | 2024-12-14 | [49017](https://github.com/airbytehq/airbyte/pull/49017) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.6.13 | 2024-10-29 | [47097](https://github.com/airbytehq/airbyte/pull/47097) | Update dependencies |
 | 0.6.12 | 2024-10-12 | [46771](https://github.com/airbytehq/airbyte/pull/46771) | Update dependencies |
 | 0.6.11 | 2024-10-11 | [46736](https://github.com/airbytehq/airbyte/pull/46736) | Added possibility to toggle groupping by `Country` for `Active Users` stream |

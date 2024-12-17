@@ -5,10 +5,10 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.message.DestinationRecord
-import java.util.LinkedHashMap
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
-class AirbyteTypeToAirbyteTypeWithMetaTest {
+internal class AirbyteTypeToAirbyteTypeWithMetaTest {
     private val expectedMeta =
         linkedMapOf(
             DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID to FieldType(StringType, nullable = false),
@@ -46,6 +46,7 @@ class AirbyteTypeToAirbyteTypeWithMetaTest {
                 FieldType(IntegerType, nullable = false)
         )
 
+    @Test
     fun testWithoutFlattening() {
         val schema =
             ObjectType(
@@ -56,11 +57,13 @@ class AirbyteTypeToAirbyteTypeWithMetaTest {
                 )
             )
         val withMeta = schema.withAirbyteMeta(flatten = false)
-        val expected = LinkedHashMap(expectedMeta)
-        expected[DestinationRecord.Meta.COLUMN_NAME_DATA] = FieldType(schema, nullable = false)
-        Assertions.assertEquals(expected, withMeta)
+        val expected = ObjectType(expectedMeta)
+        expected.properties[DestinationRecord.Meta.COLUMN_NAME_DATA] =
+            FieldType(schema, nullable = false)
+        assertEquals(expected, withMeta)
     }
 
+    @Test
     fun testWithFlattening() {
         val schema =
             ObjectType(
@@ -71,8 +74,8 @@ class AirbyteTypeToAirbyteTypeWithMetaTest {
                 )
             )
         val withMeta = schema.withAirbyteMeta(flatten = true)
-        val expected = LinkedHashMap(expectedMeta)
-        schema.properties.forEach { (name, field) -> expected[name] = field }
-        Assertions.assertEquals(expected, withMeta)
+        val expected = ObjectType(expectedMeta)
+        schema.properties.forEach { (name, field) -> expected.properties[name] = field }
+        assertEquals(expected, withMeta)
     }
 }

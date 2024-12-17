@@ -37,6 +37,20 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "invoice_updated": 10000000000 },
+      "stream_descriptor": { "name": "invoice_line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "subscription_updated": 10000000000 },
+      "stream_descriptor": { "name": "subscription_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "coupons" }
     }
@@ -277,6 +291,34 @@
     "stream": {
       "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "persons" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "customer_balance_transactions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "accounts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "transfer_reversals" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated": 10000000000 },
+      "stream_descriptor": { "name": "payout_balance_transactions" }
     }
   }
 ]
