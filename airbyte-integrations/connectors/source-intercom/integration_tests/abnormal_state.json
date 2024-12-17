@@ -6,7 +6,7 @@
         "name": "segments"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -17,7 +17,7 @@
         "name": "companies"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -28,7 +28,7 @@
         "name": "company_segments"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -39,7 +39,7 @@
         "name": "conversations"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -50,7 +50,7 @@
         "name": "conversation_parts"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -61,7 +61,7 @@
         "name": "contacts"
       },
       "stream_state": {
-        "updated_at": 9626086649
+        "updated_at": 7626086649
       }
     }
   },
@@ -72,7 +72,7 @@
         "name": "activity_logs"
       },
       "stream_state": {
-        "created_at": 9626086649
+        "created_at": 7626086649
       }
     }
   }
