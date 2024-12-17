@@ -6,7 +6,7 @@ import secrets
 
 import pytest
 from destination_deepset.api import DeepsetCloudApi
-from destination_deepset.models import DeepsetCloudConfig
+from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
 
 
 @pytest.fixture()
@@ -27,3 +27,8 @@ def config(api_base_url: str, workspace: str) -> DeepsetCloudConfig:
 @pytest.fixture()
 def client(config: DeepsetCloudConfig) -> DeepsetCloudApi:
     return DeepsetCloudApi(config=config)
+
+
+@pytest.fixture()
+def file() -> DeepsetCloudFile:
+    return DeepsetCloudFile(name="test.md", content="# Title\nThis is a test.", meta={})
