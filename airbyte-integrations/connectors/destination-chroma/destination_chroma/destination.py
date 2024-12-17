@@ -25,6 +25,7 @@ from destination_chroma.no_embedder import NoEmbedder
 
 BATCH_SIZE = 128
 
+
 class DestinationChroma(Destination):
 
     indexer: Indexer
