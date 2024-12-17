@@ -423,7 +423,7 @@ class DatabricksSqlGenerator(
             |), numbered_rows AS (
             |   SELECT *, row_number() OVER (
             |       PARTITION BY $commaSeperatedPks ORDER BY $cursorOrderBy `$AB_EXTRACTED_AT` DESC
-            |   ) as row_number
+            |   ) as _airbyte_row_number
             |   FROM
             |       new_records
             |)
@@ -433,7 +433,7 @@ class DatabricksSqlGenerator(
             |FROM
             |   numbered_rows
             |WHERE
-            |   row_number=1
+            |   _airbyte_row_number=1
         """.trimMargin()
 
         return selectCTEDedupe
