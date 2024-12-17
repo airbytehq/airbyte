@@ -2,7 +2,20 @@
 
 from __future__ import annotations
 
+from time import time
+from traceback import format_exc
 from typing import TYPE_CHECKING, Any
+
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    FailureType,
+    Level,
+    TraceType,
+    Type,
+)
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -31,3 +44,40 @@ def get(obj: dict[str, Any] | BaseModel, key_path: str, default: Any = None) -> 
             return default
 
     return current
+
+
+def get_trace_message(message: str, exception: Exception | None = None) -> AirbyteMessage:
+    """Return a the message formatted as an `AirbyteMessage` of type `TRACE`.
+
+    Args:
+        message (str): The message to be formatted.
+        exception (Exception | None, optional): An optional `Exception` object. Defaults to None.
+
+    Returns:
+        AirbyteMessage: An `AirbyteMessage` instance.
+    """
+    return AirbyteMessage(
+        type=Type.TRACE,
+        trace=AirbyteTraceMessage(
+            type=TraceType.ERROR,
+            emitted_at=time(),
+            error=AirbyteErrorTraceMessage(
+                message=message,
+                internal_message=str(exception) if exception else None,
+                stack_trace=format_exc(),
+                failure_type=FailureType.transient_error.value,
+            ),
+        ),
+    )
+
+
+def get_log_message(message: str) -> AirbyteMessage:
+    """Return the message formatted as an `AirbyteMessage` of type `LOG`.
+
+    Args:
+        message (str): The message to be formatted.
+
+    Returns:
+        AirbyteMessage: An `AirbyteMessage` instance.
+    """
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))

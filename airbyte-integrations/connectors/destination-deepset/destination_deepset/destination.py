@@ -4,25 +4,20 @@
 from __future__ import annotations
 
 import logging
-import traceback
 from collections.abc import Iterable, Mapping
 from typing import Any
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Status, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from destination_deepset import util
-from destination_deepset.api import APIError, DeepsetCloudApi
-from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile, Filetypes
+from destination_deepset.api import APIError
+from destination_deepset.models import DeepsetCloudFile, Filetypes
 from destination_deepset.writer import DeepsetCloudFileWriter, WriterError
 
 logger = logging.getLogger("airbyte")
 
 
 class DestinationDeepset(Destination):
-    def get_deepset_cloud_api(self, config: Mapping[str, Any]) -> DeepsetCloudApi:
-        deepset_cloud_config = DeepsetCloudConfig.parse_obj(config)
-        return DeepsetCloudApi(deepset_cloud_config)
-
     def write(
         self,
         config: Mapping[str, Any],
@@ -66,15 +61,8 @@ class DestinationDeepset(Destination):
 
                     try:
                         file = DeepsetCloudFile.from_record(message.record)
-                    except ValueError:
-                        yield AirbyteMessage(
-                            type=Type.LOG,
-                            log=AirbyteLogMessage(
-                                level=Level.WARN,
-                                message="Failed to parse data into deepset cloud file instance.",
-                                stack_trace=traceback.format_exc(),
-                            ),
-                        )
+                    except ValueError as ex:
+                        yield util.get_trace_message("Failed to parse data into deepset cloud file instance.", exception=ex)
                     else:
                         yield writer.write(file=file)
                 case _:
