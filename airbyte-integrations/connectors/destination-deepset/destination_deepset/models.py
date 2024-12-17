@@ -142,6 +142,6 @@ class DeepsetCloudFile(BaseModel):
                     **({"file_parse_error": data.file_parse_error} if data.file_parse_error else {}),
                 },
                 "source_file_extension": Path(data.name).suffix,
-                **data.json(exclude={"content", "file_parse_error"}, exclude_none=True),
+                **data.dict(exclude={"content", "file_parse_error"}, exclude_none=True),
             },
         )
