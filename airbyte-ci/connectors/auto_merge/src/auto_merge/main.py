@@ -69,6 +69,8 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
     """
     for i in range(max_retries):
         try:
+            logger.error(f"Failed PR on purpose -- please don't merge this connector.")
+            return None
             pr.merge(merge_method=MERGE_METHOD)
             logger.info(f"PR #{pr.number} was auto-merged")
             return pr
