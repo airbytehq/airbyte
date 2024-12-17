@@ -329,7 +329,6 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.25 | 2024-12-17 | [49832](https://github.com/airbytehq/airbyte/pull/49832) | Use `airbyte/java-connector-base` as a base image. |
 | 3.6.24 | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469) | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration |
 | 3.6.23  | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482)  | Convert large integer typed using NUMERIC(X, 0) into a BigInteger.  l    
 | 3.6.22  | 2024-10-02 | [46900](https://github.com/airbytehq/airbyte/pull/46900) | Fixed a bug where source docs won't render on Airbyte 1.1 |
