@@ -223,8 +223,17 @@ class DestinationMessageTest {
                 .map { Arguments.of(it) }
 
         @JvmStatic
-        fun roundTrippableFileMessages(): List<Arguments> =
-            listOf(
+        fun roundTrippableFileMessages(): List<Arguments> {
+            val file =
+                mapOf(
+                    "file_url" to "file://foo/bar",
+                    "file_relative_path" to "foo/bar",
+                    "source_file_url" to "file://source/foo/bar",
+                    "modified" to 123L,
+                    "bytes" to 9001L,
+                )
+
+            return listOf(
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
@@ -232,11 +241,7 @@ class DestinationMessageTest {
                                 .withStream("name")
                                 .withNamespace("namespace")
                                 .withEmittedAt(1234)
-                                .withAdditionalProperty("file_url", "file://foo/bar")
-                                .withAdditionalProperty("bytes", 9001L)
-                                .withAdditionalProperty("file_relative_path", "foo/bar")
-                                .withAdditionalProperty("modified", 123L)
-                                .withAdditionalProperty("source_file_url", "file://source/foo/bar")
+                                .withAdditionalProperty("file", file)
                         ),
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)
@@ -276,5 +281,6 @@ class DestinationMessageTest {
                         ),
                 )
                 .map { Arguments.of(it) }
+        }
     }
 }

@@ -20,6 +20,9 @@ import java.nio.file.Path
  *
  * - Add any required custom fields to the spec w/ jackson annotations
  *
+ * - Add annotation overrides (note that this will replace the original annotation, so to extend an
+ * existing annotation, you must copy the original annotation and add the new fields).
+ *
  * - Create a class `{MyDestination}Configuration` extending [DestinationConfiguration]
  *
  * - Add the corresponding mixin `...ConfigurationProvider`s for any added spec mixins
@@ -80,6 +83,10 @@ abstract class DestinationConfiguration : Configuration {
      * current work after a failure.
      */
     open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
+
+    open val numProcessRecordsWorkers: Int = 2
+    open val numProcessBatchWorkers: Int = 5
+    open val batchQueueDepth: Int = 10
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

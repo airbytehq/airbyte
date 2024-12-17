@@ -17,6 +17,9 @@ interface StateQuerier {
 
     /** Returns the current state value for the given [feed]. */
     fun current(feed: Feed): OpaqueStateValue?
+
+    /** Rolls back each feed state. This is required when resyncing CDC from scratch */
+    fun resetFeedStates()
 }
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
@@ -56,6 +59,10 @@ class StateManager(
 
     override fun current(feed: Feed): OpaqueStateValue? = scoped(feed).current()
 
+    override fun resetFeedStates() {
+        feeds.forEach { f -> scoped(f).set(Jsons.objectNode(), 0) }
+    }
+
     /** Returns a [StateManagerScopedToFeed] instance scoped to this [feed]. */
     fun scoped(feed: Feed): StateManagerScopedToFeed =
         when (feed) {
@@ -85,14 +92,13 @@ class StateManager(
      * Returns the Airbyte STATE messages which checkpoint the progress of the READ in the platform.
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
-     *
-     * Note to avoid multithreading causing record count to be off, we'd only report streams with
-     * records in it. Any streams without stream will be delayed to report until next checkpoint.
-     * This is based on assumption each stream will be mapped to one nonGlobal manager.
      */
-    fun checkpoint(): List<AirbyteStateMessage> =
-        listOfNotNull(global?.checkpoint()) +
-            nonGlobal.mapNotNull { it.value.checkpoint() }.filter { it.sourceStats.recordCount > 0 }
+    fun checkpoint(): List<AirbyteStateMessage> {
+        return listOfNotNull(global?.checkpoint()) +
+            nonGlobal
+                .mapNotNull { it.value.checkpoint() }
+                .filter { it.stream.streamState.isNull.not() }
+    }
 
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
@@ -203,7 +209,12 @@ class StateManager(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withStreamState(
-                            streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
+                            when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
+                                null,
+                                true -> Jsons.objectNode()
+                                false -> streamStateForCheckpoint.opaqueStateValue
+                                        ?: Jsons.objectNode()
+                            }
                         ),
                 )
             }

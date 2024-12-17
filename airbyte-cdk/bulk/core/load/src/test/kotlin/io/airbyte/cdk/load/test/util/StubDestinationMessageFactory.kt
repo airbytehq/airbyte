@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 /*
  * Shared factory methods for making stub destination messages for testing.
@@ -73,6 +74,7 @@ object StubDestinationMessageFactory {
             sourceStats = CheckpointMessage.Stats(recordCount),
             checkpoints = emptyList(),
             additionalProperties = emptyMap(),
+            originalTypeField = AirbyteStateMessage.AirbyteStateType.GLOBAL,
         )
     }
 

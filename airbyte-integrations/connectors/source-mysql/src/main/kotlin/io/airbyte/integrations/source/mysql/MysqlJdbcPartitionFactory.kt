@@ -11,7 +11,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
-import io.airbyte.cdk.data.LocalDateTimeCodec.formatter
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -27,12 +26,13 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
+import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
-import java.util.Base64
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Singleton
 
 @Primary
 @Singleton
@@ -157,8 +157,22 @@ class MysqlJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MysqlJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            streamFeedBootstrap.currentState ?: return coldStart(streamState)
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (streamFeedBootstrap.currentState?.isNull == true) {
+            return null
+        }
+
+        // A legacy saved state may be null for an empty table. We will attempt to read it again
+        if (
+            streamFeedBootstrap.currentState == null ||
+                streamFeedBootstrap.currentState?.isEmpty == true
+        ) {
+            return coldStart(streamState)
+        }
+
+        val opaqueStateValue: OpaqueStateValue = streamFeedBootstrap.currentState!!
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -277,6 +291,10 @@ class MysqlJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
+            if (cursorCheckpoint.isNull) {
+                return coldStart(streamState)
+            }
+
             if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
                 // Incremental complete.
                 return null
@@ -303,21 +321,31 @@ class MysqlJdbcPartitionFactory(
                         Jsons.valueToTree(stateValue?.toDouble())
                     }
                     LeafAirbyteSchemaType.BINARY -> {
-                        val ba = Base64.getDecoder().decode(stateValue!!)
-                        Jsons.valueToTree<BinaryNode>(ba)
+                        try {
+                            val ba = Base64.getDecoder().decode(stateValue!!)
+                            Jsons.valueToTree<BinaryNode>(ba)
+                        } catch (_: RuntimeException) {
+                            Jsons.valueToTree<JsonNode>(stateValue)
+                        }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
                         try {
                             val formatter: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern(timestampInStatePattern)
+                                DateTimeFormatterBuilder()
+                                    .appendPattern(timestampInStatePattern)
+                                    .optionalStart()
+                                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+                                    .optionalEnd()
+                                    .toFormatter()
+
                             Jsons.textNode(
                                 LocalDateTime.parse(stateValue, formatter)
                                     .format(LocalDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
@@ -331,12 +359,12 @@ class MysqlJdbcPartitionFactory(
                                     .atOffset(java.time.ZoneOffset.UTC)
                                     .format(OffsetDateTimeCodec.formatter)
                             )
-                        } catch (e: DateTimeParseException) {
+                        } catch (_: RuntimeException) {
                             // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
+                            Jsons.valueToTree<JsonNode>(stateValue)
                         }
                     }
-                    else -> Jsons.valueToTree(stateValue)
+                    else -> Jsons.valueToTree<JsonNode>(stateValue)
                 }
             else ->
                 throw IllegalStateException(

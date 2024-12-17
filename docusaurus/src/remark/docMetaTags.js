@@ -1,4 +1,3 @@
-const { default: React } = require("react");
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 const visit = require("unist-util-visit").visit;
@@ -18,9 +17,8 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
-    visit(ast, "heading", (node) => {
+    visit(ast, "root", (node) => {
       const name = getFromPaths(registryEntry, "name_[oss|cloud]");
-      console.log("name", name);
       const { title, description } = generateMetaTags(name);
 
       const attributes = toAttributes({
@@ -28,10 +26,14 @@ const plugin = () => {
         description,
       });
 
-      node.children = [];
-      node.type = "mdxJsxFlowElement";
-      node.name = "DocMetaTags";
-      node.attributes = attributes;
+      const metaTagsNode = {
+        type: "mdxJsxFlowElement",
+        name: "DocMetaTags",
+        attributes: attributes,
+        children: [],
+      };
+
+      node.children.unshift(metaTagsNode);
     });
   };
   return transformer;

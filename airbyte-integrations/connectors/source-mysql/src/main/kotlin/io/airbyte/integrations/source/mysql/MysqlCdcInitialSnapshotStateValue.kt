@@ -38,13 +38,17 @@ data class MysqlCdcInitialSnapshotStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MysqlCdcInitialSnapshotStateValue(
-                    pkName = primaryKeyField.id,
-                    pkVal = primaryKeyCheckpoint.first().asText(),
-                    stateType = "primary_key",
-                )
-            )
+            return when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MysqlCdcInitialSnapshotStateValue(
+                            pkName = primaryKeyField.id,
+                            pkVal = primaryKeyCheckpoint.first().asText(),
+                            stateType = "primary_key",
+                        )
+                    )
+            }
         }
     }
 }

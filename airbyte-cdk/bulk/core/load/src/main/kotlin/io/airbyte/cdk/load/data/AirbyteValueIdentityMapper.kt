@@ -68,13 +68,10 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
             try {
                 when (schema) {
                     is ObjectType -> mapObject(value as ObjectValue, schema, context)
-                    is ObjectTypeWithoutSchema ->
-                        mapObjectWithoutSchema(value as ObjectValue, schema, context)
-                    is ObjectTypeWithEmptySchema ->
-                        mapObjectWithEmptySchema(value as ObjectValue, schema, context)
+                    is ObjectTypeWithoutSchema -> mapObjectWithoutSchema(value, schema, context)
+                    is ObjectTypeWithEmptySchema -> mapObjectWithEmptySchema(value, schema, context)
                     is ArrayType -> mapArray(value as ArrayValue, schema, context)
-                    is ArrayTypeWithoutSchema ->
-                        mapArrayWithoutSchema(value as ArrayValue, schema, context)
+                    is ArrayTypeWithoutSchema -> mapArrayWithoutSchema(value, schema, context)
                     is UnionType -> mapUnion(value, schema, context)
                     is BooleanType -> mapBoolean(value as BooleanValue, context)
                     is NumberType -> mapNumber(value as NumberValue, context)
@@ -118,13 +115,13 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     }
 
     open fun mapObjectWithoutSchema(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectTypeWithoutSchema,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
 
     open fun mapObjectWithEmptySchema(
-        value: ObjectValue,
+        value: AirbyteValue,
         schema: ObjectTypeWithEmptySchema,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context
@@ -150,7 +147,7 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
     }
 
     open fun mapArrayWithoutSchema(
-        value: ArrayValue,
+        value: AirbyteValue,
         schema: ArrayTypeWithoutSchema,
         context: Context
     ): Pair<AirbyteValue, Context> = value to context

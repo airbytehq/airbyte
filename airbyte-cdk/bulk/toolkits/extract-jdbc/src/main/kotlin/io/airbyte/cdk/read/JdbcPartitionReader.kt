@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.Field
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -36,8 +37,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun out(record: ObjectNode) {
-        streamRecordConsumer.accept(record, changes = null)
+    fun out(record: ObjectNode, changes: Map<Field, FieldValueChange>?) {
+        streamRecordConsumer.accept(record, changes)
     }
 
     override fun releaseResources() {
@@ -80,7 +81,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {
-                    out(record)
+                    out(record, result.changes)
                     numRecords.incrementAndGet()
                 }
             }
@@ -127,7 +128,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {
-                    out(record)
+                    out(record, result.changes)
                     lastRecord.set(record)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
