@@ -45,7 +45,7 @@ data:
         - name: intercom_config_dev_null
           id: 09ebd6bb-2756-4cd3-8ad5-7120088cc553
     # We should enable unit tests once the connector has been updated to CDK version >= 6.10.0
-    # Until then, the test suites won't be able to run successfully in CI as the fixtures are not present in earlier versions      
+    # Until then, the test suites won't be able to run successfully in CI as the fixtures are not present in earlier versions
     # - suite: unitTests
     - suite: integrationTests
       testSecrets:
