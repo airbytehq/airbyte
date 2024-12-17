@@ -8,7 +8,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
-import io.airbyte.cdk.load.command.iceberg.parquet.NessieServerConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
@@ -323,27 +324,25 @@ internal class IcebergUtilTest {
                 accessKeyId = awsAccessKey,
                 secretAccessKey = awsSecretAccessKey,
             )
-        val nessieServerConfiguration =
-            NessieServerConfiguration(
-                serverUri = nessieServerUri,
-                accessToken = nessieAccessToken,
-                warehouseLocation = warehouseLocation,
-                mainBranchName = "main",
-            )
         val s3BucketConfiguration =
             S3BucketConfiguration(
                 s3BucketName = s3BucketName,
                 s3BucketRegion = S3BucketRegion.`us-east-1`,
                 s3Endpoint = s3Endpoint,
             )
+        val icebergCatalogConfiguration =
+            IcebergCatalogConfiguration(
+                warehouseLocation,
+                "main",
+                NessieCatalogConfiguration(nessieServerUri, nessieAccessToken)
+            )
         val configuration =
             IcebergV2Configuration(
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
-                nessieServerConfiguration = nessieServerConfiguration,
+                icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
             )
-        val catalogProperties =
-            icebergUtil.toCatalogProperties(icebergConfiguration = configuration)
+        val catalogProperties = icebergUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
         assertEquals(nessieServerUri, catalogProperties[URI])
         assertEquals(warehouseLocation, catalogProperties[WAREHOUSE_LOCATION])
