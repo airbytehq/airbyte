@@ -37,6 +37,7 @@ class ObjectStorageStreamLoaderTest {
         mockk(relaxed = true)
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState> =
         mockk(relaxed = true)
+    private val fileSize: Long = 2
     private val partSize: Long = 1
 
     private val objectStorageStreamLoader =
@@ -48,7 +49,8 @@ class ObjectStorageStreamLoaderTest {
                 pathFactory,
                 writerFactory,
                 destinationStateManager,
-                partSize
+                partSizeBytes = partSize,
+                fileSizeBytes = fileSize
             )
         )
 

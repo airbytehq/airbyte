@@ -51,6 +51,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             pathFactory,
             bufferedWriterFactory,
             destinationStateManager,
+            uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
             uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes
         )
     }
@@ -67,7 +68,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val pathFactory: ObjectStoragePathFactory,
     private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
-    private val recordBatchSizeBytes: Long,
+    private val partSizeBytes: Long,
+    private val fileSizeBytes: Long,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
@@ -79,7 +81,7 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         val state = destinationStateManager.getState(stream)
         // This is the number used to populate {part_number} on the object path.
         // We'll call it file number here to avoid confusion with the part index used for uploads.
-        val fileNumber = state.nextPartNumber
+        val fileNumber = state.getNextPartNumber()
         log.info { "Got next file number from destination state: $fileNumber" }
         this.fileNumber.set(fileNumber)
     }
@@ -88,7 +90,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         return RecordToPartAccumulator(
             pathFactory,
             bufferedWriterFactory,
-            recordBatchSizeBytes,
+            partSizeBytes = partSizeBytes,
+            fileSizeBytes = fileSizeBytes,
             stream,
             fileNumber
         )

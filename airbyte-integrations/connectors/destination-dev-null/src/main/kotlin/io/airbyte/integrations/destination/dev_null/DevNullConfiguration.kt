@@ -42,12 +42,12 @@ data class DevNullConfiguration(
 @Singleton
 class DevNullConfigurationFactory(
     @Value("\${airbyte.destination.record-batch-size-override}")
-    private val recordBatchSizeBytes: Long
+    private val recordBatchSizeBytesOverride: Long?
 ) : DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
     private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: DevNullSpecification): DevNullConfiguration {
-        log.info { "Record batch size from environment: $recordBatchSizeBytes" }
+        log.info { "Record batch size from environment: $recordBatchSizeBytesOverride" }
         return when (pojo) {
             is DevNullSpecificationOss -> {
                 when (pojo.testDestination) {
@@ -108,7 +108,10 @@ class DevNullConfigurationFactory(
                     }
                 }
             }
-        }.copy(recordBatchSizeBytes = recordBatchSizeBytes)
+        }.copy(
+            recordBatchSizeBytes = recordBatchSizeBytesOverride
+                    ?: DestinationConfiguration.DEFAULT_RECORD_BATCH_SIZE_BYTES
+        )
     }
 }
 

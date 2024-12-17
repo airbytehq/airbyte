@@ -21,7 +21,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RecordToPartAccumulatorTest {
-    private val recordBatchSizeBytes: Long = 10L
+    private val partSizeBytes: Long = 2L
+    private val fileSizeBytes: Long = 4L
 
     private lateinit var pathFactory: ObjectStoragePathFactory
     private lateinit var bufferedWriterFactory: BufferedFormattingWriterFactory<OutputStream>
@@ -63,7 +64,8 @@ class RecordToPartAccumulatorTest {
             RecordToPartAccumulator(
                 pathFactory = pathFactory,
                 bufferedWriterFactory = bufferedWriterFactory,
-                recordBatchSizeBytes = recordBatchSizeBytes,
+                partSizeBytes = partSizeBytes,
+                fileSizeBytes = fileSizeBytes,
                 stream = stream,
                 fileNumber = fileNumber
             )
@@ -93,11 +95,11 @@ class RecordToPartAccumulatorTest {
 
         // Object 1
 
-        // part 6/10b => not data sufficient, should be first and nonfinal
-        when (val batch = acc.processRecords(makeRecords(6), 0L, false) as ObjectStorageBatch) {
+        // part 0->1/2b of 4b total => not data sufficient, should be first and empty
+        when (val batch = acc.processRecords(makeRecords(1), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
-                assert(batch.part.bytes.contentEquals(makeBytes(6)))
-                assert(batch.part.partIndex == 1)
+                assert(batch.part.isEmpty)
+                assert(batch.part.partIndex == 0)
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
                 assert(!batch.part.isFinal)
@@ -110,6 +112,19 @@ class RecordToPartAccumulatorTest {
         when (val batch = acc.processRecords(makeRecords(0), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
                 assert(batch.part.isEmpty)
+                assert(batch.part.partIndex == 0)
+                assert(batch.part.fileNumber == 111L)
+                assert(!batch.isPersisted())
+                assert(!batch.part.isFinal)
+                assert(batch.part.key == "path.111")
+            }
+            else -> assert(false)
+        }
+
+        // part 1->3/2b of 4b total => data sufficient for part, should be first part and nonfinal
+        when (val batch = acc.processRecords(makeRecords(2), 0L, false) as ObjectStorageBatch) {
+            is LoadablePart -> {
+                assert(batch.part.bytes.contentEquals(makeBytes(3)))
                 assert(batch.part.partIndex == 1)
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
@@ -119,10 +134,12 @@ class RecordToPartAccumulatorTest {
             else -> assert(false)
         }
 
-        // part 11/10b => data sufficient, should be second now and final
-        when (val batch = acc.processRecords(makeRecords(5), 0L, false) as ObjectStorageBatch) {
+        // part 3->4/2b of 4b total => data sufficient for file (but not part! this is expected!),
+        // should be second part and final (and not empty)
+        when (val batch = acc.processRecords(makeRecords(1), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
-                assert(batch.part.bytes.contentEquals(makeBytes(5)))
+                println(batch.part.bytes.contentToString())
+                assert(batch.part.bytes.contentEquals(makeBytes(1)))
                 assert(batch.part.partIndex == 2)
                 assert(batch.part.fileNumber == 111L)
                 assert(!batch.isPersisted())
@@ -134,7 +151,7 @@ class RecordToPartAccumulatorTest {
 
         // Object 2
 
-        // Next part 10/10b => data sufficient, should be first and final
+        // Next part 10/4b => data sufficient, should be first and final
         when (val batch = acc.processRecords(makeRecords(10), 0L, false) as ObjectStorageBatch) {
             is LoadablePart -> {
                 assert(batch.part.bytes.contentEquals(makeBytes(10)))
@@ -163,7 +180,7 @@ class RecordToPartAccumulatorTest {
 
         // One flush per call, one create/close per finished object
         coVerify(exactly = 3) { bufferedWriterFactory.create(any()) }
-        coVerify(exactly = 5) { bufferedWriter.flush() }
+        coVerify(exactly = 6) { bufferedWriter.flush() }
         coVerify(exactly = 3) { bufferedWriter.close() }
     }
 }

@@ -8,3 +8,5 @@ airbyte:
   flush:
     rate-ms: 900000 # 15 minutes
     window-ms: 900000 # 15 minutes
+  destination:
+    record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
