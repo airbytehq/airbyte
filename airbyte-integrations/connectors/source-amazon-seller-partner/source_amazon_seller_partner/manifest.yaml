@@ -31,7 +31,7 @@ definitions:
       name: Orders
       primary_key:
         - AmazonOrderId
-      ignore_stream_slicer_parameters_on_paginated_requests: false
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: LastUpdateDate
@@ -62,6 +62,15 @@ definitions:
             content-type: "application/json"
           request_parameters:
             MarketplaceIds: '{{ config["marketplace_id"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
         record_selector:
           type: RecordSelector
           extractor:
@@ -87,7 +96,7 @@ definitions:
       name: OrderItems
       primary_key:
         - OrderItemId
-      ignore_stream_slicer_parameters_on_paginated_requests: false
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: LastUpdateDate
@@ -119,6 +128,15 @@ definitions:
           http_method: GET
           request_headers:
             content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 10
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -148,9 +166,145 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
 
+    list_financial_event_groups:
+      type: DeclarativeStream
+      name: ListFinancialEventGroups
+      primary_key:
+        - FinancialEventGroupId
+      ignore_stream_slicer_parameters_on_paginated_requests: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: FinancialEventGroupStart
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          # start date and end date should not be more than 180 days apart.
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: FinancialEventGroupStartedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: FinancialEventGroupStartedBefore
+          inject_into: request_parameter
+
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "finances/v0/financialEventGroups"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ "payload", "FinancialEventGroupList" ]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
+    list_financial_events:
+      type: DeclarativeStream
+      name: ListFinancialEvents
+      primary_key:
+        - FinancialEventGroupId
+      ignore_stream_slicer_parameters_on_paginated_requests: false
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: PostedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          # start date and end date should not be more than 180 days apart.
+          datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc() - duration('PT2M') ), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: PostedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: PostedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [ "PostedBefore" ]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "finances/v0/financialEvents"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.backoff_strategy.AmazonSPWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [ "payload", "FinancialEvents" ]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxResultsPerPage
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.payload.NextToken }}"
+
 streams:
   - $ref: "#/definitions/streams/orders"
   - $ref: "#/definitions/streams/order_items"
+  - $ref: "#/definitions/streams/list_financial_event_groups"
+  - $ref: "#/definitions/streams/list_financial_events"
 
 concurrency_level:
   type: ConcurrencyLevel
