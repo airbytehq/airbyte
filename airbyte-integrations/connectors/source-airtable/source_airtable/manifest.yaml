@@ -81,17 +81,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tables"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - base_name
-              value: "{{ stream_slice.extra_fields.name }}"
-        - type: AddFields
-          fields:
-            - path:
-                - base_id
-              value: "{{ stream_slice.extra_fields.id }}"
+
     airtable_stream:
       type: DeclarativeStream
       name: airtable_stream
@@ -121,11 +111,132 @@ definitions:
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
-          $ref: "#/definitions/streams/airtable_stream/retriever"
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: ""
+            http_method: GET
+          record_selector:
+            type: RecordSelector
+            record_filter:
+              condition: "{{ record['id'] == parameters.table_id }}"
+            $parameters:
+              table_id: ""
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - tables
         schema_type_identifier:
           type: SchemaTypeIdentifier
-          key_pointer: []
-          schema_pointer: []
+          key_pointer:
+            - name
+          type_pointer:
+            - type
+          schema_pointer:
+            - fields
+          types_mapping:
+            - type: TypesMap
+              target_type: string
+              current_type: multipleAttachments
+            - type: TypesMap
+              target_type: number
+              current_type: autoNumber
+            - type: TypesMap
+              target_type: string
+              current_type: barcode
+            - type: TypesMap
+              target_type: string
+              current_type: button
+            - type: TypesMap
+              target_type: boolean
+              current_type: checkbox
+            - type: TypesMap
+              target_type: string
+              current_type: singleCollaborator
+            - type: TypesMap
+              target_type: number
+              current_type: count
+            - type: TypesMap
+              target_type: string
+              current_type: createdBy
+            - type: TypesMap
+              target_type: string
+              current_type: createdTime
+            - type: TypesMap
+              target_type: number
+              current_type: currency
+            - type: TypesMap
+              target_type: string
+              current_type: email
+            - type: TypesMap
+              target_type: string
+              current_type: date
+            - type: TypesMap
+              target_type: string
+              current_type: dateTime
+            - type: TypesMap
+              target_type: number
+              current_type: duration
+            - type: TypesMap
+              target_type: string
+              current_type: lastModifiedBy
+            - type: TypesMap
+              target_type: string
+              current_type: lastModifiedTime
+            - type: TypesMap
+              target_type: array
+              current_type: multipleRecordLinks
+            - type: TypesMap
+              target_type: string
+              current_type: multilineText
+            - type: TypesMap
+              target_type: array
+              current_type: multipleCollaborators
+            - type: TypesMap
+              target_type: array
+              current_type: multipleSelects
+            - type: TypesMap
+              target_type: number
+              current_type: number
+            - type: TypesMap
+              target_type: number
+              current_type: percent
+            - type: TypesMap
+              target_type: string
+              current_type: phoneNumber
+            - type: TypesMap
+              target_type: number
+              current_type: rating
+            - type: TypesMap
+              target_type: string
+              current_type: richText
+            - type: TypesMap
+              target_type: string
+              current_type: singleLineText
+            - type: TypesMap
+              target_type: string
+              current_type: singleSelect
+            - type: TypesMap
+              target_type: string
+              current_type: externalSyncSource
+            - type: TypesMap
+              target_type: string
+              current_type: url
+            - type: TypesMap
+              target_type: string
+              current_type: simpleText
+            - type: TypesMap
+              target_type: array
+              current_type: formula
+            - type: TypesMap
+              target_type: array
+              current_type: lookup
+            - type: TypesMap
+              target_type: array
+              current_type: multipleLookupValues
+            - type: TypesMap
+              target_type: array
+              current_type: rollup
       transformations:
         - type: AddFields
           fields:
@@ -186,26 +297,26 @@ dynamic_streams:
               partition_field: base_id
               extra_fields:
                 - [name]
-                - [id]
               stream:
                 $ref: "#/definitions/streams/bases"
       components_mapping:
         - type: ComponentMappingDefinition
-          field_path: [name]
+          field_path:
+            - name
           value: "{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}"
         - type: ComponentMappingDefinition
           field_path:
             - retriever
             - requester
             - path
-          value: "{{ stream_slice.extra_fields.id }}/{{ components_values.id }}"
+          value: "{{ stream_slice.base_id }}/{{ components_values.id }}"
         - type: ComponentMappingDefinition
           field_path:
             - schema_loader
             - retriever
             - requester
             - path
-          value: "{{ stream_slice.extra_fields.id }}/{{ components_values.id }}"
+          value: "{{ stream_slice.base_id }}/{{ components_values.id }}"
         - type: ComponentMappingDefinition
           field_path:
             - transformations
@@ -214,6 +325,22 @@ dynamic_streams:
             - 0
             - value
           value: "{{ components_values.name }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - path
+          value: "meta/bases/{{ stream_slice.base_id }}/tables"
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - retriever
+            - record_selector
+            - record_filter
+            - $parameters
+            - table_id
+          value: "{{ components_values.id }}"
 
 spec:
   type: Spec
