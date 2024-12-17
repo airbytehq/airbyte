@@ -413,7 +413,7 @@ spec:
         type: string
       num_workers:
         title: Number of concurrent workers
-        description: Number of concurrent workers to be used in the sync. This number should be set according to your Pipedrive subscription plan and its rate limits, which coule be found <a href="https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting">here</a> on Pipedrive Rate limiting page.
+        description: Number of concurrent workers to be used in the sync. This number should be set according to your Pipedrive subscription plan and its rate limits, which coule be found <a href="https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting">here</a> on Pipedrive Rate limiting page. Please note that Pipedrive API rate limits are reset daily. If you experience rate limiting issues, please lower the number of workers according to your plan.
         type: integer
         default: 10
         minimum: 1
@@ -432,7 +432,7 @@ spec:
 # | Essential       | 1               |
 # | Advanced	    | 2               |
 # | Professional    | 3               |
-# | Power	        | 5               |
+# | Power	    | 5               |
 # | Enterprise      | 7               |
 
 # API Requests:
