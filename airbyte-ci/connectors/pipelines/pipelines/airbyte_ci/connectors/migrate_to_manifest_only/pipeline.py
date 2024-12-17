@@ -43,6 +43,7 @@ MANIFEST_ONLY_FILES_TO_KEEP = [
     "components.py",
     "metadata.yaml",
     "icon.svg",
+    "unit_tests",
     "integration_tests",
     "acceptance-test-config.yml",
     "secrets",
@@ -160,7 +161,12 @@ class StripConnector(Step):
 
             documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
             connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
-            return {"documentation_url": documentation_url, "connection_specification": connection_specification}
+            advanced_auth = spec.get("advanced_auth")
+            return {
+                "documentation_url": documentation_url,
+                "connection_specification": connection_specification,
+                "advanced_auth": advanced_auth,
+            }
 
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
@@ -183,7 +189,7 @@ class StripConnector(Step):
         ## 2. Update the version in manifest.yaml
         try:
             manifest = read_yaml(root_manifest_path)
-            manifest["version"] = "4.3.2"
+            manifest["version"] = "5.15.0"
             manifest["type"] = "DeclarativeSource"
 
             # Resolve $parameters and types with CDK magic
@@ -211,6 +217,7 @@ class StripConnector(Step):
                     "type": "Spec",
                     "documentation_url": spec_data.get("documentation_url"),
                     "connection_specification": spec_data.get("connection_specification"),
+                    "advanced_auth": spec_data.get("advanced_auth"),
                 }
                 write_yaml(manifest, root_manifest_path)
             except Exception as e:

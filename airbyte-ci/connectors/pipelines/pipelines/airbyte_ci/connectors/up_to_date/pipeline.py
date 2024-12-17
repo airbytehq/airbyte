@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
@@ -126,7 +126,7 @@ async def run_connector_up_to_date_pipeline(
             # to fill the PR body with the correct information about what exactly got updated.
             if create_pull_request:
                 # Building connector images is also universal across connector technologies.
-                build_result = await BuildConnectorImages(context).run()
+                build_result = await run_connector_build(context)
                 step_results.append(build_result)
                 dependency_updates: List[DependencyUpdate] = []
 

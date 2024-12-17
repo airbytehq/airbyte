@@ -1,0 +1,635 @@
+version: 6.4.0
+
+type: DeclarativeSource
+
+description: >+
+  Stockdata provides access to market news for global exchanges, and trading
+  data for US stocks.
+
+  With this connector we can extract data from EOD , Intraday and news feeds
+  streams
+
+
+check:
+  type: CheckStream
+  stream_names:
+    - news_feeds_per_symbols
+
+definitions:
+  streams:
+    news_feeds_per_symbols:
+      type: DeclarativeStream
+      name: news_feeds_per_symbols
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: news/all
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symb }}"
+            language: en
+            filter_entities: "{{ config['filter_entities'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symb
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: published_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: published_before
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/news_feeds_per_symbols"
+    eod_data:
+      type: DeclarativeStream
+      name: eod_data
+      primary_key:
+        - date
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: data/eod
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symb }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symb
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition.symb }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/eod_data"
+    intraday_unadjusted_data:
+      type: DeclarativeStream
+      name: intraday_unadjusted_data
+      primary_key:
+        - date
+        - ticker
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: data/intraday
+          http_method: GET
+          request_parameters:
+            symbols: "{{ stream_partition.symb }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"symbols\"] }}"
+          cursor_field: symb
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: date_to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/intraday_unadjusted_data"
+    news_feeds_per_industry:
+      type: DeclarativeStream
+      name: news_feeds_per_industry
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: news/all
+          http_method: GET
+          request_parameters:
+            language: en
+            industries: "{{ stream_partition.indus }}"
+            filter_entities: "{{ config['filter_entities'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"industries\"] }}"
+          cursor_field: indus
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: published_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: published_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: published_before
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/news_feeds_per_industry"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.stockdata.org/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/news_feeds_per_symbols"
+  - $ref: "#/definitions/streams/eod_data"
+  - $ref: "#/definitions/streams/intraday_unadjusted_data"
+  - $ref: "#/definitions/streams/news_feeds_per_industry"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      symbols:
+        type: array
+        order: 1
+        title: Symbols
+      industries:
+        type: array
+        description: >-
+          Specify the industries of entities which have been identified within
+          the article.
+        order: 2
+        title: Industries
+      filter_entities:
+        type: boolean
+        order: 3
+        title: Entities
+        default: false
+      start_date:
+        type: string
+        order: 4
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    news_feeds_per_symbols: true
+    eod_data: true
+    intraday_unadjusted_data: true
+    news_feeds_per_industry: true
+  testedStreams:
+    news_feeds_per_symbols:
+      streamHash: e53e9e50fdf2746af0e5a23b0be08d09aea895f4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    eod_data:
+      streamHash: 4177c0e0275183087a9b6870657b0cb9fb5f194c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    intraday_unadjusted_data:
+      streamHash: ce637107641776943a13289a12f092c8be3eb845
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    news_feeds_per_industry:
+      streamHash: 29f3c6a8064a076a4d878ec6fcec8c9d62b059b8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  news_feeds_per_symbols:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      entities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            highlights:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  highlight:
+                    type:
+                      - string
+                      - "null"
+                  highlighted_in:
+                    type:
+                      - string
+                      - "null"
+                  sentiment:
+                    type:
+                      - number
+                      - "null"
+            industry:
+              type:
+                - string
+                - "null"
+            match_score:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sentiment_score:
+              type:
+                - number
+                - "null"
+            symbol:
+              type:
+                - string
+                - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      keywords:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      published_at:
+        type: string
+      similar:
+        type:
+          - array
+          - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - published_at
+  eod_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      close:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      high:
+        type:
+          - number
+          - "null"
+      low:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      symbol:
+        type: string
+      volume:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+      - symbol
+  intraday_unadjusted_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          close:
+            type:
+              - number
+              - "null"
+          high:
+            type:
+              - number
+              - "null"
+          is_extended_hours:
+            type:
+              - boolean
+              - "null"
+          low:
+            type:
+              - number
+              - "null"
+          open:
+            type:
+              - number
+              - "null"
+          volume:
+            type:
+              - number
+              - "null"
+      date:
+        type: string
+      ticker:
+        type: string
+    required:
+      - date
+      - ticker
+  news_feeds_per_industry:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      entities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            highlights:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  highlight:
+                    type:
+                      - string
+                      - "null"
+                  highlighted_in:
+                    type:
+                      - string
+                      - "null"
+                  sentiment:
+                    type:
+                      - number
+                      - "null"
+            industry:
+              type:
+                - string
+                - "null"
+            match_score:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            sentiment_score:
+              type:
+                - number
+                - "null"
+            symbol:
+              type:
+                - string
+                - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      keywords:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      published_at:
+        type: string
+      similar:
+        type:
+          - array
+          - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      uuid:
+        type: string
+    required:
+      - uuid
+      - published_at

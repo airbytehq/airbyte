@@ -1,0 +1,1878 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the setup for the Concord source which ingests data from the concord
+  API.
+
+
+  Concord turns contract data into financial insights. Sign, store and search
+  unlimited contracts https://www.concord.app/
+
+
+  In order to use this source, you must first create a concord account and log
+  in. Then navigate to Automations -> Integrations -> Concord API -> Generate
+  New Key to obtain your API key.
+
+
+  The API is accessible from two environments, sandbox and production. You can
+  learn more about the API here https://api.doc.concordnow.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - agreements
+
+definitions:
+  streams:
+    agreements:
+      type: DeclarativeStream
+      name: agreements
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{stream_partition.parent_id}}/agreements
+          http_method: GET
+          request_headers:
+            organization: "{{ config[\"env\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/user_organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agreements"
+    user_organizations:
+      type: DeclarativeStream
+      name: user_organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: user/me/organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - organizations
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_organizations"
+    organization:
+      type: DeclarativeStream
+      name: organization
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{stream_partition.parent_id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/user_organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{stream_partition.parent_id}}/folders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/user_organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+    reports:
+      type: DeclarativeStream
+      name: reports
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{stream_partition.parent_id}}/reports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reports
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: numberOfItemsByPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 100
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/user_organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reports"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    organization_members:
+      type: DeclarativeStream
+      name: organization_members
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{stream_partition.parent_id}}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/user_organizations"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ record['user']['id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_members"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config["env"] }}.concordnow.com/api/rest/1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/agreements"
+  - $ref: "#/definitions/streams/user_organizations"
+  - $ref: "#/definitions/streams/organization"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/reports"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/organization_members"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - env
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      env:
+        type: string
+        description: The environment from where you want to access the API.
+        enum:
+          - uat
+          - api
+        name: organizationId
+        order: 1
+        title: Environment
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    agreements: true
+    user_organizations: true
+    organization: false
+    folders: false
+    reports: false
+    tags: true
+    organization_members: false
+  testedStreams:
+    agreements:
+      streamHash: 07d516db9e3071f685d7e9f55fc2fc7ff5ce8dd5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_organizations:
+      streamHash: 5520dfe5fc4a50db732484e0a2b69b057f998ed2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization:
+      streamHash: 883312227d1d185dadbc88ee7bbbb2ac3c423eba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    folders:
+      streamHash: 00fe7f2e0b38ad208db1f322bdea9f74b8551326
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reports:
+      streamHash: a1a6c2f6b428c996d9af1ffa8578223779bd0851
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 884d1cd380e602b84919004685e117b97fcf0452
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_members:
+      streamHash: d617acc1e88d4a7e563ca0c6b4f574e2e6e9ce04
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api.doc.concordnow.com/
+    openapiSpecUrl: https://api.doc.concordnow.com/concord-openapi-bundled.yaml
+
+schemas:
+  agreements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          accessFromRole:
+            type:
+              - boolean
+              - "null"
+          accessType:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          inboxed:
+            type:
+              - boolean
+              - "null"
+          modifiedAt:
+            type:
+              - number
+              - "null"
+          properties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                content:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    propertyType:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          metadata:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              fullName:
+                                type:
+                                  - string
+                                  - "null"
+                          propertyValueId:
+                            type:
+                              - string
+                              - "null"
+                          valueText:
+                            type:
+                              - string
+                              - "null"
+                propertyId:
+                  type:
+                    - string
+                    - "null"
+                propertyName:
+                  type:
+                    - string
+                    - "null"
+                propertySource:
+                  type:
+                    - string
+                    - "null"
+          read:
+            type:
+              - boolean
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          summaryStatus:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          trashed:
+            type:
+              - boolean
+              - "null"
+          with:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      uid:
+        type: string
+    required:
+      - uid
+  user_organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      isParent:
+        type:
+          - boolean
+          - "null"
+      isSubsidiary:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subscription:
+        type:
+          - string
+          - "null"
+      subsidiaries:
+        type:
+          - array
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          features:
+            type:
+              - object
+              - "null"
+            properties:
+              accessRules:
+                type:
+                  - boolean
+                  - "null"
+              adminOversight:
+                type:
+                  - boolean
+                  - "null"
+              amendments:
+                type:
+                  - boolean
+                  - "null"
+              analytics:
+                type:
+                  - boolean
+                  - "null"
+              api:
+                type:
+                  - boolean
+                  - "null"
+              auditTrail:
+                type:
+                  - boolean
+                  - "null"
+              autoTemplates:
+                type:
+                  - boolean
+                  - "null"
+              bulkUpload:
+                type:
+                  - boolean
+                  - "null"
+              clauseLibrary:
+                type:
+                  - boolean
+                  - "null"
+              complexPasswords:
+                type:
+                  - boolean
+                  - "null"
+              customBranding:
+                type:
+                  - boolean
+                  - "null"
+              customRoles:
+                type:
+                  - boolean
+                  - "null"
+              dataLocalization:
+                type:
+                  - boolean
+                  - "null"
+              dedicatedEncryptionKey:
+                type:
+                  - boolean
+                  - "null"
+              drafting:
+                type:
+                  - boolean
+                  - "null"
+              execution:
+                type:
+                  - boolean
+                  - "null"
+              exports:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  advanced:
+                    type:
+                      - boolean
+                      - "null"
+                  simple:
+                    type:
+                      - boolean
+                      - "null"
+              integrations:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  box:
+                    type:
+                      - boolean
+                      - "null"
+                  docusign:
+                    type:
+                      - boolean
+                      - "null"
+                  dropbox:
+                    type:
+                      - boolean
+                      - "null"
+                  facebook:
+                    type:
+                      - boolean
+                      - "null"
+                  gdrive:
+                    type:
+                      - boolean
+                      - "null"
+                  google:
+                    type:
+                      - boolean
+                      - "null"
+                  hubspot:
+                    type:
+                      - boolean
+                      - "null"
+                  linkedin:
+                    type:
+                      - boolean
+                      - "null"
+                  salesforce:
+                    type:
+                      - boolean
+                      - "null"
+                  saml:
+                    type:
+                      - boolean
+                      - "null"
+                  webhook:
+                    type:
+                      - boolean
+                      - "null"
+              internalWorkflows:
+                type:
+                  - boolean
+                  - "null"
+              organizationFieldItem:
+                type:
+                  - boolean
+                  - "null"
+              property:
+                type:
+                  - boolean
+                  - "null"
+              reports:
+                type:
+                  - boolean
+                  - "null"
+              sendContractWithDocument:
+                type:
+                  - boolean
+                  - "null"
+              sendInvitationWithDocument:
+                type:
+                  - boolean
+                  - "null"
+              signDoubleAuth:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  coworkers:
+                    type:
+                      - boolean
+                      - "null"
+                  thirdParties:
+                    type:
+                      - boolean
+                      - "null"
+              signature:
+                type:
+                  - boolean
+                  - "null"
+              subsidiaries:
+                type:
+                  - boolean
+                  - "null"
+              userGroups:
+                type:
+                  - boolean
+                  - "null"
+              versioning:
+                type:
+                  - boolean
+                  - "null"
+              whitelistedIp:
+                type:
+                  - boolean
+                  - "null"
+              workflowCenter:
+                type:
+                  - boolean
+                  - "null"
+          role:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              rights:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  accessAllAgreement:
+                    type:
+                      - boolean
+                      - "null"
+                  contractAccess:
+                    type:
+                      - boolean
+                      - "null"
+                  contractAttachments:
+                    type:
+                      - boolean
+                      - "null"
+                  contractCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  contractCreateBulk:
+                    type:
+                      - boolean
+                      - "null"
+                  contractDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  contractUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  draftCommentAdd:
+                    type:
+                      - boolean
+                      - "null"
+                  draftCommentReply:
+                    type:
+                      - boolean
+                      - "null"
+                  draftCommentResolve:
+                    type:
+                      - boolean
+                      - "null"
+                  draftOrganizationWorkflowUse:
+                    type:
+                      - boolean
+                      - "null"
+                  draftWorkflowCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  draftWorkflowDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  draftWorkflowUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  fillFields:
+                    type:
+                      - boolean
+                      - "null"
+                  folderCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  folderDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  folderList:
+                    type:
+                      - boolean
+                      - "null"
+                  folderUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  groupCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  groupDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  groupUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  groupUpdateUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationAddComment:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationAttachments:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationBreak:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationCommentAdd:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationCommentReply:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationCommentResolve:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationInvite:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationOrganizationWorkflowUse:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationSign:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationUpdateFirstVersion:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationUpdateMetadata:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationUpdateOwn:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationWorkflowCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationWorkflowDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  negotiationWorkflowUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAccessAllContract:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAccessAllNegotiation:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAccessAllTemplate:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAccessRuleModify:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAccessRuleView:
+                    type:
+                      - boolean
+                      - "null"
+                  orgAddUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  orgBilling:
+                    type:
+                      - boolean
+                      - "null"
+                  orgCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  orgInviteUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  orgRemoveUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  orgUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationClauseCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationClauseDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationClauseList:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationClauseUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationFieldItemCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationFieldItemDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationFieldItemGet:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationFieldItemUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationWorkflowCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationWorkflowDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationWorkflowList:
+                    type:
+                      - boolean
+                      - "null"
+                  organizationWorkflowUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  propertyCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  propertyDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  propertyList:
+                    type:
+                      - boolean
+                      - "null"
+                  propertyUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  roleCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  roleDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  roleUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  roleUpdateUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  tagCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  tagDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  tagListAll:
+                    type:
+                      - boolean
+                      - "null"
+                  tagUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  templateAttachments:
+                    type:
+                      - boolean
+                      - "null"
+                  templateCommentAdd:
+                    type:
+                      - boolean
+                      - "null"
+                  templateCommentReply:
+                    type:
+                      - boolean
+                      - "null"
+                  templateCommentResolve:
+                    type:
+                      - boolean
+                      - "null"
+                  templateCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  templateDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  templateOrganizationWorkflowUse:
+                    type:
+                      - boolean
+                      - "null"
+                  templateUpdate:
+                    type:
+                      - boolean
+                      - "null"
+                  templateUpdateTags:
+                    type:
+                      - boolean
+                      - "null"
+                  templateUpdateUsers:
+                    type:
+                      - boolean
+                      - "null"
+                  templateUse:
+                    type:
+                      - boolean
+                      - "null"
+                  templateWorkflowCreate:
+                    type:
+                      - boolean
+                      - "null"
+                  templateWorkflowDelete:
+                    type:
+                      - boolean
+                      - "null"
+                  templateWorkflowUpdate:
+                    type:
+                      - boolean
+                      - "null"
+          subscription:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  organization:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adminOversight:
+        type:
+          - boolean
+          - "null"
+      allTagsVisible:
+        type:
+          - boolean
+          - "null"
+      askForTags:
+        type:
+          - string
+          - "null"
+      canCollaboratorSign:
+        type:
+          - boolean
+          - "null"
+      contactInfos:
+        type:
+          - object
+          - "null"
+        properties:
+          mobileCode:
+            type:
+              - number
+              - "null"
+          phoneCode:
+            type:
+              - number
+              - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      emailDomains:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      passwordStrategy:
+        type:
+          - boolean
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      sendContractWithDocument:
+        type:
+          - boolean
+          - "null"
+      sendInvitationWithDocument:
+        type:
+          - boolean
+          - "null"
+      signingAuthentications:
+        type:
+          - object
+          - "null"
+        properties:
+          colleagues:
+            type:
+              - string
+              - "null"
+          thirdParties:
+            type:
+              - string
+              - "null"
+      subscription:
+        type:
+          - string
+          - "null"
+      subsidiaries:
+        type:
+          - array
+          - "null"
+      whitelistedIps:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+          - object
+          - "null"
+        properties:
+          allUserInOrganizationAccess:
+            type:
+              - boolean
+              - "null"
+          invitations:
+            type:
+              - array
+              - "null"
+          teams:
+            type:
+              - array
+              - "null"
+          users:
+            type:
+              - array
+              - "null"
+      children:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            access:
+              type:
+                - object
+                - "null"
+              properties:
+                allUserInOrganizationAccess:
+                  type:
+                    - boolean
+                    - "null"
+                invitations:
+                  type:
+                    - array
+                    - "null"
+                teams:
+                  type:
+                    - array
+                    - "null"
+                users:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      folderId:
+                        type:
+                          - number
+                          - "null"
+                      fullName:
+                        type:
+                          - string
+                          - "null"
+                      hasPicture:
+                        type:
+                          - boolean
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+            children:
+              type:
+                - array
+                - "null"
+            documentCount:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            parentId:
+              type:
+                - number
+                - "null"
+      documentCount:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+    required:
+      - id
+  reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      filters:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - object
+              - "null"
+            properties:
+              isWithinTheLast:
+                type:
+                  - string
+                  - "null"
+          createdBy:
+            type:
+              - array
+              - "null"
+          endAt:
+            type:
+              - object
+              - "null"
+            properties:
+              isWithinTheNext:
+                type:
+                  - string
+                  - "null"
+          modifiedAt:
+            type:
+              - object
+              - "null"
+            properties:
+              isMoreThan:
+                type:
+                  - string
+                  - "null"
+          parties:
+            type:
+              - array
+              - "null"
+          sharedWith:
+            type:
+              - array
+              - "null"
+          signatureDate:
+            type:
+              - object
+              - "null"
+            properties:
+              isWithinTheLast:
+                type:
+                  - string
+                  - "null"
+          statuses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          tagNames:
+            type:
+              - array
+              - "null"
+      id:
+        type: string
+      lastUpdatedAt:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      inAccessRule:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  organization_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      role:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rights:
+            type:
+              - object
+              - "null"
+            properties:
+              accessAllAgreement:
+                type:
+                  - boolean
+                  - "null"
+              contractAccess:
+                type:
+                  - boolean
+                  - "null"
+              contractAttachments:
+                type:
+                  - boolean
+                  - "null"
+              contractCreate:
+                type:
+                  - boolean
+                  - "null"
+              contractCreateBulk:
+                type:
+                  - boolean
+                  - "null"
+              contractDelete:
+                type:
+                  - boolean
+                  - "null"
+              contractUpdate:
+                type:
+                  - boolean
+                  - "null"
+              draftCommentAdd:
+                type:
+                  - boolean
+                  - "null"
+              draftCommentReply:
+                type:
+                  - boolean
+                  - "null"
+              draftCommentResolve:
+                type:
+                  - boolean
+                  - "null"
+              draftOrganizationWorkflowUse:
+                type:
+                  - boolean
+                  - "null"
+              draftWorkflowCreate:
+                type:
+                  - boolean
+                  - "null"
+              draftWorkflowDelete:
+                type:
+                  - boolean
+                  - "null"
+              draftWorkflowUpdate:
+                type:
+                  - boolean
+                  - "null"
+              fillFields:
+                type:
+                  - boolean
+                  - "null"
+              folderCreate:
+                type:
+                  - boolean
+                  - "null"
+              folderDelete:
+                type:
+                  - boolean
+                  - "null"
+              folderList:
+                type:
+                  - boolean
+                  - "null"
+              folderUpdate:
+                type:
+                  - boolean
+                  - "null"
+              groupCreate:
+                type:
+                  - boolean
+                  - "null"
+              groupDelete:
+                type:
+                  - boolean
+                  - "null"
+              groupUpdate:
+                type:
+                  - boolean
+                  - "null"
+              groupUpdateUsers:
+                type:
+                  - boolean
+                  - "null"
+              negotiationAddComment:
+                type:
+                  - boolean
+                  - "null"
+              negotiationAttachments:
+                type:
+                  - boolean
+                  - "null"
+              negotiationBreak:
+                type:
+                  - boolean
+                  - "null"
+              negotiationCommentAdd:
+                type:
+                  - boolean
+                  - "null"
+              negotiationCommentReply:
+                type:
+                  - boolean
+                  - "null"
+              negotiationCommentResolve:
+                type:
+                  - boolean
+                  - "null"
+              negotiationCreate:
+                type:
+                  - boolean
+                  - "null"
+              negotiationInvite:
+                type:
+                  - boolean
+                  - "null"
+              negotiationOrganizationWorkflowUse:
+                type:
+                  - boolean
+                  - "null"
+              negotiationSign:
+                type:
+                  - boolean
+                  - "null"
+              negotiationUpdate:
+                type:
+                  - boolean
+                  - "null"
+              negotiationUpdateFirstVersion:
+                type:
+                  - boolean
+                  - "null"
+              negotiationUpdateMetadata:
+                type:
+                  - boolean
+                  - "null"
+              negotiationUpdateOwn:
+                type:
+                  - boolean
+                  - "null"
+              negotiationWorkflowCreate:
+                type:
+                  - boolean
+                  - "null"
+              negotiationWorkflowDelete:
+                type:
+                  - boolean
+                  - "null"
+              negotiationWorkflowUpdate:
+                type:
+                  - boolean
+                  - "null"
+              orgAccessAllContract:
+                type:
+                  - boolean
+                  - "null"
+              orgAccessAllNegotiation:
+                type:
+                  - boolean
+                  - "null"
+              orgAccessAllTemplate:
+                type:
+                  - boolean
+                  - "null"
+              orgAccessRuleModify:
+                type:
+                  - boolean
+                  - "null"
+              orgAccessRuleView:
+                type:
+                  - boolean
+                  - "null"
+              orgAddUsers:
+                type:
+                  - boolean
+                  - "null"
+              orgBilling:
+                type:
+                  - boolean
+                  - "null"
+              orgCreate:
+                type:
+                  - boolean
+                  - "null"
+              orgInviteUsers:
+                type:
+                  - boolean
+                  - "null"
+              orgRemoveUsers:
+                type:
+                  - boolean
+                  - "null"
+              orgUpdate:
+                type:
+                  - boolean
+                  - "null"
+              organizationClauseCreate:
+                type:
+                  - boolean
+                  - "null"
+              organizationClauseDelete:
+                type:
+                  - boolean
+                  - "null"
+              organizationClauseList:
+                type:
+                  - boolean
+                  - "null"
+              organizationClauseUpdate:
+                type:
+                  - boolean
+                  - "null"
+              organizationFieldItemCreate:
+                type:
+                  - boolean
+                  - "null"
+              organizationFieldItemDelete:
+                type:
+                  - boolean
+                  - "null"
+              organizationFieldItemGet:
+                type:
+                  - boolean
+                  - "null"
+              organizationFieldItemUpdate:
+                type:
+                  - boolean
+                  - "null"
+              organizationWorkflowCreate:
+                type:
+                  - boolean
+                  - "null"
+              organizationWorkflowDelete:
+                type:
+                  - boolean
+                  - "null"
+              organizationWorkflowList:
+                type:
+                  - boolean
+                  - "null"
+              organizationWorkflowUpdate:
+                type:
+                  - boolean
+                  - "null"
+              propertyCreate:
+                type:
+                  - boolean
+                  - "null"
+              propertyDelete:
+                type:
+                  - boolean
+                  - "null"
+              propertyList:
+                type:
+                  - boolean
+                  - "null"
+              propertyUpdate:
+                type:
+                  - boolean
+                  - "null"
+              roleCreate:
+                type:
+                  - boolean
+                  - "null"
+              roleDelete:
+                type:
+                  - boolean
+                  - "null"
+              roleUpdate:
+                type:
+                  - boolean
+                  - "null"
+              roleUpdateUsers:
+                type:
+                  - boolean
+                  - "null"
+              tagCreate:
+                type:
+                  - boolean
+                  - "null"
+              tagDelete:
+                type:
+                  - boolean
+                  - "null"
+              tagListAll:
+                type:
+                  - boolean
+                  - "null"
+              tagUpdate:
+                type:
+                  - boolean
+                  - "null"
+              templateAttachments:
+                type:
+                  - boolean
+                  - "null"
+              templateCommentAdd:
+                type:
+                  - boolean
+                  - "null"
+              templateCommentReply:
+                type:
+                  - boolean
+                  - "null"
+              templateCommentResolve:
+                type:
+                  - boolean
+                  - "null"
+              templateCreate:
+                type:
+                  - boolean
+                  - "null"
+              templateDelete:
+                type:
+                  - boolean
+                  - "null"
+              templateOrganizationWorkflowUse:
+                type:
+                  - boolean
+                  - "null"
+              templateUpdate:
+                type:
+                  - boolean
+                  - "null"
+              templateUpdateTags:
+                type:
+                  - boolean
+                  - "null"
+              templateUpdateUsers:
+                type:
+                  - boolean
+                  - "null"
+              templateUse:
+                type:
+                  - boolean
+                  - "null"
+              templateWorkflowCreate:
+                type:
+                  - boolean
+                  - "null"
+              templateWorkflowDelete:
+                type:
+                  - boolean
+                  - "null"
+              templateWorkflowUpdate:
+                type:
+                  - boolean
+                  - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          fullName:
+            type:
+              - string
+              - "null"
+          hasMfa:
+            type:
+              - boolean
+              - "null"
+          hasPicture:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      user_id:
+        type: number
+    required:
+      - user_id

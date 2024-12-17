@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-mode
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.13.0@sha256:ffc5977f59e1f38bf3f5dd70b6fa0520c2450ebf85153c5a8df315b8c918d5c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.1.0@sha256:3ac88000d74db5f9d8dcb004299b917a5dff5cbbc19ebccd49288266095547ca
   connectorSubtype: api
   connectorType: source
   definitionId: 948f3a37-f80b-4f57-a918-9fd733f7a018
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-mode
   githubIssueLabel: source-mode
   icon: icon.svg

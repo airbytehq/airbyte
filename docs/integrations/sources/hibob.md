@@ -80,6 +80,7 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1 | 2024-10-28 | [47672](https://github.com/airbytehq/airbyte/pull/47672) | Update dependencies |
 | 0.2.0 | 2024-08-21 | [44542](https://github.com/airbytehq/airbyte/pull/44542) | Refactor connector to manifest-only format |
 | 0.1.3 | 2024-08-17 | [44298](https://github.com/airbytehq/airbyte/pull/44298) | Update dependencies |
 | 0.1.2 | 2024-08-12 | [43853](https://github.com/airbytehq/airbyte/pull/43853) | Update dependencies |

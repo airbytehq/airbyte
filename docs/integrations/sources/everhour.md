@@ -28,7 +28,8 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------| :------------------------------------------------------- | :-------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.2 | 2024-10-28 | [47508](https://github.com/airbytehq/airbyte/pull/47508) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44151](https://github.com/airbytehq/airbyte/pull/44151) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-10 | [43561](https://github.com/airbytehq/airbyte/pull/43561) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43205](https://github.com/airbytehq/airbyte/pull/43205) | Update dependencies |

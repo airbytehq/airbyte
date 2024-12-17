@@ -57,7 +57,9 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
-| 1.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.4.3 | 2024-10-29 | [47732](https://github.com/airbytehq/airbyte/pull/47732) | Update dependencies |
+| 1.4.2 | 2024-10-28 | [47449](https://github.com/airbytehq/airbyte/pull/47449) | Update dependencies |
+| 1.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.4.0 | 2024-08-15 | [44148](https://github.com/airbytehq/airbyte/pull/44148) | Refactor connector to manifest-only format |
 | 1.3.17 | 2024-08-10 | [43545](https://github.com/airbytehq/airbyte/pull/43545) | Update dependencies |
 | 1.3.16 | 2024-08-03 | [43254](https://github.com/airbytehq/airbyte/pull/43254) | Update dependencies |

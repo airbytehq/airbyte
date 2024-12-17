@@ -9,9 +9,10 @@ import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamComplete
-import io.airbyte.cdk.load.message.DestinationStreamIncomplete
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.ImplementorScope
@@ -21,6 +22,7 @@ import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlin.io.path.inputStream
 
@@ -35,17 +37,18 @@ interface ProcessRecordsTask : StreamLevel, ImplementorScope
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    override val stream: DestinationStream,
+    override val streamDescriptor: DestinationStream.Descriptor,
     private val taskLauncher: DestinationTaskLauncher,
     private val file: SpilledRawMessagesLocalFile,
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
+    private val diskManager: ReservationManager,
 ) : ProcessRecordsTask {
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
 
-        log.info { "Fetching stream loader for ${stream.descriptor}" }
-        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
+        log.info { "Fetching stream loader for $streamDescriptor" }
+        val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
 
         log.info { "Processing records from $file" }
         val batch =
@@ -64,8 +67,8 @@ class DefaultProcessRecordsTask(
                                 }
                             }
                             .takeWhile {
-                                it !is DestinationStreamComplete &&
-                                    it !is DestinationStreamIncomplete
+                                it !is DestinationRecordStreamComplete &&
+                                    it !is DestinationRecordStreamIncomplete
                             }
                             .map { it as DestinationRecord }
                             .iterator()
@@ -74,17 +77,18 @@ class DefaultProcessRecordsTask(
             } finally {
                 log.info { "Processing completed, deleting $file" }
                 file.localFile.toFile().delete()
+                diskManager.release(file.totalSizeBytes)
             }
 
         val wrapped = BatchEnvelope(batch, file.indexRange)
-        taskLauncher.handleNewBatch(stream, wrapped)
+        taskLauncher.handleNewBatch(streamDescriptor, wrapped)
     }
 }
 
 interface ProcessRecordsTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask
 }
@@ -94,12 +98,20 @@ interface ProcessRecordsTaskFactory {
 class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
+    @Named("diskManager") private val diskManager: ReservationManager,
 ) : ProcessRecordsTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         file: SpilledRawMessagesLocalFile,
     ): ProcessRecordsTask {
-        return DefaultProcessRecordsTask(stream, taskLauncher, file, deserializer, syncManager)
+        return DefaultProcessRecordsTask(
+            stream,
+            taskLauncher,
+            file,
+            deserializer,
+            syncManager,
+            diskManager,
+        )
     }
 }

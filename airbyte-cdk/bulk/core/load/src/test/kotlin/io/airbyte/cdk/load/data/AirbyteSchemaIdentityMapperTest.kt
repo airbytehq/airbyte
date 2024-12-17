@@ -4,7 +4,8 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.test.util.SchemaTestBuilder
+import io.airbyte.cdk.load.test.util.Root
+import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -12,15 +13,14 @@ class AirbyteSchemaIdentityMapperTest {
     @Test
     fun testIdMapping() {
         val (inputSchema, expectedOutput) =
-            SchemaTestBuilder()
+            SchemaRecordBuilder<Root>()
                 .with(DateType)
                 .with(StringType)
                 .with(IntegerType)
                 .with(BooleanType)
                 .with(NumberType)
-                .with(NullType)
                 .with(ArrayType(FieldType(StringType, true)))
-                .with(UnionType(listOf(StringType, IntegerType, NullType)))
+                .with(UnionType.of(StringType, IntegerType))
                 .withRecord()
                 .with(TimeTypeWithTimezone)
                 .with(TimeTypeWithoutTimezone)
@@ -32,7 +32,6 @@ class AirbyteSchemaIdentityMapperTest {
                 .with(ArrayTypeWithoutSchema)
                 .endRecord()
                 .endRecord()
-                .with(NullType)
                 .build()
 
         val mapper = object : AirbyteSchemaIdentityMapper {}

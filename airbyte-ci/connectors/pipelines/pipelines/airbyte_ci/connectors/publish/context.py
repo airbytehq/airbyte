@@ -54,6 +54,7 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
         use_local_cdk: bool = False,
+        use_cdk_ref: Optional[str] = None,
         python_registry_token: Optional[Secret] = None,
         ci_github_access_token: Optional[Secret] = None,
     ) -> None:
@@ -70,8 +71,8 @@ class PublishConnectorContext(ConnectorContext):
         pipeline_name = f"{rollout_mode.value} {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
-        if use_local_cdk and not self.pre_release:
-            raise click.UsageError("Publishing with the local CDK is only supported for pre-release publishing.")
+        if (use_local_cdk or use_cdk_ref) and not self.pre_release:
+            raise click.UsageError("Publishing with CDK overrides is only supported for pre-release publishing.")
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -91,6 +92,7 @@ class PublishConnectorContext(ConnectorContext):
             ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
+            use_cdk_ref=use_cdk_ref,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
             s3_build_cache_access_key_id=s3_build_cache_access_key_id,

@@ -23,7 +23,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-datadog
   githubIssueLabel: source-datadog
   icon: datadog.svg
@@ -52,5 +52,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.7.5@sha256:4832cc13b262b4cae4ba72b07da544e6ee2f5d216b7147483480d5ebc5d0d7ca
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
 metadataSpecVersion: "1.0"

@@ -995,6 +995,8 @@ def product_variants_response_expected_result():
             "product_id": 6796220989629,
             "inventory_item_id": 43653682495677,
             "image_id": None,
+            "image_src": None,
+            "image_url": None,
             "shop_url": "test_shop",
         },
         {
@@ -1025,6 +1027,8 @@ def product_variants_response_expected_result():
             "product_id": 6796825198781,
             "inventory_item_id": 42186366255293,
             "image_id": None,
+            "image_src": None,
+            "image_url": None,
             "shop_url": "test_shop",
         },
     ]

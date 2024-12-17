@@ -22,6 +22,9 @@ class NoBaseImageAddressInMetadataError(Exception):
 
 
 class UpdateBaseImageMetadata(StepModifyingFiles):
+
+    BASE_IMAGE_LIST_CACHE_TTL_SECONDS = 60 * 60 * 24  # 1 day
+
     context: ConnectorContext
 
     title = "Upgrade the base image to the latest version in metadata.yaml"
@@ -45,6 +48,7 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
                 self.dagger_client,
                 self.context.connector.language,
                 (self.context.docker_hub_username.value, self.context.docker_hub_password.value),
+                cache_ttl_seconds=self.BASE_IMAGE_LIST_CACHE_TTL_SECONDS,
             )
             return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
         except NotImplementedError:

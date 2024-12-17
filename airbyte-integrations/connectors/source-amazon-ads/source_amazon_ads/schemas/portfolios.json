@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "portfolioId": { "type": ["null", "integer"] },
+    "name": { "type": ["null", "string"] },
+    "budget": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": { "type": ["null", "number"] },
+        "currencyCode": { "type": ["null", "string"] },
+        "policy": { "type": ["null", "string"] },
+        "startDate": { "type": ["null", "string"] },
+        "endDate": { "type": ["null", "string"] }
+      }
+    },
+    "inBudget": { "type": ["null", "boolean"] },
+    "state": { "type": ["null", "string"] },
+    "creationDate": { "type": ["null", "integer"] },
+    "lastUpdatedDate": { "type": ["null", "integer"] },
+    "servingStatus": { "type": ["null", "string"] }
+  },
+  "title": "portfolios",
+  "type": ["null", "object"]
+}

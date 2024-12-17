@@ -80,6 +80,7 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.1 | 2024-10-29 | [47611](https://github.com/airbytehq/airbyte/pull/47611) | Update dependencies |
 | 0.2.0 | 2024-08-20 | [44448](https://github.com/airbytehq/airbyte/pull/44448) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-17 | [44247](https://github.com/airbytehq/airbyte/pull/44247) | Update dependencies |
 | 0.1.14 | 2024-08-12 | [43830](https://github.com/airbytehq/airbyte/pull/43830) | Update dependencies |
