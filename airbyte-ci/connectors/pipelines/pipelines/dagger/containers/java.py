@@ -174,21 +174,18 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
             f"Connector {context.connector.technical_name} has in-connector normalization enabled. This is supposed to be deprecated. "
             f"Please declare a base image address in the connector metadata.yaml file (connectorBuildOptions.baseImage)."
         )
-        base = with_integration_base_java_and_normalization(context, build_platform)
-        entrypoint = ["/airbyte/run_with_normalization.sh"]
+        base = with_integration_base_java_and_normalization(context, build_platform).with_entrypoint(["/airbyte/run_with_normalization.sh"])
     else:
         context.logger.warn(
             f"Connector {context.connector.technical_name} does not declare a base image in its connector metadata. "
             f"Please declare a base image address in the connector metadata.yaml file (connectorBuildOptions.baseImage)."
         )
-        base = with_integration_base_java(context, build_platform)
-        entrypoint = ["/airbyte/base.sh"]
+        base = with_integration_base_java(context, build_platform).with_entrypoint(["/airbyte/base.sh"])
 
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
         .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
-        .with_entrypoint(entrypoint)
     )
     return await finalize_build(context, connector_container)
