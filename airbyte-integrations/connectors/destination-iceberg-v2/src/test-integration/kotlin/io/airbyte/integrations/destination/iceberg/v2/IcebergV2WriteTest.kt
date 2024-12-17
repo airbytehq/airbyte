@@ -41,16 +41,14 @@ abstract class IcebergV2WriteTest(
         nullEqualsUnset = true,
     ) {
     @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
+    @Disabled("bad values handling for timestamps is currently broken")
     override fun testBasicTypes() {
         super.testBasicTypes()
     }
 
     @Test
     @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
+        "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
     )
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
@@ -63,29 +61,15 @@ abstract class IcebergV2WriteTest(
     }
 
     @Test
-    //    @Disabled
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    @Disabled(
-        "Expected because we seem to be mapping timestamps to long when we should be mapping them to an OffsetDateTime"
-    )
+    @Disabled("This is currently hanging forever and we should look into why")
     override fun resumeAfterCancelledTruncate() {
         super.resumeAfterCancelledTruncate()
     }
 
     @Test
-    @Disabled("This is expected")
+    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    //    @Disabled
-    override fun testUnions() {
-        super.testUnions()
     }
 }
 
@@ -97,17 +81,7 @@ class IcebergGlueWriteTest :
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
             )
         ),
-    ) {
-    @Test
-    override fun testContainerTypes() {
-        super.testContainerTypes()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-}
+    )
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
