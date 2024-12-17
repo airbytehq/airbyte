@@ -100,7 +100,11 @@ class DefaultInputConsumerTask(
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
-                val envelope = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE))
+                val envelope =
+                    BatchEnvelope(
+                        SimpleBatch(Batch.State.COMPLETE),
+                        streamDescriptor = message.stream
+                    )
                 destinationTaskLauncher.handleNewBatch(stream, envelope)
             }
             is DestinationFileStreamIncomplete ->

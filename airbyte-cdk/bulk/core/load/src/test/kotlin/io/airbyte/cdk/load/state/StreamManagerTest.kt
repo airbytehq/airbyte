@@ -266,14 +266,16 @@ class StreamManagerTest {
                     manager.updateBatchState(
                         BatchEnvelope(
                             SimpleBatch(Batch.State.PERSISTED),
-                            Range.closed(event.firstIndex, event.lastIndex)
+                            Range.closed(event.firstIndex, event.lastIndex),
+                            stream.descriptor
                         )
                     )
                 is AddComplete ->
                     manager.updateBatchState(
                         BatchEnvelope(
                             SimpleBatch(Batch.State.COMPLETE),
-                            Range.closed(event.firstIndex, event.lastIndex)
+                            Range.closed(event.firstIndex, event.lastIndex),
+                            stream.descriptor
                         )
                     )
                 is ExpectPersistedUntil ->
@@ -323,10 +325,20 @@ class StreamManagerTest {
     fun `ranges with the same id conflate to latest state`() {
         val manager = DefaultStreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
-        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range1)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
 
         val range2 = Range.closed(10, 19L)
-        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range2)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
 
         manager.updateBatchState(batch1)
         Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
@@ -338,10 +350,20 @@ class StreamManagerTest {
     fun `ranges with a different id conflate to latest state`() {
         val manager = DefaultStreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
-        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range1)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
 
         val range2 = Range.closed(10, 19L)
-        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "bar"), range2)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "bar"),
+                range2,
+                stream1.descriptor
+            )
 
         manager.updateBatchState(batch1)
         Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
@@ -356,10 +378,20 @@ class StreamManagerTest {
     fun `state does not conflate between id and no id`() {
         val manager = DefaultStreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
-        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = null), range1)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.LOCAL, groupId = null),
+                range1,
+                stream1.descriptor
+            )
 
         val range2 = Range.closed(10, 19L)
-        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "bar"), range2)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "bar"),
+                range2,
+                stream1.descriptor
+            )
 
         manager.updateBatchState(batch1)
         Assertions.assertFalse(manager.areRecordsPersistedUntil(10L), "local < persisted")
@@ -374,10 +406,20 @@ class StreamManagerTest {
     fun `max of newer and older state is always used`() {
         val manager = DefaultStreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
-        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range1)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
 
         val range2 = Range.closed(10, 19L)
-        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.LOCAL, groupId = "foo"), range2)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.LOCAL, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
 
         manager.updateBatchState(batch1)
         Assertions.assertFalse(manager.areRecordsPersistedUntil(20L), "local < persisted")
@@ -392,10 +434,20 @@ class StreamManagerTest {
     fun `max of older and newer state is always used`() {
         val manager = DefaultStreamManager(stream1)
         val range1 = Range.closed(0L, 9L)
-        val batch1 = BatchEnvelope(SimpleBatch(Batch.State.COMPLETE, groupId = "foo"), range1)
+        val batch1 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.COMPLETE, groupId = "foo"),
+                range1,
+                stream1.descriptor
+            )
 
         val range2 = Range.closed(10, 19L)
-        val batch2 = BatchEnvelope(SimpleBatch(Batch.State.PERSISTED, groupId = "foo"), range2)
+        val batch2 =
+            BatchEnvelope(
+                SimpleBatch(Batch.State.PERSISTED, groupId = "foo"),
+                range2,
+                stream1.descriptor
+            )
         manager.markEndOfStream(true)
 
         manager.updateBatchState(batch2)
