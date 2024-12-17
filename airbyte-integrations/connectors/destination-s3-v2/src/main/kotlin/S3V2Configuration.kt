@@ -38,6 +38,8 @@ data class S3V2Configuration<T : OutputStream>(
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
     override val numProcessRecordsWorkers: Int = 2,
+    override val numProcessBatchWorkers: Int = 10,
+    override val batchQueueDepth: Int = 10,
     override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
     override val recordBatchSizeBytes: Long = objectStorageUploadConfiguration.uploadPartSizeBytes,
     override val processEmptyFiles: Boolean = true,
@@ -65,12 +67,18 @@ class S3V2ConfigurationFactory(
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
             recordBatchSizeBytes = recordBatchSizeOverride
-                    ?: ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES,
+                    ?: pojo.partSizeBytes
+                        ?: ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES,
             objectStorageUploadConfiguration =
                 ObjectStorageUploadConfiguration(
                     fileSizeBytes = recordBatchSizeOverride
-                            ?: ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES,
-                )
+                            ?: pojo.fileSizeBytes
+                                ?: ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES,
+                ),
+            numProcessRecordsWorkers = pojo.numProcessRecordsWorkers ?: 2,
+            numProcessBatchWorkers = pojo.numProcessBatchWorkers ?: 10,
+            batchQueueDepth = pojo.batchQueueDepth ?: 10,
+            estimatedRecordMemoryOverheadRatio = pojo.estimatedRecordMemoryOverheadRatio ?: 5.0,
         )
     }
 }
