@@ -48,7 +48,9 @@ class CheckConnectorLanguageTag(MetadataCheck):
             connector.code_directory / consts.PYPROJECT_FILE_NAME
         ).exists():
             return self.PYTHON_LANGUAGE_TAG
-        elif (connector.code_directory / consts.GRADLE_FILE_NAME).exists():
+        elif (connector.code_directory / consts.GRADLE_FILE_NAME).exists() or (
+            connector.code_directory / consts.GRADLE_KOTLIN_FILE_NAME
+        ).exists():
             return self.JAVA_LANGUAGE_TAG
         else:
             raise ValueError("Could not infer the language tag from the connector directory")

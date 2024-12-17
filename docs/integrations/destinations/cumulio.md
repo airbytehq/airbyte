@@ -161,6 +161,7 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.26 | 2024-12-14 | [49302](https://github.com/airbytehq/airbyte/pull/49302) | Update dependencies |
 | 0.1.25 | 2024-11-25 | [48679](https://github.com/airbytehq/airbyte/pull/48679) | Update dependencies |
 | 0.1.24 | 2024-11-04 | [47029](https://github.com/airbytehq/airbyte/pull/47029) | Update dependencies |
 | 0.1.23 | 2024-10-12 | [46816](https://github.com/airbytehq/airbyte/pull/46816) | Update dependencies |
