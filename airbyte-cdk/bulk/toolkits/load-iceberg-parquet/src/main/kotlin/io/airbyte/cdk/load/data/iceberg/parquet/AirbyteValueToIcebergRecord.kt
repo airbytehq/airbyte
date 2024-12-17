@@ -58,16 +58,27 @@ class AirbyteValueToIcebergRecord {
                 return array
             }
             is BooleanValue -> return airbyteValue.value
-            is DateValue ->
-                throw IllegalArgumentException("String-based date types are not supported")
+            is DateValue -> return TimeStringUtility.toLocalDate(airbyteValue.value)
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
             is TimeValue ->
-                throw IllegalArgumentException("String-based time types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIME -> TimeStringUtility.toOffset(airbyteValue.value)
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimeValue"
+                        )
+                }
             is TimestampValue ->
-                throw IllegalArgumentException("String-based timestamp types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIMESTAMP -> TimeStringUtility.toOffsetDateTime(airbyteValue.value)
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimestampValue"
+                        )
+                }
             is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }

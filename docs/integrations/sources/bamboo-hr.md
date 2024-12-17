@@ -91,6 +91,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.2 | 2024-12-14 | [49543](https://github.com/airbytehq/airbyte/pull/49543) | Update dependencies |
 | 0.5.1 | 2024-12-12 | [49025](https://github.com/airbytehq/airbyte/pull/49025) | Update dependencies |
 | 0.5.0 | 2024-10-28 | [47262](https://github.com/airbytehq/airbyte/pull/47262) | Migrate to Manifest-only |
 | 0.4.14 | 2024-10-28 | [47072](https://github.com/airbytehq/airbyte/pull/47072) | Update dependencies |

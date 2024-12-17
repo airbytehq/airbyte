@@ -61,6 +61,7 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2024-12-14 | [49598](https://github.com/airbytehq/airbyte/pull/49598) | Update dependencies |
 | 0.0.6 | 2024-12-12 | [49229](https://github.com/airbytehq/airbyte/pull/49229) | Update dependencies |
 | 0.0.5 | 2024-12-11 | [48952](https://github.com/airbytehq/airbyte/pull/48952) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.4 | 2024-11-04 | [48202](https://github.com/airbytehq/airbyte/pull/48202) | Update dependencies |
