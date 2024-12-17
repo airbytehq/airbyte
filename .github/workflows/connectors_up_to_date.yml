@@ -46,7 +46,7 @@ jobs:
   run_connectors_up_to_date:
     needs: generate_matrix
     name: Connectors up-to-date
-    runs-on: connector-up-to-date-small
+    runs-on: connector-up-to-date-medium
     continue-on-error: true
     strategy:
       matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
