@@ -57,6 +57,7 @@ Here are some optional fields:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.3 | 2024-12-14 | [49579](https://github.com/airbytehq/airbyte/pull/49579) | Update dependencies |
 | 0.3.2 | 2024-12-12 | [47873](https://github.com/airbytehq/airbyte/pull/47873) | Update dependencies |
 | 0.3.1 | 2024-10-28 | [47636](https://github.com/airbytehq/airbyte/pull/47636) | Update dependencies |
 | 0.3.0 | 2024-08-19 | [44430](https://github.com/airbytehq/airbyte/pull/44430) | Refactor connector to manifest-only format |
