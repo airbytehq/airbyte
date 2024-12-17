@@ -15,8 +15,9 @@ exclude: |
     # Generated/test files
     ^airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/.*$|
     ^.*?/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid/.*$|
-    ^airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
+    ^airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid/.*$|
     ^.*?/airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
+    ^airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
     ^.*?/airbyte-integrations/connectors/destination-.*/expected-spec\.json$
   )
 
