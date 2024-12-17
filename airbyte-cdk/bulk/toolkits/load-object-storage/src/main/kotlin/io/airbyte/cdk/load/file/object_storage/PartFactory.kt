@@ -75,16 +75,19 @@ class PartBookkeeper {
     fun add(part: Part) {
         // Only add non-empty parts
         if (part.bytes != null) {
-            if (!partIndexes.add(part.partIndex)) {
-                throw IllegalStateException("Part index ${part.partIndex} already seen")
+            if (part.partIndex in partIndexes) {
+                throw IllegalStateException(
+                    "Part index ${part.partIndex} already seen for ${part.key}"
+                )
             }
+            partIndexes.add(part.partIndex)
         }
 
         // The final part conveys the last
         // index even if it is empty.
         if (part.isFinal) {
             if (!finalIndex.compareAndSet(null, part.partIndex)) {
-                throw IllegalStateException("Final part already seen")
+                throw IllegalStateException("Final part already seen for ${part.key}")
             }
         }
     }

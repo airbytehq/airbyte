@@ -54,6 +54,7 @@ interface Batch {
     val groupId: String?
 
     enum class State {
+        PROCESSED,
         LOCAL,
         PERSISTED,
         COMPLETE

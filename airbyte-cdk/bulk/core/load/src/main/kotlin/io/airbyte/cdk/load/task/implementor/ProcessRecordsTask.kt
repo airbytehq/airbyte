@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.google.common.collect.Range
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -42,6 +45,7 @@ interface ProcessRecordsTask : KillableScope
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
+    private val config: DestinationConfiguration,
     private val taskLauncher: DestinationTaskLauncher,
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
@@ -80,16 +84,32 @@ class DefaultProcessRecordsTask(
                         file.localFile.toFile().delete()
                         diskManager.release(file.totalSizeBytes)
                     }
-
-                val wrapped = BatchEnvelope(batch, file.indexRange, streamDescriptor)
-                log.info { "Updating batch $wrapped for $streamDescriptor" }
-                taskLauncher.handleNewBatch(streamDescriptor, wrapped)
-                if (batch.requiresProcessing) {
-                    outputQueue.publish(wrapped)
-                } else {
-                    log.info { "Batch $wrapped requires no further processing." }
+                handleBatch(streamDescriptor, batch, file.indexRange)
+            }
+            if (config.processEmptyFiles) {
+                // TODO: Get rid of the need to handle empty files please
+                log.info { "Forcing finalization of all accumulators." }
+                accumulators.forEach { (streamDescriptor, acc) ->
+                    val finalBatch =
+                        acc.processRecords(emptyList<DestinationRecord>().listIterator(), 0, true)
+                    handleBatch(streamDescriptor, finalBatch, null)
                 }
             }
+        }
+    }
+
+    private suspend fun handleBatch(
+        streamDescriptor: DestinationStream.Descriptor,
+        batch: Batch,
+        indexRange: Range<Long>?
+    ) {
+        val wrapped = BatchEnvelope(batch, indexRange, streamDescriptor)
+        taskLauncher.handleNewBatch(streamDescriptor, wrapped)
+        log.info { "Updating batch $wrapped for $streamDescriptor" }
+        if (batch.requiresProcessing) {
+            outputQueue.publish(wrapped)
+        } else {
+            log.info { "Batch $wrapped requires no further processing." }
         }
     }
 
@@ -126,6 +146,7 @@ data class FileAggregateMessage(
 @Singleton
 @Secondary
 class DefaultProcessRecordsTaskFactory(
+    private val config: DestinationConfiguration,
     private val deserializer: Deserializer<DestinationMessage>,
     private val syncManager: SyncManager,
     @Named("diskManager") private val diskManager: ReservationManager,
@@ -137,6 +158,7 @@ class DefaultProcessRecordsTaskFactory(
         taskLauncher: DestinationTaskLauncher,
     ): ProcessRecordsTask {
         return DefaultProcessRecordsTask(
+            config,
             taskLauncher,
             deserializer,
             syncManager,

@@ -84,7 +84,7 @@ class ObjectStorageDestinationState(
         val partNumber: Long,
     )
 
-    private suspend fun getGenerations(): Sequence<Generation> =
+    suspend fun getGenerations(): Sequence<Generation> =
         accessLock.withLock {
             generationMap.entries
                 .asSequence()

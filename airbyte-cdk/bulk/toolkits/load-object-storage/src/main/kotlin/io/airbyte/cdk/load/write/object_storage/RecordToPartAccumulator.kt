@@ -78,7 +78,7 @@ class RecordToPartAccumulator<U : OutputStream>(
 
             log.info {
                 val reason = if (endOfStream) "end of stream" else "file size ${fileSizeBytes}b"
-                "Buffered: ${bufferSize}b; total: ${newSize}b; $reason reached, yielding final part ${part.partIndex}"
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total: ${newSize}b; $reason reached, yielding final part ${part.partIndex} (size=${bytes?.size}b)"
             }
 
             currentObject.remove(key)
@@ -88,7 +88,7 @@ class RecordToPartAccumulator<U : OutputStream>(
             val bytes = partialUpload.writer.takeBytes()
             val part = partialUpload.partFactory.nextPart(bytes)
             log.info {
-                "Buffered: ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b reached, yielding part ${part.partIndex}"
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b reached, yielding part ${part.partIndex}"
             }
 
             return LoadablePart(part)
@@ -97,7 +97,7 @@ class RecordToPartAccumulator<U : OutputStream>(
             // TODO: Change this to a generator interface so we never have to do this.
             val part = partialUpload.partFactory.nextPart(null)
             log.info {
-                "Buffered: ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b not reached, yielding null part ${part.partIndex}"
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b not reached, yielding null part ${part.partIndex}"
             }
 
             return LoadablePart(part)
