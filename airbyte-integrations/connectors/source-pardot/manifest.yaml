@@ -427,6 +427,134 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/opportunities"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tag/version/4/do/query
+          http_method: GET
+          request_parameters:
+            format: json
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - tag
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['start_date'] or (now() -
+            timedelta(days=365)), '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: updated_before
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    tag_objects:
+      type: DeclarativeStream
+      name: tag_objects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tagObject/version/4/do/query
+          http_method: GET
+          request_parameters:
+            format: json
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - tagObject
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ format_datetime(config['start_date'] or (now() -
+            timedelta(days=365)), '%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: created_before
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tag_objects"
   base_requester:
     type: HttpRequester
     url_base: https://pi.pardot.com/api/
@@ -453,6 +581,8 @@ streams:
   - $ref: "#/definitions/streams/visitors"
   - $ref: "#/definitions/streams/visits"
   # - $ref: "#/definitions/streams/opportunities" # Currently disabled because test account doesn't have any data
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/tag_objects"
 
 
 spec:
@@ -525,6 +655,8 @@ metadata:
     visitors: false
     visits: false
     opportunities: false
+    tags: false
+    tag_objects: false
   yamlComponents:
     global:
       - authenticator
@@ -551,6 +683,10 @@ metadata:
       streamHash: c526ae3538c2c4f9b434e803521c509c0e5271a2
     opportunities:
       streamHash: fe2484cadf31a482f5f5421ac4a70d14f03e8796
+    tags:
+      streamHash: null
+    tag_objects:
+      streamHash: null
   assist: {}
 
 schemas:
@@ -1224,3 +1360,48 @@ schemas:
         type:
           - "null"
           - number
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  tag_objects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - integer
+      tag_id:
+        type:
+          - integer
+      type:
+        type:
+          - "null"
+          - string
+      object_id:
+        type:
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
