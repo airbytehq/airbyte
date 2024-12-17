@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import traceback
+from time import time
 from typing import TYPE_CHECKING, Any
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage, Level, TraceType, Type
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.declarative_component_schema import FailureType
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -49,15 +51,20 @@ class DeepsetCloudFileWriter:
             AirbyteMessage: Returns an Airbyte message with a suitable status.
         """
         try:
-            file_id = self.client.upload(file=file)
-        except APIError:
+            file_id = self.client.upload(file)
+        except APIError as ex:
             workspace = self.client.config.workspace
             return AirbyteMessage(
-                type=Type.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.ERROR,
-                    message=f"Failed to upload a record to deepset cloud workspace, {workspace = }.",
-                    stack_trace=traceback.format_exc(),
+                type=Type.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.ERROR,
+                    emitted_at=time(),
+                    error=AirbyteErrorTraceMessage(
+                        message=f"Failed to upload a record to deepset cloud workspace, {workspace = }.",
+                        internal_message=str(ex),
+                        stack_trace=traceback.format_exc(),
+                        failure_type=FailureType.transient_error.value,
+                    ),
                 ),
             )
         else:
@@ -66,6 +73,6 @@ class DeepsetCloudFileWriter:
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message=("Successfully uploaded a record to a deepset cloud workspace. " f"Uploaded {file_id = !s}, {workspace = }."),
+                    message=f"File uploaded, file_name = {file.name}, {file_id = }, {workspace = }.",
                 ),
             )
