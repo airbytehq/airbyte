@@ -16,7 +16,8 @@ interface CloseStreamTask : ImplementorScope
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the
- * teardown task.
+ * teardown task. Called after the end of stream message (complete OR incomplete) has been received
+ * and all record messages have been processed.
  */
 class DefaultCloseStreamTask(
     private val syncManager: SyncManager,
@@ -27,7 +28,7 @@ class DefaultCloseStreamTask(
     override suspend fun execute() {
         val streamLoader = syncManager.getOrAwaitStreamLoader(streamDescriptor)
         streamLoader.close()
-        syncManager.getStreamManager(streamDescriptor).markSucceeded()
+        syncManager.getStreamManager(streamDescriptor).markProcessingSucceeded()
         taskLauncher.handleStreamClosed(streamLoader.stream.descriptor)
     }
 }

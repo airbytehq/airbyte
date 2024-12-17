@@ -20,13 +20,9 @@ import kotlinx.coroutines.CompletableDeferred
 
 sealed interface StreamResult
 
-sealed interface StreamIncompleteResult : StreamResult
+data class StreamProcessingFailed(val streamException: Exception) : StreamResult
 
-data class StreamFailed(val streamException: Exception) : StreamIncompleteResult
-
-data class StreamKilled(val syncException: Exception) : StreamIncompleteResult
-
-data object StreamSucceeded : StreamResult
+data object StreamProcessingSucceeded : StreamResult
 
 /** Manages the state of a single stream. */
 interface StreamManager {
@@ -38,12 +34,16 @@ interface StreamManager {
     fun recordCount(): Long
 
     /**
-     * Mark the end-of-stream and return the record count. Expect this exactly once. Expect no
-     * further `countRecordIn`, and expect that [markSucceeded] or [markFailed] or [markKilled] will
-     * alway occur after this.
+     * Mark the end-of-stream, set the end of stream variant (complete or incomplete) and return the
+     * record count. Expect this exactly once. Expect no further `countRecordIn`, and expect that
+     * [markProcessingSucceeded] will always occur after this, while [markProcessingFailed] can
+     * occur before or after.
      */
-    fun markEndOfStream(): Long
+    fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long
     fun endOfStreamRead(): Boolean
+
+    /** Whether we received a stream complete message for the managed stream. */
+    fun isComplete(): Boolean
 
     /**
      * Mark a checkpoint in the stream and return the current index and the number of records since
@@ -72,22 +72,23 @@ interface StreamManager {
      */
     fun areRecordsPersistedUntil(index: Long): Boolean
 
-    /** Mark the stream as closed. This should only be called after all records have been read. */
-    fun markSucceeded()
+    /**
+     * Indicates destination processing of the stream succeeded, regardless of complete/incomplete
+     * status. This should only be called after all records and end of stream messages have been
+     * read.
+     */
+    fun markProcessingSucceeded()
 
     /**
-     * Mark that the stream was killed due to failure elsewhere. Returns false if task was already
-     * complete.
+     * Indicates destination processing of the stream failed. Returns false if task was already
+     * complete
      */
-    fun markKilled(causedBy: Exception): Boolean
-
-    /** Mark that the stream itself failed. Return false if task was already complete */
-    fun markFailed(causedBy: Exception): Boolean
+    fun markProcessingFailed(causedBy: Exception): Boolean
 
     /** Suspend until the stream completes, returning the result. */
     suspend fun awaitStreamResult(): StreamResult
 
-    /** True if the stream has not yet been marked successful, failed, or killed. */
+    /** True if the stream processing has not yet been marked as successful or failed. */
     fun isActive(): Boolean
 }
 
@@ -105,6 +106,7 @@ class DefaultStreamManager(
     private val lastCheckpoint = AtomicLong(0L)
 
     private val markedEndOfStream = AtomicBoolean(false)
+    private val receivedComplete = AtomicBoolean(false)
 
     private val rangesState: ConcurrentHashMap<Batch.State, RangeSet<Long>> = ConcurrentHashMap()
 
@@ -124,16 +126,21 @@ class DefaultStreamManager(
         return recordCount.get()
     }
 
-    override fun markEndOfStream(): Long {
+    override fun markEndOfStream(receivedStreamCompleteMessage: Boolean): Long {
         if (markedEndOfStream.getAndSet(true)) {
             throw IllegalStateException("Stream is closed for reading")
         }
+        receivedComplete.getAndSet(receivedStreamCompleteMessage)
 
         return recordCount.get()
     }
 
     override fun endOfStreamRead(): Boolean {
         return markedEndOfStream.get()
+    }
+
+    override fun isComplete(): Boolean {
+        return receivedComplete.get()
     }
 
     override fun markCheckpoint(): Pair<Long, Long> {
@@ -220,19 +227,15 @@ class DefaultStreamManager(
         return isProcessingCompleteForState(index, Batch.State.PERSISTED)
     }
 
-    override fun markSucceeded() {
+    override fun markProcessingSucceeded() {
         if (!markedEndOfStream.get()) {
             throw IllegalStateException("Stream is not closed for reading")
         }
-        streamResult.complete(StreamSucceeded)
+        streamResult.complete(StreamProcessingSucceeded)
     }
 
-    override fun markKilled(causedBy: Exception): Boolean {
-        return streamResult.complete(StreamKilled(causedBy))
-    }
-
-    override fun markFailed(causedBy: Exception): Boolean {
-        return streamResult.complete(StreamFailed(causedBy))
+    override fun markProcessingFailed(causedBy: Exception): Boolean {
+        return streamResult.complete(StreamProcessingFailed(causedBy))
     }
 
     override suspend fun awaitStreamResult(): StreamResult {
