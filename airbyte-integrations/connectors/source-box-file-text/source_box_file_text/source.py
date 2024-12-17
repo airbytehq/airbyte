@@ -11,11 +11,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
 
-from box_sdk_gen import BoxAPIError,BoxClient,File
-from .box_api import get_box_ccg_client
+from box_sdk_gen import BoxAPIError,BoxClient,File,Folder,Items
+from .box_api import get_box_ccg_client,box_folder_items_get_by_id
 
 logger = logging.getLogger("airbyte")
+
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteMessage: An AirbyteMessage. Could be of any type
+StreamData = Union[Mapping[str, Any], AirbyteMessage]
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -212,6 +218,44 @@ class BoxFile(BoxFileTextStream):
 
         return self.file
 
+class BoxFolder(Stream):
+    """
+    Represents a Box FOLDER stream.
+    """
+    client:BoxClient = None
+    folder_id:str = None
+    folder:Folder
+
+    # file_id:str = None
+    # file:File = None
+
+    def __init__(self, client: BoxClient, folder_id: str):
+        self.client = client
+        self.folder_id = folder_id
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        """
+        # in theory it represents the id of the item
+        return "id"
+    
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        items = box_folder_items_get_by_id(self.client, self.folder_id)
+        for item in items:
+            yield item
+
+        
+        
+
 
 # Source
 class SourceBoxFileText(AbstractSource):
@@ -242,7 +286,8 @@ class SourceBoxFileText(AbstractSource):
         # return [Customers(authenticator=auth), Employees(authenticator=auth)]
         box_client = get_box_ccg_client(config)
 
-        box_file_stream = BoxFile(box_client, config["file_id"])
+        # box_file_stream = BoxFile(box_client, config["file_id"])
+        box_folder_stream = BoxFolder(box_client, config["folder_id"])
 
-        return [box_file_stream]
+        return [box_folder_stream]
 
