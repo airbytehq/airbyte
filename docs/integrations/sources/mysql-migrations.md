@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-This release is a complete rewrite of source mysql and was built with backward compability. No user action is necessary. when updating to 4.0.0.
+This release is a complete rewrite of source mysql and was built with backward compability. No user action is necessary when updating to 4.0.0.
 
 ## Upgrading to 3.0.0
 
