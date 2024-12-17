@@ -26,7 +26,8 @@ data class ObjectInProgress<T : OutputStream>(
 class RecordToPartAccumulator<U : OutputStream>(
     private val pathFactory: ObjectStoragePathFactory,
     private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
-    private val recordBatchSizeBytes: Long,
+    private val partSizeBytes: Long,
+    private val fileSizeBytes: Long,
     private val stream: DestinationStream,
     private val fileNumber: AtomicLong,
 ) : BatchAccumulator {
@@ -66,26 +67,37 @@ class RecordToPartAccumulator<U : OutputStream>(
         partialUpload.writer.flush()
 
         // Check if we have reached the target size.
-        val newSize = partialUpload.partFactory.totalSize + partialUpload.writer.bufferSize
-        if (newSize >= recordBatchSizeBytes || endOfStream) {
+        val bufferSize = partialUpload.writer.bufferSize
+        val newSize = partialUpload.partFactory.totalSize + bufferSize
+        if (newSize >= fileSizeBytes || endOfStream) {
 
-            // If we have reached target size, clear the object and yield a final part.
+            // If we have reached target file size, clear the object and yield a final part.
             val bytes = partialUpload.writer.finish()
             partialUpload.writer.close()
             val part = partialUpload.partFactory.nextPart(bytes, isFinal = true)
 
             log.info {
-                "Size $newSize/${recordBatchSizeBytes}b reached (endOfStream=$endOfStream), yielding final part ${part.partIndex} (empty=${part.isEmpty})"
+                val reason = if (endOfStream) "end of stream" else "file size ${fileSizeBytes}b"
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total: ${newSize}b; $reason reached, yielding final part ${part.partIndex} (size=${bytes?.size}b)"
             }
 
             currentObject.remove(key)
             return LoadablePart(part)
-        } else {
-            // If we have not reached target size, just yield the next part.
+        } else if (bufferSize >= partSizeBytes) {
+            // If we have not reached file size, but have reached part size, yield a non-final part.
             val bytes = partialUpload.writer.takeBytes()
             val part = partialUpload.partFactory.nextPart(bytes)
             log.info {
-                "Size $newSize/${recordBatchSizeBytes}b not reached, yielding part ${part.partIndex} (empty=${part.isEmpty})"
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b reached, yielding part ${part.partIndex}"
+            }
+
+            return LoadablePart(part)
+        } else {
+            // If we have not reached either the file or part size, yield a null part.
+            // TODO: Change this to a generator interface so we never have to do this.
+            val part = partialUpload.partFactory.nextPart(null)
+            log.info {
+                "${partialUpload.partFactory.key}: buffer ${bufferSize}b; total ${newSize}b; part size ${partSizeBytes}b not reached, yielding null part ${part.partIndex}"
             }
 
             return LoadablePart(part)

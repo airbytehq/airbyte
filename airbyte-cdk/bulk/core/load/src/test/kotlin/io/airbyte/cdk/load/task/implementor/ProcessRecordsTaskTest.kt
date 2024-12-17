@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task.implementor
 
 import com.google.common.collect.Range
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ProcessRecordsTaskTest {
+    private lateinit var config: DestinationConfiguration
     private lateinit var diskManager: ReservationManager
     private lateinit var deserializer: Deserializer<DestinationMessage>
     private lateinit var streamLoader: StreamLoader
@@ -46,12 +48,14 @@ class ProcessRecordsTaskTest {
 
     @BeforeEach
     fun setup() {
+        config = mockk(relaxed = true)
         diskManager = mockk(relaxed = true)
         inputQueue = mockk(relaxed = true)
         outputQueue = mockk(relaxed = true)
         syncManager = mockk(relaxed = true)
         streamLoader = mockk(relaxed = true)
         batchAccumulator = mockk(relaxed = true)
+        coEvery { config.processEmptyFiles } returns false
         coEvery { syncManager.getOrAwaitStreamLoader(any()) } returns streamLoader
         coEvery { streamLoader.createBatchAccumulator() } returns batchAccumulator
         launcher = mockk(relaxed = true)
@@ -68,6 +72,7 @@ class ProcessRecordsTaskTest {
             }
         processRecordsTaskFactory =
             DefaultProcessRecordsTaskFactory(
+                config,
                 deserializer,
                 syncManager,
                 diskManager,

@@ -12,9 +12,14 @@ sealed interface ObjectStorageBatch : Batch
 
 // An indexed bytearray containing an uploadable chunk of a file.
 // Returned by the batch accumulator after processing records.
-class LoadablePart(val part: Part) : ObjectStorageBatch {
+data class LoadablePart(val part: Part) : ObjectStorageBatch {
     override val groupId = null
-    override val state = Batch.State.LOCAL
+    override val state = Batch.State.PROCESSED
+
+    // Hide the data from the logs
+    override fun toString(): String {
+        return "LoadablePart(partIndex=${part.partIndex}, key=${part.key}, fileNumber=${part.fileNumber}, empty=${part.isEmpty})"
+    }
 }
 
 // An UploadablePart that has been uploaded to an incomplete object.

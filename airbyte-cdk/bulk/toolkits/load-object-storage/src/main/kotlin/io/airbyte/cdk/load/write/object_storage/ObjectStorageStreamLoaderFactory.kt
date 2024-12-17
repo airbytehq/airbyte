@@ -51,6 +51,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             pathFactory,
             bufferedWriterFactory,
             destinationStateManager,
+            uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
             uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes
         )
     }
@@ -67,7 +68,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val pathFactory: ObjectStoragePathFactory,
     private val bufferedWriterFactory: BufferedFormattingWriterFactory<U>,
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
-    private val recordBatchSizeBytes: Long,
+    private val partSizeBytes: Long,
+    private val fileSizeBytes: Long,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
@@ -88,7 +90,8 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
         return RecordToPartAccumulator(
             pathFactory,
             bufferedWriterFactory,
-            recordBatchSizeBytes,
+            partSizeBytes = partSizeBytes,
+            fileSizeBytes = fileSizeBytes,
             stream,
             fileNumber
         )

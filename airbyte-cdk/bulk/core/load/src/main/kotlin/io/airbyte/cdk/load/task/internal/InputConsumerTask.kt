@@ -84,12 +84,14 @@ class DefaultInputConsumerTask(
             is DestinationRecordStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 val wrapped = StreamEndEvent(index = manager.markEndOfStream(true))
+                log.info { "Read COMPLETE for stream $stream" }
                 recordQueue.publish(reserved.replace(wrapped))
                 recordQueue.close()
             }
             is DestinationRecordStreamIncomplete -> {
                 reserved.release() // safe because multiple calls conflate
                 val wrapped = StreamEndEvent(index = manager.markEndOfStream(false))
+                log.info { "Read INCOMPLETE for stream $stream" }
                 recordQueue.publish(reserved.replace(wrapped))
                 recordQueue.close()
             }

@@ -48,7 +48,8 @@ class ObjectStorageStreamLoaderTest {
                 pathFactory,
                 writerFactory,
                 destinationStateManager,
-                partSize
+                fileSizeBytes = partSize,
+                partSizeBytes = partSize
             )
         )
 

@@ -63,7 +63,7 @@ class RecordToPartAccumulatorTest {
             RecordToPartAccumulator(
                 pathFactory = pathFactory,
                 bufferedWriterFactory = bufferedWriterFactory,
-                recordBatchSizeBytes = recordBatchSizeBytes,
+                fileSizeBytes = recordBatchSizeBytes,
                 stream = stream,
                 fileNumber = fileNumber
             )
