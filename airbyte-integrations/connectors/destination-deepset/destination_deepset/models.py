@@ -5,15 +5,11 @@ from __future__ import annotations
 import json
 from enum import Enum, unique
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import unquote, urlparse
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from pydantic import BaseModel, Field
-
-if TYPE_CHECKING:
-    from datetime import datetime
-
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -68,7 +64,7 @@ class FileData(BaseModel):
         title="Document Key",
         description="A unique identifier for the processed file which can be used as a primary key.",
     )
-    last_modified: datetime | None = Field(
+    last_modified: str | None = Field(
         None,
         alias="_ab_source_file_last_modified",
         title="Last Modified",

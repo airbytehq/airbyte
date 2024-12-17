@@ -5,6 +5,7 @@
         "name": "test_unstructured",
         "json_schema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "document_key": {
               "type": "string"
@@ -13,6 +14,9 @@
               "type": "string"
             }
           }
+        },
+        "format": {
+          "filetype": "unstructured"
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": false
