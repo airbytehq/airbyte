@@ -68,7 +68,8 @@ data:
     breakingChanges:
       4.0.0:
         message: We are pleased to announce the official launch of our new source-mysql connector, built on our new foundation. This connector is the culmination of extensive testing and development we soft launched with version 3.9.0 .
-        upgradeDeadline: "2024-12-12"
+        upgradeDeadline: "2024-12-17"
+        deadlineAction: "auto_upgrade"
       3.0.0:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
