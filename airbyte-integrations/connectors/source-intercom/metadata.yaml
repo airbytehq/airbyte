@@ -18,6 +18,9 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 60
   name: Intercom
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   remoteRegistries:
     pypi:
       enabled: false
