@@ -7,23 +7,14 @@
           "type": "object",
           "properties": {
             "document_key": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "string"
             },
             "content": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": "string"
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": false
       },
       "sync_mode": "incremental",
