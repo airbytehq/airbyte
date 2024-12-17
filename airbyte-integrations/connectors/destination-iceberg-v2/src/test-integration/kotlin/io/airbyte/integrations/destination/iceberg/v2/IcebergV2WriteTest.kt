@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import java.nio.file.Files
@@ -142,15 +141,18 @@ class IcebergNessieMinioWriteTest :
             val authToken = getToken()
             return """
             {
+                "catalog_type": {
+                  "catalog_type": "NESSIE",
+                  "server_uri": "http://$nessieEndpoint:19120/api/v1",
+                  "access_token": "$authToken"
+                },
                 "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
                 "access_key_id": "minioadmin",
                 "secret_access_key": "minioadmin",
                 "s3_endpoint": "http://$minioEndpoint:9002",
-                "server_uri": "http://$nessieEndpoint:19120/api/v1",
                 "warehouse_location": "s3://demobucket/",
-                "main_branch_name": "main",
-                "access_token": "$authToken"
+                "main_branch_name": "main"
             }
             """.trimIndent()
         }
