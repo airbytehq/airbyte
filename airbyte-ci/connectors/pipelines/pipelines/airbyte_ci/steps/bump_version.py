@@ -95,7 +95,8 @@ class SetConnectorVersion(StepModifyingFiles):
         else:
             new_raw_metadata = re.sub(
                 r"(name:)",
-                r"\1\nreleases:\nrolloutConfiguration:\nenableProgressiveRollout: true"
+                r"\1\nreleases:\nrolloutConfiguration:\nenableProgressiveRollout: true",
+                raw_metadata
             )
 
         updated_connector_dir = dagger_write_file(connector_directory, METADATA_FILE_NAME, new_raw_metadata)
