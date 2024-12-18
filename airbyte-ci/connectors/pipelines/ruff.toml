@@ -1,7 +1,7 @@
 target-version = "py310"
 line-length = 140
 
-ignore = ["ANN101", "ANN002", "ANN003"]
+ignore = ["ANN003"]
 
 [lint]
 
