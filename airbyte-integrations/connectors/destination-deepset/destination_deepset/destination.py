@@ -8,10 +8,18 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_deepset import util
 from destination_deepset.models import DeepsetCloudFile, Filetypes
 from destination_deepset.writer import DeepsetCloudFileWriter
+
 
 logger = logging.getLogger("airbyte")
 
@@ -42,28 +50,32 @@ class DestinationDeepset(Destination):
         """
         writer = DeepsetCloudFileWriter.factory(config)
 
-        streams: set[str] = set()
+        streams: dict[str, DestinationSyncMode] = {}
         for catalog_stream in configured_catalog.streams:
             if util.get(stream := catalog_stream.stream, "format.filetype") == Filetypes.DOCUMENT:
-                streams.add(stream.name)
+                streams[stream.name] = catalog_stream.destination_sync_mode
             else:
-                logger.warning(f"Only sources that produce document file type formatted records are supported! Got {stream = !s}")
+                logger.warning(
+                    f"Only sources that produce document file type formatted records are supported! Got {stream = !s}"
+                )
 
         for message in input_messages:
             match message.type:
                 case Type.STATE:
                     yield message
                 case Type.RECORD:
-                    if (stream_name := message.record.stream) not in streams:
-                        logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
+                    if (destination_sync_mode := streams.get(message.record.stream)) is None:
+                        logger.debug(f"Stream {message.record.stream} was not present in configured streams, skipping")
                         continue
 
                     try:
                         file = DeepsetCloudFile.from_record(message.record)
                     except ValueError as ex:
-                        yield util.get_trace_message("Failed to parse data into deepset cloud file instance.", exception=ex)
+                        yield util.get_trace_message(
+                            "Failed to parse data into deepset cloud file instance.", exception=ex
+                        )
                     else:
-                        yield writer.write(file=file)
+                        yield writer.write(file, destination_sync_mode=destination_sync_mode)
                 case _:
                     continue
 
@@ -84,6 +96,8 @@ class DestinationDeepset(Destination):
             writer = DeepsetCloudFileWriter.factory(config)
             writer.client.health_check()
         except Exception as ex:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Failed to connect to deepset cloud, reason: {ex!s}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"Failed to connect to deepset cloud, reason: {ex!s}"
+            )
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

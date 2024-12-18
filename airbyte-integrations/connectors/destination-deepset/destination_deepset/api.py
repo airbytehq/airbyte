@@ -5,9 +5,10 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
-from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 from httpx import HTTPError, HTTPStatusError
 from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_random_exponential
+
+from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 
 
 class APIError(RuntimeError):
@@ -81,11 +82,12 @@ class DeepsetCloudApi:
         except Exception as ex:
             raise APIError from ex
 
-    def upload(self, file: DeepsetCloudFile) -> UUID:
+    def upload(self, file: DeepsetCloudFile, write_mode: str = "KEEP") -> UUID:
         """Upload file to deepset Cloud.
 
         Args:
             file (DeepsetCloudFile): The file to upload
+            write_mode (str, Optional): The write mode. Defaults to `KEEP`.
 
         Raises:
             APIError: Raised whenever the file upload fails
@@ -108,7 +110,7 @@ class DeepsetCloudApi:
                         f"/api/v1/workspaces/{self.config.workspace}/files",
                         files={"file": (file.name, file.content)},
                         data={"meta": file.meta_as_string},
-                        params={"write_mode": "OVERWRITE"},
+                        params={"write_mode": write_mode},
                     )
                     response.raise_for_status()
 

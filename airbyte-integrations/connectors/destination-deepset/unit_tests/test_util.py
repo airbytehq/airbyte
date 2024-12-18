@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, FailureType, Level, TraceType, Type
 from destination_deepset import util
 from pydantic import BaseModel
+
+from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
 
 
 class Simple(BaseModel):
@@ -76,3 +77,15 @@ def test_get_log_message() -> None:
     assert airbyte_message.log.level == Level.INFO
     assert airbyte_message.log.message == log_message
     assert airbyte_message.log.stack_trace is None
+
+
+@pytest.mark.parametrize(
+    ("destination_sync_mode", "write_mode"),
+    [
+        (DestinationSyncMode.append, "FAIL"),
+        (DestinationSyncMode.append_dedup, "KEEP"),
+        (DestinationSyncMode.overwrite, "OVERWRITE"),
+    ],
+)
+def test_get_file_write_mode(destination_sync_mode: DestinationSyncMode, write_mode: str) -> None:
+    assert util.get_file_write_mode(destination_sync_mode) == write_mode

@@ -11,11 +11,13 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteTraceMessage,
+    DestinationSyncMode,
     FailureType,
     Level,
     TraceType,
     Type,
 )
+
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -81,3 +83,21 @@ def get_log_message(message: str) -> AirbyteMessage:
         AirbyteMessage: An `AirbyteMessage` instance.
     """
     return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
+
+
+def get_file_write_mode(destination_sync_mode: DestinationSyncMode) -> str:
+    """Translates Airbytes `DestinationSyncMode` into deepset Clouds's `WriteMode`.
+
+    Args:
+        destination_sync_mode (DestinationSyncMode): The destination sync mode.
+
+    Returns:
+        str: The equivalent write mode.
+    """
+    fallback_keep = "KEEP"
+    write_modes = {
+        DestinationSyncMode.append: "FAIL",
+        DestinationSyncMode.append_dedup: fallback_keep,
+        DestinationSyncMode.overwrite: "OVERWRITE",
+    }
+    return write_modes.get(destination_sync_mode) or fallback_keep

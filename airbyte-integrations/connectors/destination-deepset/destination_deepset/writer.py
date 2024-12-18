@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode
 from destination_deepset import util
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
+
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -39,17 +40,24 @@ class DeepsetCloudFileWriter:
         else:
             return cls(api_client=DeepsetCloudApi(config=parsed_config))
 
-    def write(self, file: DeepsetCloudFile) -> AirbyteMessage:
+    def write(
+        self,
+        file: DeepsetCloudFile,
+        destination_sync_mode: DestinationSyncMode = DestinationSyncMode.append_dedup,
+    ) -> AirbyteMessage:
         """Write a record to deepset cloud workspace.
 
         Args:
             message (AirbyteMessage): The Airbyte message to write
+            destination_sync_mode (DestinationSyncMode, Optional): The destination sync mode. Defaults to
+                `append_dedup`.
 
         Returns:
             AirbyteMessage: Returns an Airbyte message with a suitable status.
         """
+        write_mode = util.get_file_write_mode(destination_sync_mode)
         try:
-            file_id = self.client.upload(file)
+            file_id = self.client.upload(file, write_mode=write_mode)
         except APIError as ex:
             return util.get_trace_message(
                 f"Failed to upload a record to deepset cloud workspace, workspace = {self.client.config.workspace}.",
