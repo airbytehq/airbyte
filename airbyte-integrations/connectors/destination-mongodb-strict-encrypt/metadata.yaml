@@ -3,14 +3,14 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: credentials.json
-      name: SECRET_DESTINATION-MONGODB-STRICT-ENCRYPT_CREDENTIALS__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_DESTINATION-MONGODB-STRICT-ENCRYPT_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   dockerImageTag: 0.2.1
@@ -27,5 +27,5 @@ data:
       enabled: false
   releaseStage: alpha
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
