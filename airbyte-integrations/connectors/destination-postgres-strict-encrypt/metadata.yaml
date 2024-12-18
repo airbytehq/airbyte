@@ -1,8 +1,13 @@
 data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+  - suite: unitTests
+  - suite: integrationTests
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.4.0
+  dockerImageTag: 2.4.1
   dockerRepository: airbyte/destination-postgres-strict-encrypt
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -14,22 +19,24 @@ data:
       enabled: false
     oss:
       enabled: false
+  releaseStage: generally_available
   releases:
     breakingChanges:
       2.0.0:
-        message: >
-          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures.
-          To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
-          These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
-          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
-        upgradeDeadline: "2024-05-31"
-  releaseStage: generally_available
+        message: 'This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+          which provides better error handling, incremental delivery of data for large
+          syncs, and improved final table structures. To review the breaking changes,
+          and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+          These changes will likely require updates to downstream dbt / SQL models,
+          which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
+          Selecting `Upgrade` will upgrade **all** connections using this destination
+          at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
+
+          '
+        upgradeDeadline: '2024-05-31'
   supportLevel: certified
-  supportsRefreshes: true
   supportsDbt: true
+  supportsRefreshes: true
   tags:
-    - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-metadataSpecVersion: "1.0"
+  - language:java
+metadataSpecVersion: '1.0'
