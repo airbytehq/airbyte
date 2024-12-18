@@ -4,49 +4,49 @@ data:
     sl: 0
   allowedHosts:
     hosts:
-    - ${host}
-    - ${tunnel_method.tunnel_host}
+      - ${host}
+      - ${tunnel_method.tunnel_host}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: acceptanceTests
-    testSecrets:
-    - fileName: ssh-key-repl-config.json
-      name: SECRET_SOURCE-MYSQL_SSH-KEY-REPL__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: ssh-key-config.json
-      name: SECRET_SOURCE-MYSQL_SSH-KEY__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: ssh-pwd-repl-config.json
-      name: SECRET_SOURCE-MYSQL_SSH-PWD-REPL__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: ssh-pwd-config.json
-      name: SECRET_SOURCE-MYSQL_SSH-PWD__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: performance-config.json
-      name: SECRET_SOURCE_MYSQL_PERFORMANCE_TEST_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: cat-config.json
-      name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: cat-config-cdc.json
-      name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CDC_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: ssh-key-repl-config.json
+          name: SECRET_SOURCE-MYSQL_SSH-KEY-REPL__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: ssh-key-config.json
+          name: SECRET_SOURCE-MYSQL_SSH-KEY__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: ssh-pwd-repl-config.json
+          name: SECRET_SOURCE-MYSQL_SSH-PWD-REPL__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: ssh-pwd-config.json
+          name: SECRET_SOURCE-MYSQL_SSH-PWD__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: performance-config.json
+          name: SECRET_SOURCE_MYSQL_PERFORMANCE_TEST_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: cat-config.json
+          name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: cat-config-cdc.json
+          name: SECRET_SOURCE_MYSQL_ACCEPTANCE_TEST_CDC_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerImageTag: 3.9.3
@@ -67,10 +67,10 @@ data:
     breakingChanges:
       3.0.0:
         message: Add default cursor for cdc
-        upgradeDeadline: '2023-08-17'
+        upgradeDeadline: "2023-08-17"
     rolloutConfiguration:
       enableProgressiveRollout: false
   supportLevel: certified
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
