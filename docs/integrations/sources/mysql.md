@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.9.3    | 2024-12-18 | [49918](https://github.com/airbytehq/airbyte/pull/49918)   | Fixes datatype handling bugs and inconsistencies.                                                                                               |
 | 3.9.2    | 2024-12-16 | [49830](https://github.com/airbytehq/airbyte/pull/49830)   | Fixes an issue with auto generated tinyint columns                                                                                              |
 | 3.9.1    | 2024-12-12 | [49456](https://github.com/airbytehq/airbyte/pull/49456)   | Bump version to re-relase                                                                                                                       |
 | 3.9.0    | 2024-12-12 | [49423](https://github.com/airbytehq/airbyte/pull/49423)   | Promoting release candidate 3.9.0-rc.27 to a main version.                                                                                      |
