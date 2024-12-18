@@ -1,6 +1,7 @@
+import requests
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, Union, MutableMapping, Optional, Tuple
-from box_sdk_gen import CCGConfig, BoxCCGAuth, BoxClient,File,FileMini,FolderMini,WebLink, Items
+from box_sdk_gen import BoxSDKError,CCGConfig, BoxCCGAuth, BoxClient,File,FileMini,FolderMini,WebLink, Items
 
 @dataclass
 class BoxFileExtended:
@@ -27,21 +28,98 @@ def get_box_ccg_client(config: Mapping[str, Any])->BoxClient:
         user_id = user_id
         )
     ccg_auth =  BoxCCGAuth(ccg_config)
-    # TODO Add Header for statistics gathering
-    return BoxClient(ccg_auth)
+    return add_extra_header_to_box_client(BoxClient(ccg_auth))
+
+def add_extra_header_to_box_client(box_client: BoxClient) -> BoxClient:
+    """
+    Add extra headers to the Box client.
+
+    Args:
+        box_client (BoxClient): A Box client object.
+        header (Dict[str, str]): A dictionary of extra headers to add to the Box client.
+
+    Returns:
+        BoxClient: A Box client object with the extra headers added.
+    """
+    header = {"x-box-ai-library": "airbyte"}
+    return box_client.with_extra_headers(extra_headers=header)
+
+def _do_request(box_client: BoxClient, url: str):
+    """
+    Performs a GET request to a Box API endpoint using the provided Box client.
+
+    This is an internal helper function and should not be called directly.
+
+    Args:
+        box_client (BoxClient): An authenticated Box client object.
+        url (str): The URL of the Box API endpoint to make the request to.
+
+    Returns:
+        bytes: The content of the response from the Box API.
+
+    Raises:
+        BoxSDKError: If an error occurs while retrieving the access token.
+        requests.exceptions.RequestException: If the request fails (e.g., network error,
+                                             4XX or 5XX status code).
+    """
+    try:
+        access_token = box_client.auth.retrieve_token().access_token
+    except BoxSDKError as e:
+        # logger.error(f"Unable to retrieve access token: {e.message}", exc_info=True)
+        raise
+
+    resp = requests.get(url, headers={"Authorization": f"Bearer {access_token}"})
+    resp.raise_for_status()
+    return resp.content
 
 def box_file_get_by_id(client:BoxClient,file_id:str)->File:
     return client.files.get_file_by_id(file_id=file_id)
 
 def box_file_text_extract(client:BoxClient,file_id:str)->str:
-    # TODO Implement text extraction
-    return ""
+    # Request the file with the "extracted_text" representation hint
+    file_text_representation = client.files.get_file_by_id(
+        file_id,
+        x_rep_hints="[extracted_text]",
+        fields=["name", "representations"],
+    )
+    # Check if any representations exist
+    if not file_text_representation.representations.entries:
+        # logger.warning(f"No representation for file {file_text_representation.id}")
+        return ""
 
-def box_folder_items_get_by_id(client:BoxClient, folder_id:str)-> Iterable[BoxFileExtended]:
+    # Find the "extracted_text" representation
+    extracted_text_entry = next(
+        (
+            entry
+            for entry in file_text_representation.representations.entries
+            if entry.representation == "extracted_text"
+        ),
+        None,
+    )
+    if not extracted_text_entry:
+        return ""
+
+    # Handle cases where the extracted text needs generation
+    if extracted_text_entry.status.state == "none":
+        _do_request(extracted_text_entry.info.url)  # Trigger text generation
+
+    # Construct the download URL and sanitize filename
+    url = extracted_text_entry.content.url_template.replace("{+asset_path}", "")
+
+    # Download and truncate the raw content
+    raw_content = _do_request(client, url)
+    return raw_content if raw_content else ""
+
+
+def box_folder_items_get_by_id(client:BoxClient, folder_id:str,is_recursive:bool = False, by_pass_text_extraction:bool = False)-> Iterable[BoxFileExtended]:
     # folder items iterator
     for item in client.folders.get_folder_items(folder_id).entries:
         if item.type == "file":
             file = box_file_get_by_id(client=client,file_id=item.id)
-            text_representation = box_file_text_extract(client=client,file_id=item.id)
+            if not by_pass_text_extraction:
+                text_representation = box_file_text_extract(client=client,file_id=item.id)
+            else:
+                text_representation = ""
             yield BoxFileExtended(file=file,text_representation=text_representation)
-        # TODO add recursive folder items retrieval
+        elif item.type == "folder" and is_recursive:
+            yield from box_folder_items_get_by_id(client=client,folder_id=item.id,is_recursive=is_recursive,by_pass_text_extraction=by_pass_text_extraction)

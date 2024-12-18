@@ -224,14 +224,16 @@ class BoxFolder(Stream):
     """
     client:BoxClient = None
     folder_id:str = None
+    is_recursive:bool = False
     folder:Folder
 
     # file_id:str = None
     # file:File = None
 
-    def __init__(self, client: BoxClient, folder_id: str):
+    def __init__(self, client: BoxClient, folder_id: str,is_recursive:bool = False):
         self.client = client
         self.folder_id = folder_id
+        self.is_recursive = is_recursive
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -249,7 +251,7 @@ class BoxFolder(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        items = box_folder_items_get_by_id(self.client, self.folder_id)
+        items = box_folder_items_get_by_id(self.client, self.folder_id,is_recursive=self.is_recursive)
         for item in items:
             airbyte_item:StreamData = item.file.to_dict()
             airbyte_item["text_representation"] = item.text_representation
@@ -289,7 +291,7 @@ class SourceBoxFileText(AbstractSource):
         box_client = get_box_ccg_client(config)
 
         # box_file_stream = BoxFile(box_client, config["file_id"])
-        box_folder_stream = BoxFolder(box_client, config["box_folder_id"])
+        box_folder_stream = BoxFolder(box_client, config["box_folder_id"],is_recursive=config.get("is_recursive",False))
 
         return [box_folder_stream]
 
