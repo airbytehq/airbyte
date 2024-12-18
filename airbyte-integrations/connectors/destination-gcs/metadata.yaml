@@ -6,18 +6,18 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: file
   connectorTestSuitesOptions:
-  - suite: integrationTests
-    testSecrets:
-    - fileName: insufficient_roles_config.json
-      name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_DESTINATION-GCS__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: integrationTests
+      testSecrets:
+        - fileName: insufficient_roles_config.json
+          name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-GCS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerImageTag: 0.4.7
@@ -35,11 +35,11 @@ data:
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 1Gi
-        memory_request: 1Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   supportLevel: community
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
