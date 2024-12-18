@@ -10,29 +10,56 @@ import io.debezium.spi.converter.RelationalColumn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * [PartialConverter] objects are used by [RelationalColumnCustomConverter.Handler] objects which to
+ * define a sequence of conversion functions which work on a best-effort basis to convert a given
+ * input value, provided by Debezium, into an output value which obeys the Airbyte Protocol.
+ *
+ * For example, a [PartialConverter] implementation for timestamps with time zones may attempt to
+ * cast an input value as an [java.time.OffsetDateTime]. If the cast is unsuccessful the
+ * [PartialConverter] will return [NoConversion], but if it's successful it will format it the way
+ * Airbyte expects (ISO8601 with microsecond precision etc.) and wrap the result in a [Converted].
+ */
 fun interface PartialConverter {
+    /** Attempts to convert the [input] to a valid result. */
     fun maybeConvert(input: Any?): PartialConverterResult
 }
 
+/** Output type of a [PartialConverter]. */
 sealed interface PartialConverterResult
 
+/** Returned by unsuccessful [PartialConverter] applications. */
 data object NoConversion : PartialConverterResult
 
+/** Returned by successful [PartialConverter] applications. */
 data class Converted(val output: Any?) : PartialConverterResult
 
+/**
+ * Utility [PartialConverter] for dealing with null values when these are valid. This cuts down on
+ * the boilerplate when defining subsequent [PartialConverter] implementations.
+ */
 object NullFallThrough : PartialConverter {
     override fun maybeConvert(input: Any?): PartialConverterResult =
         if (input == null) Converted(null) else NoConversion
 }
 
+/**
+ * Utility [PartialConverter] for dealing with known default values. This cuts down on the
+ * boilerplate when defining subsequent [PartialConverter] implementations.
+ */
 internal data class DefaultFallThrough(val defaultValue: Any?) : PartialConverter {
     override fun maybeConvert(input: Any?): PartialConverterResult =
         if (input == null) Converted(defaultValue) else NoConversion
 }
 
+/**
+ * Factory class for generating [CustomConverter.Converter] instances for debezium given a list of
+ * [PartialConverter]s.
+ */
 class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>>) {
     private val log = KotlinLogging.logger {}
 
+    /** Factory method for generating a [CustomConverter.Converter] for a [RelationalColumn]. */
     fun build(
         column: RelationalColumn,
         partialConverters: List<PartialConverter>
@@ -55,7 +82,8 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
             Converter(column, partialConverters)
         }
 
-    inner class Converter(
+    /** Implementation of [CustomConverter.Converter] used by [ConverterFactory]. */
+    internal inner class Converter(
         private val convertedField: ConvertedField,
         private val partialConverters: List<PartialConverter>,
     ) : CustomConverter.Converter {
