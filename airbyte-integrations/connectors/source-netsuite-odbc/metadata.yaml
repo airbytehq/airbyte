@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}.connect.api.netsuite.com
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a16f3b98-a62f-4b20-8e08-9163047f68a6
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-netsuite-odbc
+  githubIssueLabel: source-netsuite-odbc
+  icon: icon.svg
+  license: MIT
+  name: Netsuite Odbc
+  releaseDate: "2023-12-20"
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite-odbc
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

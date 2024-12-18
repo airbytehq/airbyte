@@ -1,0 +1,16 @@
+{
+  "type": "STREAM",
+  "stream": {
+    "stream_descriptor": { "name": "Customer" },
+    "stream_state": {
+      "last_date_updated": "2999-12-05T19:13:52",
+      "last_values_seen": { "id": 1152 }
+    }
+  },
+  "data": {
+    "Customer": {
+      "last_date_updated": "2999-12-05T19:13:52",
+      "last_values_seen": { "id": 1152 }
+    }
+  }
+}
