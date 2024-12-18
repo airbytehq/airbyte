@@ -12,7 +12,7 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
 data class MysqlJdbcStreamStateValue(
-    @JsonProperty("cursor") val cursors: String = "",
+    @JsonProperty("cursor") val cursors: String? = null,
     @JsonProperty("version") val version: Int = 2,
     @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.stateType,
     @JsonProperty("stream_name") val streamName: String = "",
@@ -34,14 +34,18 @@ data class MysqlJdbcStreamStateValue(
             cursorCheckpoint: JsonNode,
             stream: Stream,
         ): OpaqueStateValue {
-            return Jsons.valueToTree(
-                MysqlJdbcStreamStateValue(
-                    cursorField = listOf(cursor.id),
-                    cursors = cursorCheckpoint.asText(),
-                    streamName = stream.name,
-                    streamNamespace = stream.namespace!!
-                )
-            )
+            return when (cursorCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            cursorField = listOf(cursor.id),
+                            cursors = cursorCheckpoint.asText(),
+                            streamName = stream.name,
+                            streamNamespace = stream.namespace!!
+                        )
+                    )
+            }
         }
 
         /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
@@ -50,13 +54,17 @@ data class MysqlJdbcStreamStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MysqlJdbcStreamStateValue(
-                    pkName = primaryKeyField.id,
-                    pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = StateType.PRIMARY_KEY.stateType,
-                )
-            )
+            return when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = primaryKeyCheckpoint.first().asText(),
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                        )
+                    )
+            }
         }
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
@@ -67,21 +75,25 @@ data class MysqlJdbcStreamStateValue(
             stream: Stream
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MysqlJdbcStreamStateValue(
-                    pkName = primaryKeyField.id,
-                    pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = StateType.PRIMARY_KEY.stateType,
-                    incrementalState =
-                        Jsons.valueToTree(
-                            MysqlJdbcStreamStateValue(
-                                cursorField = listOf(cursor.id),
-                                streamName = stream.name,
-                                streamNamespace = stream.namespace!!
-                            )
-                        ),
-                )
-            )
+            return when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MysqlJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = primaryKeyCheckpoint.first().asText(),
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                            incrementalState =
+                                Jsons.valueToTree(
+                                    MysqlJdbcStreamStateValue(
+                                        cursorField = listOf(cursor.id),
+                                        streamName = stream.name,
+                                        streamNamespace = stream.namespace!!
+                                    )
+                                ),
+                        )
+                    )
+            }
         }
     }
 }

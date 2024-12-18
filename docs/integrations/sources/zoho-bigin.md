@@ -32,6 +32,7 @@
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2024-12-14 | [49449](https://github.com/airbytehq/airbyte/pull/49449) | Update dependencies |
 | 0.0.1 | 2024-10-27 | | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
 
 </details>

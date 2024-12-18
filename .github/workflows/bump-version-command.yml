@@ -100,7 +100,7 @@ jobs:
       - name: Check for changes
         id: git-diff
         run: |
-          git diff --quiet && echo "No changes to commit" || echo "::set-output name=changes::true"
+          git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
         shell: bash
 
       # Commit changes (if any)

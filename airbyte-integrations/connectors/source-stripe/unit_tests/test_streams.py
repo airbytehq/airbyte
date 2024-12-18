@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CustomerBalanceTransactions, SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
+from source_stripe.streams import SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -522,26 +522,6 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by
         for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-01-01T15:00:15Z").int_timestamp})
     ]
     assert records == [{"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1691629292}]
-
-
-def test_customer_balance_transactions_stream_slices(requests_mock, stream_args):
-    stream_args["start_date"] = pendulum.now().subtract(days=1).int_timestamp
-    requests_mock.get(
-        "/v1/customers",
-        json={
-            "data": [
-                {"id": 1, "next_invoice_sequence": 1, "balance": 0, "created": 1653341716},
-                {"id": 2, "created": 1653341000},
-                {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334},
-            ]
-        },
-    )
-    stream = CustomerBalanceTransactions(**stream_args)
-    assert list(stream.stream_slices("full_refresh")) == [
-        {"id": 2, "created": 1653341000, "updated": 1653341000},
-        {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334, "updated": 1651716334},
-    ]
-
 
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_setup_attempts(requests_mock, incremental_stream_args):
