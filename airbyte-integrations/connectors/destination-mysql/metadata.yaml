@@ -6,19 +6,19 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: ssh-key-config.json
-      name: SECRET_DESTINATION-MYSQL_SSH-KEY__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: ssh-pwd-config.json
-      name: SECRET_DESTINATION-MYSQL_SSH-PWD__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: ssh-key-config.json
+          name: SECRET_DESTINATION-MYSQL_SSH-KEY__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: ssh-pwd-config.json
+          name: SECRET_DESTINATION-MYSQL_SSH-PWD__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   dockerImageTag: 1.0.3
@@ -38,7 +38,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: '**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
+        message:
+          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
 
           This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling and improved final table structures.
@@ -48,10 +49,10 @@ data:
 
           Selecting `Upgrade` will upgrade **all** connections using this destination
           at their next sync. You can manually sync existing connections prior to
-          the next scheduled sync to start the upgrade early.'
-        upgradeDeadline: '2024-06-05'
+          the next scheduled sync to start the upgrade early."
+        upgradeDeadline: "2024-06-05"
   supportLevel: community
   supportsDbt: true
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
