@@ -6,14 +6,14 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: credentials.json
-      name: SECRET_DESTINATION-POSTGRES_CREDENTIALS__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_DESTINATION-POSTGRES_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerImageTag: 2.4.1
@@ -33,7 +33,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: 'This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+        message:
+          "This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling, incremental delivery of data for large
           syncs, and improved final table structures. To review the breaking changes,
           and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
@@ -42,11 +43,11 @@ data:
           Selecting `Upgrade` will upgrade **all** connections using this destination
           at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
 
-          '
-        upgradeDeadline: '2024-05-31'
+          "
+        upgradeDeadline: "2024-05-31"
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
