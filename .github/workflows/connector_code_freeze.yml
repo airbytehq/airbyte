@@ -18,7 +18,7 @@ env:
   CODE_FREEZE_END_DATE: "2024-01-02"
 jobs:
   code-freeze-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Code freeze check
     permissions:
       # This is required to be able to comment on PRs and list changed files
