@@ -4,36 +4,36 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-    - ${connection_string}
+      - ${connection_string}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: credentials.json
-      name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_SOURCE-MONGODB-V2__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-  - suite: acceptanceTests
-    testSecrets:
-    - fileName: credentials.json
-      name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_SOURCE-MONGODB-V2__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_SOURCE-MONGODB-V2__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: credentials.json
+          name: SECRET_SOURCE-MONGODB-V2_CREDENTIALS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_SOURCE-MONGODB-V2__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerImageTag: 1.5.13
@@ -53,7 +53,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: '**We advise against upgrading until you have run a test upgrade
+        message:
+          "**We advise against upgrading until you have run a test upgrade
           as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This
           version brings a host of updates to the MongoDB source connector, significantly
           increasing its scalability and reliability, especially for large collections.
@@ -63,9 +64,9 @@ data:
           require you to reconfigure the source, then run a full reset on **all**
           of your connections.
 
-          '
-        upgradeDeadline: '2023-12-01'
+          "
+        upgradeDeadline: "2023-12-01"
   supportLevel: certified
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
