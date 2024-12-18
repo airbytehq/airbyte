@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.csv
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
@@ -35,7 +36,7 @@ class CsvSerializedBuffer(
     private var csvFormat: CSVFormat
 
     init {
-        csvFormat = CSVFormat.DEFAULT
+        csvFormat = CSVFormat.Builder.create().setQuoteMode(QuoteMode.NONE).setEscape('\\').build()
         // we always want to compress csv files
         withCompression(compression)
     }
@@ -71,7 +72,7 @@ class CsvSerializedBuffer(
 
     @Throws(IOException::class)
     override fun writeRecord(
-        recordString: String,
+        record: List<String>,
         airbyteMetaString: String,
         generationId: Long,
         emittedAt: Long
@@ -79,7 +80,7 @@ class CsvSerializedBuffer(
         csvPrinter!!.printRecord(
             csvSheetGenerator.getDataRow(
                 UUID.randomUUID(),
-                recordString,
+                record,
                 emittedAt,
                 airbyteMetaString,
                 generationId,
