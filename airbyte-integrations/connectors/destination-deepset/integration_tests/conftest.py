@@ -50,8 +50,8 @@ def api_client(monkeypatch: MonkeyPatch, config: Mapping[str, Any]) -> DeepsetCl
     cloud_config = DeepsetCloudConfig.parse_obj(config)
     patched = DeepsetCloudApi(cloud_config)
 
-    monkeypatch.setattr(patched, "health_check", lambda *_: None)
-    monkeypatch.setattr(patched, "upload", lambda *_: uuid4())
+    monkeypatch.setattr(patched, "health_check", lambda *_, **__: None)
+    monkeypatch.setattr(patched, "upload", lambda *_, **__: uuid4())
 
     return patched
 
