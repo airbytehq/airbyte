@@ -38,27 +38,6 @@ extend-exclude = """
 )/
 """
 
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "**/__init__.py",
-    "**/generated/*",
-    "**/declarative/models/*",
-]
-max-complexity = 20
-max-line-length = 140
-extend-ignore = [
-    "E203", # whitespace before ':' (conflicts with Black)
-    "E231", # Bad trailing comma (conflicts with Black)
-    "E501", # line too long (conflicts with Black)
-    "W503", # line break before binary operator (conflicts with Black)
-    "F811", # TODO: ella fix after pflake8 version update
-]
-
 [tool.coverage.report]
 fail_under = 0
 skip_empty = true
@@ -94,78 +73,86 @@ skip_glob = [
     "airbyte-integrations/connectors/destination-snowflake-cortex/**"
 ]
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 max-args = 8      # Relaxed from default of 5
 max-branches = 15 # Relaxed from default of 12
 
 [tool.ruff]
 target-version = "py310"
+line-length = 140
+extend-exclude = ["docs", "test", "tests"]
+
+[tool.ruff.lint]
+
 select = [
-    # For rules reference, see https://docs.astral.sh/ruff/rules/
-    "A",     # flake8-builtins
-    "ANN",   # flake8-annotations
-    "ARG",   # flake8-unused-arguments
-    "ASYNC", # flake8-async
-    "B",     # flake8-bugbear
-    "FBT",   # flake8-boolean-trap
-    "BLE",   # Blind except
-    "C4",    # flake8-comprehensions
-    "C90",   # mccabe (complexity)
-    "COM",   # flake8-commas
-    "CPY",   # missing copyright notice
-    # "D", # pydocstyle # TODO: Re-enable when adding docstrings
-    "DTZ",  # flake8-datetimez
-    "E",    # pycodestyle (errors)
-    "ERA",  # flake8-eradicate (commented out code)
-    "EXE",  # flake8-executable
-    "F",    # Pyflakes
-    "FA",   # flake8-future-annotations
-    "FIX",  # flake8-fixme
-    "FLY",  # flynt
-    "FURB", # Refurb
-    "I",    # isort
-    "ICN",  # flake8-import-conventions
-    "INP",  # flake8-no-pep420
-    "INT",  # flake8-gettext
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "LOG",  # flake8-logging
-    "N",    # pep8-naming
-    "PD",   # pandas-vet
-    "PERF", # Perflint
-    "PIE",  # flake8-pie
-    "PGH",  # pygrep-hooks
-    "PL",   # Pylint
-    "PT",   # flake8-pytest-style
-    "PTH",  # flake8-use-pathlib
-    "PYI",  # flake8-pyi
-    "Q",    # flake8-quotes
-    "RET",  # flake8-return
-    "RSE",  # flake8-raise
-    "RUF",  # Ruff-specific rules
-    "SIM",  # flake8-simplify
-    "SLF",  # flake8-self
-    "SLOT", # flake8-slots
-    "T10",  # debugger calls
-    # "T20", # flake8-print # TODO: Re-enable once we have logging
-    "TCH",    # flake8-type-checking
-    "TD",     # flake8-todos
-    "TID",    # flake8-tidy-imports
-    "TRY",    # tryceratops
-    "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
-    "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
-    "UP",     # pyupgrade
-    "W",      # pycodestyle (warnings)
-    "YTT",    # flake8-2020
+    "I",    # isort replacement
 ]
+
+# TODO: Re-enable these once we have time to address them
+# select = [
+#     # For rules reference, see https://docs.astral.sh/ruff/rules/
+#     "A",     # flake8-builtins
+#     "ANN",   # flake8-annotations
+#     "ARG",   # flake8-unused-arguments
+#     "ASYNC", # flake8-async
+#     "B",     # flake8-bugbear
+#     "FBT",   # flake8-boolean-trap
+#     "BLE",   # Blind except
+#     "C4",    # flake8-comprehensions
+#     "C90",   # mccabe (complexity)
+#     "COM",   # flake8-commas
+#     # "CPY",   # missing copyright notice  # Requires 'preview=true'
+#     # "D", # pydocstyle # TODO: Re-enable when adding docstrings
+#     "DTZ",  # flake8-datetimez
+#     "E",    # pycodestyle (errors)
+#     "ERA",  # flake8-eradicate (commented out code)
+#     "EXE",  # flake8-executable
+#     "F",    # Pyflakes
+#     "FA",   # flake8-future-annotations
+#     "FIX",  # flake8-fixme
+#     "FLY",  # flynt
+#     "FURB", # Refurb
+#     "I",    # isort
+#     "ICN",  # flake8-import-conventions
+#     "INP",  # flake8-no-pep420
+#     "INT",  # flake8-gettext
+#     "ISC",  # flake8-implicit-str-concat
+#     "ICN",  # flake8-import-conventions
+#     "LOG",  # flake8-logging
+#     "N",    # pep8-naming
+#     "PD",   # pandas-vet
+#     "PERF", # Perflint
+#     "PIE",  # flake8-pie
+#     "PGH",  # pygrep-hooks
+#     "PL",   # Pylint
+#     "PT",   # flake8-pytest-style
+#     "PTH",  # flake8-use-pathlib
+#     "PYI",  # flake8-pyi
+#     "Q",    # flake8-quotes
+#     "RET",  # flake8-return
+#     "RSE",  # flake8-raise
+#     "RUF",  # Ruff-specific rules
+#     "SIM",  # flake8-simplify
+#     "SLF",  # flake8-self
+#     "SLOT", # flake8-slots
+#     "T10",  # debugger calls
+#     # "T20", # flake8-print # TODO: Re-enable once we have logging
+#     "TCH",    # flake8-type-checking
+#     "TD",     # flake8-todos
+#     "TID",    # flake8-tidy-imports
+#     "TRY",    # tryceratops
+#     "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
+#     "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
+#     "UP",     # pyupgrade
+#     "W",      # pycodestyle (warnings)
+#     "YTT",    # flake8-2020
+# ]
 
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
 
     # These we don't agree with or don't want to prioritize to enforce:
     "ANN003",  # kwargs missing type annotations
-    "ANN101",  # Type annotations for 'self' args
-    "ANN102",  # Type annotations for 'cls' args
     "COM812",  # Because it conflicts with ruff auto-format
     "EM",      # flake8-errmsgs (may reconsider later)
     "DJ",      # Django linting
@@ -177,7 +164,7 @@ ignore = [
     "S",       # flake8-bandit (noisy, security related)
     "SIM910",  # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
     "TD002",   # Require author for TODOs
-    "TRIO",    # flake8-trio (opinionated, noisy)
+    "ASYNC1",  # flake8-trio (opinionated, noisy)
     "INP001",  # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
 
     # TODO: Consider re-enabling these before release:
@@ -196,11 +183,9 @@ unfixable = [
     "T201",   # print() calls (avoid silent loss of code / log messages)
 ]
 
-line-length = 140
-extend-exclude = ["docs", "test", "tests"]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-sort-within-sections = false
 lines-after-imports = 2
 known-first-party = [
@@ -211,8 +196,6 @@ known-first-party = [
     "connector_ops",
     "pipelines",
 ]
-known-local-folder = ["airbyte"]
-required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
     "future",
@@ -222,16 +205,16 @@ section-order = [
     "local-folder",
 ]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 24
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = false
 ignore-fully-untyped = false
 
