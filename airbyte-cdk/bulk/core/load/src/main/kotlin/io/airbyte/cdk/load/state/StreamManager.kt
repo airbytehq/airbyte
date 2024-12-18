@@ -150,17 +150,12 @@ class DefaultStreamManager(
     }
 
     override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
-
         rangesState[batch.batch.state]
             ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
         // If the batch is part of a group, update all ranges associated with its groupId
         // to the most advanced state. Otherwise, just use the ranges provided.
         val cachedRangesMaybe = batch.batch.groupId?.let { cachedRangesById[batch.batch.groupId] }
-
-        log.info {
-            "Updating state for stream ${stream.descriptor} with batch $batch using cached ranges $cachedRangesMaybe"
-        }
 
         val stateToSet =
             cachedRangesMaybe?.state?.let { maxOf(it, batch.batch.state) } ?: batch.batch.state
@@ -178,23 +173,36 @@ class DefaultStreamManager(
             rangesToUpdate.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
 
         when (stateToSet) {
-            Batch.State.PERSISTED -> {
-                rangesState[Batch.State.PERSISTED]?.addAll(expanded)
-            }
             Batch.State.COMPLETE -> {
                 // A COMPLETED state implies PERSISTED, so also mark PERSISTED.
                 rangesState[Batch.State.PERSISTED]?.addAll(expanded)
                 rangesState[Batch.State.COMPLETE]?.addAll(expanded)
             }
-            else -> Unit
-        }
-
-        log.info {
-            "Updated ranges for ${stream.descriptor}[${batch.batch.state}]: $expanded. PERSISTED is also updated on COMPLETE."
+            else -> {
+                // For all other states, just mark the state.
+                rangesState[stateToSet]?.addAll(expanded)
+            }
         }
 
         batch.batch.groupId?.also {
             cachedRangesById[it] = CachedRanges(stateToSet, rangesToUpdate)
+        }
+
+        log.info {
+            val groupLineMaybe =
+                if (cachedRangesMaybe != null) {
+                    "\n                (from group: ${cachedRangesMaybe.state}->${cachedRangesMaybe.ranges})\n"
+                } else {
+                    ""
+                }
+            """ For stream ${stream.descriptor.namespace}.${stream.descriptor.name}
+                From batch ${batch.batch.state}->${batch.ranges} (groupId ${batch.batch.groupId})$groupLineMaybe
+                Added $stateToSet->$rangesToUpdate to ${stream.descriptor.namespace}.${stream.descriptor.name}
+                PROCESSED: ${rangesState[Batch.State.PROCESSED]}
+                LOCAL:     ${rangesState[Batch.State.LOCAL]}
+                PERSISTED: ${rangesState[Batch.State.PERSISTED]}
+                COMPLETE:  ${rangesState[Batch.State.COMPLETE]}
+            """.trimIndent()
         }
     }
 

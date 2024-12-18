@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -53,6 +54,7 @@ interface Batch {
     val groupId: String?
 
     enum class State {
+        PROCESSED,
         LOCAL,
         PERSISTED,
         COMPLETE
@@ -66,6 +68,13 @@ interface Batch {
         }
 
     val state: State
+
+    /**
+     * If a [Batch] is [State.COMPLETE], there's nothing further to do. If it is part of a group,
+     * then its state will be updated by the next batch in the group that advances.
+     */
+    val requiresProcessing: Boolean
+        get() = state != State.COMPLETE && groupId == null
 }
 
 /** Simple batch: use if you need no other metadata for processing. */
@@ -80,14 +89,20 @@ data class SimpleBatch(
  */
 data class BatchEnvelope<B : Batch>(
     val batch: B,
-    val ranges: RangeSet<Long> = TreeRangeSet.create()
+    val ranges: RangeSet<Long> = TreeRangeSet.create(),
+    val streamDescriptor: DestinationStream.Descriptor
 ) {
     constructor(
         batch: B,
-        range: Range<Long>
-    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
+        range: Range<Long>?,
+        streamDescriptor: DestinationStream.Descriptor
+    ) : this(
+        batch = batch,
+        ranges = range?.let { TreeRangeSet.create(listOf(range)) } ?: TreeRangeSet.create(),
+        streamDescriptor = streamDescriptor
+    )
 
     fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
-        return BatchEnvelope(newBatch, ranges)
+        return BatchEnvelope(newBatch, ranges, streamDescriptor)
     }
 }

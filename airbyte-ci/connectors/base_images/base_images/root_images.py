@@ -24,3 +24,10 @@ PYTHON_3_10_14 = PublishedImage(
     tag="3.10.14-slim-bookworm",
     sha="2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3",
 )
+
+AMAZON_CORRETTO_21_AL_2023 = PublishedImage(
+    registry="docker.io",
+    repository="amazoncorretto",
+    tag="21-al2023",
+    sha="5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33",
+)
