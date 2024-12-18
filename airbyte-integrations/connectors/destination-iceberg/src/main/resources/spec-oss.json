@@ -191,8 +191,6 @@
             "description": "S3 object storage",
             "required": [
               "storage_type",
-              "access_key_id",
-              "secret_access_key",
               "s3_warehouse_uri"
             ],
             "properties": {
