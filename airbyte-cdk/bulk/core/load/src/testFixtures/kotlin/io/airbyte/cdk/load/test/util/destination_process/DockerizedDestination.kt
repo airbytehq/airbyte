@@ -116,7 +116,7 @@ class DockerizedDestination(
                     "-v",
                     "$fileTransferMountSource:/tmp",
                     "-e",
-                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE=1",
+                    "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE=1",
                     "-e",
                     "USE_FILE_TRANSFER=$useFileTransfer",
                 ) +

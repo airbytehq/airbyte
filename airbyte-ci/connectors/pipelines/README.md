@@ -853,9 +853,10 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                             |
-| 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                            |
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
+| 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
+| 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                           |
 | 4.46.3  | [#49465](https://github.com/airbytehq/airbyte/pull/49465)  | Fix `--use-local-cdk` on rootless connectors.                                                                                |
 | 4.46.2  | [#49136](https://github.com/airbytehq/airbyte/pull/49136)  | Fix failed install of python components due to non-root permissions.                                                         |
 | 4.46.1  | [#49146](https://github.com/airbytehq/airbyte/pull/49146)  | Update `crane` image address as the one we were using has been deleted by the maintainer.                                    |
