@@ -68,7 +68,6 @@ jobs:
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
       # Compare the below to the `format_check.yml` workflow
-      - uses: actions/checkout@v4
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
