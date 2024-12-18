@@ -9,9 +9,8 @@ connectionSpecification:
     - box_subject_type
     - box_subject_id
     - box_folder_id
-    # - file_id
+    - is_recursive
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     client_id:
       type: string
       title: Client ID
@@ -48,10 +47,10 @@ connectionSpecification:
       description: >-
         Folder to retreive data from.
       order: 4
-    # file_id:
-    #   type: string
-    #   title: File ID
-    #   description: >-
-    #     File to retreive data from.
-    #   order: 5
+    is_recursive:
+      type: boolean
+      title: Recursive
+      description: >-
+        Read the folders recursively.
+      order: 5
 
