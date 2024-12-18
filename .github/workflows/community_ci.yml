@@ -19,7 +19,7 @@ jobs:
   fail_on_protected_path_changes:
     name: "Check fork do not change protected paths"
     if: github.event.pull_request.head.repo.fork == true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: read
     steps:
