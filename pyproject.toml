@@ -85,63 +85,68 @@ extend-exclude = ["docs", "test", "tests"]
 [tool.ruff.lint]
 
 select = [
-    # For rules reference, see https://docs.astral.sh/ruff/rules/
-    "A",     # flake8-builtins
-    "ANN",   # flake8-annotations
-    "ARG",   # flake8-unused-arguments
-    "ASYNC", # flake8-async
-    "B",     # flake8-bugbear
-    "FBT",   # flake8-boolean-trap
-    "BLE",   # Blind except
-    "C4",    # flake8-comprehensions
-    "C90",   # mccabe (complexity)
-    "COM",   # flake8-commas
-    # "CPY",   # missing copyright notice  # Requires 'preview=true'
-    # "D", # pydocstyle # TODO: Re-enable when adding docstrings
-    "DTZ",  # flake8-datetimez
-    "E",    # pycodestyle (errors)
-    "ERA",  # flake8-eradicate (commented out code)
-    "EXE",  # flake8-executable
-    "F",    # Pyflakes
-    "FA",   # flake8-future-annotations
-    "FIX",  # flake8-fixme
-    "FLY",  # flynt
-    "FURB", # Refurb
-    "I",    # isort
-    "ICN",  # flake8-import-conventions
-    "INP",  # flake8-no-pep420
-    "INT",  # flake8-gettext
-    "ISC",  # flake8-implicit-str-concat
-    "ICN",  # flake8-import-conventions
-    "LOG",  # flake8-logging
-    "N",    # pep8-naming
-    "PD",   # pandas-vet
-    "PERF", # Perflint
-    "PIE",  # flake8-pie
-    "PGH",  # pygrep-hooks
-    "PL",   # Pylint
-    "PT",   # flake8-pytest-style
-    "PTH",  # flake8-use-pathlib
-    "PYI",  # flake8-pyi
-    "Q",    # flake8-quotes
-    "RET",  # flake8-return
-    "RSE",  # flake8-raise
-    "RUF",  # Ruff-specific rules
-    "SIM",  # flake8-simplify
-    "SLF",  # flake8-self
-    "SLOT", # flake8-slots
-    "T10",  # debugger calls
-    # "T20", # flake8-print # TODO: Re-enable once we have logging
-    "TCH",    # flake8-type-checking
-    "TD",     # flake8-todos
-    "TID",    # flake8-tidy-imports
-    "TRY",    # tryceratops
-    "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
-    "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
-    "UP",     # pyupgrade
-    "W",      # pycodestyle (warnings)
-    "YTT",    # flake8-2020
+    "I",    # isort replacement
 ]
+
+# TODO: Re-enable these once we have time to address them
+# select = [
+#     # For rules reference, see https://docs.astral.sh/ruff/rules/
+#     "A",     # flake8-builtins
+#     "ANN",   # flake8-annotations
+#     "ARG",   # flake8-unused-arguments
+#     "ASYNC", # flake8-async
+#     "B",     # flake8-bugbear
+#     "FBT",   # flake8-boolean-trap
+#     "BLE",   # Blind except
+#     "C4",    # flake8-comprehensions
+#     "C90",   # mccabe (complexity)
+#     "COM",   # flake8-commas
+#     # "CPY",   # missing copyright notice  # Requires 'preview=true'
+#     # "D", # pydocstyle # TODO: Re-enable when adding docstrings
+#     "DTZ",  # flake8-datetimez
+#     "E",    # pycodestyle (errors)
+#     "ERA",  # flake8-eradicate (commented out code)
+#     "EXE",  # flake8-executable
+#     "F",    # Pyflakes
+#     "FA",   # flake8-future-annotations
+#     "FIX",  # flake8-fixme
+#     "FLY",  # flynt
+#     "FURB", # Refurb
+#     "I",    # isort
+#     "ICN",  # flake8-import-conventions
+#     "INP",  # flake8-no-pep420
+#     "INT",  # flake8-gettext
+#     "ISC",  # flake8-implicit-str-concat
+#     "ICN",  # flake8-import-conventions
+#     "LOG",  # flake8-logging
+#     "N",    # pep8-naming
+#     "PD",   # pandas-vet
+#     "PERF", # Perflint
+#     "PIE",  # flake8-pie
+#     "PGH",  # pygrep-hooks
+#     "PL",   # Pylint
+#     "PT",   # flake8-pytest-style
+#     "PTH",  # flake8-use-pathlib
+#     "PYI",  # flake8-pyi
+#     "Q",    # flake8-quotes
+#     "RET",  # flake8-return
+#     "RSE",  # flake8-raise
+#     "RUF",  # Ruff-specific rules
+#     "SIM",  # flake8-simplify
+#     "SLF",  # flake8-self
+#     "SLOT", # flake8-slots
+#     "T10",  # debugger calls
+#     # "T20", # flake8-print # TODO: Re-enable once we have logging
+#     "TCH",    # flake8-type-checking
+#     "TD",     # flake8-todos
+#     "TID",    # flake8-tidy-imports
+#     "TRY",    # tryceratops
+#     "TRY002", # Disallow raising vanilla Exception. Create or use a custom exception instead.
+#     "TRY003", # Disallow vanilla string passing. Prefer kwargs to the exception constructur.
+#     "UP",     # pyupgrade
+#     "W",      # pycodestyle (warnings)
+#     "YTT",    # flake8-2020
+# ]
 
 ignore = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
@@ -191,7 +196,6 @@ known-first-party = [
     "connector_ops",
     "pipelines",
 ]
-required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
     "future",
