@@ -51,9 +51,7 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     """
 
     validators = PROMOTED_RC_PR_VALIDATORS if any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels) else DEFAULT_ENABLED_VALIDATORS
-    logger.info(f"{AUTO_MERGE_PROMOTED_RC_LABEL} in {pr.labels}? {any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels)}.")
     for validator in validators:
-        logger.info(f"Validating test: {validator.__repr__()}")
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
             if error:
@@ -70,8 +68,6 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
         max_retries (int, optional): The maximum number of retries. Defaults to 3.
         wait_time (int, optional): The time to wait between retries in seconds. Defaults to 60.
     """
-    logger.error("Intentionally failing auto-merge -- testing that new feature works!")
-    return None
     for i in range(max_retries):
         try:
             pr.merge(merge_method=MERGE_METHOD)
