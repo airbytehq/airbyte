@@ -121,7 +121,7 @@ class SetConnectorVersion(StepModifyingFiles):
         original_connector_directory = self.modified_directory
         try:
             modified_directory = await self._set_version_in_metadata(self.new_version, original_connector_directory)
-            self.modefied_directory = await self._enable_progressive_rollout_in_metadata(modified_directory) if "rc" in self.new_version else modified_directory
+            self.modified_directory = await self._enable_progressive_rollout_in_metadata(modified_directory) if "rc" in self.new_version else modified_directory
             self.modified_files.append(METADATA_FILE_NAME)
         except (FileNotFoundError, ConnectorVersionNotFoundError) as e:
             return StepResult(
