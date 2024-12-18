@@ -73,7 +73,7 @@ skip_glob = [
     "airbyte-integrations/connectors/destination-snowflake-cortex/**"
 ]
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 max-args = 8      # Relaxed from default of 5
 max-branches = 15 # Relaxed from default of 12
 
@@ -159,7 +159,7 @@ ignore = [
     "S",       # flake8-bandit (noisy, security related)
     "SIM910",  # Allow "None" as second argument to Dict.get(). "Explicit is better than implicit."
     "TD002",   # Require author for TODOs
-    "TRIO",    # flake8-trio (opinionated, noisy)
+    "ASYNC1",  # flake8-trio (opinionated, noisy)
     "INP001",  # Dir 'examples' is part of an implicit namespace package. Add an __init__.py.
 
     # TODO: Consider re-enabling these before release:
@@ -191,7 +191,6 @@ known-first-party = [
     "connector_ops",
     "pipelines",
 ]
-known-local-folder = ["airbyte"]
 required-imports = ["from __future__ import annotations"]
 known-third-party = []
 section-order = [
@@ -205,10 +204,10 @@ section-order = [
 [tool.ruff.lint.mccabe]
 max-complexity = 24
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.ruff.lint.flake8-annotations]
