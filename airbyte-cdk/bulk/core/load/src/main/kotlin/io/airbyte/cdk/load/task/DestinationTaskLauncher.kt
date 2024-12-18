@@ -148,7 +148,7 @@ class DefaultDestinationTaskLauncher(
                 log.info { "Task $innerTask was cancelled." }
                 throw e
             } catch (e: Exception) {
-                log.error { "Caught exception in task $innerTask: $e" }
+                log.error(e) { "Caught exception in task $innerTask" }
                 handleException(e)
             }
         }

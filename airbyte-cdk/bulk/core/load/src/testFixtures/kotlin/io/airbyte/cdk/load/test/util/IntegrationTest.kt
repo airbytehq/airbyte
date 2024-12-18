@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -63,7 +64,7 @@ abstract class IntegrationTest(
     @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
     private val timestampString =
         LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(DateTimeFormatter.ofPattern("YYYYMMDD"))
+            .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
     val randomizedNamespace = "test$timestampString$randomSuffix"
 
@@ -262,6 +263,23 @@ abstract class IntegrationTest(
     }
 
     companion object {
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceDateFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("yyyyMMdd")
+
+        /**
+         * Given a randomizedNamespace (such as `test20241216abcd`), return whether the namespace
+         * was created more than [retentionDays] days ago, and therefore should be deleted by a
+         * [DestinationCleaner].
+         */
+        fun isNamespaceOld(namespace: String, retentionDays: Long = 30): Boolean {
+            val cleanupCutoffDate = LocalDate.now().minusDays(retentionDays)
+            val matchResult = randomizedNamespaceRegex.find(namespace)
+            val namespaceCreationDate =
+                LocalDate.parse(matchResult!!.groupValues[1], randomizedNamespaceDateFormatter)
+            return namespaceCreationDate.isBefore(cleanupCutoffDate)
+        }
+
         private val hasRunCleaner = AtomicBoolean(false)
 
         // Connectors are calling System.getenv rather than using micronaut-y properties,

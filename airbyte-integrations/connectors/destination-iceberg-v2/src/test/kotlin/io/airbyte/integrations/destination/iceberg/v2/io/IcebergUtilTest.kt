@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_
 import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.DestinationRecord.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
+import io.airbyte.integrations.destination.iceberg.v2.SimpleTableIdGenerator
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -52,10 +53,11 @@ import org.junit.jupiter.api.assertThrows
 internal class IcebergUtilTest {
 
     private lateinit var icebergUtil: IcebergUtil
+    private val tableIdGenerator = SimpleTableIdGenerator()
 
     @BeforeEach
     fun setup() {
-        icebergUtil = IcebergUtil()
+        icebergUtil = IcebergUtil(tableIdGenerator)
     }
 
     @Test
@@ -86,11 +88,13 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
-                tableBuilder
+            every {
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
+            } returns tableBuilder
             every { createNamespace(any()) } returns Unit
             every { namespaceExists(any()) } returns false
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                false
         }
         val table =
             icebergUtil.createTable(
@@ -101,7 +105,9 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 1) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
         verify(exactly = 1) { tableBuilder.create() }
     }
@@ -119,10 +125,12 @@ internal class IcebergUtilTest {
             every { create() } returns mockk()
         }
         val catalog: NessieCatalog = mockk {
-            every { buildTable(streamDescriptor.toIcebergTableIdentifier(), any()) } returns
-                tableBuilder
+            every {
+                buildTable(tableIdGenerator.toTableIdentifier(streamDescriptor), any())
+            } returns tableBuilder
             every { namespaceExists(any()) } returns true
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns false
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                false
         }
         val table =
             icebergUtil.createTable(
@@ -133,7 +141,9 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 0) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
         verify(exactly = 1) { tableBuilder.create() }
     }
@@ -144,9 +154,10 @@ internal class IcebergUtilTest {
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
-            every { loadTable(streamDescriptor.toIcebergTableIdentifier()) } returns mockk()
+            every { loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
+                mockk()
             every { namespaceExists(any()) } returns true
-            every { tableExists(streamDescriptor.toIcebergTableIdentifier()) } returns true
+            every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns true
         }
         val table =
             icebergUtil.createTable(
@@ -157,9 +168,13 @@ internal class IcebergUtilTest {
             )
         assertNotNull(table)
         verify(exactly = 0) {
-            catalog.createNamespace(streamDescriptor.toIcebergTableIdentifier().namespace())
+            catalog.createNamespace(
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+            )
         }
-        verify(exactly = 1) { catalog.loadTable(streamDescriptor.toIcebergTableIdentifier()) }
+        verify(exactly = 1) {
+            catalog.loadTable(tableIdGenerator.toTableIdentifier(streamDescriptor))
+        }
     }
 
     @Test
