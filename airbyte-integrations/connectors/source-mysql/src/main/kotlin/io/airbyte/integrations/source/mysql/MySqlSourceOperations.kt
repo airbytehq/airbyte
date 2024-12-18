@@ -19,11 +19,12 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.ByteFieldType
+import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.JsonStringFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
@@ -124,13 +125,7 @@ class MySqlSourceOperations :
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
         return when (MysqlType.getByName(type.typeName)) {
-            MysqlType.BIT -> {
-                if (type.precision!! > 1) {
-                    ByteFieldType
-                } else {
-                    BooleanFieldType
-                }
-            }
+            MysqlType.BIT -> if (type.precision == 1) BooleanFieldType else BytesFieldType
             MysqlType.BOOLEAN -> BooleanFieldType
             MysqlType.TINYINT,
             MysqlType.TINYINT_UNSIGNED,
@@ -141,12 +136,14 @@ class MySqlSourceOperations :
             MysqlType.MEDIUMINT_UNSIGNED,
             MysqlType.INT -> IntFieldType
             MysqlType.INT_UNSIGNED,
-            MysqlType.BIGINT,
+            MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED -> FloatFieldType
+            MysqlType.FLOAT_UNSIGNED,
             MysqlType.DOUBLE,
-            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
+            MysqlType.DOUBLE_UNSIGNED -> {
+                if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
+            }
             MysqlType.DECIMAL,
             MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
@@ -161,9 +158,9 @@ class MySqlSourceOperations :
             MysqlType.TEXT,
             MysqlType.MEDIUMTEXT,
             MysqlType.LONGTEXT,
-            MysqlType.JSON,
             MysqlType.ENUM,
             MysqlType.SET -> StringFieldType
+            MysqlType.JSON -> StringFieldType // TODO: replace this with JsonStringFieldType
             MysqlType.TINYBLOB,
             MysqlType.BLOB,
             MysqlType.MEDIUMBLOB,
@@ -172,10 +169,9 @@ class MySqlSourceOperations :
             MysqlType.VARBINARY,
             MysqlType.GEOMETRY -> BinaryStreamFieldType
             MysqlType.NULL -> NullFieldType
-            else -> {
-                print("test debug: unrecognized type: ${type.typeName}")
-                PokemonFieldType
-            }
+            MysqlType.VECTOR,
+            MysqlType.UNKNOWN,
+            null -> PokemonFieldType
         }
     }
 

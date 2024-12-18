@@ -4,117 +4,92 @@
 
 package io.airbyte.integrations.source.mysql
 
-import io.airbyte.cdk.jdbc.converters.DateTimeConverter
-import io.debezium.spi.converter.CustomConverter
-import io.debezium.spi.converter.RelationalColumn
-import io.debezium.time.Conversions
+import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.LocalTimeCodec
+import io.airbyte.cdk.data.OffsetDateTimeCodec
+import io.airbyte.cdk.read.cdc.Converted
+import io.airbyte.cdk.read.cdc.NoConversion
+import io.airbyte.cdk.read.cdc.NullFallThrough
+import io.airbyte.cdk.read.cdc.PartialConverter
+import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.time.ZonedDateTime
 import org.apache.kafka.connect.data.SchemaBuilder
 
-/**
- * This is a custom debezium converter used in MySQL to handle the DATETIME data type. We need a
- * custom converter cause by default debezium returns the DATETIME values as numbers. We need to
- * convert it to proper format. Ref :
- * https://debezium.io/documentation/reference/2.1/development/converters.html This is built from
- * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
- * rename this class then remember to rename the datetime.type property value in {@link
- * MySqlCdcProperties#commonProperties(JdbcDatabase)} (If you don't rename, a test would still fail
- * but it might be tricky to figure out where to change the property name)
- */
-class MySqlSourceCdcTemporalConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
+class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
-    private val DATE_TYPES = arrayOf("DATE", "DATETIME", "TIME", "TIMESTAMP")
-    override fun configure(props: Properties?) {}
+    override val debeziumPropertiesKey: String = "temporal"
 
-    override fun converterFor(
-        field: RelationalColumn?,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder>?
-    ) {
-        if (
-            Arrays.stream<String>(DATE_TYPES).anyMatch { s: String ->
-                s.equals(
-                    field!!.typeName(),
-                    ignoreCase = true,
-                )
-            }
-        ) {
-            registerDate(field, registration)
-        }
-    }
-
-    private fun getTimePrecision(field: RelationalColumn): Int {
-        return field.length().orElse(-1)
-    }
-
-    private fun registerDate(
-        field: RelationalColumn?,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder>?
-    ) {
-        val fieldType = field!!.typeName()
-
-        registration?.register(SchemaBuilder.string().optional()) { x ->
-            if (x == null) {
-                return@register convertDefaultValue(field)
-            }
-
-            when (fieldType.uppercase()) {
-                "DATETIME" -> {
-                    if (x is Long) {
-                        if (getTimePrecision(field) <= 3) {
-                            return@register DateTimeConverter.convertToTimestamp(
-                                Conversions.toInstantFromMillis(x),
-                            )
-                        }
-                        if (getTimePrecision(field) <= 6) {
-                            return@register DateTimeConverter.convertToTimestamp(
-                                Conversions.toInstantFromMicros(x),
-                            )
-                        }
-                    }
-                    DateTimeConverter.convertToTimestamp(x)
-                }
-                "DATE" -> {
-                    if (x is Int) {
-                        return@register DateTimeConverter.convertToDate(
-                            LocalDate.ofEpochDay(
-                                x.toLong(),
-                            ),
-                        )
-                    }
-                    DateTimeConverter.convertToDate(x)
-                }
-                "TIME" -> {
-                    if (x is Long) {
-                        val l = Math.multiplyExact(x, TimeUnit.MICROSECONDS.toNanos(1))
-                        return@register DateTimeConverter.convertToTime(
-                            LocalTime.ofNanoOfDay(
-                                l,
-                            ),
-                        )
-                    }
-                    DateTimeConverter.convertToTime(x)
-                }
-                "TIMESTAMP" ->
-                    DateTimeConverter.convertToTimestampWithTimezone(
-                        x,
-                    )
-                else ->
-                    throw IllegalArgumentException("Unknown field type  " + fieldType.uppercase())
-            }
-        }
-    }
+    override val handlers: List<RelationalColumnCustomConverter.Handler> =
+        listOf(datetimeHandler, dateHandler, timeHandler, timestampHandler)
 
     companion object {
-        fun convertDefaultValue(field: RelationalColumn): Any? {
-            if (field.isOptional) {
-                return null
-            } else if (field.hasDefaultValue()) {
-                return field.defaultValue()
-            }
-            return null
-        }
+
+        val datetimeHandler =
+            RelationalColumnCustomConverter.Handler(
+                predicate = { it.typeName().equals("DATETIME", ignoreCase = true) },
+                outputSchema = SchemaBuilder.string(),
+                partialConverters =
+                    listOf(
+                        NullFallThrough,
+                        PartialConverter {
+                            if (it is LocalDateTime)
+                                Converted(it.format(LocalDateTimeCodec.formatter))
+                            else NoConversion
+                        }
+                    )
+            )
+
+        val dateHandler =
+            RelationalColumnCustomConverter.Handler(
+                predicate = { it.typeName().equals("DATE", ignoreCase = true) },
+                outputSchema = SchemaBuilder.string(),
+                partialConverters =
+                    listOf(
+                        NullFallThrough,
+                        PartialConverter {
+                            if (it is LocalDate) Converted(it.format(LocalDateCodec.formatter))
+                            else NoConversion
+                        },
+                    ),
+            )
+
+        val timeHandler =
+            RelationalColumnCustomConverter.Handler(
+                predicate = { it.typeName().equals("TIME", ignoreCase = true) },
+                outputSchema = SchemaBuilder.string(),
+                partialConverters =
+                    listOf(
+                        NullFallThrough,
+                        PartialConverter {
+                            if (it is Duration)
+                                Converted(
+                                    LocalTime.MIDNIGHT.plus(it).format(LocalTimeCodec.formatter)
+                                )
+                            else NoConversion
+                        },
+                    ),
+            )
+
+        val timestampHandler =
+            RelationalColumnCustomConverter.Handler(
+                predicate = { it.typeName().equals("TIMESTAMP", ignoreCase = true) },
+                outputSchema = SchemaBuilder.string(),
+                partialConverters =
+                    listOf(
+                        NullFallThrough,
+                        PartialConverter {
+                            if (it is ZonedDateTime)
+                                Converted(
+                                    it.toOffsetDateTime().format(OffsetDateTimeCodec.formatter)
+                                )
+                            else NoConversion
+                        },
+                    ),
+            )
     }
 }
