@@ -6,8 +6,8 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: file
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
   dockerImageTag: 0.7.13
@@ -29,5 +29,5 @@ data:
   supportLevel: community
   supportsRefreshes: true
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
