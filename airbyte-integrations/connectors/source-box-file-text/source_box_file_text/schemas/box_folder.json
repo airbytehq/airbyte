@@ -263,7 +263,7 @@
     "item_status": {
       "type": "string"
     },
-    "text representation": {
+    "text_representation": {
       "type": "string"
     }
   }
