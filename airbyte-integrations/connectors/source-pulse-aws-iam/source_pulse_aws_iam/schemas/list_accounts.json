@@ -1,0 +1,50 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "Id" : {
+      "type" : "string"
+    },
+    "Arn" : {
+      "type" : "string"
+    },
+    "Email" : {
+      "type" : "string"
+    },
+    "Name" : {
+      "type" : "string"
+    },
+    "Status" : {
+      "type" : "string",
+      "enum" : [
+        "ACTIVE",
+        "SUSPENDED"
+      ]
+    },
+    "JoinedMethod" : {
+      "type" : "string",
+      "enum" : [
+        "INVITED",
+        "CREATED"
+      ]
+    },
+    "JoinedTimestamp" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "Tags" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "Key" : {
+            "type" : "string"
+          },
+          "Value" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

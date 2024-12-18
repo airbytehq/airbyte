@@ -1,0 +1,81 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "IAM Users Stream",
+  "description" : "The Users stream provides information about AWS IAM users, including usernames, user IDs, ARNs, and creation dates.",
+  "type" : "object",
+  "properties" : {
+    "UserName" : {
+      "type" : "string",
+      "description" : "The friendly name identifying the IAM user."
+    },
+    "UserId" : {
+      "type" : "string",
+      "description" : "The unique identifier for the IAM user."
+    },
+    "Arn" : {
+      "type" : "string",
+      "description" : "The Amazon Resource Name (ARN) for the IAM user."
+    },
+    "CreateDate" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time, in ISO 8601 format, when the user was created."
+    },
+    "Path" : {
+      "type" : "string",
+      "description" : "The path to the user name. For more information about paths, see IAM Identifiers in the AWS documentation."
+    },
+    "PasswordLastUsed" : {
+      "type" : [
+        "string",
+        "null"
+      ],
+      "format" : "date-time",
+      "description" : "The date and time, in ISO 8601 format, when the user's password was last used to sign in to the AWS Management Console. Null if the password has never been used."
+    },
+    "PermissionsBoundary" : {
+      "type" : [
+        "object",
+        "null"
+      ],
+      "description" : "A permissions boundary policy attached to the user.",
+      "properties" : {
+        "PermissionsBoundaryType" : {
+          "type" : "string",
+          "description" : "The type of permissions boundary attached to the user. For example, Policy."
+        },
+        "PermissionsBoundaryArn" : {
+          "type" : "string",
+          "description" : "The ARN of the policy used to set the permissions boundary."
+        }
+      }
+    },
+    "Tags" : {
+      "type" : [
+        "array",
+        "null"
+      ],
+      "description" : "A list of tags that are attached to the user.",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "Key" : {
+            "type" : "string",
+            "description" : "The key name of the tag."
+          },
+          "Value" : {
+            "type" : "string",
+            "description" : "The value assigned to the tag."
+          }
+        }
+      }
+    }
+  },
+  "required" : [
+    "UserName",
+    "UserId",
+    "Arn",
+    "CreateDate"
+  ],
+  "additionalProperties" : false
+}

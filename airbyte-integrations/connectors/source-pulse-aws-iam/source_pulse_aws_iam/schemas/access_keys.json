@@ -1,0 +1,38 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "AccessKeyId" : {
+      "type" : "string"
+    },
+    "UserName" : {
+      "type" : "string"
+    },
+    "Status" : {
+      "type" : "string",
+      "enum" : [
+        "Active",
+        "Inactive"
+      ]
+    },
+    "CreateDate" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "LastUsed" : {
+      "type" : "object",
+      "properties" : {
+        "LastUsedDate" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "ServiceName" : {
+          "type" : "string"
+        },
+        "Region" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

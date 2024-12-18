@@ -1,0 +1,58 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "PolicyId" : {
+      "type" : "string"
+    },
+    "PolicyName" : {
+      "type" : "string"
+    },
+    "Path" : {
+      "type" : "string"
+    },
+    "DefaultVersionId" : {
+      "type" : "string"
+    },
+    "AttachmentCount" : {
+      "type" : "integer"
+    },
+    "PermissionsBoundaryUsageCount" : {
+      "type" : "integer"
+    },
+    "IsAttachable" : {
+      "type" : "boolean"
+    },
+    "Description" : {
+      "type" : [
+        "string",
+        "null"
+      ]
+    },
+    "CreateDate" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "UpdateDate" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "Arn" : {
+      "type" : "string"
+    },
+    "Tags" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "Key" : {
+            "type" : "string"
+          },
+          "Value" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

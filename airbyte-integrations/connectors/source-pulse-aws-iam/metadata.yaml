@@ -1,0 +1,33 @@
+data:
+  allowedHosts:
+    hosts:
+      - "iam.amazonaws.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pulse-aws-iam
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4e5c2cd1-7c58-43fd-8770-b8063e5090f3
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pulse-aws-iam
+  githubIssueLabel: source-pulse-aws-iam
+  icon: pulse-aws-iam.svg
+  license: MIT
+  name: Pulse Aws Iam
+  releaseDate: 2024-12-16
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pulse-aws-iam
+  tags:
+    - language:python
+    - source:aws
+    - type:iam
+metadataSpecVersion: "1.0"

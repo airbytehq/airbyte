@@ -1,0 +1,93 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "Path" : {
+      "type" : "string",
+      "description" : "The path to the role"
+    },
+    "RoleName" : {
+      "type" : "string",
+      "description" : "The friendly name that identifies the role"
+    },
+    "RoleId" : {
+      "type" : "string",
+      "description" : "The stable and unique string identifying the role"
+    },
+    "Arn" : {
+      "type" : "string",
+      "description" : "The Amazon Resource Name (ARN) specifying the role"
+    },
+    "CreateDate" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time when the role was created"
+    },
+    "AssumeRolePolicyDocument" : {
+      "type" : "object",
+      "description" : "The trust policy that grants permission to assume the role"
+    },
+    "Description" : {
+      "type" : "string",
+      "description" : "The description of the role"
+    },
+    "MaxSessionDuration" : {
+      "type" : "integer",
+      "description" : "The maximum session duration (in seconds) for the role"
+    },
+    "PermissionsBoundary" : {
+      "type" : "object",
+      "properties" : {
+        "PermissionsBoundaryType" : {
+          "type" : "string",
+          "description" : "The permissions boundary usage type"
+        },
+        "PermissionsBoundaryArn" : {
+          "type" : "string",
+          "description" : "The ARN of the policy used to set the permissions boundary"
+        }
+      },
+      "description" : "The permissions boundary attached to the role"
+    },
+    "Tags" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "Key" : {
+            "type" : "string",
+            "description" : "The key name of the tag"
+          },
+          "Value" : {
+            "type" : "string",
+            "description" : "The value of the tag"
+          }
+        }
+      },
+      "description" : "A list of tags attached to the role"
+    },
+    "RoleLastUsed" : {
+      "type" : "object",
+      "properties" : {
+        "LastUsedDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The date and time when the role was last used"
+        },
+        "Region" : {
+          "type" : "string",
+          "description" : "The region where the role was last used"
+        }
+      },
+      "description" : "Information about the last time the role was used"
+    }
+  },
+  "required" : [
+    "Path",
+    "RoleName",
+    "RoleId",
+    "Arn",
+    "CreateDate",
+    "AssumeRolePolicyDocument"
+  ]
+}

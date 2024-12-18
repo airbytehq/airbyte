@@ -1,0 +1,47 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "arn" : {
+      "type" : "string"
+    },
+    "name" : {
+      "type" : "string"
+    },
+    "type" : {
+      "type" : "string"
+    },
+    "status" : {
+      "type" : "string",
+      "enum" : [
+        "ACTIVE",
+        "CREATING",
+        "DISABLED",
+        "FAILED"
+      ]
+    },
+    "createdAt" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "lastResourceAnalyzed" : {
+      "type" : [
+        "string",
+        "null"
+      ]
+    },
+    "lastResourceAnalyzedAt" : {
+      "type" : [
+        "string",
+        "null"
+      ],
+      "format" : "date-time"
+    },
+    "tags" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    }
+  }
+}

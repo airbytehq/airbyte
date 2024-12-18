@@ -1,0 +1,42 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "EventId" : {
+      "type" : "string"
+    },
+    "EventName" : {
+      "type" : "string"
+    },
+    "EventTime" : {
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "EventSource" : {
+      "type" : "string"
+    },
+    "Username" : {
+      "type" : [
+        "string",
+        "null"
+      ]
+    },
+    "Resources" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "ResourceType" : {
+            "type" : "string"
+          },
+          "ResourceName" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "CloudTrailEvent" : {
+      "type" : "string"
+    }
+  }
+}

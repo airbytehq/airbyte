@@ -1,0 +1,56 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "IAM Groups Stream",
+  "description" : "The Groups stream provides information about AWS IAM groups, including group names, IDs, ARNs, and creation dates.",
+  "type" : "object",
+  "properties" : {
+    "GroupName" : {
+      "type" : "string",
+      "description" : "The friendly name that identifies the IAM group."
+    },
+    "GroupId" : {
+      "type" : "string",
+      "description" : "The unique identifier for the IAM group."
+    },
+    "Arn" : {
+      "type" : "string",
+      "description" : "The Amazon Resource Name (ARN) specifying the IAM group."
+    },
+    "CreateDate" : {
+      "type" : "string",
+      "format" : "date-time",
+      "description" : "The date and time, in ISO 8601 format, when the group was created."
+    },
+    "Path" : {
+      "type" : "string",
+      "description" : "The path to the group. For more information about paths, see IAM Identifiers in the AWS documentation."
+    },
+    "Tags" : {
+      "type" : [
+        "array",
+        "null"
+      ],
+      "description" : "A list of tags that are attached to the group.",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "Key" : {
+            "type" : "string",
+            "description" : "The key name of the tag."
+          },
+          "Value" : {
+            "type" : "string",
+            "description" : "The value assigned to the tag."
+          }
+        }
+      }
+    }
+  },
+  "required" : [
+    "GroupName",
+    "GroupId",
+    "Arn",
+    "CreateDate"
+  ],
+  "additionalProperties" : false
+}

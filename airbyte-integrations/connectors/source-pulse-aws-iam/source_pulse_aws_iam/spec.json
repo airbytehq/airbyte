@@ -1,0 +1,93 @@
+{
+  "documentationUrl" : "https://docs.airbyte.io/integrations/sources/aws-iam",
+  "connectionSpecification" : {
+    "type" : "object",
+    "required" : [
+      "provider"
+    ],
+    "properties" : {
+      "provider" : {
+        "type" : "object",
+        "oneOf" : [
+          {
+            "title" : "IAM Role",
+            "type" : "object",
+            "required" : [
+              "auth_type",
+              "role_arn"
+            ],
+            "properties" : {
+              "auth_type" : {
+                "type" : "string",
+                "const" : "role",
+                "title" : "Authentication Type",
+                "description" : "Authentication method to use for AWS"
+              },
+              "role_arn" : {
+                "type" : "string",
+                "title" : "AWS Role ARN",
+                "description" : "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations."
+              },
+              "external_id" : {
+                "type" : "string",
+                "title" : "External ID",
+                "description" : "The external ID to use when assuming the role (optional)."
+              },
+              "region" : {
+                "type" : "string",
+                "title" : "AWS Region",
+                "description" : "AWS region where the IAM service is located."
+              },
+              "start_time" : {
+                "type" : "string",
+                "title" : "CloudTrail Events Start Time",
+                "description" : "UTC date and time in ISO 8601 format (e.g. 2023-01-01T00:00:00Z). If not provided, will sync from the beginning.",
+                "format" : "date-time",
+                "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              }
+            }
+          },
+          {
+            "title" : "AWS Credentials",
+            "type" : "object",
+            "required" : [
+              "auth_type",
+              "aws_access_key_id",
+              "aws_secret_access_key"
+            ],
+            "properties" : {
+              "auth_type" : {
+                "type" : "string",
+                "const" : "credentials",
+                "title" : "Authentication Type",
+                "description" : "Authentication method to use for AWS"
+              },
+              "aws_access_key_id" : {
+                "type" : "string",
+                "title" : "AWS Access Key ID",
+                "description" : "AWS Access Key ID used to authenticate requests."
+              },
+              "aws_secret_access_key" : {
+                "type" : "string",
+                "title" : "AWS Secret Access Key",
+                "description" : "AWS Secret Access Key used to authenticate requests."
+              },
+              "region" : {
+                "type" : "string",
+                "title" : "AWS Region",
+                "description" : "AWS region where the IAM service is located. Default is us-east-1."
+              },
+              "start_time" : {
+                "type" : "string",
+                "title" : "CloudTrail Events Start Time",
+                "description" : "UTC date and time in ISO 8601 format (e.g. 2023-01-01T00:00:00Z). If not provided, will sync from the beginning.",
+                "format" : "date-time",
+                "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
