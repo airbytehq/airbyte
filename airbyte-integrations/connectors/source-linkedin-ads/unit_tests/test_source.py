@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
-from conftest import find_stream
+from conftest import find_stream, get_source
 from source_linkedin_ads.source import SourceLinkedinAds
 
 logger = logging.getLogger("airbyte")
@@ -56,7 +56,7 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
 
 
 class TestAllStreams:
-    _instance: SourceLinkedinAds = SourceLinkedinAds()
+    _instance: SourceLinkedinAds = get_source(TEST_CONFIG)
 
     @staticmethod
     def _mock_initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -102,10 +102,8 @@ class TestAllStreams:
 
     def test_custom_streams(self):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
-        ad_campaign_analytics = find_stream('ad_campaign_analytics', config)
-        for stream in self._instance._create_custom_ad_analytics_streams(config=config):
-            assert isinstance(stream, type(ad_campaign_analytics))
-
+        streams = get_source(config).streams(config=config)
+        assert any("custom_ShareAdByMonth" == stream.name for stream in streams)
 
     @pytest.mark.parametrize(
         "stream_name, expected",
