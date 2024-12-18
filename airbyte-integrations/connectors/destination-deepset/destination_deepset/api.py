@@ -51,7 +51,7 @@ class DeepsetCloudApi:
 
         if self._client is None:
             self._client = httpx.Client(
-                base_url=self.config.base_url,
+                base_url=self.config.base_url.removesuffix("/"),
                 headers={
                     "Accept": "application/json",
                     "Authorization": f"Bearer {self.config.api_key}",
@@ -76,10 +76,19 @@ class DeepsetCloudApi:
                 reraise=True,
             ):
                 with attempt:
-                    response = self.client.get(f"/api/v1/workspaces/{self.config.workspace}/files")
+                    response = self.client.get("/api/v1/me")
                     response.raise_for_status()
+
+            workspaces = response.json().get("workspaces", [])
+            access = next((True for workspace in workspaces if workspace["name"] == self.config.workspace), False)
         except Exception as ex:
             raise APIError from ex
+        else:
+            if access:
+                return
+
+        error = "User does not have access to the selected workspace!"
+        raise APIError(error)
 
     def upload(self, file: DeepsetCloudFile, write_mode: str = "KEEP") -> UUID:
         """Upload file to deepset Cloud.
