@@ -16,7 +16,7 @@ To configure these settings:
 
 2. Click the **Settings** tab.
 
-3. Click the **Advanced seetings** dropdown to display all settings.
+3. Click the **Advanced settings** dropdown to display all settings.
 
 :::note
 
