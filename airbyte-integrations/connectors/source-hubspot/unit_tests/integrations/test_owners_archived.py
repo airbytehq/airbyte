@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import freezegun
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_protocol.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import OwnersArchivedStreamRequestBuilder
