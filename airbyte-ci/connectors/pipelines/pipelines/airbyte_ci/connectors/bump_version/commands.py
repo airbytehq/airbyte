@@ -6,6 +6,7 @@ from typing import Optional
 
 import asyncclick as click
 import semver
+
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines

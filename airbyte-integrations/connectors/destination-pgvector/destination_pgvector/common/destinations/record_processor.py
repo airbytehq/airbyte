@@ -16,13 +16,22 @@ from typing import TYPE_CHECKING, cast, final
 
 from airbyte import exceptions as exc
 from airbyte.strategies import WriteStrategy
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    Type,
+)
+
 from destination_pgvector.common.state.state_writers import StateWriterBase, StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
     from airbyte._batch_handles import BatchHandle
+
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
     from destination_pgvector.common.state.state_writers import StateWriterBase
 
@@ -224,7 +233,9 @@ class RecordProcessorBase(abc.ABC):
                 stream_name = record_msg.stream
 
                 if stream_name not in stream_schemas:
-                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(stream_name=stream_name)
+                    stream_schemas[stream_name] = self.catalog_provider.get_stream_json_schema(
+                        stream_name=stream_name
+                    )
 
                 self.process_record_message(
                     record_msg,
