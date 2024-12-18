@@ -43,7 +43,15 @@ class FieldMatchingExtractor(DpathExtractor):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self._values_to_match_key = parameters["values_to_match_key"]
-        self._properties_to_match = parameters["properties_to_match"]
+        property_to_match_key = parameters["property_to_match_key"]
+        self._properties_to_match = FieldMatchingExtractor.extract_properties_to_match(parameters["properties_to_match"], property_to_match_key)
+
+    @staticmethod
+    def extract_properties_to_match(properties_to_match, property_to_match_key):
+        indexed_properties = {
+            index: item_for_match[property_to_match_key] for index, item_for_match in enumerate(properties_to_match)
+        }
+        return indexed_properties
 
     @staticmethod
     def match_properties_with_values(unmatched_values: List[str], ordered_properties: Dict[int, str]):

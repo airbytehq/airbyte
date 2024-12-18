@@ -32,6 +32,7 @@ dynamic_streams:
               - valueRanges
               - "*"
             $parameters:
+              property_to_match_key: "formattedValue"
               values_to_match_key: "values"
               properties_to_match: ""
           type: RecordSelector
@@ -85,43 +86,6 @@ dynamic_streams:
             type: DpathExtractor
             field_path:
               - sheets
-          transformations:
-            - type: AddFields
-              fields:
-                - path:
-                    - properties
-                    - values
-                  value: "{{ record['data'][0]['rowData'][0]['values'] }}"
-            - type: RemoveFields
-              field_pointers:
-                - - data
-            - type: RemoveFields
-              field_pointers:
-                - - properties
-                  - values
-                  - "*"
-                  - effectiveFormat
-            - type: RemoveFields
-              field_pointers:
-                - - properties
-                  - values
-                  - "*"
-                  - userEnteredValue
-            - type: RemoveFields
-              field_pointers:
-                - - properties
-                  - values
-                  - "*"
-                  - effectiveValue
-            - type: CustomTransformation
-              parameters:
-                key_to_extract: formattedValue
-              fields:
-                - path:
-                    - properties
-                    - indexed_properties_to_match
-                  value: "{{ record['properties']['values'] }}"
-              class_name: source_google_sheets.components.AddIndexedPropertiesFromList
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -166,7 +130,7 @@ dynamic_streams:
             - $parameters
             - properties_to_match
           type: ComponentMappingDefinition
-          value: "{{components_values['properties']['indexed_properties_to_match']}}"
+          value: "{{components_values['data'][0]['rowData'][0]['values']}}"
           description: indexed_schema to match with row values.
         - field_path:
             - retriever
