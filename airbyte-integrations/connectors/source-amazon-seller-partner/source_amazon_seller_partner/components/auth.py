@@ -8,7 +8,6 @@ from typing import Any, Mapping, Union
 
 import backoff
 import requests
-
 from airbyte_cdk import InterpolatedString
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -31,9 +30,7 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
-        self._host = InterpolatedString.create(
-            self.host, parameters=parameters
-        )
+        self._host = InterpolatedString.create(self.host, parameters=parameters)
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {

@@ -1,9 +1,13 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from dataclasses import dataclass
 from typing import Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
+    WaitTimeFromHeaderBackoffStrategy,
+)
 
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (WaitTimeFromHeaderBackoffStrategy,)
 
 @dataclass
 class AmazonSPWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
@@ -13,7 +17,7 @@ class AmazonSPWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrateg
     from the header. If the header does not provide a valid time, a default backoff time is used.
     """
 
-    default_backoff_time : Optional[float] = 10
+    default_backoff_time: Optional[float] = 10
 
     def backoff_time(
         self,
@@ -25,4 +29,3 @@ class AmazonSPWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrateg
             return 1 / float(time_from_header)
         else:
             return self.default_backoff_time
-
