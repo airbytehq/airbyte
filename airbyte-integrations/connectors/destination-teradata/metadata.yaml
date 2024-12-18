@@ -6,24 +6,24 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: sslconfig.json
-      name: SECRET_DESTINATION-TERADATA_SSL__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_DESTINATION-TERADATA__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: failureconfig.json
-      name: SECRET_DESTINATION-TERADATA__FAILURE_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: sslconfig.json
+          name: SECRET_DESTINATION-TERADATA_SSL__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-TERADATA__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: failureconfig.json
+          name: SECRET_DESTINATION-TERADATA__FAILURE_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
   dockerImageTag: 0.1.7
@@ -41,5 +41,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
