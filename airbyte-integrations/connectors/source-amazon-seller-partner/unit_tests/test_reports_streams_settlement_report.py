@@ -5,6 +5,7 @@
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
 
 START_DATE_1 = "2022-05-25T00:00:00Z"
@@ -20,7 +21,7 @@ def settlement_reports_stream():
             replication_start_date=start_date,
             replication_end_date=end_date,
             marketplace_id="id",
-            authenticator=None,
+            authenticator=NoAuth({}),
             period_in_days=0,
             report_options=None,
         )

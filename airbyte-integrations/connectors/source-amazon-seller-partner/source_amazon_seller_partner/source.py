@@ -7,11 +7,10 @@ from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
-from airbyte_protocol.models import ConnectorSpecification
 from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
@@ -76,18 +75,29 @@ from source_amazon_seller_partner.utils import AmazonConfigException
 # given the retention period: 730
 DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
 
+from source_amazon_seller_partner.components.auth import AmazonSPOauthAuthenticator
 
-class SourceAmazonSellerPartner(AbstractSource):
+
+class SourceAmazonSellerPartner(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
+    @staticmethod
+    def get_aws_config_settings(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
+        return {"endpoint": endpoint, "marketplace_id": marketplace_id}
+
     @staticmethod
     def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
-        auth = AWSAuthenticator(
+        auth = AmazonSPOauthAuthenticator(
+            config=config,
+            parameters={},
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_id=config.get("lwa_app_id"),
             client_secret=config.get("lwa_client_secret"),
             refresh_token=config.get("refresh_token"),
             host=endpoint.replace("https://", ""),
-            refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         start_date = config.get("replication_start_date")

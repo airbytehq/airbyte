@@ -84,7 +84,7 @@ class TestOrders:
         stream = orders_stream()
         response_mock = mock.MagicMock()
         response_mock.headers = response_headers
-        assert stream.backoff_time(response_mock) == expected_backoff_time
+        assert stream.get_backoff_strategy().backoff_time(response_mock, 1) == expected_backoff_time
 
     @pytest.mark.parametrize(
         ("payload", "expected_value"),

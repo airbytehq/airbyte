@@ -8,9 +8,9 @@ from unittest import mock
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 
 list_financial_event_groups_data = {
@@ -228,7 +228,7 @@ def test_reports_read_records_raise_on_backoff(mocker, requests_mock, caplog):
         replication_start_date=START_DATE_1,
         replication_end_date=END_DATE_1,
         marketplace_id="id",
-        authenticator=None,
+        authenticator=NoAuth({}),
         period_in_days=0,
         report_options=None,
     )
