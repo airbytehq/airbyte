@@ -44,6 +44,6 @@ tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
 	@pre-commit install --hook-type pre-push
 	@echo "Pre-push hooks installed."
 
-tools.install: tools.airbyte-ci.install.$(OS) tools.pre-commit.install
+tools.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS)
 
 .PHONY: tools.install tools.pre-commit.install tools.git-hooks.install tools.git-hooks.clean tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean
