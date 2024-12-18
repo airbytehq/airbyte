@@ -20,7 +20,7 @@ data:
   name: Intercom
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   remoteRegistries:
     pypi:
       enabled: false
