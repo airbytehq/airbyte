@@ -4,14 +4,14 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-    - ${host}
-    - ${tunnel_method.tunnel_host}
+      - ${host}
+      - ${tunnel_method.tunnel_host}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerImageTag: 0.3.3
@@ -29,5 +29,5 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
