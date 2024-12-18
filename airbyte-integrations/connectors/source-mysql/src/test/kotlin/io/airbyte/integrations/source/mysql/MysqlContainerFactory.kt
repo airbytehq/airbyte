@@ -25,6 +25,25 @@ object MysqlContainerFactory {
         }
     }
 
+    data object WithCdc : MysqlContainerModifier {
+        override fun modify(container: MySQLContainer<*>) {
+            container.start()
+            container.execAsRoot(GTID_ON)
+            container.execAsRoot(GRANT.format(container.username))
+            container.execAsRoot("FLUSH PRIVILEGES;")
+        }
+
+        const val GTID_ON =
+            "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
+                "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+                "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
+                "SET @@GLOBAL.GTID_MODE = 'ON';"
+
+        const val GRANT =
+            "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
+                "ON *.* TO '%s'@'%%';"
+    }
+
     data object WithCdcOff : MysqlContainerModifier {
         override fun modify(container: MySQLContainer<*>) {
             container.withCommand("--skip-log-bin")
@@ -65,17 +84,7 @@ object MysqlContainerFactory {
 
     @JvmStatic
     fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
-        MysqlSourceConfigurationSpecification().apply {
-            host = mySQLContainer.host
-            port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
-            username = mySQLContainer.username
-            password = mySQLContainer.password
-            jdbcUrlParams = ""
-            database = "test"
-            checkpointTargetIntervalSeconds = 60
-            concurrency = 1
-            setMethodValue(CdcCursor())
-        }
+        config(mySQLContainer).also { it.setMethodValue(CdcCursor()) }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {
         val cleanSql: String = sql.trim().removeSuffix(";") + ";"
