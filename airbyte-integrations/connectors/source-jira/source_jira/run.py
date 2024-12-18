@@ -7,10 +7,11 @@ import traceback
 from datetime import datetime
 from typing import List
 
+from orjson import orjson
+
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch, logger
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
-from orjson import orjson
 from source_jira import SourceJira
 
 

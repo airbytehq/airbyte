@@ -6,6 +6,7 @@ from collections import namedtuple
 
 import pytest
 
+
 TestCase = namedtuple(
     "TestCase", ("json_type", "data_type", "length", "decimal_place", "api_name", "pick_list_values", "autonumber", "expected_values")
 )

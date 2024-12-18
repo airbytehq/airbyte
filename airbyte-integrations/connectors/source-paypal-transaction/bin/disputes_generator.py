@@ -62,7 +62,6 @@ def read_json(filepath):
 
 
 def main():
-
     operation = sys.argv[1]
 
     CREDS = read_json("../secrets/config.json")

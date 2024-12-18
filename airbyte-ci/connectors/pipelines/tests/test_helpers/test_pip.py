@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import pytest
+
 from pipelines.helpers.pip import is_package_published
 
 

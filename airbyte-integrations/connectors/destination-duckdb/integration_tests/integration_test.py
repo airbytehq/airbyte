@@ -15,6 +15,10 @@ from unittest.mock import MagicMock
 
 import duckdb
 import pytest
+from destination_duckdb import DestinationDuckdb
+from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY
+from faker import Faker
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -27,14 +31,10 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_duckdb import DestinationDuckdb
-from destination_duckdb.destination import CONFIG_MOTHERDUCK_API_KEY
-from faker import Faker
+
 
 CONFIG_PATH = "integration_tests/config.json"
-SECRETS_CONFIG_PATH = (
-    "secrets/config.json"  # Should contain a valid MotherDuck API token
-)
+SECRETS_CONFIG_PATH = "secrets/config.json"  # Should contain a valid MotherDuck API token
 
 
 def pytest_generate_tests(metafunc):
@@ -45,9 +45,7 @@ def pytest_generate_tests(metafunc):
     if Path(SECRETS_CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
-        print(
-            f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}"
-        )
+        print(f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}")
 
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
@@ -102,6 +100,7 @@ def test_large_table_name() -> str:
     rand_string = "".join(random.choice(letters) for _ in range(10))
     return f"airbyte_integration_{rand_string}"
 
+
 @pytest.fixture
 def table_schema() -> str:
     schema = {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
@@ -110,7 +109,9 @@ def table_schema() -> str:
 
 @pytest.fixture
 def configured_catalogue(
-    test_table_name: str, test_large_table_name: str, table_schema: str,
+    test_table_name: str,
+    test_large_table_name: str,
+    table_schema: str,
 ) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -159,9 +160,7 @@ def airbyte_message2(test_table_name: str):
 
 @pytest.fixture
 def airbyte_message3():
-    return AirbyteMessage(
-        type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"})
-    )
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"}))
 
 
 @pytest.mark.disable_autouse
@@ -208,9 +207,7 @@ def test_write(
     if motherduck_api_key:
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
-    con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
-    )
+    con = duckdb.connect(database=config.get("destination_path"), read_only=False, config=duckdb_config)
     with con:
         cursor = con.execute(
             "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
@@ -222,21 +219,20 @@ def test_write(
     assert result[0][2] == json.dumps(airbyte_message1.record.data)
     assert result[1][2] == json.dumps(airbyte_message2.record.data)
 
+
 def _airbyte_messages(n: int, batch_size: int, table_name: str) -> Generator[AirbyteMessage, None, None]:
     fake = Faker()
     Faker.seed(0)
 
     for i in range(n):
         if i != 0 and i % batch_size == 0:
-            yield AirbyteMessage(
-                type=Type.STATE, state=AirbyteStateMessage(data={"state": str(i // batch_size)})
-            )
+            yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": str(i // batch_size)}))
         else:
             message = AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=table_name,
-                    data={"key1": fake.first_name() , "key2": fake.ssn()},
+                    data={"key1": fake.first_name(), "key2": fake.ssn()},
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
@@ -250,28 +246,28 @@ def _airbyte_messages_with_inconsistent_json_fields(n: int, batch_size: int, tab
 
     for i in range(n):
         if i != 0 and i % batch_size == 0:
-            yield AirbyteMessage(
-                type=Type.STATE, state=AirbyteStateMessage(data={"state": str(i // batch_size)})
-            )
+            yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": str(i // batch_size)}))
         else:
             message = AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
                     stream=table_name,
                     # Throw in empty nested objects and see how pyarrow deals with them.
-                    data={"key1": fake.first_name(),
-                          "key2": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999),
-                          "nested1": {} if random.random()< 0.1 else {
-                              "key3": fake.first_name(),
-                              "key4": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999),
-                              "dictionary1":{} if random.random()< 0.1 else {
-                                  "key3": fake.first_name(),
-                                  "key4": "True" if random.random() < 0.5 else True
-                                  }
-                              }
-                          }
-                          if random.random() < 0.9 else {},
-
+                    data={
+                        "key1": fake.first_name(),
+                        "key2": fake.ssn() if random.random() < 0.5 else random.randrange(1000, 9999999999999),
+                        "nested1": {}
+                        if random.random() < 0.1
+                        else {
+                            "key3": fake.first_name(),
+                            "key4": fake.ssn() if random.random() < 0.5 else random.randrange(1000, 9999999999999),
+                            "dictionary1": {}
+                            if random.random() < 0.1
+                            else {"key3": fake.first_name(), "key4": "True" if random.random() < 0.5 else True},
+                        },
+                    }
+                    if random.random() < 0.9
+                    else {},
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
@@ -281,10 +277,15 @@ def _airbyte_messages_with_inconsistent_json_fields(n: int, batch_size: int, tab
 TOTAL_RECORDS = 5_000
 BATCH_WRITE_SIZE = 1000
 
+
 @pytest.mark.slow
-@pytest.mark.parametrize("airbyte_message_generator,explanation",
-                         [(_airbyte_messages, "Test writing a large number of simple json objects."),
-                          (_airbyte_messages_with_inconsistent_json_fields, "Test writing a large number of json messages with inconsistent schema.")] )
+@pytest.mark.parametrize(
+    "airbyte_message_generator,explanation",
+    [
+        (_airbyte_messages, "Test writing a large number of simple json objects."),
+        (_airbyte_messages_with_inconsistent_json_fields, "Test writing a large number of json messages with inconsistent schema."),
+    ],
+)
 def test_large_number_of_writes(
     config: Dict[str, str],
     request,
@@ -309,13 +310,8 @@ def test_large_number_of_writes(
         duckdb_config["motherduck_token"] = motherduck_api_key
         duckdb_config["custom_user_agent"] = "airbyte_intg_test"
 
-    con = duckdb.connect(
-        database=config.get("destination_path"), read_only=False, config=duckdb_config
-    )
+    con = duckdb.connect(database=config.get("destination_path"), read_only=False, config=duckdb_config)
     with con:
-        cursor = con.execute(
-            "SELECT count(1) "
-            f"FROM {test_schema_name}._airbyte_raw_{test_large_table_name}"
-        )
+        cursor = con.execute("SELECT count(1) " f"FROM {test_schema_name}._airbyte_raw_{test_large_table_name}")
         result = cursor.fetchall()
     assert result[0][0] == TOTAL_RECORDS - TOTAL_RECORDS // (BATCH_WRITE_SIZE + 1)
