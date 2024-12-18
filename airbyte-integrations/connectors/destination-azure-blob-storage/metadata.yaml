@@ -6,24 +6,24 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: file
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: config_gcs_staging.json
-      name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config_s3_staging.json
-      name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: config_gcs_staging.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config_s3_staging.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerImageTag: 0.2.3
@@ -41,11 +41,11 @@ data:
   releaseStage: alpha
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 1Gi
-        memory_request: 1Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   supportLevel: community
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
