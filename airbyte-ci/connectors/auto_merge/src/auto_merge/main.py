@@ -50,7 +50,9 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
         bool: True if the PR is auto-mergeable, False otherwise
     """
 
-    validators = PROMOTED_RC_PR_VALIDATORS if any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels) else DEFAULT_ENABLED_VALIDATORS
+    validators = (
+        PROMOTED_RC_PR_VALIDATORS if any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels) else DEFAULT_ENABLED_VALIDATORS
+    )
     for validator in validators:
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
