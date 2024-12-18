@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationFile
+import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.mockk.coEvery
@@ -21,6 +22,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -35,6 +37,7 @@ class ObjectStorageStreamLoaderTest {
         mockk(relaxed = true)
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState> =
         mockk(relaxed = true)
+    private val fileSize: Long = 2
     private val partSize: Long = 1
 
     private val objectStorageStreamLoader =
@@ -46,18 +49,21 @@ class ObjectStorageStreamLoaderTest {
                 pathFactory,
                 writerFactory,
                 destinationStateManager,
-                partSize
+                partSizeBytes = partSize,
+                fileSizeBytes = fileSize
             )
         )
 
     @Test
     fun `test processFile`() = runTest {
-        val fileUrl = "fileUrl"
+        val fileUrl = "/tmp/fileUrl"
+        Files.deleteIfExists(Path.of(fileUrl))
+        Files.createFile(Path.of(fileUrl))
         val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
-            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl)
+            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl, fileRelativePath = fileUrl)
         every { pathFactory.getFinalDirectory(any()) } returns stagingDirectory
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
@@ -65,7 +71,7 @@ class ObjectStorageStreamLoaderTest {
         val mockedFile = mockk<File>(relaxed = true)
         every { objectStorageStreamLoader.createFile(any()) } returns mockedFile
 
-        val expectedKey = Path.of(stagingDirectory.toString(), fileUrl).toString()
+        val expectedKey = Path.of(stagingDirectory, fileUrl).toString()
         val metadata =
             mapOf(
                 ObjectStorageDestinationState.METADATA_GENERATION_ID_KEY to generationId.toString()
@@ -77,10 +83,8 @@ class ObjectStorageStreamLoaderTest {
 
         coVerify { mockedStateStorage.addObject(generationId, expectedKey, 0, false) }
         coVerify { client.streamingUpload(expectedKey, metadata, compressor, any()) }
-        assertEquals(
-            mockRemoteObject,
-            (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
-        )
+        assertEquals(mockRemoteObject, (result as LoadedObject<*>).remoteObject)
         verify { mockedFile.delete() }
+        Files.deleteIfExists(Path.of(fileUrl))
     }
 }

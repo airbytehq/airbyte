@@ -4,6 +4,7 @@ import pytest
 import requests
 import semver
 import yaml
+
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 

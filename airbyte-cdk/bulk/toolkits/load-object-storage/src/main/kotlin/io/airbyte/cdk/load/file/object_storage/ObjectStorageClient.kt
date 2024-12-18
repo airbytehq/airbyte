@@ -34,10 +34,26 @@ interface ObjectStorageClient<T : RemoteObject<*>> {
     ): T
 
     /** Experimental sane replacement interface */
-    suspend fun startStreamingUpload(key: String, metadata: Map<String, String>): StreamingUpload<T>
+    suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String> = emptyMap()
+    ): StreamingUpload<T>
 }
 
 interface StreamingUpload<T : RemoteObject<*>> {
-    suspend fun uploadPart(part: ByteArray)
+    /**
+     * Uploads a part of the object. Each part must have a unique index. The parts do not need to be
+     * uploaded in order. The index is 1-based.
+     */
+    suspend fun uploadPart(part: ByteArray, index: Int)
+
+    /**
+     * Completes a multipart upload. All parts must be uploaded before completing the upload, and
+     * there cannot be gaps in the indexes. Idempotent, Multiple calls will return the same object,
+     * but only the first call will have side effects.
+     *
+     * NOTE: If no parts were uploaded, it will skip the complete call but still return the object.
+     * This is a temporary hack to support empty files.
+     */
     suspend fun complete(): T
 }

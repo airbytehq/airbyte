@@ -40,6 +40,7 @@ abstract class S3V2WriteTest(
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
+        supportFileTransfer = true,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -65,6 +66,11 @@ class S3V2WriteTestJsonUncompressed :
     @Test
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 
