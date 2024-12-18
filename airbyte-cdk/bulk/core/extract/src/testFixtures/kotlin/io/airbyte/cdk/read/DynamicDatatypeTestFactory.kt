@@ -3,6 +3,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -143,6 +144,7 @@ interface DatatypeTestCase {
     val expectedData: List<JsonNode>
 }
 
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "control flow")
 class DiscoverAndReadAll<
     DB : GenericContainer<*>,
     CS : ConfigurationSpecification,
