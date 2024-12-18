@@ -18,7 +18,6 @@ from airbyte_cdk.models import (
     Type,
 )
 
-
 if TYPE_CHECKING:
     from pydantic import BaseModel
 

@@ -9,7 +9,6 @@ from destination_deepset import util
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
 
-
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
