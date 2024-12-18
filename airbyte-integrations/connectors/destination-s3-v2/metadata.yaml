@@ -6,94 +6,94 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: file
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: s3_dest_v2_minimal_required_config.json
-      name: SECRET_DESTINATION-S3-V2-MINIMAL-REQUIRED-CONFIG
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_jsonl_root_level_flattening_config.json
-      name: SECRET_DESTINATION-S3-V2-JSONL-ROOT-LEVEL-FLATTENING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_jsonl_gzip_config.json
-      name: SECRET_DESTINATION-S3-V2-JSONL-GZIP
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_jsonl_staging_config.json
-      name: SECRET_DESTINATION-S3-V2-JSONL-STAGING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_csv_config.json
-      name: SECRET_DESTINATION-S3-V2-CSV
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_csv_root_level_flattening_config.json
-      name: SECRET_DESTINATION-S3-V2-CSV-ROOT-LEVEL-FLATTENING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_csv_gzip_config.json
-      name: SECRET_DESTINATION-S3-V2-CSV-GZIP
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_avro_config.json
-      name: SECRET_DESTINATION-S3-V2-AVRO
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_avro_bzip2_config.json
-      name: SECRET_DESTINATION-S3-V2-AVRO-BZIP2
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_parquet_config.json
-      name: SECRET_DESTINATION-S3-V2-PARQUET
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_parquet_snappy_config.json
-      name: SECRET_DESTINATION-S3-V2-PARQUET-SNAPPY
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_assume_role_config.json
-      name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_DESTINATION-S3_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_min_required_permissions_creds.json
-      name: SECRET_DESTINATION-S3_MIN_REQUIRED_PERMISSIONS_CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_policy_manager_credentials.json
-      name: SECRET_DESTINATION-S3_POLICY_MANAGER_CREDENTIALS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
-      name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: s3_dest_v2_endpoint_url_config.json
-      name: SECRET_DESTINATION-S3-V2-ENDPOINT_URL
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: s3_dest_v2_minimal_required_config.json
+          name: SECRET_DESTINATION-S3-V2-MINIMAL-REQUIRED-CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_jsonl_root_level_flattening_config.json
+          name: SECRET_DESTINATION-S3-V2-JSONL-ROOT-LEVEL-FLATTENING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_jsonl_gzip_config.json
+          name: SECRET_DESTINATION-S3-V2-JSONL-GZIP
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_jsonl_staging_config.json
+          name: SECRET_DESTINATION-S3-V2-JSONL-STAGING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_csv_config.json
+          name: SECRET_DESTINATION-S3-V2-CSV
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_csv_root_level_flattening_config.json
+          name: SECRET_DESTINATION-S3-V2-CSV-ROOT-LEVEL-FLATTENING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_csv_gzip_config.json
+          name: SECRET_DESTINATION-S3-V2-CSV-GZIP
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_avro_config.json
+          name: SECRET_DESTINATION-S3-V2-AVRO
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_avro_bzip2_config.json
+          name: SECRET_DESTINATION-S3-V2-AVRO-BZIP2
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_parquet_config.json
+          name: SECRET_DESTINATION-S3-V2-PARQUET
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_parquet_snappy_config.json
+          name: SECRET_DESTINATION-S3-V2-PARQUET-SNAPPY
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_assume_role_config.json
+          name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-S3_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_min_required_permissions_creds.json
+          name: SECRET_DESTINATION-S3_MIN_REQUIRED_PERMISSIONS_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_policy_manager_credentials.json
+          name: SECRET_DESTINATION-S3_POLICY_MANAGER_CREDENTIALS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
+          name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: s3_dest_v2_endpoint_url_config.json
+          name: SECRET_DESTINATION-S3-V2-ENDPOINT_URL
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: d6116991-e809-4c7c-ae09-c64712df5b66
   dockerImageTag: 0.3.3
@@ -112,5 +112,5 @@ data:
   supportLevel: community
   supportsRefreshes: true
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
