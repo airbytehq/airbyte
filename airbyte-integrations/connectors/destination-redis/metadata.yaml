@@ -1,9 +1,18 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+  - suite: unitTests
+  - suite: integrationTests
   connectorType: destination
   definitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/destination-redis
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
   githubIssueLabel: destination-redis
   icon: redis.svg
   license: MIT
@@ -14,14 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
-  tags:
-    - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-metadataSpecVersion: "1.0"
+  tags:
+  - language:java
+metadataSpecVersion: '1.0'
