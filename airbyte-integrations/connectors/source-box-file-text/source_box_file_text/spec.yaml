@@ -8,7 +8,7 @@ connectionSpecification:
     - client_secret
     - box_subject_type
     - box_subject_id
-    - folder_id
+    - box_folder_id
     # - file_id
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
@@ -42,7 +42,7 @@ connectionSpecification:
         If subject type is "enterprise", use your enterprise ID
         If subject type is "user", use the user id to login as.
       order: 3
-    folder_id:
+    box_folder_id:
       type: string
       title: Folder ID
       description: >-

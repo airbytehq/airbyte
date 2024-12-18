@@ -251,7 +251,9 @@ class BoxFolder(Stream):
     ) -> Iterable[StreamData]:
         items = box_folder_items_get_by_id(self.client, self.folder_id)
         for item in items:
-            yield item
+            airbyte_item:StreamData = item.file.to_dict()
+            airbyte_item["text_representation"] = item.text_representation
+            yield airbyte_item
 
         
         
@@ -287,7 +289,7 @@ class SourceBoxFileText(AbstractSource):
         box_client = get_box_ccg_client(config)
 
         # box_file_stream = BoxFile(box_client, config["file_id"])
-        box_folder_stream = BoxFolder(box_client, config["folder_id"])
+        box_folder_stream = BoxFolder(box_client, config["box_folder_id"])
 
         return [box_folder_stream]
 

@@ -35,9 +35,9 @@ def box_file_get_by_id(client:BoxClient,file_id:str)->File:
 
 def box_file_text_extract(client:BoxClient,file_id:str)->str:
     # TODO Implement text extraction
-    pass
+    return ""
 
-def box_folder_items_get_by_id(client:BoxClient, folder_id:str)-> Iterable[List[BoxFileExtended]]:
+def box_folder_items_get_by_id(client:BoxClient, folder_id:str)-> Iterable[BoxFileExtended]:
     # folder items iterator
     for item in client.folders.get_folder_items(folder_id).entries:
         if item.type == "file":
