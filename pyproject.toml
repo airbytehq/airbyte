@@ -96,7 +96,7 @@ select = [
     "C4",    # flake8-comprehensions
     "C90",   # mccabe (complexity)
     "COM",   # flake8-commas
-    "CPY",   # missing copyright notice
+    # "CPY",   # missing copyright notice  # Requires 'preview=true'
     # "D", # pydocstyle # TODO: Re-enable when adding docstrings
     "DTZ",  # flake8-datetimez
     "E",    # pycodestyle (errors)
