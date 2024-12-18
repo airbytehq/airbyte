@@ -1,0 +1,230 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - QueueMessages
+
+definitions:
+  streams:
+    QueueMessages:
+      type: DeclarativeStream
+      name: QueueMessages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Messages
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: MaxNumberOfMessages
+            inject_into: body_json
+          pagination_strategy:
+            type: PageIncrement
+            page_size: "{{ config['max_batch_size'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['MessageId'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - body
+              value: "{{ record['Body'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - attributes
+              value: "{{ record['MessageAttributes'] or record['Attributes'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/QueueMessages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sqs.{{ config['region'] }}.amazonaws.com
+    authenticator:
+      type: CustomAuthenticator
+      region: "{{config['region']}}"
+      target: "{{ config['target']}}"
+      queue_url: "{{config['queue_url']}}"
+      access_key: "{{config['access_key']}}"
+      class_name: source_amazon_sqs.components.CustomAuthenticator
+      secret_key: "{{config['secret_key']}}"
+      max_wait_time: "{{config['max_wait_time']}}"
+      visibility_timeout: "{{config['visibility_timeout']}}"
+      attributes_to_return: "{{config['attributes_to_return']}}"
+
+streams:
+  - $ref: "#/definitions/streams/QueueMessages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - queue_url
+      - region
+      - access_key
+      - secret_key
+    properties:
+      queue_url:
+        type: string
+        description: URL of the SQS Queue
+        order: 0
+        title: Queue URL
+        examples:
+          - https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue
+      region:
+        type: string
+        description: AWS Region of the SQS Queue
+        enum:
+          - af-south-1
+          - ap-east-1
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-northeast-3
+          - ap-south-1
+          - ap-south-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-4
+          - ca-central-1
+          - ca-west-1
+          - cn-north-1
+          - cn-northwest-1
+          - eu-central-1
+          - eu-central-2
+          - eu-north-1
+          - eu-south-1
+          - eu-south-2
+          - eu-west-1
+          - eu-west-2
+          - eu-west-3
+          - il-central-1
+          - me-central-1
+          - me-south-1
+          - sa-east-1
+          - us-east-1
+          - us-east-2
+          - us-gov-east-1
+          - us-gov-west-1
+          - us-west-1
+          - us-west-2
+        order: 1
+        title: AWS Region
+        default: us-east-1
+      max_batch_size:
+        type: integer
+        description: Max amount of messages to get in one batch (10 max)
+        order: 2
+        title: Max Batch Size
+        default: 10
+        examples:
+          - 5
+      max_wait_time:
+        type: integer
+        description: >-
+          Max amount of time in seconds to wait for messages in a single poll
+          (20 max)
+        order: 3
+        title: Max Wait Time
+        default: 20
+        examples:
+          - 5
+      attributes_to_return:
+        type: string
+        description: Comma separated list of Mesage Attribute names to return
+        order: 4
+        title: Message Attributes To Return
+        default: All
+        examples:
+          - attr1,attr2
+      visibility_timeout:
+        type: integer
+        description: >-
+          Modify the Visibility Timeout of the individual message from the
+          Queue's default (seconds).
+        order: 5
+        title: Message Visibility Timeout
+        default: 20
+        examples:
+          - 20
+      access_key:
+        type: string
+        description: The Access Key ID of the AWS IAM Role to use for pulling messages
+        order: 6
+        title: AWS IAM Access Key ID
+        examples:
+          - xxxxxHRNxxx3TBxxxxxx
+        airbyte_secret: true
+      secret_key:
+        type: string
+        description: The Secret Key of the AWS IAM Role to use for pulling messages
+        order: 7
+        title: AWS IAM Secret Key
+        examples:
+          - hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz
+        airbyte_secret: true
+      target:
+        type: string
+        description: >-
+          Note - Different targets have different attribute enum requirements,
+          please refer actions sections in
+          https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/Welcome.html
+        enum:
+          - GetQueueAttributes
+          - ReceiveMessage
+        order: 8
+        title: The targeted action resource for the fetch
+        default: ReceiveMessage
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    QueueMessages: false
+  yamlComponents:
+    streams:
+      QueueMessages:
+        - paginator
+    global:
+      - authenticator
+  testedStreams:
+    QueueMessages:
+      streamHash: e012f0b20f4c20f9b96c4a8aa7ab497a7d35203f
+  assist: {}
+
+schemas:
+  QueueMessages:
+    type: object
+    additionalProperties: true
+    properties:
+      attributes:
+        type:
+          - object
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
