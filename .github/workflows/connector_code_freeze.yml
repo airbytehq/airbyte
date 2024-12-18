@@ -35,10 +35,10 @@ jobs:
 
           if [ "$current_date" -ge "$start_date" ] && [ "$current_date" -le "$end_date" ]; then
               echo "Code freeze is in effect"
-              echo "::set-output name=is_in_code_freeze::true"
+              echo "is_in_code_freeze=true" >> $GITHUB_OUTPUT
           else
               echo "Code freeze is not in effect"
-              echo "::set-output name=is_in_code_freeze::false"
+              echo "is_in_code_freeze=false" >> $GITHUB_OUTPUT
           fi
 
       # Use GitHub PR Api to get the list of changed files

@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.state.SyncFailure
+import io.airbyte.cdk.load.state.DestinationFailure
+import io.airbyte.cdk.load.state.DestinationSuccess
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.state.SyncSuccess
 import io.airbyte.cdk.load.task.TaskLauncher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -32,13 +32,19 @@ class WriteOperation(
     override fun execute() = runBlocking {
         taskLauncher.run()
 
-        when (val result = syncManager.awaitSyncResult()) {
-            is SyncSuccess -> {
-                log.info { "Sync completed successfully" }
+        when (val result = syncManager.awaitDestinationResult()) {
+            is DestinationSuccess -> {
+                if (!syncManager.allStreamsComplete()) {
+                    log.info {
+                        "Destination completed successfully but some streams were incomplete. Throwing to exit non-zero..."
+                    }
+                    throw StreamsIncompleteException()
+                }
+                log.info { "Destination completed successfully and all streams were complete." }
             }
-            is SyncFailure -> {
-                log.info { "Sync failed with stream results ${result.streamResults}" }
-                throw result.syncFailure
+            is DestinationFailure -> {
+                log.info { "Destination failed with stream results ${result.streamResults}" }
+                throw result.cause
             }
         }
     }
