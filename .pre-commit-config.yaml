@@ -51,7 +51,6 @@ repos:
         additional_dependencies: [github.com/google/addlicense@v1.1.1]
         files: \.(java|kt|py)$
 
-
       - id: spotless
         name: Format Java files with Spotless
         entry: bash -c 'command -v mvn >/dev/null 2>&1 || { echo "Maven not installed, skipping spotless" >&2; exit 0; }; mvn -f spotless-maven-pom.xml spotless:apply'
