@@ -23,7 +23,7 @@ interface QueueWriter<T> : CloseableCoroutine {
 interface MessageQueue<T> : QueueReader<T>, QueueWriter<T>
 
 abstract class ChannelMessageQueue<T> : MessageQueue<T> {
-    open val channel = Channel<T>(Channel.UNLIMITED)
+    open val channel: Channel<T> = Channel(Channel.UNLIMITED)
 
     override suspend fun publish(message: T) = channel.send(message)
     override suspend fun consume(): Flow<T> = channel.receiveAsFlow()
