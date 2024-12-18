@@ -54,6 +54,7 @@ interface Batch {
     val groupId: String?
 
     enum class State {
+        PROCESSED,
         LOCAL,
         PERSISTED,
         COMPLETE
@@ -93,11 +94,11 @@ data class BatchEnvelope<B : Batch>(
 ) {
     constructor(
         batch: B,
-        range: Range<Long>,
+        range: Range<Long>?,
         streamDescriptor: DestinationStream.Descriptor
     ) : this(
         batch = batch,
-        ranges = TreeRangeSet.create(listOf(range)),
+        ranges = range?.let { TreeRangeSet.create(listOf(range)) } ?: TreeRangeSet.create(),
         streamDescriptor = streamDescriptor
     )
 
