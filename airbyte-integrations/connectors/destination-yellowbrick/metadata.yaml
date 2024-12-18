@@ -2,10 +2,20 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
   connectorSubtype: database
+  connectorTestSuitesOptions:
+  - suite: integrationTests
+    testSecrets:
+    - fileName: config.json
+      name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
+      secretStore:
+        alias: airbyte-connector-testing-secret-store
+        type: GSM
   connectorType: destination
   definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/destination-yellowbrick
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yellowbrick
   githubIssueLabel: destination-yellowbrick
@@ -22,13 +32,5 @@ data:
   supportLevel: community
   supportsDbt: false
   tags:
-    - language:java
-  connectorTestSuitesOptions:
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - language:java
+metadataSpecVersion: '1.0'
