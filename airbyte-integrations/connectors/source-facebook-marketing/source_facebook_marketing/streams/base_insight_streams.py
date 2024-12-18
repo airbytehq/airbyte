@@ -214,11 +214,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             return
 
         self._cursor_values = {
-            account_id: (
-                pendulum.parse(transformed_state[account_id][self.cursor_field]).date()
-                if transformed_state.get(account_id, {}).get(self.cursor_field)
-                else None
-            )
+            account_id: pendulum.parse(transformed_state[account_id][self.cursor_field]).date()
+            if transformed_state.get(account_id, {}).get(self.cursor_field)
+            else None
             for account_id in self._account_ids
         }
         self._completed_slices = {

@@ -28,11 +28,10 @@ def spreadsheet():
             sheets=[
                 Sheet(
                     data=[GridData(rowData=[RowData(values=[CellData(formattedValue="ID")])])],
-                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2}),
+                    properties=SheetProperties(title=sheet_name, gridProperties={"rowCount": 2})
                 ),
             ],
         )
-
     return maker
 
 
@@ -40,7 +39,6 @@ def spreadsheet():
 def spreadsheet_values():
     def maker(spreadsheet_id):
         return SpreadsheetValues(spreadsheetId=spreadsheet_id, valueRanges=[ValueRange(values=[["1"]])])
-
     return maker
 
 
@@ -53,5 +51,4 @@ def catalog():
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             )
-
     return maker

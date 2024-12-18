@@ -14,6 +14,12 @@ from typing import TYPE_CHECKING, Optional, cast, final
 import pandas as pd
 import sqlalchemy
 import ulid
+from airbyte import exceptions as exc
+from airbyte._util.name_normalizers import LowerCaseNormalizer
+from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
+from airbyte.progress import progress
+from airbyte.strategies import WriteStrategy
+from airbyte.types import SQLTypeConverter
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_pgvector.common.destinations.record_processor import RecordProcessorBase
 from destination_pgvector.common.state.state_writers import StdOutStateWriter
@@ -22,16 +28,12 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
 
-from airbyte import exceptions as exc
-from airbyte._util.name_normalizers import LowerCaseNormalizer
-from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.progress import progress
-from airbyte.strategies import WriteStrategy
-from airbyte.types import SQLTypeConverter
-
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    from airbyte._batch_handles import BatchHandle
+    from airbyte._processors.file.base import FileWriterBase
+    from airbyte.secrets.base import SecretString
     from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
     from destination_pgvector.common.state.state_writers import StateWriterBase
@@ -40,10 +42,6 @@ if TYPE_CHECKING:
     from sqlalchemy.engine.reflection import Inspector
     from sqlalchemy.sql.base import Executable
     from sqlalchemy.sql.type_api import TypeEngine
-
-    from airbyte._batch_handles import BatchHandle
-    from airbyte._processors.file.base import FileWriterBase
-    from airbyte.secrets.base import SecretString
 
 
 class RecordDedupeMode(enum.Enum):

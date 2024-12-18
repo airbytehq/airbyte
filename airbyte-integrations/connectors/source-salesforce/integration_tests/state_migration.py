@@ -2616,7 +2616,7 @@ result = []
 for stream in json.loads(x):
     stream["stream_descriptor"] = stream.pop("streamDescriptor")
     stream["stream_state"] = stream.pop("streamState")
-    y = {
+    y =   {
         "type": "STREAM",
         "stream": stream,
     }

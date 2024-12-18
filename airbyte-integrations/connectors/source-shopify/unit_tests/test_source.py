@@ -126,13 +126,13 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     else:
         result = stream.path()
     assert result == expected_path
-
-
+    
+    
 @pytest.mark.parametrize(
     "stream, parent_records, state_checkpoint_interval",
     [
         (
-            OrderRefunds,
+            OrderRefunds, 
             [
                 {"id": 1, "refunds": [{"created_at": "2021-01-01T00:00:00+00:00"}]},
                 {"id": 2, "refunds": [{"created_at": "2021-02-01T00:00:00+00:00"}]},
@@ -145,10 +145,10 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     ],
 )
 def test_stream_slice_nested_substream_buffering(
-    mocker,
-    config,
-    stream,
-    parent_records,
+    mocker, 
+    config, 
+    stream, 
+    parent_records, 
     state_checkpoint_interval,
 ) -> None:
     # making the stream instance
@@ -156,7 +156,7 @@ def test_stream_slice_nested_substream_buffering(
     stream.state_checkpoint_interval = state_checkpoint_interval
     # simulating `read_records` for the `parent_stream`
     mocker.patch(
-        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records",
+        "source_shopify.streams.base_streams.IncrementalShopifyStreamWithDeletedEvents.read_records", 
         return_value=parent_records,
     )
     # count how many slices we expect, based on the number of parent_records
@@ -173,7 +173,7 @@ def test_stream_slice_nested_substream_buffering(
         # count total slices
         total_slices += 1
     # check we have emitted complete number of slices
-    assert total_slices == total_slices_expected
+    assert total_slices ==  total_slices_expected    
 
 
 def test_check_connection(config, mocker) -> None:
@@ -212,23 +212,11 @@ def test_request_params(config, stream, expected) -> None:
     "last_record, current_state, expected",
     [
         # no init state
-        (
-            {"created_at": "2022-10-10T06:21:53-07:00"},
-            {},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
-        ),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is empty str
-        (
-            {"created_at": "2022-10-10T06:21:53-07:00"},
-            {"created_at": ""},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
-        ),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is None
-        (
-            {"created_at": "2022-10-10T06:21:53-07:00"},
-            {"created_at": None},
-            {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}},
-        ),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is None
         ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is empty str
@@ -269,19 +257,21 @@ def test_get_shop_name(config, shop, expected) -> None:
     actual = source.get_shop_name(config)
     assert actual == expected
 
-
 @pytest.mark.parametrize(
     "config, expected_stream_class",
     [
         ({"fetch_transactions_user_id": False}, TransactionsGraphql),
         ({"fetch_transactions_user_id": True}, Transactions),
         ({}, TransactionsGraphql),
-    ],
+     ],
     ids=["don't fetch user_id", "fetch user id", "unset config value shouldn't fetch user_id"],
 )
 def test_select_transactions_stream(config, expected_stream_class):
     config["shop"] = "test-store"
-    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["credentials"] = {
+        "auth_method": "api_password",
+        "api_password": "shppa_123"
+    }
     config["authenticator"] = ShopifyAuthenticator(config)
 
     source = SourceShopify()
@@ -294,7 +284,7 @@ def test_select_transactions_stream(config, expected_stream_class):
     [
         pytest.param([{"id": "12345"}], "12345", None, id="test_shop_name_exists"),
         pytest.param([], None, AirbyteTracedException, id="test_shop_name_does_not_exist"),
-    ],
+     ],
 )
 def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
     check_test = ConnectionCheckTest(config)

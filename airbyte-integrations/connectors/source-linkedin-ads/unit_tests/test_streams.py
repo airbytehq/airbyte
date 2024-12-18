@@ -50,8 +50,7 @@ def test_read_records(requests_mock):
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
-        json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]},
-    )
+        json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAnalytics",
         [

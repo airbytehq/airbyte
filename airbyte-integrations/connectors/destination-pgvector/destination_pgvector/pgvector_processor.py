@@ -10,6 +10,8 @@ from typing import Any
 
 import dpath
 import sqlalchemy
+from airbyte._processors.file.jsonl import JsonlWriter
+from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor as DocumentSplitter
 from airbyte_cdk.destinations.vector_db_based.document_processor import ProcessingConfigModel as DocumentSplitterConfig
@@ -20,9 +22,6 @@ from destination_pgvector.globals import CHUNK_ID_COLUMN, DOCUMENT_CONTENT_COLUM
 from overrides import overrides
 from pgvector.sqlalchemy import Vector
 from typing_extensions import Protocol
-
-from airbyte._processors.file.jsonl import JsonlWriter
-from airbyte.secrets import SecretString
 
 
 class PostgresConfig(SqlConfig):

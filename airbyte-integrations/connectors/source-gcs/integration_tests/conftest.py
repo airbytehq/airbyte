@@ -77,3 +77,4 @@ def connector_setup_fixture(docker_client) -> None:
 
     container.kill()
     container.remove()
+

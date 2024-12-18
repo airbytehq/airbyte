@@ -35,7 +35,7 @@ def test_check_initial_quota_is_empty():
                     "potentiallyThresholdedRequestsPerHour": {"consumed": 1, "remaining": 26},
                 }
             },
-            False,  # partial_quota
+            False, # partial_quota
             ResponseAction.RETRY,
             None,  # backoff_time_exp
             False,  # stop_iter_exp

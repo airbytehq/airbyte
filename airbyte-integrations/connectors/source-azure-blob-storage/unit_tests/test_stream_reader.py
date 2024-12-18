@@ -18,19 +18,18 @@ logger = logging.Logger("")
 @pytest.mark.parametrize(
     "credentials, expected_credentials_type",
     [
-        (
-            {
-                "auth_type": "oauth2",
-                "tenant_id": "tenant_id",
-                "client_id": "client_id",
-                "client_secret": "client_secret",
-                "refresh_token": "refresh_token",
-            },
-            AzureOauth2Authenticator,
-        ),
-        ({"auth_type": "storage_account_key", "azure_blob_storage_account_key": "key1"}, str),
+        ({"auth_type": "oauth2",
+          "tenant_id": "tenant_id",
+          "client_id": "client_id",
+          "client_secret": "client_secret",
+          "refresh_token": "refresh_token"
+          }, AzureOauth2Authenticator),
+        ({
+             "auth_type": "storage_account_key",
+             "azure_blob_storage_account_key": "key1"
+         }, str),
     ],
-    ids=["oauth2", "storage_account_key"],
+    ids=["oauth2", "storage_account_key"]
 )
 def test_stream_reader_credentials(credentials: Dict, expected_credentials_type: Union[str, AzureOauth2Authenticator]):
     reader = SourceAzureBlobStorageStreamReader()
@@ -60,9 +59,9 @@ def test_stream_reader_files_read_and_filter_by_date():
     reader.config = config
     with patch.object(ContainerClient, "list_blobs") as blobs:
         blobs.return_value = [
-            BlobProperties(name="sample_file_1.csv", **{"Last-Modified": datetime.datetime(2023, 1, 1, 1, 1, 0)}),
-            BlobProperties(name="sample_file_2.csv", **{"Last-Modified": datetime.datetime(2024, 1, 1, 1, 1, 0)}),
-            BlobProperties(name="sample_file_3.csv", **{"Last-Modified": datetime.datetime(2024, 1, 5, 1, 1, 0)}),
+            BlobProperties(name='sample_file_1.csv', **{"Last-Modified": datetime.datetime(2023, 1, 1, 1, 1, 0)}),
+            BlobProperties(name='sample_file_2.csv', **{"Last-Modified": datetime.datetime(2024, 1, 1, 1, 1, 0)}),
+            BlobProperties(name='sample_file_3.csv', **{"Last-Modified": datetime.datetime(2024, 1, 5, 1, 1, 0)})
         ]
         files = list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
         assert len(files) == 2

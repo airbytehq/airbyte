@@ -96,11 +96,9 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    (
-                        _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                        else f"An error occurred: {response.content.decode()}"
-                    ),
+                    _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
+                    if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                    else f"An error occurred: {response.content.decode()}",
                 )
 
             if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:

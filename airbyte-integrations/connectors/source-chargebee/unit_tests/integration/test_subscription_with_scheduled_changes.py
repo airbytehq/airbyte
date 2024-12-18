@@ -62,7 +62,7 @@ def _a_parent_record() -> RecordBuilder:
         find_template("subscription", __file__),
         FieldPath("list"),
         record_id_path=NestedPath(["subscription", _PRIMARY_KEY]),
-        record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD]),
+        record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD])
     )
 
 
@@ -71,24 +71,31 @@ def _a_child_record() -> RecordBuilder:
         find_template("subscription_with_scheduled_changes", __file__),
         FieldPath("list"),
         record_id_path=NestedPath(["subscription", _PRIMARY_KEY]),
-        record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD]),
+        record_cursor_path=NestedPath(["subscription", _CURSOR_FIELD])
     )
 
 
 def _a_parent_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template("subscription", __file__), FieldPath("list"), pagination_strategy=ChargebeePaginationStrategy()
+        find_template("subscription", __file__),
+        FieldPath("list"),
+        pagination_strategy=ChargebeePaginationStrategy()
     )
 
 
 def _a_child_response() -> HttpResponseBuilder:
     return create_response_builder(
-        find_template("subscription_with_scheduled_changes", __file__), FieldPath("list"), pagination_strategy=ChargebeePaginationStrategy()
+        find_template("subscription_with_scheduled_changes", __file__),
+        FieldPath("list"),
+        pagination_strategy=ChargebeePaginationStrategy()
     )
 
 
 def _read(
-    config_builder: ConfigBuilder, sync_mode: SyncMode, state: Optional[Dict[str, Any]] = None, expecting_exception: bool = False
+    config_builder: ConfigBuilder,
+    sync_mode: SyncMode,
+    state: Optional[Dict[str, Any]] = None,
+    expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
@@ -115,15 +122,11 @@ class FullRefreshTest(TestCase):
 
         http_mocker.get(
             _a_parent_request().with_any_query_params().build(),
-            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build()
         )
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
-            _a_child_response().with_record(_a_child_record()).build(),
+            _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
         )
 
         output = self._read(_config().with_start_date(self._start_date))
@@ -134,29 +137,19 @@ class FullRefreshTest(TestCase):
         a_parent_id = "a_subscription_test"
         another_parent_id = "another_subscription_test"
 
+
         http_mocker.get(
             _a_parent_request().with_any_query_params().build(),
-            _a_parent_response()
-            .with_record(_a_parent_record().with_id(a_parent_id))
-            .with_record(_a_parent_record().with_id(another_parent_id))
-            .build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(a_parent_id)).with_record(_a_parent_record().with_id(another_parent_id)).build()
         )
 
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(a_parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
-            _a_child_response().with_record(_a_child_record()).build(),
+            _a_child_request().with_parent_id(a_parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
         )
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(another_parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
-            _a_child_response().with_record(_a_child_record()).build(),
+            _a_child_request().with_parent_id(another_parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
         )
 
         output = self._read(_config().with_start_date(self._start_date))
@@ -168,15 +161,11 @@ class FullRefreshTest(TestCase):
 
         http_mocker.get(
             _a_parent_request().with_any_query_params().build(),
-            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build()
         )
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
-            _a_child_response().with_record(_a_child_record()).build(),
+            _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
+            _a_child_response().with_record(_a_child_record()).build()
         )
 
         output = self._read(_config().with_start_date(self._start_date))
@@ -189,14 +178,10 @@ class FullRefreshTest(TestCase):
 
         http_mocker.get(
             _a_parent_request().with_any_query_params().build(),
-            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build()
         )
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
+            _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
             a_response_with_status(400),
         )
 
@@ -209,14 +194,10 @@ class FullRefreshTest(TestCase):
 
         http_mocker.get(
             _a_parent_request().with_any_query_params().build(),
-            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build(),
+            _a_parent_response().with_record(_a_parent_record().with_id(parent_id)).build()
         )
         http_mocker.get(
-            _a_child_request()
-            .with_parent_id(parent_id)
-            .with_endpoint_path("retrieve_with_scheduled_changes")
-            .with_any_query_params()
-            .build(),
+            _a_child_request().with_parent_id(parent_id).with_endpoint_path("retrieve_with_scheduled_changes").with_any_query_params().build(),
             a_response_with_status(404),
         )
 

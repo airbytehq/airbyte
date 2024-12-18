@@ -19,7 +19,6 @@ NOT_TEST_VALIDATORS = [
 
 PATCHED_VALIDATORS = [v for v in commands.PRE_UPLOAD_VALIDATORS if v not in NOT_TEST_VALIDATORS]
 
-
 # TEST VALIDATE COMMAND
 def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()

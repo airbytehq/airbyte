@@ -31,7 +31,11 @@ def test_parse_response(requests_mock, config_pass, report_url, mock_report_resp
     requests_mock.get(url=report_url, status_code=200, json=mock_report_response)
     stream = get_stream_by_name("AdjustReport", config_pass)
     expected_parsed_record = {
-        "attr_dependency": {"campaign_id_network": "unknown", "partner_id": "-300", "partner": "Organic"},
+        "attr_dependency": {
+            "campaign_id_network": "unknown",
+            "partner_id": "-300",
+            "partner": "Organic"
+        },
         "app": "Test app",
         "partner_name": "Organic",
         "campaign": "unknown",
@@ -40,7 +44,7 @@ def test_parse_response(requests_mock, config_pass, report_url, mock_report_resp
         "installs": "10",
         "network_installs": "0",
         "network_cost": "0.0",
-        "network_ecpi": "0.0",
+        "network_ecpi": "0.0"
     }
     records = []
     for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):

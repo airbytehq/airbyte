@@ -13,6 +13,7 @@ _LIST_MEMBERSHIPS_FIELD = "list-memberships"
 _MERGE_AUDITS_FIELD = "merge-audits"
 
 
+
 def _get_template() -> Dict[str, Any]:
     return find_template("all_contacts", __file__)
 

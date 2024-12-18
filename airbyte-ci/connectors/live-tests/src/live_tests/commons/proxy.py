@@ -119,18 +119,16 @@ class Proxy:
         python_version_minor_only = ".".join(python_version.split(".")[:-1])
         requests_cert_path = f"/usr/local/lib/python{python_version_minor_only}/site-packages/certifi/cacert.pem"
         try:
-            return (
-                await (
-                    container.with_service_binding(self.hostname, await self.get_service())
-                    .with_mounted_cache("/mitmproxy_dir", self.mitmproxy_dir_cache)
-                    .with_exec(["cp", cert_path_in_volume, requests_cert_path])
-                    .with_exec(["cp", cert_path_in_volume, ca_certificate_path])
-                    # The following command make the container use the proxy for all outgoing HTTP requests
-                    .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path)
-                    .with_exec(["update-ca-certificates"])
-                    .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
-                    .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
-                )
+            return await (
+                container.with_service_binding(self.hostname, await self.get_service())
+                .with_mounted_cache("/mitmproxy_dir", self.mitmproxy_dir_cache)
+                .with_exec(["cp", cert_path_in_volume, requests_cert_path])
+                .with_exec(["cp", cert_path_in_volume, ca_certificate_path])
+                # The following command make the container use the proxy for all outgoing HTTP requests
+                .with_env_variable("REQUESTS_CA_BUNDLE", requests_cert_path)
+                .with_exec(["update-ca-certificates"])
+                .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
+                .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
             )
         except dagger.DaggerError as e:
             # This is likely hapenning on Java connector images whose certificates location is different

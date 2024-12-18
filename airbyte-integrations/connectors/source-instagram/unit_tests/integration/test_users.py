@@ -31,27 +31,30 @@ _FIELDS = [
     "name",
     "profile_picture_url",
     "username",
-    "website",
+    "website"
 ]
 
 _STREAM_NAME = "users"
 
 
 def _get_request() -> RequestBuilder:
-    return RequestBuilder.get_users_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_fields(_FIELDS)
+    return (
+        RequestBuilder.get_users_endpoint(item_id=BUSINESS_ACCOUNT_ID)
+        .with_fields(_FIELDS)
+    )
 
 
 def _get_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath("data"),
+        records_path=FieldPath('data'),
     )
 
 
 def _record() -> RecordBuilder:
     return create_record_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath("data"),
+        records_path=FieldPath('data'),
         record_id_path=FieldPath("id"),
     )
 
@@ -80,3 +83,4 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
+

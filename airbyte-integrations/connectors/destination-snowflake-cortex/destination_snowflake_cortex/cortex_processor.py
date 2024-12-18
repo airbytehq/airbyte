@@ -207,15 +207,18 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             query = f"PUT 'file://{path_str(file_path)}' {internal_sf_stage_name};"
             self._execute_sql(query)
 
-        columns_list = [self._quote_identifier(c) for c in list(self._get_sql_column_definitions(stream_name).keys())]
+        columns_list = [
+            self._quote_identifier(c)
+            for c in list(self._get_sql_column_definitions(stream_name).keys())
+        ]
         files_list = ", ".join([f"'{f.name}'" for f in files])
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
 
         # following block is different from SnowflakeSqlProcessor
         vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
-        variant_cols_str: str = ("\n" + " " * 21 + ", ").join(
-            [f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list]
-        )
+        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
+            f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
+        ])
         if self.sql_config.cortex_embedding_model:  # Currently always false
             # WARNING: This is untested and may not work as expected.
             variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
@@ -270,7 +273,9 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         So instead of using UPDATE and then INSERT, we will DELETE all rows for included primary keys and then call
         the append implementation to insert new rows.
         """
-        columns_list: list[str] = list(self._get_sql_column_definitions(stream_name=stream_name).keys())
+        columns_list: list[str] = list(
+            self._get_sql_column_definitions(stream_name=stream_name).keys()
+        )
 
         delete_statement = dedent(
             f"""

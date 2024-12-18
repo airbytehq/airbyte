@@ -114,9 +114,9 @@ class Report:
                 self.connection_objects.state if self.connection_objects.state else {},
                 indent=2,
             ),
-            configured_catalog=(
-                self.connection_objects.configured_catalog.json(indent=2) if self.connection_objects.configured_catalog else {}
-            ),
+            configured_catalog=self.connection_objects.configured_catalog.json(indent=2)
+            if self.connection_objects.configured_catalog
+            else {},
             catalog=self.connection_objects.catalog.json(indent=2) if self.connection_objects.catalog else {},
             message_count_per_type=self.get_message_count_per_type(),
             stream_coverage_metrics=self.get_stream_coverage_metrics(),

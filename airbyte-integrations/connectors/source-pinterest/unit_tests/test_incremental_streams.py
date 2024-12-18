@@ -135,8 +135,7 @@ def test_semi_incremental_read(requests_mock, test_config, start_date, stream_st
 
     stream.state = stream_state
     actual_records = [
-        dict(record)
-        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
+        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
     ]
     assert actual_records == expected_records

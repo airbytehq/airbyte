@@ -31,7 +31,7 @@ _STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]
 def create_http_request(stream_name: str, field_names: List[str], access_token: Optional[str] = None) -> HttpRequest:
     return HttpRequest(
         f"{_BASE_URL}/queryAll?q=SELECT+{','.join(field_names)}+FROM+{stream_name}+",
-        headers={"Authorization": f"Bearer {access_token}"} if access_token else None,
+        headers={"Authorization": f"Bearer {access_token}"} if access_token else None
     )
 
 
@@ -40,10 +40,7 @@ def create_http_response(field_names: List[str], record_count: int = 1) -> HttpR
     This method does not handle field types for now which may cause some test failures on change if we start considering using some
     fields for calculation. One example of that would be cursor field parsing to datetime.
     """
-    records = [
-        {field: "2021-01-18T21:18:20.000Z" if field in {"SystemModstamp"} else f"{field}_value" for field in field_names}
-        for i in range(record_count)
-    ]
+    records = [{field: "2021-01-18T21:18:20.000Z" if field in {"SystemModstamp"} else f"{field}_value" for field in field_names} for i in range(record_count)]
     return HttpResponse(json.dumps({"records": records}))
 
 
@@ -80,7 +77,7 @@ class FullRefreshTest(TestCase):
             [
                 HttpResponse("", status_code=406),
                 create_http_response([_A_FIELD_NAME], record_count=1),
-            ],
+            ]
         )
 
         output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
@@ -97,12 +94,7 @@ class IncrementalTest(TestCase):
         self._http_mocker.__enter__()
 
         given_authentication(self._http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
-        given_stream(
-            self._http_mocker,
-            _BASE_URL,
-            _STREAM_NAME,
-            SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime"),
-        )
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime"))
 
     def tearDown(self) -> None:
         self._http_mocker.__exit__(None, None, None)
@@ -110,13 +102,11 @@ class IncrementalTest(TestCase):
     def test_given_no_state_when_read_then_start_sync_from_start(self) -> None:
         start = _calculate_start_time(_NOW - timedelta(days=5))
         # as the start comes from the config, we can't use the same format as `_to_url`
-        start_format_url = urllib.parse.quote_plus(start.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        start_format_url = urllib.parse.quote_plus(start.strftime('%Y-%m-%dT%H:%M:%SZ'))
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(
-                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
-            ),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             create_http_response([_A_FIELD_NAME], record_count=1),
         )
 
@@ -129,22 +119,13 @@ class IncrementalTest(TestCase):
         start = _calculate_start_time(_NOW - timedelta(days=10))
         self._config.stream_slice_step("P30D").start_date(start)
         self._http_mocker.get(
-            HttpRequest(
-                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
-            ),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
 
-        output = read(
-            _STREAM_NAME,
-            SyncMode.incremental,
-            self._config,
-            StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}),
-        )
+        output = read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}))
 
-        assert output.most_recent_state.stream_state == AirbyteStateBlob(
-            {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
-        )
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]})
 
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
@@ -157,27 +138,21 @@ class IncrementalTest(TestCase):
                 "slices": [
                     {"start": start.strftime("%Y-%m-%dT%H:%M:%S.000") + "Z", "end": _to_partitioned_datetime(missing_chunk[0])},
                     {"start": _to_partitioned_datetime(missing_chunk[1]), "end": _to_partitioned_datetime(most_recent_state_value)},
-                ],
-            },
+                ]
+            }
         )
         self._config.stream_slice_step("P30D").start_date(start)
 
         self._http_mocker.get(
-            HttpRequest(
-                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"
-            ),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
             create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
         self._http_mocker.get(
-            HttpRequest(
-                f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
-            ),
+            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
             create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
 
         # the start is granular to the second hence why we have `000` in terms of milliseconds
-        assert output.most_recent_state.stream_state == AirbyteStateBlob(
-            {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
-        )
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]})

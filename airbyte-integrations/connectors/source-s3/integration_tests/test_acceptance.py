@@ -70,7 +70,6 @@ class AcceptanceTestInstance(BaseModel):
     def instance_name(self) -> str:
         return self.config_path.stem
 
-
 def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
     all_tests_config = yaml.safe_load(ACCEPTANCE_TEST_CONFIG_PATH.read_text())
     return [
@@ -78,7 +77,6 @@ def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
         for test in all_tests_config["acceptance_tests"][category]["tests"]
         if "iam_role" not in test["config_path"]
     ]
-
 
 # TODO: Convert to a CDK class for better reuse and portability.
 # class TestSourceAcceptanceTestSuiteBase:
@@ -235,9 +233,7 @@ def test_check(instance: AcceptanceTestInstance) -> None:
         "check",
         test_instance=instance,
     )
-    conn_status_messages: list[AirbyteMessage] = [
-        msg for msg in result._messages if msg.type == Type.CONNECTION_STATUS
-    ]  # noqa: SLF001  # Non-public API
+    conn_status_messages: list[AirbyteMessage] = [msg for msg in result._messages if msg.type == Type.CONNECTION_STATUS]  # noqa: SLF001  # Non-public API
     assert len(conn_status_messages) == 1, "Expected exactly one CONNECTION_STATUS message. Got: \n" + "\n".join(result._messages)
 
 

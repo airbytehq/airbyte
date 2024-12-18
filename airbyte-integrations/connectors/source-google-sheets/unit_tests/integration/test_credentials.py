@@ -59,5 +59,5 @@ oauth_credentials = {
     "auth_type": "Client",
     "client_id": "43987534895734985.apps.googleusercontent.com",
     "client_secret": "2347586435987643598",
-    "refresh_token": "1//4398574389537495437983457985437",
-}
+    "refresh_token": "1//4398574389537495437983457985437"
+  }

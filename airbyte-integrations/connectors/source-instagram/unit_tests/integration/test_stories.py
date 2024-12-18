@@ -35,14 +35,18 @@ FIELDS = [
     "shortcode",
     "thumbnail_url",
     "timestamp",
-    "username",
+    "username"
 ]
 
 _STREAM_NAME = "stories"
 
 
 def _get_request() -> RequestBuilder:
-    return RequestBuilder.get_stories_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(FIELDS)
+    return (
+        RequestBuilder.get_stories_endpoint(item_id=BUSINESS_ACCOUNT_ID)
+        .with_limit(100)
+        .with_fields(FIELDS)
+    )
 
 
 def _get_response() -> HttpResponseBuilder:

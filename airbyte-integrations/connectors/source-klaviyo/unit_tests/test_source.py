@@ -29,12 +29,16 @@ def _source() -> SourceKlaviyo:
         (
             400,
             False,
-            ("Bad request. Please check your request parameters."),
+            (
+                "Bad request. Please check your request parameters."
+            ),
         ),
         (
             403,
             False,
-            ("Please provide a valid API key and make sure it has permissions to read specified streams."),
+            (
+                "Please provide a valid API key and make sure it has permissions to read specified streams."
+            ),
         ),
     ),
 )

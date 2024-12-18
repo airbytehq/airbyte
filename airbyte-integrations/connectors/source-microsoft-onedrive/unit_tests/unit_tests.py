@@ -275,11 +275,9 @@ def test_get_shared_drive_object(
 ):
     mock_get_access_token.return_value = "dummy_access_token"
     mock_responses = [
-        (
-            initial_response
-            if isinstance(initial_response, MagicMock)
-            else MagicMock(status_code=200, json=MagicMock(return_value=initial_response))
-        )
+        initial_response
+        if isinstance(initial_response, MagicMock)
+        else MagicMock(status_code=200, json=MagicMock(return_value=initial_response))
     ]
     for response in subsequent_responses:
         mock_responses.append(

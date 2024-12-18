@@ -251,10 +251,8 @@ def test_retry_500_raises_transient_error(mocker, config, customers):
     with pytest.raises(AirbyteTracedException) as exception:
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
 
-    assert exception.value.internal_message == (
-        "Internal Error encountered Unable to fetch data from Google Ads API due to "
-        "temporal error on the Google Ads server. Please retry again later. "
-    )
+    assert exception.value.internal_message == ("Internal Error encountered Unable to fetch data from Google Ads API due to "
+                                                "temporal error on the Google Ads server. Please retry again later. ")
     assert exception.value.failure_type == FailureType.transient_error
     assert mocked_search.call_count == 5
     assert records == []

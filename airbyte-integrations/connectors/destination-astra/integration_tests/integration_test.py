@@ -19,11 +19,12 @@ class AstraIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.SUCCEEDED
 
     def test_check_invalid_config(self):
-        invalid_config = self.config
+        invalid_config = self.config 
 
         invalid_config["embedding"]["openai_key"] = 123
 
-        outcome = DestinationAstra().check(logging.getLogger("airbyte"), invalid_config)
+        outcome = DestinationAstra().check(
+            logging.getLogger("airbyte"), invalid_config)
         assert outcome.status == Status.FAILED
 
     def test_write(self):
@@ -31,7 +32,11 @@ class AstraIntegrationTest(BaseIntegrationTest):
         embedder = create_from_config(db_config.embedding, db_config.processing)
         db_creds = db_config.indexing
         astra_client = AstraClient(
-            db_creds.astra_db_endpoint, db_creds.astra_db_app_token, db_creds.astra_db_keyspace, embedder.embedding_dimensions, "cosine"
+            db_creds.astra_db_endpoint, 
+            db_creds.astra_db_app_token, 
+            db_creds.astra_db_keyspace, 
+            embedder.embedding_dimensions, 
+            "cosine"
         )
 
         astra_client.delete_documents(collection_name=db_creds.collection, filter={})
@@ -44,3 +49,4 @@ class AstraIntegrationTest(BaseIntegrationTest):
 
         outcome = list(DestinationAstra().write(self.config, catalog, [message1, message2]))
         assert astra_client.count_documents(db_creds.collection) == 2
+

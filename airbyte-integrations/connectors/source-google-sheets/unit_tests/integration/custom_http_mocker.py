@@ -20,16 +20,14 @@ def parse_and_transform(parse_result_str: str):
     # Convert the ParseResult string into a dictionary
     components = eval(f"dict({parse_result_part})")
 
-    url = urlunparse(
-        (
-            components["scheme"],
-            components["netloc"],
-            components["path"],
-            components["params"],
-            components["query"],
-            components["fragment"],
-        )
-    )
+    url = urlunparse((
+        components["scheme"],
+        components["netloc"],
+        components["path"],
+        components["params"],
+        components["query"],
+        components["fragment"],
+    ))
 
     return url
 
@@ -42,7 +40,6 @@ class CustomHttpMocker:
 
     Note: there is only support for get and post method and url matching ignoring the body but this is enough for the current test set.
     """
-
     requests_mapper: Dict = {}
 
     def post(self, request: HttpRequest, response: HttpResponse):
@@ -65,9 +62,9 @@ class CustomHttpMocker:
         return mocked_response
 
     # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
-    def __call__(self, test_func):  # type: ignore
+    def __call__(self, test_func): # type: ignore
         @wraps(test_func)
-        def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
+        def wrapper(*args, **kwargs): # type: ignore  # this is a very generic wrapper that does not need to be typed
             kwargs["http_mocker"] = self
 
             with patch("httplib2.Http.request", side_effect=self.mock_request):

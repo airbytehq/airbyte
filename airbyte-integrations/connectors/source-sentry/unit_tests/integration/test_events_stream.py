@@ -29,8 +29,12 @@ class TestEvents(TestCase):
     @HttpMocker()
     def test_read(self, http_mocker: HttpMocker):
         http_mocker.get(
-            HttpRequest(url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/", query_params={"full": "true"}),
-            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
+                query_params={"full": "true"}
+            ),
+            HttpResponse(body=json.dumps(find_template(self.fr_read_file, __file__)), status_code=200)
+
         )
         config = self.config()
         catalog = self.catalog()
@@ -43,8 +47,12 @@ class TestEvents(TestCase):
     @HttpMocker()
     def test_read_incremental(self, http_mocker: HttpMocker):
         http_mocker.get(
-            HttpRequest(url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/", query_params={"full": "true"}),
-            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200),
+            HttpRequest(
+                url="https://sentry.io/api/0/projects/test%20organization/test%20project/events/",
+                query_params={"full": "true"}
+            ),
+            HttpResponse(body=json.dumps(find_template(self.inc_read_file, __file__)), status_code=200)
+
         )
         config = self.config()
         catalog = self.catalog()

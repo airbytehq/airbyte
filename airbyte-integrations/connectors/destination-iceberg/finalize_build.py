@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 # This function is async in case async operations are needed.
 async def finalize_build(connector_context, connector_container, *args, **kwargs):
     custom_java_opts = "--add-opens java.base/java.lang=ALL-UNNAMED \

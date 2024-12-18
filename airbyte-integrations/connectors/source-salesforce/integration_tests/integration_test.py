@@ -51,11 +51,7 @@ def stream_name():
 
 @pytest.fixture(scope="module")
 def stream(input_sandbox_config, stream_name, sf):
-    return (
-        SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
-        .generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]
-        ._legacy_stream
-    )
+    return SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE).generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]._legacy_stream
 
 
 def _encode_content(text):

@@ -14,19 +14,17 @@ import warnings
 from collections import defaultdict
 from typing import TYPE_CHECKING, cast, final
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, Type
-from destination_pgvector.common.state.state_writers import StateWriterBase, StdOutStateWriter
-
 from airbyte import exceptions as exc
 from airbyte.strategies import WriteStrategy
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, Type
+from destination_pgvector.common.state.state_writers import StateWriterBase, StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
+    from airbyte._batch_handles import BatchHandle
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
     from destination_pgvector.common.state.state_writers import StateWriterBase
-
-    from airbyte._batch_handles import BatchHandle
 
 
 class AirbyteMessageParsingError(Exception):

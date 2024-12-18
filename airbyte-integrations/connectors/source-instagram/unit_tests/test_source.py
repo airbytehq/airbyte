@@ -24,10 +24,22 @@ account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
 
 
 account_url_response = {
-    "data": [{"id": "page_id", "name": "Airbyte", "instagram_business_account": {"id": "instagram_business_account_id"}}],
-    "paging": {"cursors": {"before": "before", "after": "after"}},
+    "data": [
+        {
+            "id": "page_id",
+            "name": "Airbyte",
+            "instagram_business_account": {
+                "id": "instagram_business_account_id"
+            }
+        }
+    ],
+    "paging": {
+        "cursors": {
+            "before": "before",
+            "after": "after"
+        }
+    }
 }
-
 
 def test_check_connection_ok(api, requests_mock, some_config):
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])

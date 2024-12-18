@@ -90,9 +90,7 @@ class TestAllStreams:
 
     @pytest.mark.parametrize("error_code", [429, 500, 503])
     def test_should_retry_on_error(self, error_code, requests_mock, mocker):
-        mocker.patch.object(
-            ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
-        )
+        mocker.patch.object(ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams)
         mocker.patch("time.sleep", lambda x: None)
         stream = find_stream("accounts", TEST_CONFIG)
         requests_mock.register_uri(
@@ -104,9 +102,10 @@ class TestAllStreams:
 
     def test_custom_streams(self):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
-        ad_campaign_analytics = find_stream("ad_campaign_analytics", config)
+        ad_campaign_analytics = find_stream('ad_campaign_analytics', config)
         for stream in self._instance._create_custom_ad_analytics_streams(config=config):
             assert isinstance(stream, type(ad_campaign_analytics))
+
 
     @pytest.mark.parametrize(
         "stream_name, expected",
@@ -137,23 +136,26 @@ class TestAllStreams:
     @pytest.mark.parametrize(
         ("status_code", "is_connection_successful", "error_msg"),
         (
-            (
-                400,
-                False,
-                ("Bad request. Please check your request parameters."),
-            ),
-            (
-                403,
-                False,
-                ("Forbidden. You don't have permission to access this resource."),
-            ),
-            (200, True, None),
+                (
+                        400,
+                        False,
+                        (
+                                "Bad request. Please check your request parameters."
+                        ),
+                ),
+                (
+                        403,
+                        False,
+                        (
+                                "Forbidden. You don't have permission to access this resource."
+                        ),
+                ),
+                (200, True, None),
         ),
     )
     def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
-        mocker.patch.object(
-            ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
-        )
+        mocker.patch.object(ManifestDeclarativeSource, "_initialize_cache_for_parent_streams",
+                            side_effect=self._mock_initialize_cache_for_parent_streams)
         mocker.patch("time.sleep", lambda x: None)
         json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
         requests_mock.register_uri(

@@ -36,11 +36,9 @@ class MetadataValidation(SimpleDockerStep):
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
-            secret_env_variables=(
-                {"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
-                if context.docker_hub_username and context.docker_hub_password
-                else None
-            ),
+            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
+            if context.docker_hub_username and context.docker_hub_password
+            else None,
             command=[
                 "metadata_service",
                 "validate",

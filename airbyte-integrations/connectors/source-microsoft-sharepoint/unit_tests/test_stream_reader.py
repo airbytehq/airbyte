@@ -435,11 +435,9 @@ def test_get_shared_drive_object(
 ):
     mock_get_access_token.return_value = "dummy_access_token"
     mock_responses = [
-        (
-            initial_response
-            if isinstance(initial_response, MagicMock)
-            else MagicMock(status_code=200, json=MagicMock(return_value=initial_response))
-        )
+        initial_response
+        if isinstance(initial_response, MagicMock)
+        else MagicMock(status_code=200, json=MagicMock(return_value=initial_response))
     ]
     for response in subsequent_responses:
         mock_responses.append(
@@ -467,10 +465,9 @@ def test_get_shared_drive_object(
     ],
 )
 def test_drives_property(auth_type, user_principal_name, has_refresh_token):
-    with (
-        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
-        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
-    ):
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
+        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
+    ) as mock_one_drive_client:
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
         config_mock = MagicMock(

@@ -30,8 +30,7 @@ PARENT_FIELDS = [
     "id",
     "ig_id",
     "is_comment_enabled",
-    "like_count",
-    "media_type",
+    "like_count","media_type",
     "media_product_type",
     "media_url",
     "owner",
@@ -40,9 +39,9 @@ PARENT_FIELDS = [
     "thumbnail_url",
     "timestamp",
     "username",
-    "children",
+    "children"
 ]
-_PARENT_STREAM_NAME = "media"
+_PARENT_STREAM_NAME = 'media'
 _STREAM_NAME = "media_insights"
 
 
@@ -55,38 +54,28 @@ MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS = "35076616084176124"
 MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS = "35076616084176125"
 MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10 = "35076616084176126"
 
-REELS = "reels"
-VIDEO_FEED = "video_feed"
-VIDEO = "video"
-CAROUSEL_ALBUM = "carousel_album"
-GENERAL_MEDIA = "general_media"
-ERROR_POSTED_BEFORE_BUSINESS = "error_posted_before_business"
-ERROR_WITH_WRONG_PERMISSIONS = "error_with_wrong_permissions"
-ERROR_WITH_WRONG_PERMISSIONS_CODE_10 = "error_with_wrong_permissions_code_10"
+REELS = 'reels'
+VIDEO_FEED = 'video_feed'
+VIDEO = 'video'
+CAROUSEL_ALBUM = 'carousel_album'
+GENERAL_MEDIA = 'general_media'
+ERROR_POSTED_BEFORE_BUSINESS = 'error_posted_before_business'
+ERROR_WITH_WRONG_PERMISSIONS = 'error_with_wrong_permissions'
+ERROR_WITH_WRONG_PERMISSIONS_CODE_10 = 'error_with_wrong_permissions_code_10'
 
 _MEDIA_IDS = {
     REELS: MEDIA_ID_REELS,
     VIDEO_FEED: MEDIA_ID_VIDEO_FEED,
     VIDEO: MEDIA_ID_VIDEO,
     CAROUSEL_ALBUM: MEDIA_ID_CAROUSEL_ALBUM,
-    GENERAL_MEDIA: MEDIA_ID_GENERAL_MEDIA,
+    GENERAL_MEDIA: MEDIA_ID_GENERAL_MEDIA
 }
 
 METRICS_GENERAL_MEDIA = ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares", "follows", "profile_visits"]
 
 _METRICS = {
-    MEDIA_ID_REELS: [
-        "comments",
-        "ig_reels_avg_watch_time",
-        "ig_reels_video_view_total_time",
-        "likes",
-        "plays",
-        "reach",
-        "saved",
-        "shares",
-        "ig_reels_aggregated_all_plays_count",
-        "clips_replays_count",
-    ],
+    MEDIA_ID_REELS: ["comments", "ig_reels_avg_watch_time", "ig_reels_video_view_total_time", "likes", "plays", "reach", "saved", "shares",
+                     "ig_reels_aggregated_all_plays_count", "clips_replays_count"],
     MEDIA_ID_VIDEO_FEED: ["impressions", "reach", "saved", "video_views"],
     MEDIA_ID_VIDEO: ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares", "follows", "profile_visits"],
     MEDIA_ID_CAROUSEL_ALBUM: ["impressions", "reach", "saved", "video_views", "shares", "follows", "profile_visits"],
@@ -94,22 +83,29 @@ _METRICS = {
     # Reusing general media metrics for error scenarios
     MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS: METRICS_GENERAL_MEDIA,
     MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS: METRICS_GENERAL_MEDIA,
-    MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10: METRICS_GENERAL_MEDIA,
+    MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10: METRICS_GENERAL_MEDIA
 }
 
 
 def _get_parent_request() -> RequestBuilder:
-    return RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(PARENT_FIELDS)
+    return (
+        RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID)
+        .with_limit(100)
+        .with_fields(PARENT_FIELDS)
+    )
 
 
 def _get_child_request(media_id, metric) -> RequestBuilder:
-    return RequestBuilder.get_media_insights_endpoint(item_id=media_id).with_custom_param("metric", metric, with_format=True)
+    return (
+        RequestBuilder.get_media_insights_endpoint(item_id=media_id)
+        .with_custom_param("metric", metric, with_format=True)
+    )
 
 
 def _get_response(stream_name: str, test: str = None, with_pagination_strategy: bool = True) -> HttpResponseBuilder:
-    scenario = ""
+    scenario = ''
     if test:
-        scenario = f"_for_{test}"
+        scenario = f'_for_{test}'
     kwargs = {
         "response_template": find_template(f"{stream_name}{scenario}", __file__),
         "records_path": FieldPath("data"),
@@ -118,13 +114,15 @@ def _get_response(stream_name: str, test: str = None, with_pagination_strategy: 
     if with_pagination_strategy:
         kwargs["pagination_strategy"] = InstagramPaginationStrategy(request=_get_parent_request().build(), next_page_token=NEXT_PAGE_TOKEN)
 
-    return create_response_builder(**kwargs)
+    return create_response_builder(
+        **kwargs
+    )
 
 
 def _record(stream_name: str, test: str = None) -> RecordBuilder:
-    scenario = ""
+    scenario = ''
     if test:
-        scenario = f"_for_{test}"
+        scenario = f'_for_{test}'
     return create_record_builder(
         response_template=find_template(f"{stream_name}{scenario}", __file__),
         records_path=FieldPath("data"),
@@ -152,14 +150,12 @@ class TestFullRefresh(TestCase):
         )
         http_mocker.get(
             _get_parent_request().build(),
-            _get_response(stream_name=_PARENT_STREAM_NAME, test=test)
-            .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
-            .build(),
+            _get_response(stream_name=_PARENT_STREAM_NAME, test=test).with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test)).build(),
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_REELS, metric=_METRICS[MEDIA_ID_REELS]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         output = self._read(config_=config())
@@ -179,14 +175,12 @@ class TestFullRefresh(TestCase):
         )
         http_mocker.get(
             _get_parent_request().build(),
-            _get_response(stream_name=_PARENT_STREAM_NAME, test=test)
-            .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
-            .build(),
+            _get_response(stream_name=_PARENT_STREAM_NAME, test=test).with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test)).build(),
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_VIDEO_FEED, metric=_METRICS[MEDIA_ID_VIDEO_FEED]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         output = self._read(config_=config())
@@ -206,14 +200,12 @@ class TestFullRefresh(TestCase):
         )
         http_mocker.get(
             _get_parent_request().build(),
-            _get_response(stream_name=_PARENT_STREAM_NAME, test=test)
-            .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
-            .build(),
+            _get_response(stream_name=_PARENT_STREAM_NAME, test=test).with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test)).build(),
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_VIDEO, metric=_METRICS[MEDIA_ID_VIDEO]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         output = self._read(config_=config())
@@ -233,14 +225,12 @@ class TestFullRefresh(TestCase):
         )
         http_mocker.get(
             _get_parent_request().build(),
-            _get_response(stream_name=_PARENT_STREAM_NAME, test=test)
-            .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
-            .build(),
+            _get_response(stream_name=_PARENT_STREAM_NAME, test=test).with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test)).build(),
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_CAROUSEL_ALBUM, metric=_METRICS[MEDIA_ID_CAROUSEL_ALBUM]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         output = self._read(config_=config())
@@ -260,14 +250,12 @@ class TestFullRefresh(TestCase):
         )
         http_mocker.get(
             _get_parent_request().build(),
-            _get_response(stream_name=_PARENT_STREAM_NAME, test=test)
-            .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
-            .build(),
+            _get_response(stream_name=_PARENT_STREAM_NAME, test=test).with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test)).build(),
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_GENERAL_MEDIA, metric=_METRICS[MEDIA_ID_GENERAL_MEDIA]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         output = self._read(config_=config())
@@ -278,6 +266,7 @@ class TestFullRefresh(TestCase):
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
 
+
     @HttpMocker()
     def test_instagram_insights_error_posted_before_business(self, http_mocker: HttpMocker) -> None:
         test = ERROR_POSTED_BEFORE_BUSINESS
@@ -286,19 +275,18 @@ class TestFullRefresh(TestCase):
             get_account_response(),
         )
         http_mocker.get(
-            _get_parent_request().build(), HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
+            _get_parent_request().build(),
+            HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_GENERAL_MEDIA, metric=_METRICS[MEDIA_ID_GENERAL_MEDIA]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200)
         )
 
         http_mocker.get(
-            _get_child_request(
-                media_id=MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS, metric=_METRICS[MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS]
-            ).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400),
+            _get_child_request(media_id=MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS, metric=_METRICS[MEDIA_ID_ERROR_POSTED_BEFORE_BUSINESS]).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400)
         )
 
         output = self._read(config_=config())
@@ -317,19 +305,18 @@ class TestFullRefresh(TestCase):
             get_account_response(),
         )
         http_mocker.get(
-            _get_parent_request().build(), HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
+            _get_parent_request().build(),
+            HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_GENERAL_MEDIA, metric=_METRICS[MEDIA_ID_GENERAL_MEDIA]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200)
         )
 
         http_mocker.get(
-            _get_child_request(
-                media_id=MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS, metric=_METRICS[MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS]
-            ).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400),
+            _get_child_request(media_id=MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS, metric=_METRICS[MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS]).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400)
         )
 
         output = self._read(config_=config())
@@ -349,19 +336,18 @@ class TestFullRefresh(TestCase):
             get_account_response(),
         )
         http_mocker.get(
-            _get_parent_request().build(), HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
+            _get_parent_request().build(),
+            HttpResponse(json.dumps(find_template(f"{_PARENT_STREAM_NAME}_for_{test}", __file__)), 200)
         )
 
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_GENERAL_MEDIA, metric=_METRICS[MEDIA_ID_GENERAL_MEDIA]).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200)
         )
 
         http_mocker.get(
-            _get_child_request(
-                media_id=MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10, metric=_METRICS[MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10]
-            ).build(),
-            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400),
+            _get_child_request(media_id=MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10, metric=_METRICS[MEDIA_ID_ERROR_WITH_WRONG_PERMISSIONS_CODE_10]).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 400)
         )
 
         output = self._read(config_=config())

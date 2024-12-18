@@ -57,11 +57,12 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
                     "access_token": "access_token",
                     "category": "Software company",
                     "id": f"act_{account_id}",
-                    "paging": {"cursors": {"before": "cursor", "after": "cursor"}},
+                    "paging": {"cursors": {
+                        "before": "cursor",
+                        "after": "cursor"}},
                     "summary": {"total_count": 1},
-                    "status_code": 200,
-                }
-            ]
+                    "status_code": 200
+                }]
         }
     }
 

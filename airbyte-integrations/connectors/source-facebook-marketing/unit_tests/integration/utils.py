@@ -34,7 +34,7 @@ def read_output(
     sync_mode: SyncMode,
     state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: Optional[bool] = False,
-    json_schema: Optional[Dict[str, any]] = None,
+    json_schema: Optional[Dict[str, any]] = None
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode, json_schema)
     _config = config_builder.build()

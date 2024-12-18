@@ -211,7 +211,15 @@ def test_reports_read_records_raise_on_backoff(mocker, requests_mock, caplog):
     requests_mock.post(
         "https://test.url/reports/2021-06-30/reports",
         status_code=429,
-        json={"errors": [{"code": "QuotaExceeded", "message": "You exceeded your quota for the requested resource.", "details": ""}]},
+        json={
+            "errors": [
+                {
+                    "code": "QuotaExceeded",
+                    "message": "You exceeded your quota for the requested resource.",
+                    "details": ""
+                }
+            ]
+        },
     )
 
     stream = RestockInventoryReports(

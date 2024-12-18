@@ -447,16 +447,14 @@ class TestFullRefresh:
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
     def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
-        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ):
         mock_auth(http_mocker)
         response_body = {
             "errors": [
-                {
-                    "code": "InvalidInput",
-                    "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
-                    "details": "",
-                }
+                {"code": "InvalidInput",
+                 "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
+                 "details": ""}
             ]
         }
         http_mocker.post(

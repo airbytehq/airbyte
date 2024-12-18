@@ -87,9 +87,9 @@ class ZendeskChatIdIncrementalCursor(Cursor):
         """
         cursor_values: dict = {
             "state": self._cursor if self._cursor else self._start_boundary,
-            "highest_observed_record_value": (
-                self._highest_observed_record_cursor_value if self._highest_observed_record_cursor_value else self._start_boundary
-            ),
+            "highest_observed_record_value": self._highest_observed_record_cursor_value
+            if self._highest_observed_record_cursor_value
+            else self._start_boundary,
         }
         # filter out the `NONE` STATE values from the `cursor_values`
         return {key: value for key, value in cursor_values.items()}

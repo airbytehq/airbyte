@@ -13,7 +13,6 @@ source connector.
 WARNING: Do not modify this file.
 """
 
-
 # Declarative Source
 class SourcePaypalTransaction(YamlDeclarativeSource):
     def __init__(self):

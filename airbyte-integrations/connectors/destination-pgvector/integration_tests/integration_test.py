@@ -331,7 +331,7 @@ class PGVectorIntegrationTest(BaseIntegrationTest):
             for i in range(1)
         ]
 
-        # initial sync with replace
+         # initial sync with replace
         destination = DestinationPGVector()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 3
@@ -358,3 +358,4 @@ class PGVectorIntegrationTest(BaseIntegrationTest):
         assert second_written_record["document_content"] == "Dogs are"
         assert third_written_record["document_id"] == "Stream_mystream_Key_0"
         assert third_written_record["document_content"] == "number 0"
+
