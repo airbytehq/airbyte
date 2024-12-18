@@ -854,6 +854,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.48.0  | [#XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)  | Update `bump-version` command to update `enabledProgressiveRollout` in metadata when using `--rc` flag or `rc` bump type.                 |
 | 4.47.0  | [#49832](https://github.com/airbytehq/airbyte/pull/49462)  | Build java connectors from the base image declared in `metadata.yaml`.                                                       |
 | 4.46.5  | [#49835](https://github.com/airbytehq/airbyte/pull/49835)  | Fix connector language discovery for projects with Kotlin Gradle build scripts.                                              |
 | 4.46.4  | [#49462](https://github.com/airbytehq/airbyte/pull/49462)  | Support Kotlin Gradle build scripts in connectors.                                                                           |
