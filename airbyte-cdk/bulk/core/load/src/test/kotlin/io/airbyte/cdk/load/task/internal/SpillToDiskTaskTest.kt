@@ -83,6 +83,7 @@ class SpillToDiskTaskTest {
                     MockDestinationCatalogFactory.stream1.descriptor,
                     diskManager,
                     taskLauncher,
+                    false,
                 )
         }
 
@@ -183,6 +184,7 @@ class SpillToDiskTaskTest {
             diskManager = ReservationManager(Fixtures.INITIAL_DISK_CAPACITY)
             spillToDiskTaskFactory =
                 DefaultSpillToDiskTaskFactory(
+                    MockDestinationConfiguration(),
                     fileAccumulatorFactory,
                     queueSupplier,
                     MockFlushStrategy(),
