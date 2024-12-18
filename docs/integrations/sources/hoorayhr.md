@@ -27,7 +27,7 @@ Use the credentials of your HoorayHR account to configure the connector. Make su
 
 | Version | Date       | Pull Request | Subject                                                                                             |
 | ------- | ---------- | ------------ | --------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2024-12-17 |              | Added some more documentation and icon for HoorayHR by [@JoeriSmits](https://github.com/JoeriSmits) |
+| 0.1.0   | 2024-12-17 |              | Added some more documentation and icon for HoorayHR by [@JoeriSmits](https://github.com/JoeriSmits) |
 | 0.0.1   | 2024-12-17 |              | Initial release by [@JoeriSmits](https://github.com/JoeriSmits) via Connector Builder               |
 
 </details>
