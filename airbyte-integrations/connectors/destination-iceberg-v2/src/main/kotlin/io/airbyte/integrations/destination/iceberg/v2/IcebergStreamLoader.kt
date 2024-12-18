@@ -33,7 +33,8 @@ class IcebergStreamLoader(
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         icebergTableWriterFactory
             .create(
