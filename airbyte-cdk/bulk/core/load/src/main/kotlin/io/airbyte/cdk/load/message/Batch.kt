@@ -21,7 +21,7 @@ import io.airbyte.cdk.load.command.DestinationStream
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.LOCAL] is used internally to indicate that records have been spooled to disk for
+ * [State.STAGED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
@@ -55,7 +55,7 @@ interface Batch {
 
     enum class State {
         PROCESSED,
-        LOCAL,
+        STAGED,
         PERSISTED,
         COMPLETE
     }

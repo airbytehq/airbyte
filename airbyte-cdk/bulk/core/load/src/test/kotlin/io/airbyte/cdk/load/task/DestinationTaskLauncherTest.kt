@@ -389,7 +389,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
         streamManager.markEndOfStream(true)
 
         // Verify incomplete batch triggers process batch
-        val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range, stream1.descriptor)
+        val incompleteBatch =
+            BatchEnvelope(MockBatch(Batch.State.STAGED), range, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             incompleteBatch
