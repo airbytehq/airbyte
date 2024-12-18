@@ -35,11 +35,13 @@ definitions:
     api_token: "{{ config['credentials']['access_token'] }}"
 
   authenticator:
-    type: SelectiveAuthenticator
-    authenticator_selection_path: ["credentials", "auth_type"]
-    authenticators:
-      oauth2_access_token: "#/definitions/bearer_authenticator"
-      oauth2_confidential_application: "#/definitions/oauth_authenticator"
+    # Disabling OAuth support due to restrictions for the number of users.
+    # type: SelectiveAuthenticator
+    # authenticator_selection_path: ["credentials", "auth_type"]
+    # authenticators:
+    #   oauth2_access_token: "#/definitions/bearer_authenticator"
+    #   oauth2_confidential_application: "#/definitions/oauth_authenticator"
+    $ref: "#/definitions/bearer_authenticator"
 
   requester:
     type: HttpRequester
@@ -2793,33 +2795,33 @@ spec:
         title: Authentication Method
         type: object
         oneOf:
-          - type: object
-            title: OAuth Custom Connection
-            required:
-              - auth_type
-              - client_id
-              - client_secret
-            properties:
-              auth_type:
-                type: string
-                title: Authentication Method
-                const: oauth2_confidential_application
-                order: 0
-              client_id:
-                title: Client ID
-                description: >-
-                  Your Xero application's Client ID.
-                type: string
-                examples:
-                  - "Client_ID"
-              client_secret:
-                title: Client Secret
-                description: >-
-                  Your Xero application's Client Secret.
-                type: string
-                examples:
-                  - "Client_Secret"
-                airbyte_secret: true
+          # - type: object
+          #   title: OAuth Custom Connection
+          #   required:
+          #     - auth_type
+          #     - client_id
+          #     - client_secret
+          #   properties:
+          #     auth_type:
+          #       type: string
+          #       title: Authentication Method
+          #       const: oauth2_confidential_application
+          #       order: 0
+          #     client_id:
+          #       title: Client ID
+          #       description: >-
+          #         Your Xero application's Client ID.
+          #       type: string
+          #       examples:
+          #         - "Client_ID"
+          #     client_secret:
+          #       title: Client Secret
+          #       description: >-
+          #         Your Xero application's Client Secret.
+          #       type: string
+          #       examples:
+          #         - "Client_Secret"
+          #       airbyte_secret: true
           - type: object
             title: Bearer Access Token
             required:
