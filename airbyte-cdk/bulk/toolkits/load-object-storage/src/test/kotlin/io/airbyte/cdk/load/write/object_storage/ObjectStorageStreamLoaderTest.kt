@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.StreamProcessor
+import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
-import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationFile
@@ -21,6 +21,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -31,9 +32,11 @@ class ObjectStorageStreamLoaderTest {
     private val client: ObjectStorageClient<RemoteObject<Int>> = mockk(relaxed = true)
     private val compressor: StreamProcessor<ByteArrayOutputStream> = mockk(relaxed = true)
     private val pathFactory: ObjectStoragePathFactory = mockk(relaxed = true)
-    private val writerFactory: ObjectStorageFormattingWriterFactory = mockk(relaxed = true)
+    private val writerFactory: BufferedFormattingWriterFactory<ByteArrayOutputStream> =
+        mockk(relaxed = true)
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState> =
         mockk(relaxed = true)
+    private val partSize: Long = 1
 
     private val objectStorageStreamLoader =
         spyk(
@@ -43,18 +46,21 @@ class ObjectStorageStreamLoaderTest {
                 compressor,
                 pathFactory,
                 writerFactory,
-                destinationStateManager
+                destinationStateManager,
+                partSize
             )
         )
 
     @Test
     fun `test processFile`() = runTest {
-        val fileUrl = "fileUrl"
+        val fileUrl = "/tmp/fileUrl"
+        Files.deleteIfExists(Path.of(fileUrl))
+        Files.createFile(Path.of(fileUrl))
         val stagingDirectory = "stagingDirectory"
         val generationId = 12L
         val destinationFile = mockk<DestinationFile>()
         every { destinationFile.fileMessage } returns
-            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl)
+            DestinationFile.AirbyteRecordMessageFile(fileUrl = fileUrl, fileRelativePath = fileUrl)
         every { pathFactory.getFinalDirectory(any()) } returns stagingDirectory
         every { stream.generationId } returns generationId
         val mockedStateStorage: ObjectStorageDestinationState = mockk(relaxed = true)
@@ -79,5 +85,6 @@ class ObjectStorageStreamLoaderTest {
             (result as ObjectStorageStreamLoader.RemoteObject<*>).remoteObject
         )
         verify { mockedFile.delete() }
+        Files.deleteIfExists(Path.of(fileUrl))
     }
 }

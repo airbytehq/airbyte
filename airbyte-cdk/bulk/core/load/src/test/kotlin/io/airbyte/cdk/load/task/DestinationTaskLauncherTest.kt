@@ -9,6 +9,7 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
+import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
@@ -27,6 +28,10 @@ import io.airbyte.cdk.load.task.implementor.DefaultProcessBatchTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultSetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.DefaultTeardownTaskFactory
+import io.airbyte.cdk.load.task.implementor.FailStreamTask
+import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
+import io.airbyte.cdk.load.task.implementor.FailSyncTask
+import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTask
@@ -46,17 +51,17 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.SizedInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.coVerify
 import io.mockk.mockk
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import kotlin.io.path.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
@@ -76,17 +81,16 @@ import org.junit.jupiter.api.Test
             "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
+class DestinationTaskLauncherTest<T : ScopedTask> {
     @Inject lateinit var mockScopeProvider: MockScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
-    @Inject lateinit var mockExceptionHandler: MockExceptionHandler<T>
 
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
     @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
-    @Inject lateinit var processRecordsTaskFactory: MockProcessRecordsTaskFactory
+    @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
     @Inject lateinit var processBatchTaskFactory: MockProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
@@ -97,11 +101,19 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Inject lateinit var queueWriter: MockQueueWriter
     @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
     @Inject lateinit var flushTickTask: FlushTickTask
+    @Inject lateinit var mockFailStreamTaskFactory: MockFailStreamTaskFactory
+    @Inject lateinit var mockFailSyncTaskFactory: MockFailSyncTaskFactory
+    @Inject lateinit var config: MockDestinationConfiguration
 
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     fun flushTickTask(): FlushTickTask = mockk(relaxed = true)
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    fun processRecordsTaskFactory(): ProcessRecordsTaskFactory = mockk(relaxed = true)
 
     @Singleton
     @Primary
@@ -178,6 +190,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
     @Requires(env = ["DestinationTaskLauncherTest"])
     class MockSpillToDiskTaskFactory(catalog: DestinationCatalog) : SpillToDiskTaskFactory {
         val streamHasRun = mutableMapOf<DestinationStream.Descriptor, Channel<Unit>>()
+        val forceFailure = AtomicBoolean(false)
 
         init {
             catalog.streams.forEach { streamHasRun[it.descriptor] = Channel(Channel.UNLIMITED) }
@@ -188,8 +201,10 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
+                    if (forceFailure.get()) {
+                        throw Exception("Forced failure")
+                    }
                     streamHasRun[stream]?.send(Unit)
                 }
             }
@@ -211,7 +226,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream
         ): OpenStreamTask {
             return object : OpenStreamTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream.descriptor
                 override suspend fun execute() {
                     streamHasRun[stream]?.send(Unit)
                 }
@@ -227,11 +241,8 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
 
         override fun make(
             taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream.Descriptor,
-            file: SpilledRawMessagesLocalFile
         ): ProcessRecordsTask {
             return object : ProcessRecordsTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -251,7 +262,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             batchEnvelope: BatchEnvelope<*>
         ): ProcessBatchTask {
             return object : ProcessBatchTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(batchEnvelope)
                 }
@@ -270,7 +280,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
-                override val streamDescriptor: DestinationStream.Descriptor = stream
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -329,37 +338,42 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         }
     }
 
-    class MockBatch(override val state: Batch.State) : Batch
-
     @Singleton
+    @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockExceptionHandler<T> : TaskExceptionHandler<T, WrappedTask<ScopedTask>> where
-    T : LeveledTask,
-    T : ScopedTask {
-        val wrappedTasks = Channel<LeveledTask>(Channel.UNLIMITED)
-        val callbacks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-
-        inner class IdentityWrapper(override val innerTask: ScopedTask) : WrappedTask<ScopedTask> {
-            override suspend fun execute() {
-                innerTask.execute()
+    class MockFailStreamTaskFactory : FailStreamTaskFactory {
+        val didRunFor = Channel<DestinationStream.Descriptor>(Channel.UNLIMITED)
+        override fun make(
+            taskLauncher: DestinationTaskLauncher,
+            exception: Exception,
+            stream: DestinationStream.Descriptor
+        ): FailStreamTask {
+            return object : FailStreamTask {
+                override suspend fun execute() {
+                    didRunFor.send(stream)
+                }
             }
         }
+    }
 
-        override suspend fun withExceptionHandling(task: T): WrappedTask<ScopedTask> {
-            wrappedTasks.send(task)
-            val innerTask =
-                object : InternalScope {
-                    override suspend fun execute() {
-                        task.execute()
-                    }
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockFailSyncTaskFactory : FailSyncTaskFactory {
+        val didRun = Channel<Boolean>(Channel.UNLIMITED)
+        override fun make(
+            taskLauncher: DestinationTaskLauncher,
+            exception: Exception
+        ): FailSyncTask {
+            return object : FailSyncTask {
+                override suspend fun execute() {
+                    didRun.send(true)
                 }
-            return IdentityWrapper(innerTask)
-        }
-
-        override suspend fun setCallback(callback: suspend () -> Unit) {
-            callbacks.send(callback)
+            }
         }
     }
+
+    class MockBatch(override val state: Batch.State, override val groupId: String? = null) : Batch
 
     @Test
     fun testRun() = runTest {
@@ -376,6 +390,10 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         // Verify that spill to disk ran for each stream
         mockSpillToDiskTaskFactory.streamHasRun.values.forEach { it.receive() }
 
+        coVerify(exactly = config.numProcessRecordsWorkers) {
+            processRecordsTaskFactory.make(any())
+        }
+
         // Verify that we kicked off the timed force flush w/o a specific delay
         Assertions.assertTrue(mockForceFlushTask.didRun.receive())
 
@@ -384,15 +402,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             "update checkpoints task was started"
         )
 
-        // Collect the tasks wrapped by the exception handler: expect one Setup and [nStreams]
-        // SpillToDisk
-        mockExceptionHandler.wrappedTasks.close()
-        val taskList = mockExceptionHandler.wrappedTasks.toList()
-        Assertions.assertEquals(1, taskList.filterIsInstance<SetupTask>().size)
-        Assertions.assertEquals(
-            mockSpillToDiskTaskFactory.streamHasRun.size,
-            taskList.filterIsInstance<SpillToDiskTask>().size
-        )
         job.cancel()
     }
 
@@ -401,61 +410,6 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         // Verify that open stream ran for each stream
         taskLauncher.handleSetupComplete()
         mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
-
-        // Collect the tasks wrapped by the exception handler: expect [nStreams] OpenStream
-        mockExceptionHandler.wrappedTasks.close()
-        val taskList = mockExceptionHandler.wrappedTasks.toList()
-        Assertions.assertEquals(
-            mockOpenStreamTaskFactory.streamHasRun.size,
-            taskList.filterIsInstance<OpenStreamTask>().size
-        )
-    }
-
-    @Test
-    fun testHandleSpilledFileCompleteNotEndOfStream() = runTest {
-        taskLauncher.handleNewSpilledFile(
-            MockDestinationCatalogFactory.stream1.descriptor,
-            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0))
-        )
-
-        processRecordsTaskFactory.hasRun.receive()
-        mockSpillToDiskTaskFactory.streamHasRun[MockDestinationCatalogFactory.stream1.descriptor]
-            ?.receive()
-            ?: Assertions.fail("SpillToDiskTask not run")
-    }
-
-    @Test
-    fun testHandleSpilledFileCompleteEndOfStream() = runTest {
-        launch {
-            taskLauncher.handleNewSpilledFile(
-                MockDestinationCatalogFactory.stream1.descriptor,
-                SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L, Range.singleton(0), true)
-            )
-        }
-
-        processRecordsTaskFactory.hasRun.receive()
-        delay(500)
-        Assertions.assertTrue(
-            mockSpillToDiskTaskFactory.streamHasRun[
-                    MockDestinationCatalogFactory.stream1.descriptor]
-                ?.tryReceive()
-                ?.isFailure != false
-        )
-    }
-
-    @Test
-    fun testHandleEmptySpilledFile() = runTest {
-        taskLauncher.handleNewSpilledFile(
-            MockDestinationCatalogFactory.stream1.descriptor,
-            SpilledRawMessagesLocalFile(Path("not/a/real/file"), 0L, Range.singleton(0))
-        )
-
-        mockSpillToDiskTaskFactory.streamHasRun[MockDestinationCatalogFactory.stream1.descriptor]
-            ?.receive()
-            ?: Assertions.fail("SpillToDiskTask not run")
-
-        delay(500)
-        Assertions.assertTrue(processRecordsTaskFactory.hasRun.tryReceive().isFailure)
     }
 
     @Test
@@ -465,7 +419,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
         repeat(100) { streamManager.countRecordIn() }
 
-        streamManager.markEndOfStream()
+        streamManager.markEndOfStream(true)
 
         // Verify incomplete batch triggers process batch
         val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range)
@@ -514,7 +468,7 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 0L)))
         val streamManager =
             syncManager.getStreamManager(MockDestinationCatalogFactory.stream1.descriptor)
-        streamManager.markEndOfStream()
+        streamManager.markEndOfStream(true)
 
         val emptyBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), range)
         taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1.descriptor, emptyBatch)
@@ -544,6 +498,42 @@ class DestinationTaskLauncherTest<T> where T : LeveledTask, T : ScopedTask {
             taskLauncher.run()
             Assertions.assertTrue(mockScopeProvider.didKill)
         }
-        mockExceptionHandler.callbacks.receive().invoke()
+        taskLauncher.handleTeardownComplete(success = false)
+    }
+
+    @Test
+    fun `test exceptions in tasks throw`(catalog: DestinationCatalog) = runTest {
+        mockSpillToDiskTaskFactory.forceFailure.getAndSet(true)
+
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleTeardownComplete()
+        job.join()
+
+        mockFailStreamTaskFactory.didRunFor.close()
+
+        Assertions.assertEquals(
+            catalog.streams.map { it.descriptor }.toSet(),
+            mockFailStreamTaskFactory.didRunFor.toList().toSet(),
+            "FailStreamTask was run for each stream"
+        )
+    }
+
+    @Test
+    fun `test sync failure after stream failure`() = runTest {
+        val job = launch { taskLauncher.run() }
+        taskLauncher.handleFailStreamComplete(
+            MockDestinationCatalogFactory.stream1.descriptor,
+            Exception()
+        )
+        taskLauncher.handleFailStreamComplete(
+            MockDestinationCatalogFactory.stream2.descriptor,
+            Exception()
+        )
+        taskLauncher.handleTeardownComplete()
+        job.join()
+        mockFailSyncTaskFactory.didRun.close()
+        val runs = mockFailSyncTaskFactory.didRun.toList()
+        Assertions.assertTrue(runs.all { it }, "FailSyncTask was run")
+        Assertions.assertTrue(runs.size == 1, "FailSyncTask was run exactly once")
     }
 }

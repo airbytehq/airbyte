@@ -20,11 +20,16 @@ import com.google.common.collect.TreeRangeSet
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.SPILLED] is used internally to indicate that records have been spooled to disk for
+ * [State.LOCAL] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
  * [State.COMPLETE], then all records are considered to have been processed.
+ *
+ * A [Batch] may contain an optional `groupId`. If provided, the most advanced state provided for
+ * any batch will apply to all batches with the same `groupId`. This is useful for a case where each
+ * batch represents part of a larger work unit that is only completed when all parts are processed.
+ * (We used most advanced instead of latest to avoid race conditions.)
  *
  * The intended usage for implementors is to implement the provided interfaces in case classes that
  * contain the necessary metadata for processing, using them in @
@@ -45,6 +50,8 @@ import com.google.common.collect.TreeRangeSet
  * ```
  */
 interface Batch {
+    val groupId: String?
+
     enum class State {
         LOCAL,
         PERSISTED,
@@ -62,7 +69,10 @@ interface Batch {
 }
 
 /** Simple batch: use if you need no other metadata for processing. */
-data class SimpleBatch(override val state: Batch.State) : Batch
+data class SimpleBatch(
+    override val state: Batch.State,
+    override val groupId: String? = null,
+) : Batch
 
 /**
  * Internally-used wrapper for tracking the association between a batch and the range of records it
