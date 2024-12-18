@@ -19,9 +19,11 @@ import io.airbyte.cdk.load.data.TimeStringUtility.toOffset
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.util.serializeToJsonBytes
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
+import java.sql.Types
 
 /** CDK pipeline [AirbyteValue] to SQL values converter. */
 class AirbyteValueToSqlValue {
@@ -72,7 +74,12 @@ fun ObjectValue.toSqlValue(sqlTable: SqlTable): SqlTableRow {
                 .filter { (name, _) -> sqlTable.columns.find { it.name == name } != null }
                 .map { (name, value) ->
                     val dataType = sqlTable.columns.find { it.name == name }!!.type
-                    val converted = converter.convert(value)
+                    val converted =
+                        if (value is ObjectValue) {
+                            (converter.convert(value) as LinkedHashMap<*, *>).serializeToJsonBytes()
+                        } else {
+                            converter.convert(value)
+                        }
                     SqlTableRowValue(name = name, value = converted, type = dataType)
                 }
     )

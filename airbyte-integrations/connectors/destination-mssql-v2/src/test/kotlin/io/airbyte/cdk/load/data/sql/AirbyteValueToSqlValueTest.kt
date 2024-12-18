@@ -187,19 +187,20 @@ internal class AirbyteValueToSqlValueTest {
         )
         assertEquals("John Doe", sqlValue.values.find { it.name == "name" }?.value)
         assertEquals(
-            LinkedHashMap::class.java,
+            ByteArray::class.java,
             sqlValue.values.find { it.name == "meta" }?.value?.javaClass
         )
-        assertEquals(
+        assertArrayEquals(
             mapOf(
-                "sync_id" to 123.toBigInteger(),
-                "changes" to
-                    mapOf(
-                        "change" to "insert",
-                        "reason" to "reason",
-                    )
-            ),
-            sqlValue.values.find { it.name == "meta" }?.value
+                    "sync_id" to 123.toBigInteger(),
+                    "changes" to
+                        mapOf(
+                            "change" to "insert",
+                            "reason" to "reason",
+                        )
+                )
+                .serializeToJsonBytes(),
+            sqlValue.values.find { it.name == "meta" }?.value as ByteArray
         )
     }
 
