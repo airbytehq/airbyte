@@ -7,10 +7,11 @@ import logging
 import time
 from typing import Any, Iterable, Mapping
 
+from typesense import Client
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
-from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:

@@ -6,10 +6,12 @@ import json
 import os
 from typing import Any, Mapping
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from conftest import find_stream
 from freezegun import freeze_time
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
 
 # Test input arguments for the `make_analytics_slices`
 TEST_KEY_VALUE_MAP = {"camp_id": "id"}
@@ -50,7 +52,8 @@ def test_read_records(requests_mock):
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
-        json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
+        json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]},
+    )
     requests_mock.get(
         "https://api.linkedin.com/rest/adAnalytics",
         [

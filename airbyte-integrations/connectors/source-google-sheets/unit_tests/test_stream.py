@@ -6,13 +6,14 @@ import logging
 
 import pytest
 import requests
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus, ConfiguredAirbyteCatalog
-from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
 from source_google_sheets.helpers import SCOPES, Helpers
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus, ConfiguredAirbyteCatalog
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def set_http_error_for_google_sheets_client(mocker, resp):
@@ -191,7 +192,7 @@ def test_discover_invalid_credentials_error_message(mocker, invalid_config):
     source = SourceGoogleSheets()
     with pytest.raises(AirbyteTracedException) as e:
         source.discover(logger=mocker.MagicMock(), config=invalid_config)
-    assert e.value.args[0] == 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
+    assert e.value.args[0] == "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
 
 
 def test_get_credentials(invalid_config):
@@ -223,12 +224,14 @@ def test_read_429_error(mocker, invalid_config, catalog, caplog):
     sheet1 = "soccer_team"
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
     sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
-    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
+    catalog = ConfiguredAirbyteCatalog(
+        streams=catalog(
+            (sheet1, sheet1_schema),
+        )
+    )
     with pytest.raises(AirbyteTracedException) as e:
         next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
-    expected_message = (
-        "Rate limit has been reached. Please try later or request a higher quota for your account."
-    )
+    expected_message = "Rate limit has been reached. Please try later or request a higher quota for your account."
     assert e.value.args[0] == expected_message
 
 
@@ -243,7 +246,11 @@ def test_read_403_error(mocker, invalid_config, catalog, caplog):
     sheet1 = "soccer_team"
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
     sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
-    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
+    catalog = ConfiguredAirbyteCatalog(
+        streams=catalog(
+            (sheet1, sheet1_schema),
+        )
+    )
     with pytest.raises(AirbyteTracedException) as e:
         next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
     assert (
@@ -265,7 +272,11 @@ def test_read_500_error(mocker, invalid_config, catalog, caplog):
     sheet1 = "soccer_team"
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
     sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
-    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
+    catalog = ConfiguredAirbyteCatalog(
+        streams=catalog(
+            (sheet1, sheet1_schema),
+        )
+    )
     with pytest.raises(AirbyteTracedException) as e:
         next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
     expected_message = (
@@ -303,8 +314,13 @@ def test_read_empty_sheet(invalid_config, mocker, catalog, caplog):
     sheet1 = "soccer_team"
     sheet2 = "soccer_team2"
     sheets = [
-                 Sheet(properties=SheetProperties(title=t), data=[{"test1": "12", "test2": "123"},])
-                 for t in [sheet1]
+        Sheet(
+            properties=SheetProperties(title=t),
+            data=[
+                {"test1": "12", "test2": "123"},
+            ],
+        )
+        for t in [sheet1]
     ]
     mocker.patch.object(
         GoogleSheetsClient,
@@ -328,7 +344,11 @@ def test_when_read_then_status_messages_emitted(mocker, spreadsheet, spreadsheet
     mocker.patch.object(GoogleSheetsClient, "get_values", return_value=spreadsheet_values(spreadsheet_id))
 
     sheet_schema = {"properties": {"ID": {"type": "string"}}}
-    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet_name, sheet_schema),))
+    catalog = ConfiguredAirbyteCatalog(
+        streams=catalog(
+            (sheet_name, sheet_schema),
+        )
+    )
     records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
 
     # stream started, stream running, 1 record, stream state, stream completed
@@ -346,7 +366,11 @@ def test_when_read_then_state_message_emitted(mocker, spreadsheet, spreadsheet_v
     mocker.patch.object(GoogleSheetsClient, "get_values", return_value=spreadsheet_values(spreadsheet_id))
 
     sheet_schema = {"properties": {"ID": {"type": "string"}}}
-    catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet_name, sheet_schema),))
+    catalog = ConfiguredAirbyteCatalog(
+        streams=catalog(
+            (sheet_name, sheet_schema),
+        )
+    )
     records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
 
     # stream started, stream running, 1 record, stream state, stream completed

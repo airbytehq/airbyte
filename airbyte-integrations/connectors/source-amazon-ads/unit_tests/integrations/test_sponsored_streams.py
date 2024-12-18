@@ -25,6 +25,7 @@ from .ad_responses.records import ErrorRecordBuilder, ProfilesRecordBuilder, Spo
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
 
+
 _DEFAULT_REQUEST_BODY = json.dumps({"maxResults": 100})
 
 

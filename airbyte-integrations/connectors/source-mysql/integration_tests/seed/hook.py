@@ -14,6 +14,7 @@ import mysql.connector
 import pytz
 from mysql.connector import Error
 
+
 support_file_path_prefix = "/connector/integration_tests"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
 catalog_source_file = support_file_path_prefix + "/configured_catalog_template.json"
@@ -22,12 +23,13 @@ catalog_incremental_source_file = support_file_path_prefix + "/incremental_confi
 abnormal_state_write_file = support_file_path_prefix + "/temp/abnormal_state_copy.json"
 abnormal_state_file = support_file_path_prefix + "/abnormal_state_template.json"
 
-secret_config_file = '/connector/secrets/cat-config.json'
-secret_active_config_file = support_file_path_prefix + '/temp/config_active.json'
-secret_config_cdc_file = '/connector/secrets/cat-config-cdc.json'
-secret_active_config_cdc_file = support_file_path_prefix + '/temp/config_cdc_active.json'
+secret_config_file = "/connector/secrets/cat-config.json"
+secret_active_config_file = support_file_path_prefix + "/temp/config_active.json"
+secret_config_cdc_file = "/connector/secrets/cat-config-cdc.json"
+secret_active_config_cdc_file = support_file_path_prefix + "/temp/config_cdc_active.json"
 
-la_timezone = pytz.timezone('America/Los_Angeles')
+la_timezone = pytz.timezone("America/Los_Angeles")
+
 
 @contextmanager
 def connect_to_db():
@@ -36,11 +38,7 @@ def connect_to_db():
     conn = None
     try:
         conn = mysql.connector.connect(
-            database=None,
-            user=secret["username"],
-            password=secret["password"],
-            host=secret["host"],
-            port=secret["port"]
+            database=None, user=secret["username"], password=secret["password"], host=secret["host"], port=secret["port"]
         )
         print("Connected to the database successfully")
         yield conn
@@ -54,6 +52,7 @@ def connect_to_db():
             conn.close()
             print("Database connection closed")
 
+
 def insert_records(conn, schema_name: str, table_name: str, records: List[Tuple[str, str]]) -> None:
     insert_query = f"INSERT INTO {schema_name}.{table_name} (id, name) VALUES (%s, %s) ON DUPLICATE KEY UPDATE id=id"
     try:
@@ -66,6 +65,7 @@ def insert_records(conn, schema_name: str, table_name: str, records: List[Tuple[
         print(f"Error inserting records: {error}")
         conn.rollback()
 
+
 def create_schema(conn, schema_name: str) -> None:
     create_schema_query = f"CREATE DATABASE IF NOT EXISTS {schema_name}"
     try:
@@ -77,31 +77,33 @@ def create_schema(conn, schema_name: str) -> None:
         print(f"Error creating database: {error}")
         conn.rollback()
 
+
 def write_supporting_file(schema_name: str) -> None:
     print(f"writing schema name to files: {schema_name}")
     Path(support_file_path_prefix + "/temp").mkdir(parents=False, exist_ok=True)
 
     with open(catalog_write_file, "w") as file:
-        with open(catalog_source_file, 'r') as source_file:
+        with open(catalog_source_file, "r") as source_file:
             file.write(source_file.read() % schema_name)
     with open(catalog_incremental_write_file, "w") as file:
-        with open(catalog_incremental_source_file, 'r') as source_file:
+        with open(catalog_incremental_source_file, "r") as source_file:
             file.write(source_file.read() % schema_name)
     with open(abnormal_state_write_file, "w") as file:
-        with open(abnormal_state_file, 'r') as source_file:
+        with open(abnormal_state_file, "r") as source_file:
             file.write(source_file.read() % (schema_name, schema_name))
 
     with open(secret_config_file) as base_config:
         secret = json.load(base_config)
         secret["database"] = schema_name
-        with open(secret_active_config_file, 'w') as f:
+        with open(secret_active_config_file, "w") as f:
             json.dump(secret, f)
 
     with open(secret_config_cdc_file) as base_config:
         secret = json.load(base_config)
         secret["database"] = schema_name
-        with open(secret_active_config_cdc_file, 'w') as f:
+        with open(secret_active_config_cdc_file, "w") as f:
             json.dump(secret, f)
+
 
 def create_table(conn, schema_name: str, table_name: str) -> None:
     create_table_query = f"""
@@ -119,10 +121,12 @@ def create_table(conn, schema_name: str, table_name: str) -> None:
         print(f"Error creating table: {error}")
         conn.rollback()
 
+
 def generate_schema_date_with_suffix() -> str:
     current_date = datetime.datetime.now(la_timezone).strftime("%Y%m%d")
-    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"{current_date}_{suffix}"
+
 
 def prepare() -> None:
     schema_name = generate_schema_date_with_suffix()
@@ -130,33 +134,30 @@ def prepare() -> None:
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
 
+
 def cdc_insert():
     schema_name = load_schema_name_from_catalog()
-    new_records = [
-        ('4', 'four'),
-        ('5', 'five')
-    ]
-    table_name = 'id_and_name_cat'
+    new_records = [("4", "four"), ("5", "five")]
+    table_name = "id_and_name_cat"
     with connect_to_db() as conn:
         insert_records(conn, schema_name, table_name, new_records)
+
 
 def setup():
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
     table_name = "id_and_name_cat"
-    records = [
-        ('1', 'one'),
-        ('2', 'two'),
-        ('3', 'three')
-    ]
+    records = [("1", "one"), ("2", "two"), ("3", "three")]
     with connect_to_db() as conn:
         create_schema(conn, schema_name)
         create_table(conn, schema_name, table_name)
         insert_records(conn, schema_name, table_name, records)
 
+
 def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
+
 
 def delete_schemas_with_prefix(conn, date_prefix):
     query = f"""
@@ -177,18 +178,21 @@ def delete_schemas_with_prefix(conn, date_prefix):
         print(f"An error occurred in deleting schema: {e}")
         sys.exit(1)
 
+
 def teardown() -> None:
     today = datetime.datetime.now(la_timezone)
     yesterday = today - timedelta(days=1)
-    formatted_yesterday = yesterday.strftime('%Y%m%d')
+    formatted_yesterday = yesterday.strftime("%Y%m%d")
     with connect_to_db() as conn:
         delete_schemas_with_prefix(conn, formatted_yesterday)
+
 
 def final_teardown() -> None:
     schema_name = load_schema_name_from_catalog()
     print(f"delete database {schema_name}")
     with connect_to_db() as conn:
         delete_schemas_with_prefix(conn, schema_name)
+
 
 if __name__ == "__main__":
     command = sys.argv[1]

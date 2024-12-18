@@ -73,7 +73,8 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
+        totalSizeBytes: Long,
+        endOfStream: Boolean
     ): Batch {
         return LocalBatch(records.asSequence().toList())
     }

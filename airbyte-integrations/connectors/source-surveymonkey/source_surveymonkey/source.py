@@ -7,11 +7,13 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import Surveys
+
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into

@@ -11,12 +11,14 @@ from typing import Dict, List, Mapping, Optional, Tuple, Type
 
 import dagger
 import semver
+
 from base_images import consts, published_image
 from base_images.bases import AirbyteConnectorBaseImage
 from base_images.java.bases import AirbyteJavaConnectorBaseImage
 from base_images.python.bases import AirbyteManifestOnlyConnectorBaseImage, AirbytePythonConnectorBaseImage
 from base_images.utils import docker
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 
 MANAGED_BASE_IMAGES = [AirbytePythonConnectorBaseImage, AirbyteJavaConnectorBaseImage]
 
