@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class AirbyteTypeToSqlTableTest {
+class AirbyteTypeToSqlTypeTest {
 
     private lateinit var converter: AirbyteTypeToSqlType
 
@@ -150,8 +150,7 @@ class AirbyteTypeToSqlTableTest {
     @Test
     fun testConvertUnknownType() {
         val unknownType = UnknownType(mockk<JsonNode>())
-        val result = converter.convert(unknownType)
-        assertEquals(Types.LONGVARCHAR, result)
+        assertThrows<IllegalArgumentException> { converter.convert(unknownType) }
     }
 
     @Test

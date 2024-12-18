@@ -56,7 +56,9 @@ class AirbyteTypeToSqlType {
             is UnionType -> {
                 throw IllegalArgumentException("Union type is not supported")
             }
-            is UnknownType -> Types.LONGVARCHAR
+            is UnknownType -> {
+                throw IllegalArgumentException("Unknown type is not supported")
+            }
         }
     }
 }

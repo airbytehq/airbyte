@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.util.serializeToJsonBytes
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
-import java.sql.Types
 
 /** CDK pipeline [AirbyteValue] to SQL values converter. */
 class AirbyteValueToSqlValue {
