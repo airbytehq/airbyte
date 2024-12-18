@@ -8,7 +8,7 @@ We use [Ruff](https://docs.astral.sh) for Python code formatting and import sort
 
 Ruff is monorepo-friendly and supports nested inherited configuration; each sub-project can optionally override Ruff lint and formatting settings in their own `pyproject.toml` files, as needed per project.
 
-Ruff [auto-detects the proper package classification]((https://docs.astral.sh/ruff/faq/#how-does-ruff-determine-which-of-my-imports-are-first-party-third-party-etc)) so that "local", "first party" and "third party" imports are sorted and grouped correctly, even within subprojects of the monorepo.
+Ruff [auto-detects the proper package classification](https://docs.astral.sh/ruff/faq/#how-does-ruff-determine-which-of-my-imports-are-first-party-third-party-etc) so that "local", "first party" and "third party" imports are sorted and grouped correctly, even within subprojects of the monorepo.
 
 ### ☕ Java
 
