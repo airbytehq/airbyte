@@ -138,6 +138,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.3.7 | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream |
 | 4.3.6 | 2024-10-12 | [46855](https://github.com/airbytehq/airbyte/pull/46855) | Update dependencies |
 | 4.3.5 | 2024-10-09 | [46676](https://github.com/airbytehq/airbyte/pull/46676) | Fix error handling for codes 40100 and 50002 |
 | 4.3.4 | 2024-10-05 | [46164](https://github.com/airbytehq/airbyte/pull/46164) | Update dependencies |

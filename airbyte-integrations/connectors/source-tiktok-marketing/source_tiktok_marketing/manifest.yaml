@@ -563,6 +563,20 @@ definitions:
           "complete_payment",
           "value_per_complete_payment",
           "total_complete_payment_rate",
+          "profile_visits_rate",
+          "purchase",
+          "purchase_rate",
+          "registration",
+          "registration_rate",
+          "sales_lead",
+          "sales_lead_rate",
+          "cost_per_app_install",
+          "cost_per_purchase",
+          "cost_per_registration",
+          "cost_per_sales_lead",
+          "cost_per_total_sales_lead",
+          "cost_per_total_app_event_add_to_cart",
+          "total_app_event_add_to_cart"
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -1466,6 +1480,20 @@ definitions:
           "complete_payment",
           "value_per_complete_payment",
           "total_complete_payment_rate",
+          "profile_visits_rate",
+          "purchase",
+          "purchase_rate",
+          "registration",
+          "registration_rate",
+          "sales_lead",
+          "sales_lead_rate",
+          "cost_per_app_install",
+          "cost_per_purchase",
+          "cost_per_registration",
+          "cost_per_sales_lead",
+          "cost_per_total_sales_lead",
+          "cost_per_total_app_event_add_to_cart",
+          "total_app_event_add_to_cart"
         ]
       dimensions: ["ad_id"]
     primary_key:
@@ -3585,6 +3613,76 @@ definitions:
                 - string
             total_complete_payment_rate:
               description: Rate of total completed payments.
+              type:
+                - "null"
+                - string
+            profile_visits_rate:
+              description: Percentage of profile visits from an ad out of all impressions on the ad.
+              type:
+                - "null"
+                - string
+            purchase:
+              description: The number of unique app purchase actions.
+              type:
+                - "null"
+                - string
+            purchase_rate:
+              description: The percentage of app purchase actions from all app installs.
+              type:
+                - "null"
+                - string
+            registration:
+              description: The number of unique app registration actions.
+              type:
+                - "null"
+                - string
+            registration_rate:
+              description: The percentage of app registration actions from all app installs.
+              type:
+                - "null"
+                - string
+            sales_lead:
+              description: The number of unique app generate lead actions.
+              type:
+                - "null"
+                - string
+            sales_lead_rate:
+              description: The percentage of app generate lead actions from all app installs.
+              type:
+                - "null"
+                - string
+            cost_per_app_install:
+              description: The average cost for each app install event.
+              type:
+                - "null"
+                - string
+            cost_per_purchase:
+              description: The average cost per unique app purchase action.
+              type:
+                - "null"
+                - string
+            cost_per_registration:
+              description: The average cost per unique app registration action.
+              type:
+                - "null"
+                - string
+            cost_per_sales_lead:
+              description: The average cost per unique app generate lead action.
+              type:
+                - "null"
+                - string
+            cost_per_total_sales_lead:
+              description: The average cost per app generate lead action.
+              type:
+                - "null"
+                - string
+            cost_per_total_app_event_add_to_cart:
+              description: The average cost per app add to cart action.
+              type:
+                - "null"
+                - string
+            total_app_event_add_to_cart:
+              description: The number of app add to cart actions.
               type:
                 - "null"
                 - string
