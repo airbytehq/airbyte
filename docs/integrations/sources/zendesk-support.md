@@ -142,6 +142,7 @@ The Zendesk Support source connector supports the following streams:
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserIdentities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ### Deleted Records Support
@@ -184,6 +185,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.1   | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add User Identities stream                                                                                                                                                                                                         |
 | 4.4.0   | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent                                                                                                                                                                                          |
 | 4.3.3   | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies                                                                                                                                                                                                                |
 | 4.3.2   | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records                                                                                                                                                                                           |

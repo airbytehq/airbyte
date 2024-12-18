@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "User Identities",
+  "type": ["null", "object"],
+  "properties": {
+    "verified": {
+      "description": "Indicates if the user identity is verified.",
+      "type": ["null", "boolean"]
+    },
+    "primary": {
+      "description": "Indicates if the user identity is the user's primary.",
+      "type": ["null", "boolean"]
+    },
+    "type": {
+      "description": "The type of user identity (e.g. email).",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The user identity value.",
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "description": "The ID of the user the identity belongs to.",
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "description": "Unique identifier for the user identity.",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The datetime when the user identity was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The datetime when the user identity was updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
