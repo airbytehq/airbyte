@@ -6,7 +6,6 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
-from source_google_sheets.components.resolvers import resolve_fields_origin
 
 
 @dataclass
@@ -44,7 +43,7 @@ class FieldMatchingExtractor(DpathExtractor):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self._values_to_match_key = parameters["values_to_match_key"]
-        self._stream_schema_ordered_properties = resolve_fields_origin(parameters, config=self.config)
+        self._properties_to_match = parameters["properties_to_match"]
 
     @staticmethod
     def match_properties_with_values(unmatched_values: List[str], ordered_properties: Dict[int, str]):
@@ -63,4 +62,4 @@ class FieldMatchingExtractor(DpathExtractor):
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record[self._values_to_match_key]
             for unmatched_values in unmatched_values_collection:
-                yield from FieldMatchingExtractor.match_properties_with_values(unmatched_values, self._stream_schema_ordered_properties)
+                yield from FieldMatchingExtractor.match_properties_with_values(unmatched_values, self._properties_to_match)
