@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from enum import Enum, unique
 from pathlib import Path
-from typing import Any
+from typing import Any, AnyStr, Dict, Optional
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
@@ -64,19 +64,19 @@ class FileData(BaseModel):
         title="Document Key",
         description="A unique identifier for the processed file which can be used as a primary key.",
     )
-    last_modified: str | None = Field(
+    last_modified: Optional[str] = Field(
         None,
         alias="_ab_source_file_last_modified",
         title="Last Modified",
         description="The last modified timestamp of the file.",
     )
-    file_url: str | None = Field(
+    file_url: Optional[str] = Field(
         None,
         alias="_ab_source_file_url",
         title="File URL",
         description="The fully qualified URL to the file on the remote server.",
     )
-    file_parse_error: str | None = Field(
+    file_parse_error: Optional[str] = Field(
         None,
         alias="_ab_source_file_parse_error",
         title="File Parse Error",
@@ -86,8 +86,8 @@ class FileData(BaseModel):
 
 class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
-    content: str | bytes = Field(title="Content", description="File Content")
-    meta: dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
+    content: AnyStr = Field(title="Content", description="File Content")
+    meta: Dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
 
     @property
     def extension(self) -> str:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from time import time
 from traceback import format_exc
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from urllib.parse import unquote, urlparse
 
 from airbyte_cdk.models import (
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 
-def get(obj: dict[str, Any] | BaseModel, key_path: str, default: Any = None) -> Any:
+def get(obj: Union[Dict[str, Any], BaseModel], key_path: str, default: Optional[Any] = None) -> Any:
     """Get the value of an arbitrarily nested key in a dictionary or Pydantic model instance
 
     Args:
@@ -48,7 +48,7 @@ def get(obj: dict[str, Any] | BaseModel, key_path: str, default: Any = None) -> 
     return current
 
 
-def get_trace_message(message: str, exception: Exception | None = None) -> AirbyteMessage:
+def get_trace_message(message: str, exception: Optional[Exception] = None) -> AirbyteMessage:
     """Return a the message formatted as an `AirbyteMessage` of type `TRACE`.
 
     Args:
@@ -103,7 +103,7 @@ def get_file_write_mode(destination_sync_mode: DestinationSyncMode) -> str:
     return write_modes.get(destination_sync_mode) or fallback_keep
 
 
-def generate_name(document_key: str, stream: str, namespace: str | None = None) -> str:
+def generate_name(document_key: str, stream: str, namespace: Optional[str] = None) -> str:
     """Generate a unique name for the record using the document key.
 
     Args:
