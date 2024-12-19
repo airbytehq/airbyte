@@ -102,10 +102,8 @@ class MsSqlServerCdcPartitionReaderTest :
             }
         }
 
-    override fun createCdcOperations(): DebeziumOperations<TxLogPosition> {
-        val config = MsSqlServerSourceConfigurationFactory().make(container.config)
-        val delegate = MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
-        return object: DebeziumOperations<TxLogPosition> by delegate {
+    override fun getCdcOperations(): CdcPartitionReaderDebeziumOperations<TxLogPosition> {
+        return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<TxLogPosition>(stream) {
             override fun position(recordValue: DebeziumRecordValue): TxLogPosition? {
                 val commitLsn: String =
                     recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
@@ -118,15 +116,6 @@ class MsSqlServerCdcPartitionReaderTest :
                 val commitLsn: String = sourceRecord.sourceOffset()[("commit_lsn")]?.toString() ?: return null
                 val changeLsn: String? = sourceRecord.sourceOffset()[("change_lsn")]?.toString()
                 return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
-            }
-
-            override fun synthesize(): DebeziumInput {
-                val syntheticInput = delegate.synthesize()
-
-                return DebeziumInput(
-                    DebeziumPropertiesBuilder().with(syntheticInput.properties).withStreams(listOf(stream)).with("schema.include.list", "test").buildMap(),
-                    syntheticInput.state,
-                    isSynthetic = true)
             }
         }
     }
@@ -149,6 +138,16 @@ class MsSqlServerCdcPartitionReaderTest :
                     TxLogPosition.valueOf(lsn, lsn)
                 }
             }
+        }
+
+        override fun MsSqlServercontainerWithCdc.syntheticInput(): DebeziumInput {
+            val config = MsSqlServerSourceConfigurationFactory().make(config)
+            val syntheticInput = MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config).synthesize()
+
+            return DebeziumInput(
+                DebeziumPropertiesBuilder().with(syntheticInput.properties).withStreams(listOf(stream)).with("schema.include.list", "test").buildMap(),
+                syntheticInput.state,
+                isSynthetic = true)
         }
 
         override fun MsSqlServercontainerWithCdc.debeziumProperties(): Map<String, String> {

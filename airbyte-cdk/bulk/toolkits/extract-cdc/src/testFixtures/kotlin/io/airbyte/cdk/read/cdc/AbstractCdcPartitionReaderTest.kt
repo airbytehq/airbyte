@@ -49,7 +49,6 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val timeout: Duration = Duration.ofSeconds(10),
 ) {
     val log = KotlinLogging.logger { }
-    val container: C = createContainer()
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
@@ -58,7 +57,6 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
-    val cdcOperations = createCdcOperations()
 
     val global: Global
         get() = Global(listOf(stream))
@@ -70,6 +68,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     abstract fun C.delete24()
 
     abstract fun C.currentPosition(): T
+    abstract fun C.syntheticInput(): DebeziumInput
     abstract fun C.debeziumProperties(): Map<String, String>
 
     @Test
@@ -82,67 +81,85 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
      * [syntheticInput] and [debeziumProperties], and exercises all [PartitionReader] methods.
      */
     fun integrationTest() {
-        container.createStream()
-        log.info{"SGXX 1"}
-        val p0: T = container.currentPosition()
-        log.info{"SGXX 2"}
-        val syntheticInput = cdcOperations.synthesize()
-        log.info{"SGXX 3"}
-        val r0: ReadResult = read(syntheticInput, p0)
-        log.info{"SGXX 4"}
-        Assertions.assertEquals(emptyList<Record>(), r0.records)
-        Assertions.assertNotEquals(
-            CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
-            r0.closeReason,
-        )
+        createContainer().use { container: C ->
+            container.createStream()
+            log.info{"SGXX 1"}
+            val p0: T = container.currentPosition()
+            log.info{"SGXX 2"}
+            val syntheticInput = container.syntheticInput()
+            log.info{"SGXX 3"}
+            val r0: ReadResult = read(syntheticInput, p0)
+            log.info{"SGXX 4"}
+            Assertions.assertEquals(emptyList<Record>(), r0.records)
+            Assertions.assertNotEquals(
+                CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
+                r0.closeReason,
+            )
 
-        container.insert12345()
-        val insert =
-            listOf<Record>(
-                Insert(1, 1),
-                Insert(2, 2),
-                Insert(3, 3),
-                Insert(4, 4),
-                Insert(5, 5),
-            )
-        container.update135()
-        val update =
-            listOf<Record>(
-                Update(1, 6),
-                Update(3, 7),
-                Update(5, 8),
-            )
-        log.info{"SGXX 5"}
-        val p1: T = container.currentPosition()
-        log.info{"SGXX 6"}
-        container.delete24()
-        val delete =
-            listOf<Record>(
-                Delete(2),
-                Delete(4),
-            )
-        log.info{"SGXX 7"}
-        val p2: T = container.currentPosition()
-        log.info{"SGXX 8"}
+            container.insert12345()
+            val insert =
+                listOf<Record>(
+                    Insert(1, 1),
+                    Insert(2, 2),
+                    Insert(3, 3),
+                    Insert(4, 4),
+                    Insert(5, 5),
+                )
+            container.update135()
+            val update =
+                listOf<Record>(
+                    Update(1, 6),
+                    Update(3, 7),
+                    Update(5, 8),
+                )
+            log.info{"SGXX 5"}
+            val p1: T = container.currentPosition()
+            log.info{"SGXX 6"}
+            container.delete24()
+            val delete =
+                listOf<Record>(
+                    Delete(2),
+                    Delete(4),
+                )
+            log.info{"SGXX 7"}
+            val p2: T = container.currentPosition()
+            log.info{"SGXX 8"}
 
-        val input = DebeziumInput(container.debeziumProperties(), r0.state, isSynthetic = false)
-        log.info{"SGXX 9"}
-        val r1: ReadResult = read(input, p1)
-        log.info{"SGXX 10"}
-        Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
-        Assertions.assertNotNull(r1.closeReason)
-        log.info{"SGXX 11"}
-        val r2: ReadResult = read(input, p2)
-        log.info{"SGXX 12"}
-        Assertions.assertEquals(
-            insert + update + delete,
-            r2.records.take(insert.size + update.size + delete.size),
-        )
-        Assertions.assertNotNull(r2.closeReason)
-        Assertions.assertNotEquals(
-            CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
-            r2.closeReason
-        )
+            val input = DebeziumInput(container.debeziumProperties(), r0.state, isSynthetic = false)
+            log.info{"SGXX 9"}
+            val r1: ReadResult = read(input, p1)
+            log.info{"SGXX 10"}
+            Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
+            Assertions.assertNotNull(r1.closeReason)
+            log.info{"SGXX 11"}
+            val r2: ReadResult = read(input, p2)
+            log.info{"SGXX 12"}
+            Assertions.assertEquals(
+                insert + update + delete,
+                r2.records.take(insert.size + update.size + delete.size),
+            )
+            Assertions.assertNotNull(r2.closeReason)
+            Assertions.assertNotEquals(
+                CdcPartitionReader.CloseReason.RECORD_REACHED_TARGET_POSITION,
+                r2.closeReason
+            )
+
+            val inputFromR1 = DebeziumInput(container.debeziumProperties(), r1.state, isSynthetic = false)
+            log.info{"SGXX 15"}
+            val r3: ReadResult = read(inputFromR1, p2)
+            log.info{"SGXX 16"}
+            val p3: T = container.currentPosition()
+            log.info{"SGX syntheticInput=$syntheticInput"}
+            log.info{"SGX r0.state=${r0.state}"}
+            log.info{"SGX r1.state=${r1.state}"}
+            log.info{"SGX p1=$p1"}
+            log.info{"SGX p2=$p2"}
+            log.info{"SGX p3=$p3"}
+            log.info{"SGX r3=$r3"}
+            log.info{"SGX r3.records=${r3.records}"}
+            log.info{"SGX r3.state.offset.wrapped=${r3.state.offset.wrapped}"}
+            log.info{"SGX r2.state.offset.wrapped=${r2.state.offset.wrapped}"}
+        }
     }
 
     private fun read(
@@ -174,7 +191,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             CdcPartitionReader(
                 ConcurrencyResource(1),
                 streamRecordConsumers,
-                cdcOperations,
+                getCdcOperations(),
                 upperBound,
                 input,
             )
@@ -208,10 +225,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
         Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
         Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
-        log.info{"SGX outputConsumer.records()=${outputConsumer.records()}"}
         return ReadResult(
             outputConsumer.records().map { Jsons.treeToValue(it.data, Record::class.java) },
-            cdcOperations.deserialize(checkpoint.opaqueStateValue, listOf(stream)).state,
+            deserialize(checkpoint.opaqueStateValue),
             reader.closeReasonReference.get(),
         )
     }
@@ -248,31 +264,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         }
     }
 
-    abstract fun createCdcOperations(): DebeziumOperations<T>
+    abstract fun getCdcOperations(): CdcPartitionReaderDebeziumOperations<T>
     abstract class AbstractCdcPartitionReaderDebeziumOperationsForTest<T: Comparable<T>>
-        (val stream: Stream): DebeziumOperations<T> {
-        override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
-            log.info{"SGX opaqueStateValue=$opaqueStateValue"}
-            val offsetNode: ObjectNode = opaqueStateValue["offset"] as ObjectNode
-            val offset =
-                DebeziumOffset(
-                    offsetNode
-                        .fields()
-                        .asSequence()
-                        .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
-                        .toMap(),
-                )
-            val historyNode: ArrayNode =
-                opaqueStateValue["schemaHistory"] as? ArrayNode
-                    ?: return DebeziumInput(emptyMap(), DebeziumState(offset, schemaHistory = null), false)
-            val schemaHistory =
-                DebeziumSchemaHistory(
-                    historyNode.elements().asSequence().toList().map {
-                        HistoryRecord(DocumentReader.defaultReader().read(it.asText()))
-                    },
-                )
-            return DebeziumInput(emptyMap(), DebeziumState(offset, schemaHistory), false)
-        }
+        (val stream: Stream): CdcPartitionReaderDebeziumOperations<T> {
         override fun deserialize(
             key: DebeziumRecordKey,
             value: DebeziumRecordValue,
@@ -316,10 +310,30 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                             },
                 ),
             )
-        override fun position(offset: DebeziumOffset): T {
-            TODO("Shouldn't be called from the test")
-        }
 
+    }
+
+
+    private fun deserialize(opaqueStateValue: OpaqueStateValue): DebeziumState {
+        val offsetNode: ObjectNode = opaqueStateValue["offset"] as ObjectNode
+        val offset =
+            DebeziumOffset(
+                offsetNode
+                    .fields()
+                    .asSequence()
+                    .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
+                    .toMap(),
+            )
+        val historyNode: ArrayNode =
+            opaqueStateValue["schemaHistory"] as? ArrayNode
+                ?: return DebeziumState(offset, schemaHistory = null)
+        val schemaHistory =
+            DebeziumSchemaHistory(
+                historyNode.elements().asSequence().toList().map {
+                    HistoryRecord(DocumentReader.defaultReader().read(it.asText()))
+                },
+            )
+        return DebeziumState(offset, schemaHistory)
     }
 }
 

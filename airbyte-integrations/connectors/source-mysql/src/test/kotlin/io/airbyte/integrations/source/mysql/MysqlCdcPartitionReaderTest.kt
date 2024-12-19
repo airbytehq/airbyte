@@ -66,7 +66,7 @@ class MysqlCdcPartitionReaderTest :
                 connection.createStatement().use { fn(it) }
             }
 
-    override fun createCdcOperations(): DebeziumOperations<Position> {
+    override fun getCdcOperations(): CdcPartitionReaderDebeziumOperations<Position> {
         return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<Position>(stream) {
             override fun position(recordValue: DebeziumRecordValue): Position? {
                 log.info{"SGX MySqlCdcPartitionReaderTest.position. recordValue=$recordValue"}
@@ -84,31 +84,6 @@ class MysqlCdcPartitionReaderTest :
                 val pos: Long = offset["pos"] as? Long ?: return null
                 return Position(file, pos)
             }
-
-            override fun synthesize(): DebeziumInput {
-                val position: Position = container.currentPosition()
-                val timestamp: Instant = Instant.now()
-                val key: ArrayNode =
-                    Jsons.arrayNode().apply {
-                        add(container.databaseName)
-                        add(Jsons.objectNode().apply { put("server", container.databaseName) })
-                    }
-                val value: ObjectNode =
-                    Jsons.objectNode().apply {
-                        put("ts_sec", timestamp.epochSecond)
-                        put("file", position.file)
-                        put("pos", position.pos)
-                    }
-                val offset = DebeziumOffset(mapOf(key to value))
-                val state = DebeziumState(offset, schemaHistory = null)
-                val syntheticProperties: Map<String, String> =
-                    DebeziumPropertiesBuilder()
-                        .with(container.debeziumProperties())
-                        .with("snapshot.mode", "recovery")
-                        .withStreams(listOf())
-                        .buildMap()
-                return DebeziumInput(syntheticProperties, state, isSynthetic = true)
-            }
         }
     }
 
@@ -120,6 +95,31 @@ class MysqlCdcPartitionReaderTest :
                     Position(it.getString("File"), it.getLong("Position"))
                 }
             }
+
+        override fun MySQLContainer<*>.syntheticInput(): DebeziumInput {
+            val position: Position = currentPosition()
+            val timestamp: Instant = Instant.now()
+            val key: ArrayNode =
+                Jsons.arrayNode().apply {
+                    add(databaseName)
+                    add(Jsons.objectNode().apply { put("server", databaseName) })
+                }
+            val value: ObjectNode =
+                Jsons.objectNode().apply {
+                    put("ts_sec", timestamp.epochSecond)
+                    put("file", position.file)
+                    put("pos", position.pos)
+                }
+            val offset = DebeziumOffset(mapOf(key to value))
+            val state = DebeziumState(offset, schemaHistory = null)
+            val syntheticProperties: Map<String, String> =
+                DebeziumPropertiesBuilder()
+                    .with(debeziumProperties())
+                    .with("snapshot.mode", "recovery")
+                    .withStreams(listOf())
+                    .buildMap()
+            return DebeziumInput(syntheticProperties, state, isSynthetic = true)
+        }
 
         override fun MySQLContainer<*>.debeziumProperties(): Map<String, String> =
             DebeziumPropertiesBuilder()
