@@ -49,11 +49,8 @@ internal class AirbyteValueToSqlValueTest {
     fun testConvertArrayValue() {
         val arrayValue = ArrayValue(listOf(StringValue("John Doe"), IntegerValue(42L)))
         val result = converter.convert(arrayValue)
-        assertEquals(ByteArray::class.java, result?.javaClass)
-        assertArrayEquals(
-            Jsons.writeValueAsBytes(arrayValue.values.map { converter.convert(it) }),
-            result as ByteArray
-        )
+        assertEquals(ArrayList::class.java, result?.javaClass)
+        assertEquals(listOf("John Doe", 42.toBigInteger()), result)
     }
 
     @Test
@@ -148,6 +145,12 @@ internal class AirbyteValueToSqlValueTest {
                         type = Types.BLOB,
                         isPrimaryKey = false,
                         isNullable = false
+                    ),
+                    SqlColumn(
+                        name = "items",
+                        type = Types.BLOB,
+                        isPrimaryKey = false,
+                        isNullable = false
                     )
                 )
             )
@@ -168,7 +171,8 @@ internal class AirbyteValueToSqlValueTest {
                                         )
                                     )
                             )
-                        )
+                        ),
+                    "items" to ArrayValue(listOf(StringValue("item1"), StringValue("item2")))
                 )
             )
 
@@ -200,6 +204,14 @@ internal class AirbyteValueToSqlValueTest {
                 )
                 .serializeToJsonBytes(),
             sqlValue.values.find { it.name == "meta" }?.value as ByteArray
+        )
+        assertEquals(
+            ByteArray::class.java,
+            sqlValue.values.find { it.name == "items" }?.value?.javaClass
+        )
+        assertArrayEquals(
+            listOf("item1", "item2").serializeToJsonBytes(),
+            sqlValue.values.find { it.name == "items" }?.value as ByteArray
         )
     }
 

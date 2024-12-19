@@ -43,7 +43,7 @@ class AirbyteValueToSqlValue {
                     }
                 convertedValues
             }
-            is ArrayValue -> airbyteValue.values.map { convert(it) }.serializeToJsonBytes()
+            is ArrayValue -> airbyteValue.values.map { convert(it) }
             is BooleanValue -> airbyteValue.value
             is DateValue -> Date.valueOf(toLocalDate(airbyteValue.value))
             is IntegerValue -> airbyteValue.value
@@ -74,10 +74,13 @@ fun ObjectValue.toSqlValue(sqlTable: SqlTable): SqlTableRow {
                 .map { (name, value) ->
                     val dataType = sqlTable.columns.find { it.name == name }!!.type
                     val converted =
-                        if (value is ObjectValue) {
-                            (converter.convert(value) as LinkedHashMap<*, *>).serializeToJsonBytes()
-                        } else {
-                            converter.convert(value)
+                        when (value) {
+                            is ObjectValue ->
+                                (converter.convert(value) as LinkedHashMap<*, *>)
+                                    .serializeToJsonBytes()
+                            is ArrayValue ->
+                                (converter.convert(value) as List<*>).serializeToJsonBytes()
+                            else -> converter.convert(value)
                         }
                     SqlTableRowValue(name = name, value = converted, type = dataType)
                 }
