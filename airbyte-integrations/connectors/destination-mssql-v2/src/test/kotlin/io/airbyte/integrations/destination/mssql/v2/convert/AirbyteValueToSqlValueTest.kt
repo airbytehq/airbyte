@@ -19,6 +19,8 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.integrations.destination.mssql.v2.model.SqlColumn
+import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.Date
