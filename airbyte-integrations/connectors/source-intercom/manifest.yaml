@@ -1,4 +1,4 @@
-version: 6.10.0
+version: 5.7.0
 
 type: DeclarativeSource
 
@@ -624,7 +624,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /conversations/{{ stream_slice.id }}
+          path: /conversations/{{ stream_slice.conversation_id }}
           http_method: GET
           request_headers:
             Accept: application/json
@@ -656,7 +656,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: id
+              partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
       incremental_sync:
@@ -664,6 +664,12 @@ definitions:
         class_name: >-
           source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
         cursor_field: updated_at
+        parent_complete_fetch: true
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/streams/conversations"
+            parent_key: id
+            partition_field: id
       transformations:
         - type: AddFields
           fields:
@@ -683,7 +689,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /companies/{{ stream_slice.id }}/segments
+          path: /companies/{{ stream_slice.companies_id }}/segments
           http_method: GET
           request_headers:
             Accept: application/json
@@ -717,7 +723,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: id
+              partition_field: companies_id
               stream:
                 $ref: "#/definitions/streams/companies"
       incremental_sync:
@@ -725,6 +731,12 @@ definitions:
         class_name: >-
           source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
         cursor_field: updated_at
+        parent_complete_fetch: true
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/streams/companies"
+            parent_key: id  
+            partition_field: id
       schema_loader:
         type: InlineSchemaLoader
         schema:
