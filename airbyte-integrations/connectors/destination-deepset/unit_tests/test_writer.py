@@ -45,10 +45,7 @@ def test_write_happy_path(
 ) -> None:
     writer = DeepsetCloudFileWriter.factory(config_dict)
 
-    def upload(_: ..., write_mode: str = ...) -> UUID:
-        return uuid4()
-
-    monkeypatch.setattr(writer.client, "upload", upload)
+    monkeypatch.setattr(writer.client, "upload", lambda *_, **__: uuid4())
 
     message = writer.write(file)
     assert message.type == Type.LOG
@@ -61,7 +58,7 @@ def test_write_returns_trace_message_if_error(
 ) -> None:
     writer = DeepsetCloudFileWriter.factory(config_dict)
 
-    def upload(_: ..., write_mode: str = ...) -> UUID:
+    def upload(*args, **kwargs) -> UUID:
         raise APIError
 
     monkeypatch.setattr(writer.client, "upload", upload)
