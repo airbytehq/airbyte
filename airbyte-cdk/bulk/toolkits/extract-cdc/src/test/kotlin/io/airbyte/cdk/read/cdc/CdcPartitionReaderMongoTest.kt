@@ -10,6 +10,7 @@ import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.mongodb.MongoDbConnector
@@ -76,7 +77,7 @@ class CdcPartitionReaderMongoTest :
             fn(it.getCollection(stream.name))
         }
 
-    override fun getCdcOperations(): CdcPartitionReaderDebeziumOperations<BsonTimestamp> {
+    override fun getCdcOperations(): DebeziumOperations<BsonTimestamp> {
         return object : AbstractCdcPartitionReaderDebeziumOperationsForTest<BsonTimestamp>(stream) {
             override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
                 val resumeToken: String =
@@ -88,6 +89,13 @@ class CdcPartitionReaderMongoTest :
                 val offset: Map<String, *> = sourceRecord.sourceOffset()
                 val resumeTokenBase64: String = offset["resume_token"] as? String ?: return null
                 return ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
+            }
+
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+
+                }
             }
 
             override fun deserialize(
@@ -122,61 +130,61 @@ class CdcPartitionReaderMongoTest :
                     changes = emptyMap(),
                 )
             }
-        }
-    }
 
-    override fun MongoDbReplicaSet.currentPosition(): BsonTimestamp =
-        ResumeTokens.getTimestamp(currentResumeToken())
-
-    override fun MongoDbReplicaSet.syntheticInput(): DebeziumInput {
-        val resumeToken: BsonDocument = currentResumeToken()
-        val timestamp: BsonTimestamp = ResumeTokens.getTimestamp(resumeToken)
-        val resumeTokenString: String = ResumeTokens.getData(resumeToken).asString().value
-        val key: ArrayNode =
-            Jsons.arrayNode().apply {
-                add(stream.namespace)
-                add(Jsons.objectNode().apply { put("server_id", stream.namespace) })
+            override fun position(offset: DebeziumOffset): BsonTimestamp {
+                val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
+                return BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt())
             }
-        val value: ObjectNode =
-            Jsons.objectNode().apply {
-                put("ord", timestamp.inc)
-                put("sec", timestamp.time)
-                put("resume_token", resumeTokenString)
-            }
-        val offset = DebeziumOffset(mapOf(key to value))
-        val state = DebeziumState(offset, schemaHistory = null)
-        val syntheticProperties: Map<String, String> = debeziumProperties()
-        return DebeziumInput(syntheticProperties, state, isSynthetic = true)
-    }
 
-    private fun MongoDbReplicaSet.currentResumeToken(): BsonDocument =
-        withMongoDatabase { mongoDatabase: MongoDatabase ->
-            val pipeline = listOf<Bson>(Aggregates.match(Filters.`in`("ns.coll", stream.name)))
-            mongoDatabase.watch(pipeline, BsonDocument::class.java).cursor().use {
-                it.tryNext()
-                it.resumeToken!!
+            override fun synthesize(streams: List<Stream>): DebeziumInput {
+                val resumeToken: BsonDocument = currentResumeToken()
+                val timestamp: BsonTimestamp = ResumeTokens.getTimestamp(resumeToken)
+                val resumeTokenString: String = ResumeTokens.getData(resumeToken).asString().value
+                val key: ArrayNode =
+                    Jsons.arrayNode().apply {
+                        add(stream.namespace)
+                        add(Jsons.objectNode().apply { put("server_id", stream.namespace) })
+                    }
+                val value: ObjectNode =
+                    Jsons.objectNode().apply {
+                        put("ord", timestamp.inc)
+                        put("sec", timestamp.time)
+                        put("resume_token", resumeTokenString)
+                    }
+                val offset = DebeziumOffset(mapOf(key to value))
+                val state = DebeziumState(offset, schemaHistory = null)
+                val syntheticProperties: Map<String, String> = debeziumProperties()
+                return DebeziumInput(syntheticProperties, state, isSynthetic = true)
             }
-        }
 
-    override fun MongoDbReplicaSet.debeziumProperties(): Map<String, String> =
-        DebeziumPropertiesBuilder()
-            .withDefault()
-            .withConnector(MongoDbConnector::class.java)
-            .withDebeziumName(stream.namespace!!)
-            .withHeartbeats(heartbeat)
-            .with("capture.scope", "database")
-            .with("capture.target", stream.namespace!!)
-            .with("mongodb.connection.string", connectionString)
-            .with("snapshot.mode", "no_data")
-            .with(
+            fun currentResumeToken(): BsonDocument =
+                container.withMongoDatabase { mongoDatabase: MongoDatabase ->
+                    val pipeline = listOf<Bson>(Aggregates.match(Filters.`in`("ns.coll", stream.name)))
+                    mongoDatabase.watch(pipeline, BsonDocument::class.java).cursor().use {
+                        it.tryNext()
+                        it.resumeToken!!
+                    }
+                }
+
+            fun debeziumProperties(): Map<String, String> =
+                DebeziumPropertiesBuilder()
+                .withDefault()
+                .withConnector(MongoDbConnector::class.java)
+                .withDebeziumName(stream.namespace!!)
+                .withHeartbeats(heartbeat)
+                .with("capture.scope", "database")
+                .with("capture.target", stream.namespace!!)
+                .with("mongodb.connection.string", container.connectionString)
+                .with("snapshot.mode", "no_data")
+                .with(
                 "collection.include.list",
                 DebeziumPropertiesBuilder.joinIncludeList(
-                    listOf(Pattern.quote("${stream.namespace!!}.${stream.name}"))
+                listOf(Pattern.quote("${stream.namespace!!}.${stream.name}"))
                 )
-            )
-            .with("database.include.list", stream.namespace!!)
-            .withOffset()
-            .buildMap()
-
-
+                )
+                .with("database.include.list", stream.namespace!!)
+                .withOffset()
+                .buildMap()
+        }
+    }
 }

@@ -21,7 +21,7 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
     fun position(offset: DebeziumOffset): T
 
     /** Synthesizes a [DebeziumInput] when no incumbent [OpaqueStateValue] is available. */
-    fun synthesize(): DebeziumInput
+    fun synthesize(streams: List<Stream>): DebeziumInput
 
     /** Builds a [DebeziumInput] using an incumbent [OpaqueStateValue]. */
     fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput

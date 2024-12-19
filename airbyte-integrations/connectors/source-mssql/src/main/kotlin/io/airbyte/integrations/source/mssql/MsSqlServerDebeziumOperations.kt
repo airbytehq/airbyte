@@ -73,7 +73,7 @@ class MsSqlServerDebeziumOperations(
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
-    override fun synthesize(): DebeziumInput {
+    override fun synthesize(streams: List<Stream>): DebeziumInput {
         val lsn = queryMaxLsn()
         val key: ArrayNode =
             Jsons.arrayNode().apply {
@@ -102,7 +102,7 @@ class MsSqlServerDebeziumOperations(
             // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
             // is rotated out. This will also end up read streaming changes from the transaction_log.
             .with("snapshot.mode", "recovery")
-            .withStreams(listOf())
+            .withStreams(streams)
             .buildMap(), state, isSynthetic = true)
     }
 

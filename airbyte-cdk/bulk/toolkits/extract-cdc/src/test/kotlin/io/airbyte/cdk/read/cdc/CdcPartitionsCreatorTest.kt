@@ -90,7 +90,7 @@ class CdcPartitionsCreatorTest {
         every { stateQuerier.feeds } returns listOf(global, stream)
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.position(incumbentOffset) } returns 123L
-        every { creatorOps.synthesize() } returns syntheticInput
+        every { creatorOps.synthesize(listOf(stream)) } returns syntheticInput
     }
 
     @Test
@@ -105,7 +105,7 @@ class CdcPartitionsCreatorTest {
                 state = DebeziumState(offset = syntheticOffset, schemaHistory = null),
                 isSynthetic = true,
             )
-        every { creatorOps.synthesize() } returns syntheticInput
+        every { creatorOps.synthesize(listOf(stream)) } returns syntheticInput
         upperBoundReference.set(null)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
