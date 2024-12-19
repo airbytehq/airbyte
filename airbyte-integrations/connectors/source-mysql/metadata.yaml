@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.9.2
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -66,6 +66,10 @@ data:
             alias: airbyte-connector-testing-secret-store
   releases:
     breakingChanges:
+      4.0.0:
+        message: We are pleased to announce the official launch of our new source-mysql connector, built on our new foundation. This connector is the culmination of extensive testing and development we soft launched with version 3.9.0 .
+        upgradeDeadline: "2024-12-19"
+        deadlineAction: "auto_upgrade"
       3.0.0:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
