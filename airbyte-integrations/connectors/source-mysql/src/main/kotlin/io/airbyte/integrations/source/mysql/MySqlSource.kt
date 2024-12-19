@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.AirbyteSourceRunner
 
-object MysqlSource {
+object MySqlSource {
     @JvmStatic
     fun main(args: Array<String>) {
         AirbyteSourceRunner.run(*args)

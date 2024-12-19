@@ -11,7 +11,7 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
-data class MysqlCdcInitialSnapshotStateValue(
+data class MySqlSourceCdcInitialSnapshotStateValue(
     @JsonProperty("pk_val") val pkVal: String? = null,
     @JsonProperty("pk_name") val pkName: String? = null,
     @JsonProperty("version") val version: Int? = null,
@@ -25,7 +25,7 @@ data class MysqlCdcInitialSnapshotStateValue(
         /** Value representing the completion of a FULL_REFRESH snapshot. */
         fun getSnapshotCompletedState(stream: Stream): OpaqueStateValue =
             Jsons.valueToTree(
-                MysqlCdcInitialSnapshotStateValue(
+                MySqlSourceCdcInitialSnapshotStateValue(
                     streamName = stream.name,
                     cursorField = listOf(),
                     streamNamespace = stream.namespace
@@ -42,7 +42,7 @@ data class MysqlCdcInitialSnapshotStateValue(
                 true -> Jsons.nullNode()
                 false ->
                     Jsons.valueToTree(
-                        MysqlCdcInitialSnapshotStateValue(
+                        MySqlSourceCdcInitialSnapshotStateValue(
                             pkName = primaryKeyField.id,
                             pkVal = primaryKeyCheckpoint.first().asText(),
                             stateType = "primary_key",

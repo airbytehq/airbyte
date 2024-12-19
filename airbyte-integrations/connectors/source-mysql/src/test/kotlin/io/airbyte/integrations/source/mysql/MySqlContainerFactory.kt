@@ -8,7 +8,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
-object MysqlContainerFactory {
+object MySqlContainerFactory {
     const val COMPATIBLE_NAME = "mysql:8.0"
     private val log = KotlinLogging.logger {}
 
@@ -16,16 +16,16 @@ object MysqlContainerFactory {
         TestContainerFactory.register(COMPATIBLE_NAME, ::MySQLContainer)
     }
 
-    sealed interface MysqlContainerModifier :
+    sealed interface MySqlContainerModifier :
         TestContainerFactory.ContainerModifier<MySQLContainer<*>>
 
-    data object WithNetwork : MysqlContainerModifier {
+    data object WithNetwork : MySqlContainerModifier {
         override fun modify(container: MySQLContainer<*>) {
             container.withNetwork(Network.newNetwork())
         }
     }
 
-    data object WithCdc : MysqlContainerModifier {
+    data object WithCdc : MySqlContainerModifier {
         override fun modify(container: MySQLContainer<*>) {
             container.start()
             container.execAsRoot(GTID_ON)
@@ -44,7 +44,7 @@ object MysqlContainerFactory {
                 "ON *.* TO '%s'@'%%';"
     }
 
-    data object WithCdcOff : MysqlContainerModifier {
+    data object WithCdcOff : MySqlContainerModifier {
         override fun modify(container: MySQLContainer<*>) {
             container.withCommand("--skip-log-bin")
         }
@@ -52,7 +52,7 @@ object MysqlContainerFactory {
 
     fun exclusive(
         imageName: String,
-        vararg modifiers: MysqlContainerModifier,
+        vararg modifiers: MySqlContainerModifier,
     ): MySQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
@@ -61,7 +61,7 @@ object MysqlContainerFactory {
 
     fun shared(
         imageName: String,
-        vararg modifiers: MysqlContainerModifier,
+        vararg modifiers: MySqlContainerModifier,
     ): MySQLContainer<*> {
         val dockerImageName =
             DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
@@ -69,8 +69,8 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
-        MysqlSourceConfigurationSpecification().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MySqlSourceConfigurationSpecification =
+        MySqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username
@@ -81,10 +81,6 @@ object MysqlContainerFactory {
             concurrency = 1
             setMethodValue(UserDefinedCursor)
         }
-
-    @JvmStatic
-    fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
-        config(mySQLContainer).also { it.setMethodValue(CdcCursor()) }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {
         val cleanSql: String = sql.trim().removeSuffix(";") + ";"

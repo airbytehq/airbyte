@@ -15,7 +15,7 @@ import jakarta.inject.Singleton
 /** Mysql implementation of [JdbcSelectQuerier], which sets fetch size differently */
 @Singleton
 @Primary
-class MysqlSelectQuerier(
+class MySqlSourceSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
     private val log = KotlinLogging.logger {}
@@ -23,15 +23,15 @@ class MysqlSelectQuerier(
     override fun executeQuery(
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result = MysqlResult(jdbcConnectionFactory, q, parameters)
+    ): SelectQuerier.Result = MySqlResult(jdbcConnectionFactory, q, parameters)
 
-    inner class MysqlResult(
+    inner class MySqlResult(
         jdbcConnectionFactory: JdbcConnectionFactory,
         q: SelectQuery,
         parameters: SelectQuerier.Parameters,
     ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters) {
         /**
-         * Mysql does things differently with fetch size. Setting fetch size on a result set is
+         * MySQL does things differently with fetch size. Setting fetch size on a result set is
          * safer than on a statement.
          */
         override fun initQueryExecution() {

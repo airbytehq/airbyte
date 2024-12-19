@@ -65,26 +65,24 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumOperations
-import io.airbyte.integrations.source.mysql.cdc.MySqlPosition
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class MysqlSourceOperations :
+class MySqlSourceOperations :
     JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
-    override val globalCursor: MetaField = MysqlCdcMetaFields.CDC_CURSOR
+    override val globalCursor: MetaField = MySqlSourceCdcMetaFields.CDC_CURSOR
 
     override val globalMetaFields: Set<MetaField> =
         setOf(
-            MysqlCdcMetaFields.CDC_CURSOR,
+            MySqlSourceCdcMetaFields.CDC_CURSOR,
             CommonMetaField.CDC_UPDATED_AT,
             CommonMetaField.CDC_DELETED_AT,
-            MysqlCdcMetaFields.CDC_LOG_FILE,
-            MysqlCdcMetaFields.CDC_LOG_POS
+            MySqlSourceCdcMetaFields.CDC_LOG_FILE,
+            MySqlSourceCdcMetaFields.CDC_LOG_POS
         )
 
     override fun decorateRecordData(
@@ -98,21 +96,22 @@ class MysqlSourceOperations :
             CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
         )
         recordData.set<JsonNode>(
-            MysqlCdcMetaFields.CDC_LOG_POS.id,
+            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             CdcIntegerMetaFieldType.jsonEncoder.encode(0),
         )
         if (globalStateValue == null) {
             return
         }
         val debeziumState: DebeziumState =
-            MySqlDebeziumOperations.deserializeDebeziumState(globalStateValue)
-        val position: MySqlPosition = MySqlDebeziumOperations.position(debeziumState.offset)
+            MySqlSourceDebeziumOperations.deserializeDebeziumState(globalStateValue)
+        val position: MySqlSourceCdcPosition =
+            MySqlSourceDebeziumOperations.position(debeziumState.offset)
         recordData.set<JsonNode>(
-            MysqlCdcMetaFields.CDC_LOG_FILE.id,
+            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),
         )
         recordData.set<JsonNode>(
-            MysqlCdcMetaFields.CDC_LOG_POS.id,
+            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             CdcIntegerMetaFieldType.jsonEncoder.encode(position.position),
         )
     }

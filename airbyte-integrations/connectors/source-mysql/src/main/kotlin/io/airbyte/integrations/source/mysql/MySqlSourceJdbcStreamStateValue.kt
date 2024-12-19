@@ -11,10 +11,10 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 
-data class MysqlJdbcStreamStateValue(
+data class MySqlSourceJdbcStreamStateValue(
     @JsonProperty("cursor") val cursors: String? = null,
     @JsonProperty("version") val version: Int = 2,
-    @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.stateType,
+    @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.serialized,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("cursor_field") val cursorField: List<String> = listOf(),
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
@@ -26,7 +26,7 @@ data class MysqlJdbcStreamStateValue(
     companion object {
         /** Value representing the completion of a FULL_REFRESH snapshot. */
         val snapshotCompleted: OpaqueStateValue
-            get() = Jsons.valueToTree(MysqlJdbcStreamStateValue(stateType = "primary_key"))
+            get() = Jsons.valueToTree(MySqlSourceJdbcStreamStateValue(stateType = "primary_key"))
 
         /** Value representing the progress of an ongoing incremental cursor read. */
         fun cursorIncrementalCheckpoint(
@@ -38,7 +38,7 @@ data class MysqlJdbcStreamStateValue(
                 true -> Jsons.nullNode()
                 false ->
                     Jsons.valueToTree(
-                        MysqlJdbcStreamStateValue(
+                        MySqlSourceJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
                             cursors = cursorCheckpoint.asText(),
                             streamName = stream.name,
@@ -58,10 +58,10 @@ data class MysqlJdbcStreamStateValue(
                 true -> Jsons.nullNode()
                 false ->
                     Jsons.valueToTree(
-                        MysqlJdbcStreamStateValue(
+                        MySqlSourceJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
                             pkValue = primaryKeyCheckpoint.first().asText(),
-                            stateType = StateType.PRIMARY_KEY.stateType,
+                            stateType = StateType.PRIMARY_KEY.serialized,
                         )
                     )
             }
@@ -79,13 +79,13 @@ data class MysqlJdbcStreamStateValue(
                 true -> Jsons.nullNode()
                 false ->
                     Jsons.valueToTree(
-                        MysqlJdbcStreamStateValue(
+                        MySqlSourceJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
                             pkValue = primaryKeyCheckpoint.first().asText(),
-                            stateType = StateType.PRIMARY_KEY.stateType,
+                            stateType = StateType.PRIMARY_KEY.serialized,
                             incrementalState =
                                 Jsons.valueToTree(
-                                    MysqlJdbcStreamStateValue(
+                                    MySqlSourceJdbcStreamStateValue(
                                         cursorField = listOf(cursor.id),
                                         streamName = stream.name,
                                         streamNamespace = stream.namespace!!
@@ -96,9 +96,12 @@ data class MysqlJdbcStreamStateValue(
             }
         }
     }
-}
 
-enum class StateType(val stateType: String) {
-    PRIMARY_KEY("primary_key"),
-    CURSOR_BASED("cursor_based"),
+    enum class StateType {
+        PRIMARY_KEY,
+        CURSOR_BASED,
+        ;
+
+        val serialized: String = name.lowercase()
+    }
 }

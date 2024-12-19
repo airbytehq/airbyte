@@ -27,20 +27,20 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
 
 /**
- * The object which is mapped to the Mysql source configuration JSON.
+ * The object which is mapped to the MySQL source configuration JSON.
  *
- * Use [MysqlSourceConfiguration] instead wherever possible. This object also allows injecting
+ * Use [MySqlSourceConfiguration] instead wherever possible. This object also allows injecting
  * values through Micronaut properties, this is made possible by the classes named
  * `MicronautPropertiesFriendly.*`.
  */
-@JsonSchemaTitle("Mysql Source Spec")
+@JsonSchemaTitle("MySQL Source Spec")
 @JsonPropertyOrder(
     value = ["host", "port", "database", "username", "replication_method"],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
+class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -320,7 +320,7 @@ data object UserDefinedCursor : CursorMethodConfiguration
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
-        "Incrementally reads new inserts, updates, and deletes using Mysql's <a href=" +
+        "Incrementally reads new inserts, updates, and deletes using MySQL's <a href=" +
         "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )

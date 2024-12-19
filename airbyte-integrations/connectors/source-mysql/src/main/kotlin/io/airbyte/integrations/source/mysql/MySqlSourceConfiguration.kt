@@ -21,8 +21,8 @@ import java.time.Duration
 
 private val log = KotlinLogging.logger {}
 
-/** Mysql-specific implementation of [SourceConfiguration] */
-data class MysqlSourceConfiguration(
+/** MySQL-specific implementation of [SourceConfiguration] */
+data class MySqlSourceConfiguration(
     override val realHost: String,
     override val realPort: Int,
     override val sshTunnel: SshTunnelMethodConfiguration?,
@@ -41,16 +41,16 @@ data class MysqlSourceConfiguration(
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
 
-    /** Required to inject [MysqlSourceConfiguration] directly. */
+    /** Required to inject [MySqlSourceConfiguration] directly. */
     @Factory
     private class MicronautFactory {
         @Singleton
         fun mysqlSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>,
-            supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>,
-        ): MysqlSourceConfiguration = factory.make(supplier.get())
+                    MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>,
+        ): MySqlSourceConfiguration = factory.make(supplier.get())
     }
 }
 
@@ -71,14 +71,14 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
+class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
+    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
 
     constructor() : this(emptySet())
 
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationSpecification,
-    ): MysqlSourceConfiguration {
+        pojo: MySqlSourceConfigurationSpecification,
+    ): MySqlSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
@@ -115,20 +115,21 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
                                 "SSL encryption or an SSH tunnel."
                         )
                     }
-                    MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                    MySqlSourceEncryption(sslMode = MySqlSourceEncryption.SslMode.PREFERRED)
                 }
-                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
+                is EncryptionRequired ->
+                    MySqlSourceEncryption(sslMode = MySqlSourceEncryption.SslMode.REQUIRED)
                 is SslVerifyCertificate ->
-                    MysqlJdbcEncryption(
-                        sslMode = SSLMode.VERIFY_CA,
+                    MySqlSourceEncryption(
+                        sslMode = MySqlSourceEncryption.SslMode.VERIFY_CA,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
                         clientKeyPassword = encryption.sslClientPassword
                     )
                 is SslVerifyIdentity ->
-                    MysqlJdbcEncryption(
-                        sslMode = SSLMode.VERIFY_IDENTITY,
+                    MySqlSourceEncryption(
+                        sslMode = MySqlSourceEncryption.SslMode.VERIFY_IDENTITY,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -178,7 +179,7 @@ class MysqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
                             },
                     )
             }
-        return MysqlSourceConfiguration(
+        return MySqlSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
             sshTunnel = sshTunnel,

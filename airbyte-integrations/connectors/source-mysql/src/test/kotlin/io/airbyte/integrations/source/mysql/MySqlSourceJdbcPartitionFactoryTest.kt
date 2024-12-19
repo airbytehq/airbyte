@@ -32,7 +32,6 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.util.Base64
-import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -40,17 +39,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-class MysqlJdbcPartitionFactoryTest {
+class MySqlSourceJdbcPartitionFactoryTest {
     companion object {
-        private val selectQueryGenerator = MysqlSourceOperations()
+        private val selectQueryGenerator = MySqlSourceOperations()
         private val sharedState = sharedState()
         private val cdcSharedState = sharedState(global = true)
-        private val config = mockk<MysqlSourceConfiguration>()
+        private val config = mockk<MySqlSourceConfiguration>()
 
-        val mysqlJdbcPartitionFactory =
-            MysqlJdbcPartitionFactory(sharedState, selectQueryGenerator, config)
+        val mySqlSourceJdbcPartitionFactory =
+            MySqlSourceJdbcPartitionFactory(sharedState, selectQueryGenerator, config)
         val mysqlCdcJdbcPartitionFactory =
-            MysqlJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
+            MySqlSourceJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
         val fieldId = Field("id", IntFieldType)
         val stream =
@@ -111,7 +110,7 @@ class MysqlJdbcPartitionFactoryTest {
         ): DefaultJdbcSharedState {
 
             val configSpec =
-                MysqlSourceConfigurationSpecification().apply {
+                MySqlSourceConfigurationSpecification().apply {
                     host = ""
                     port = 0
                     username = "foo"
@@ -123,7 +122,7 @@ class MysqlJdbcPartitionFactoryTest {
             } else {
                 configSpec.setMethodValue(UserDefinedCursor)
             }
-            val configFactory = MysqlSourceConfigurationFactory()
+            val configFactory = MySqlSourceConfigurationFactory()
             val configuration = configFactory.make(configSpec)
 
             val mockSelectQuerier = mockk<SelectQuerier>()
@@ -170,14 +169,14 @@ class MysqlJdbcPartitionFactoryTest {
 
     @Test
     fun testColdStartWithPkCursorBased() {
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream))
-        assertTrue(jdbcPartition is MysqlJdbcSnapshotWithCursorPartition)
+        val jdbcPartition = mySqlSourceJdbcPartitionFactory.create(streamFeedBootstrap(stream))
+        assertTrue(jdbcPartition is MySqlSourceJdbcSnapshotWithCursorPartition)
     }
 
     @Test
     fun testColdStartWithPkCdc() {
         val jdbcPartition = mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream))
-        assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
+        assertTrue(jdbcPartition is MySqlSourceJdbcCdcSnapshotPartition)
     }
 
     @Test
@@ -193,8 +192,9 @@ class MysqlJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(),
                 configuredCursor = fieldId,
             )
-        val jdbcPartition = mysqlJdbcPartitionFactory.create(streamFeedBootstrap(streamWithoutPk))
-        assertTrue(jdbcPartition is MysqlJdbcNonResumableSnapshotWithCursorPartition)
+        val jdbcPartition =
+            mySqlSourceJdbcPartitionFactory.create(streamFeedBootstrap(streamWithoutPk))
+        assertTrue(jdbcPartition is MySqlSourceJdbcNonResumableSnapshotWithCursorPartition)
     }
 
     @Test
@@ -217,8 +217,8 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
-        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+            mySqlSourceJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
     }
 
     @ParameterizedTest
@@ -256,14 +256,14 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(
+            mySqlSourceJdbcPartitionFactory.create(
                 streamFeedBootstrap(timestampStream, incomingStateValue)
             )
-        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+        assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
-            Jsons.valueToTree("$expectedLowerBound"),
-            (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
+            Jsons.valueToTree(expectedLowerBound),
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
 
@@ -287,14 +287,14 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(
+            mySqlSourceJdbcPartitionFactory.create(
                 streamFeedBootstrap(datetimeStream, incomingStateValue)
             )
-        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+        assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree("2024-11-21T11:59:57.123000"),
-            (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
 
@@ -314,9 +314,9 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+            mySqlSourceJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
 
-        assertTrue(jdbcPartition is MysqlJdbcSnapshotWithCursorPartition)
+        assertTrue(jdbcPartition is MySqlSourceJdbcSnapshotWithCursorPartition)
     }
 
     @Test
@@ -336,7 +336,7 @@ class MysqlJdbcPartitionFactoryTest {
 
         val jdbcPartition =
             mysqlCdcJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
-        assertTrue(jdbcPartition is MysqlJdbcCdcSnapshotPartition)
+        assertTrue(jdbcPartition is MySqlSourceJdbcCdcSnapshotPartition)
     }
 
     @Test
@@ -377,12 +377,14 @@ class MysqlJdbcPartitionFactoryTest {
             )
 
         val jdbcPartition =
-            mysqlJdbcPartitionFactory.create(streamFeedBootstrap(binaryStream, incomingStateValue))
-        assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
+            mySqlSourceJdbcPartitionFactory.create(
+                streamFeedBootstrap(binaryStream, incomingStateValue)
+            )
+        assertTrue(jdbcPartition is MySqlSourceJdbcCursorIncrementalPartition)
 
         assertEquals(
             Jsons.valueToTree<BinaryNode>(Base64.getDecoder().decode("OQAAAAAAAAAAAAAAAAAAAA==")),
-            (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
+            (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
 }

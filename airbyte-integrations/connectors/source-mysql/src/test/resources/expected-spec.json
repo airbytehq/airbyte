@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
   "connectionSpecification": {
     "type": "object",
-    "title": "Mysql Source Spec",
+    "title": "MySQL Source Spec",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "required": ["host", "port", "database", "username", "replication_method"],
     "properties": {
@@ -365,7 +365,7 @@
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
               }
             },
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MySQL's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
             "additionalProperties": true
           }
         ],
