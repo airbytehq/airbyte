@@ -2,8 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from conftest import find_stream, load_json_file
 from freezegun import freeze_time
 

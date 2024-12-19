@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 import pytest
 import requests
-from conftest import find_stream
+from conftest import find_stream, get_source, load_json_file
 from source_linkedin_ads.source import SourceLinkedinAds
 
 from airbyte_cdk.models import SyncMode
@@ -15,8 +15,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
-from conftest import find_stream, get_source, load_json_file
-from source_linkedin_ads.source import SourceLinkedinAds
+
 
 logger = logging.getLogger("airbyte")
 
@@ -121,7 +120,8 @@ class TestAllStreams:
         requests_mock.get(
             "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,"
             "COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
-            json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]})
+            json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]},
+        )
         requests_mock.get(
             "https://api.linkedin.com/rest/adAnalytics?q=analytics&pivot=(value:COMPANY)&timeGranularity=(value:MONTHLY)&campaigns=List("
             "urn%3Ali%3AsponsoredCampaign%3A1111)&dateRange=(start:(year:2021,month:1,day:1),end:(year:2021,month:1,day:31))",
@@ -180,8 +180,9 @@ class TestAllStreams:
         ),
     )
     def test_check_connection(self, requests_mock, linkedin_source, status_code, is_connection_successful, error_msg, mocker):
-        mocker.patch.object(ManifestDeclarativeSource, "_initialize_cache_for_parent_streams",
-                            side_effect=self._mock_initialize_cache_for_parent_streams)
+        mocker.patch.object(
+            ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
+        )
         mocker.patch("time.sleep", lambda x: None)
         json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
         requests_mock.register_uri(
