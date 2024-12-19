@@ -36,9 +36,9 @@ import java.io.Closeable
 import java.io.OutputStream
 import org.apache.avro.Schema
 
-interface ObjectStorageFormattingWriter : Closeable {
-    fun accept(record: DestinationRecord)
-    fun flush()
+abstract class ObjectStorageFormattingWriter : Closeable {
+    abstract fun accept(record: DestinationRecord)
+    abstract fun flush()
 }
 
 @Singleton
@@ -51,6 +51,8 @@ class ObjectStorageFormattingWriterFactory(
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
         val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
+        // TODO: FileWriter
+
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
             is JsonFormatConfiguration -> JsonFormattingWriter(stream, outputStream, flatten)
             is AvroFormatConfiguration ->
@@ -78,7 +80,7 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
 
     override fun accept(record: DestinationRecord) {
         val data =
@@ -100,7 +102,7 @@ class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
     private val rootLevelFlattening: Boolean
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
@@ -124,7 +126,7 @@ class AvroFormattingWriter(
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
     val log = KotlinLogging.logger {}
 
     private val pipeline = AvroMapperPipelineFactory().create(stream)
@@ -157,7 +159,7 @@ class ParquetFormattingWriter(
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
     private val log = KotlinLogging.logger {}
 
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
@@ -206,7 +208,7 @@ class BufferedFormattingWriter<T : OutputStream>(
     private val buffer: ByteArrayOutputStream,
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
-) : ObjectStorageFormattingWriter {
+) : ObjectStorageFormattingWriter() {
     val bufferSize: Int
         get() = buffer.size()
 

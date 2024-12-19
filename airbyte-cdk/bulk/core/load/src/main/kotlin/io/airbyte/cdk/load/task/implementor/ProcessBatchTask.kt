@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.KillableScope
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -22,7 +23,7 @@ class DefaultProcessBatchTask(
     private val batchQueue: MultiProducerChannel<BatchEnvelope<*>>,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
-
+    val log = KotlinLogging.logger {}
     override suspend fun execute() {
         batchQueue.consume().collect { batchEnvelope ->
             val streamLoader = syncManager.getOrAwaitStreamLoader(batchEnvelope.streamDescriptor)
