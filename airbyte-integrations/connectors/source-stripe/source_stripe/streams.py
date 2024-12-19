@@ -7,7 +7,6 @@ import math
 import os
 from abc import ABC, abstractmethod
 from itertools import chain
-from turtledemo.sorting_animate import partition
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
