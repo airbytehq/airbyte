@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Semaphore
@@ -36,20 +35,5 @@ class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.Ac
     override fun tryAcquire(): AcquiredThread? {
         if (!semaphore.tryAcquire()) return null
         return AcquiredThread { semaphore.release() }
-    }
-}
-
-@DefaultImplementation(NoOpGlobalLockResource::class)
-/** A [Resource] used to synchronize operations such as CDC. Defaults to a no-op implementation. */
-fun interface GlobalLockResource : Resource<GlobalLockResource.AcquiredGlobalLock> {
-    fun interface AcquiredGlobalLock : Resource.Acquired
-}
-
-@Singleton
-class NoOpGlobalLockResource : GlobalLockResource {
-
-    override fun tryAcquire(): GlobalLockResource.AcquiredGlobalLock {
-        // Always acquire.
-        return GlobalLockResource.AcquiredGlobalLock {}
     }
 }
