@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 200
-    sl: 0
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - ${host}
