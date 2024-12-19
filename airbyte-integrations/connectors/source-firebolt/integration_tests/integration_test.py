@@ -8,10 +8,6 @@ from json import load
 from typing import Dict, Generator
 from unittest.mock import MagicMock
 
-from firebolt.db import Connection
-from pytest import fixture
-from source_firebolt.source import SourceFirebolt, establish_connection
-
 from airbyte_cdk.models import Status
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteStream,
@@ -20,6 +16,9 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
+from firebolt.db import Connection
+from pytest import fixture
+from source_firebolt.source import SourceFirebolt, establish_connection
 
 
 @fixture(scope="module")

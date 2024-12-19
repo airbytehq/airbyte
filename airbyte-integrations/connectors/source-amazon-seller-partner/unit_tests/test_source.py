@@ -7,12 +7,10 @@ import logging
 from unittest.mock import patch
 
 import pytest
+from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner.streams import VendorOrders
 from source_amazon_seller_partner.utils import AmazonConfigException
-
-from airbyte_cdk.sources.streams import Stream
-
 
 logger = logging.getLogger("airbyte")
 

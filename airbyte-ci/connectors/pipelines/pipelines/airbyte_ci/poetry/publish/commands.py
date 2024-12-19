@@ -12,7 +12,6 @@ from typing import Optional
 
 import asyncclick as click
 from packaging import version
-
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand

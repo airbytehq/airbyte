@@ -11,7 +11,6 @@ from typing import Iterable
 import pytest
 import yaml
 
-
 pytest_plugins = ("connector_acceptance_test.plugin",)
 logger = logging.getLogger("airbyte")
 

@@ -18,7 +18,6 @@ from source_linkedin_ads.components import (
     StreamSlice,
 )
 
-
 logger = logging.getLogger("airbyte")
 
 

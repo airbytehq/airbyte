@@ -11,11 +11,10 @@ from unittest.mock import MagicMock, patch
 import pendulum
 import pytest
 import requests
-from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor, EventsExtractor
-from source_amplitude.streams import Events
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor, EventsExtractor
+from source_amplitude.streams import Events
 
 
 @pytest.mark.parametrize(

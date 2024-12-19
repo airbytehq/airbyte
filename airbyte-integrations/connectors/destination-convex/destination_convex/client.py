@@ -5,7 +5,6 @@
 from typing import Any, List, Mapping
 
 import requests
-
 from destination_convex.config import ConvexConfig
 
 

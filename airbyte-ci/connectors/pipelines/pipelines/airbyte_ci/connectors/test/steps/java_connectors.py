@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 
 import anyio
 from dagger import File, QueryError
-
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,

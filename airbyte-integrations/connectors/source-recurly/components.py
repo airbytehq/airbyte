@@ -3,7 +3,6 @@
 from typing import Any, List, Mapping
 
 import requests
-
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 
 

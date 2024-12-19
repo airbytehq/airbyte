@@ -6,11 +6,10 @@ import os
 import unittest
 from unittest.mock import Mock, call, patch
 
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_milvus.config import MilvusIndexingConfigModel, NoAuth, TokenAuth
 from destination_milvus.indexer import MilvusIndexer
 from pymilvus import DataType
-
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 
 
 @patch("destination_milvus.indexer.connections")

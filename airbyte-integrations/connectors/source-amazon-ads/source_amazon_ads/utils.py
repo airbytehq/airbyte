@@ -6,7 +6,6 @@ import logging
 import os
 from typing import Union
 
-
 logger = logging.getLogger("airbyte")
 
 

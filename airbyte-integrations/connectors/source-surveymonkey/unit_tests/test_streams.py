@@ -5,9 +5,8 @@
 from unittest.mock import Mock
 
 import pytest
-from source_surveymonkey.streams import SurveyIds, Surveys
-
 from airbyte_cdk.models import SyncMode
+from source_surveymonkey.streams import SurveyIds, Surveys
 
 
 @pytest.mark.parametrize(

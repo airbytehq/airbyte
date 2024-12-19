@@ -6,8 +6,6 @@ from typing import Any, Dict
 from unittest import TestCase
 
 import freezegun
-from source_jira import SourceJira
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -22,7 +20,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
-
+from source_jira import SourceJira
 
 _STREAM_NAME = "issues"
 _API_TOKEN = "api_token"

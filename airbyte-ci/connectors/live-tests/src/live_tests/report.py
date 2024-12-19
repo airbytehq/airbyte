@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any, Optional
 import requests
 import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
-
 from live_tests import stash_keys
 from live_tests.consts import MAX_LINES_IN_REPORT
 
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
     import pytest
     from _pytest.config import Config
     from airbyte_protocol.models import SyncMode, Type  # type: ignore
-
     from live_tests.commons.models import Command, ExecutionResult
 
 

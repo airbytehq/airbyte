@@ -4,13 +4,12 @@
 
 import logging
 
-from destination_astra.astra_client import AstraClient
-from destination_astra.config import ConfigModel
-from destination_astra.destination import DestinationAstra
-
 from airbyte_cdk.destinations.vector_db_based.embedder import create_from_config
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
+from destination_astra.astra_client import AstraClient
+from destination_astra.config import ConfigModel
+from destination_astra.destination import DestinationAstra
 
 
 class AstraIntegrationTest(BaseIntegrationTest):

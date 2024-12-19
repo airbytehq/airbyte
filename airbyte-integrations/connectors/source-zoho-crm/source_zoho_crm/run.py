@@ -5,9 +5,8 @@
 
 import sys
 
-from source_zoho_crm import SourceZohoCrm
-
 from airbyte_cdk.entrypoint import launch
+from source_zoho_crm import SourceZohoCrm
 
 
 def run():

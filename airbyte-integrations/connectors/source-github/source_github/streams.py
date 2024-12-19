@@ -9,7 +9,6 @@ from urllib import parse
 
 import pendulum
 import requests
-
 from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
@@ -1391,9 +1390,9 @@ class ProjectCards(GithubStream):
         stream_state_value = current_stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[self.cursor_field] = (
-            updated_state
-        )
+        current_stream_state.setdefault(repository, {}).setdefault(project_id, {}).setdefault(column_id, {})[
+            self.cursor_field
+        ] = updated_state
         return current_stream_state
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:

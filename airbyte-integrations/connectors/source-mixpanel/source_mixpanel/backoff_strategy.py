@@ -5,7 +5,6 @@
 from typing import Any, Optional, Union
 
 import requests
-
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 

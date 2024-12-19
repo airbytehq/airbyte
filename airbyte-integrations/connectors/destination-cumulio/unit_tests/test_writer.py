@@ -8,9 +8,8 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock, patch
 
 import pytest
-from destination_cumulio.writer import CumulioWriter
-
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from destination_cumulio.writer import CumulioWriter
 
 
 @pytest.fixture(name="logger")

@@ -11,7 +11,6 @@ from typing import Iterable, List, MutableMapping, Set, Union
 import pytest
 from yaml import load
 
-
 try:
     from yaml import CLoader as Loader
 except ImportError:

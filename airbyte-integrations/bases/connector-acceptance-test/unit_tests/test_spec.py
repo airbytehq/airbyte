@@ -5,10 +5,9 @@
 from typing import Any, Callable, Dict
 
 import pytest
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
-
-from airbyte_protocol.models import ConnectorSpecification
 
 from .conftest import does_not_raise
 

@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import backoff
 import requests
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream

@@ -8,6 +8,7 @@ from urllib.parse import unquote
 
 import pendulum
 import pytest
+from airbyte_cdk.models import SyncMode, Type
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
     DATA_IS_NOT_GOLDEN_MSG,
@@ -17,9 +18,6 @@ from source_google_analytics_v4.source import (
     GoogleAnalyticsV4TypesList,
     SourceGoogleAnalyticsV4,
 )
-
-from airbyte_cdk.models import SyncMode, Type
-
 
 expected_metrics_dimensions_type_map = (
     {"ga:users": "INTEGER", "ga:newUsers": "INTEGER"},

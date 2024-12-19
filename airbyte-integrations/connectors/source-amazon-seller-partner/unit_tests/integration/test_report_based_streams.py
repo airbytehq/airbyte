@@ -11,18 +11,16 @@ from typing import List, Optional
 import freezegun
 import pytest
 import requests_mock
-from source_amazon_seller_partner.streams import ReportProcessingStatus
-
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
 from airbyte_protocol.models import AirbyteStateMessage, FailureType, SyncMode
+from source_amazon_seller_partner.streams import ReportProcessingStatus
 
 from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response, response_with_status
 from .utils import assert_message_in_log_output, config, find_template, get_stream_by_name, mock_auth, read_output
-
 
 _DOCUMENT_DOWNLOAD_URL = "https://test.com/download"
 _REPORT_ID = "6789087632"

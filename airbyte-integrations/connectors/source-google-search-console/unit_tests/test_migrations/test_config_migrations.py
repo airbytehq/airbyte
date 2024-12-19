@@ -6,12 +6,10 @@
 import json
 from typing import Any, Mapping
 
-from source_google_search_console.config_migrations import MigrateCustomReports
-from source_google_search_console.source import SourceGoogleSearchConsole
-
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-
+from source_google_search_console.config_migrations import MigrateCustomReports
+from source_google_search_console.source import SourceGoogleSearchConsole
 
 # BASE ARGS
 CMD = "check"

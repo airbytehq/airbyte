@@ -6,10 +6,9 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.destination import DestinationPinecone
-
-from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationPinecone(unittest.TestCase):

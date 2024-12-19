@@ -6,13 +6,12 @@ import json
 import pytest
 import requests
 import responses
-from source_iterable.source import SourceIterable
-from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
-from source_iterable.utils import dateutil_parse
-
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_iterable.source import SourceIterable
+from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
+from source_iterable.utils import dateutil_parse
 
 
 def test_campaigns_metrics_csv():

@@ -8,7 +8,6 @@ from typing import Any, List, Mapping, Optional, Union
 import pytest
 import requests
 import requests_mock
-
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean

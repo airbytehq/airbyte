@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List
 
 from dagger import Container, Directory
-
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext

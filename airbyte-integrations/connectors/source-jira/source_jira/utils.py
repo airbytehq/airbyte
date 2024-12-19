@@ -6,7 +6,6 @@ from typing import Any, MutableMapping
 
 from airbyte_cdk.sources.streams import Stream
 
-
 _NO_STATE: MutableMapping[str, Any] = {}
 
 

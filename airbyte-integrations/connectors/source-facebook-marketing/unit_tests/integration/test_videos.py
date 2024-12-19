@@ -7,7 +7,6 @@ from typing import Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -26,7 +25,6 @@ from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import error_reduce_amount_of_data_response, get_account_response
 from .utils import config, read_output
-
 
 _STREAM_NAME = "videos"
 _CURSOR_FIELD = "updated_time"

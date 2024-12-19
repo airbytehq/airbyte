@@ -7,13 +7,12 @@ from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from requests import Response
-from source_monday.components import IncrementalSingleSlice, IncrementalSubstreamSlicer
-from source_monday.extractor import MondayIncrementalItemsExtractor
-
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
+from requests import Response
+from source_monday.components import IncrementalSingleSlice, IncrementalSubstreamSlicer
+from source_monday.extractor import MondayIncrementalItemsExtractor
 
 
 def _create_response(content: Any) -> Response:

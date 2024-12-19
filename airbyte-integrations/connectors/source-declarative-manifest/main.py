@@ -4,6 +4,5 @@
 
 from source_declarative_manifest.run import run
 
-
 if __name__ == "__main__":
     run()

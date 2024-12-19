@@ -8,6 +8,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_pinterest.streams import (
     AnalyticsApiBackoffStrategyDecorator,
     NonJSONResponse,
@@ -18,14 +22,8 @@ from source_pinterest.streams import (
 )
 from source_pinterest.utils import get_analytics_columns
 
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-
 from .conftest import get_stream_by_name
 from .utils import create_requests_response
-
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 _ANY_STREAM_NAME = "any_stream_name"

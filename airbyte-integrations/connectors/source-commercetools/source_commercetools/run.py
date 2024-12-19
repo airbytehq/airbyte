@@ -5,9 +5,8 @@
 
 import sys
 
-from source_commercetools import SourceCommercetools
-
 from airbyte_cdk.entrypoint import launch
+from source_commercetools import SourceCommercetools
 
 
 def run():

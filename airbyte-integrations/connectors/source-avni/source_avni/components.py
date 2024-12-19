@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 import boto3
 import requests
-
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 
 

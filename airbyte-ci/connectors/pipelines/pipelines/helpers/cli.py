@@ -10,7 +10,6 @@ from typing import Any, List, Optional
 import asyncclick as click
 import asyncer
 from jinja2 import Template
-
 from pipelines.models.steps import CommandResult
 
 ALL_RESULTS_KEY = "_run_all_results"

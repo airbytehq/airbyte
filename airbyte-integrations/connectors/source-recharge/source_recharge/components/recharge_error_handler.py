@@ -5,10 +5,9 @@
 import logging
 from typing import Optional, Union
 
-from requests import Response
-
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from requests import Response
 
 
 class RechargeErrorHandler(HttpStatusErrorHandler):

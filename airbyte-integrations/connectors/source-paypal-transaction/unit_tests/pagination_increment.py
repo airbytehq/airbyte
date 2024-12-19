@@ -6,7 +6,6 @@ import re
 import pytest
 import requests
 import requests_mock
-
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
 
 

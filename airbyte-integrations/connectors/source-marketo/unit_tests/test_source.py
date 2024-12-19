@@ -11,14 +11,12 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 import pendulum
 import pytest
 import requests
-from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
-
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
+from source_marketo.source import Activities, IncrementalMarketoStream, Leads, MarketoExportCreate, MarketoStream, SourceMarketo
 
 from .conftest import START_DATE, get_stream_by_name
-
 
 logger = logging.getLogger("airbyte")
 

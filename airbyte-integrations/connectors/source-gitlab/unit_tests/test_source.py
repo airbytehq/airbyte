@@ -6,9 +6,8 @@
 import logging
 
 import pytest
-from source_gitlab import SourceGitlab
-
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from source_gitlab import SourceGitlab
 
 
 def test_streams(config):

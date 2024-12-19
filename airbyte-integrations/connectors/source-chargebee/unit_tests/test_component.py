@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import pytest
-from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
-
 from airbyte_cdk.sources.types import Record, StreamSlice
+from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
 
 
 @pytest.mark.parametrize(

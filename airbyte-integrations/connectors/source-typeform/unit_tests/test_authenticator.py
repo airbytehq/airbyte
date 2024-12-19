@@ -1,9 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from source_typeform.components import TypeformAuthenticator
-
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from source_typeform.components import TypeformAuthenticator
 
 
 def test_typeform_authenticator():

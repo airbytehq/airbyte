@@ -5,7 +5,6 @@
 import logging
 
 import asyncclick as click
-
 from pipelines.cli.auto_update import is_dev_command
 from pipelines.external_scripts.airbyte_ci_dev_install import main as install_airbyte_ci_dev_pipx
 from pipelines.external_scripts.airbyte_ci_install import main as install_airbyte_ci_binary

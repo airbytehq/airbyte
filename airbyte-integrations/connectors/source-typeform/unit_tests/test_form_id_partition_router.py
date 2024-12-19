@@ -6,10 +6,8 @@
 from unittest.mock import Mock
 
 import pytest
-from source_typeform.components import FormIdPartitionRouter, TypeformAuthenticator
-
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-
+from source_typeform.components import FormIdPartitionRouter, TypeformAuthenticator
 
 # test cases as a list of tuples (form_ids, parent_stream_configs, expected_slices)
 test_cases = [

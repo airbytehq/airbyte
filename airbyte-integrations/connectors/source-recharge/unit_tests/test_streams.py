@@ -8,9 +8,8 @@ from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
 import requests
-from source_recharge.source import Orders, RechargeTokenAuthenticator, SourceRecharge
-
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from source_recharge.source import Orders, RechargeTokenAuthenticator, SourceRecharge
 
 
 def use_orders_deprecated_api_config(

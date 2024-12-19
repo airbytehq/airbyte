@@ -20,7 +20,6 @@ from airbyte_cdk.sources import Source
 from .database import establish_connection, get_table_structure
 from .utils import airbyte_message_from_data, convert_type
 
-
 SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
 
 

@@ -11,7 +11,6 @@ from requests import codes as status_codes
 
 from .helpers import SCOPES, Helpers
 
-
 logger = logging.getLogger("airbyte")
 
 

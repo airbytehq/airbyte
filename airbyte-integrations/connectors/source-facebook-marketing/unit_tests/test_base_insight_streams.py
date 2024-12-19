@@ -6,12 +6,11 @@ from datetime import datetime
 
 import pendulum
 import pytest
+from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pendulum import duration
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
-
-from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture(name="api")

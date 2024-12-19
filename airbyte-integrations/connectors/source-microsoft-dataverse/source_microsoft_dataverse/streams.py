@@ -8,7 +8,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import requests
-
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 

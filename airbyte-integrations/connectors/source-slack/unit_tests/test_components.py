@@ -4,14 +4,13 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from source_slack import SourceSlack
-from source_slack.components.channel_members_extractor import ChannelMembersExtractor
-from source_slack.components.join_channels import ChannelsRetriever, JoinChannelsStream
-
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_protocol.models import SyncMode
+from source_slack import SourceSlack
+from source_slack.components.channel_members_extractor import ChannelMembersExtractor
+from source_slack.components.join_channels import ChannelsRetriever, JoinChannelsStream
 
 
 def get_stream_by_name(stream_name, config):

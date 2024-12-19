@@ -3,9 +3,8 @@
 from dataclasses import dataclass
 from typing import Any, List, Mapping
 
-from requests_cache import Response
-
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from requests_cache import Response
 
 
 @dataclass

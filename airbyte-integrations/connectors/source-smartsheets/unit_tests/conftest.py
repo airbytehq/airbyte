@@ -9,7 +9,6 @@ from unittest.mock import Mock
 import pytest
 from smartsheet.models import Sheet
 
-
 HERE = Path(__file__).parent.absolute()
 
 

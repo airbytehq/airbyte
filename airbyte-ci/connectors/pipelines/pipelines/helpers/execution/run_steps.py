@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 import anyio
 import asyncer
 import dpath
-
 from pipelines import main_logger
 from pipelines.models.steps import StepStatus
 

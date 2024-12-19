@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import _collections_abc
 import json
 import logging
 import tempfile
@@ -14,21 +13,17 @@ from functools import cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import _collections_abc
 import dagger
 import requests
-from airbyte_protocol.models import (
-    AirbyteCatalog,  # type: ignore
-    AirbyteMessage,  # type: ignore
-    AirbyteStateMessage,  # type: ignore
-    AirbyteStreamStatusTraceMessage,  # type: ignore
-    ConfiguredAirbyteCatalog,  # type: ignore
-    TraceType,  # type: ignore
-)
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore
+from airbyte_protocol.models import AirbyteMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStateMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStreamStatusTraceMessage  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from airbyte_protocol.models import TraceType  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from genson import SchemaBuilder  # type: ignore
-from mitmproxy import http
-from pydantic import ValidationError
-
 from live_tests.commons.backends import DuckDbBackend, FileBackend
 from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.utils import (
@@ -38,6 +33,8 @@ from live_tests.commons.utils import (
     sanitize_stream_name,
     sort_dict_keys,
 )
+from mitmproxy import http
+from pydantic import ValidationError
 
 
 class UserDict(_collections_abc.MutableMapping):  # type: ignore

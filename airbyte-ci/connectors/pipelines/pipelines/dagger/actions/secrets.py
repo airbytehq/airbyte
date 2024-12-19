@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from typing import Callable, List
 
     from dagger import Container
-
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 

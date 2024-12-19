@@ -11,15 +11,13 @@ from typing import Iterable, List, Optional
 
 import pytz
 import smart_open
-from google.cloud import storage
-from google.oauth2 import credentials, service_account
-
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from google.cloud import storage
+from google.oauth2 import credentials, service_account
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
-
 
 # google can raise warnings for end user credentials, wrapping it to Logger
 logging.captureWarnings(True)

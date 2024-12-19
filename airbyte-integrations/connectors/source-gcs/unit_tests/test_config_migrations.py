@@ -6,10 +6,9 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk import AirbyteEntrypoint
 from source_gcs import SourceGCS
 from source_gcs.config_migrations import MigrateServiceAccount
-
-from airbyte_cdk import AirbyteEntrypoint
 
 
 def load_config(path: str) -> Mapping[str, Any]:

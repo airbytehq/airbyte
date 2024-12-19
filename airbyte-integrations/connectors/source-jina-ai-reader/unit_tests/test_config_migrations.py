@@ -5,7 +5,6 @@ import os
 from source_jina_ai_reader.config_migration import JinaAiReaderConfigMigration
 from source_jina_ai_reader.source import SourceJinaAiReader
 
-
 TEST_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_config.json"
 
 

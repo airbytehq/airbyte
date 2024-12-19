@@ -3,8 +3,6 @@ import datetime
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
-from source_klaviyo import SourceKlaviyo
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -19,7 +17,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from integration.config import KlaviyoConfigBuilder
-
+from source_klaviyo import SourceKlaviyo
 
 _ENDPOINT_TEMPLATE_NAME = "profiles"
 _START_DATE = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)

@@ -4,9 +4,8 @@
 
 
 import pytest
-from source_zendesk_chat.components.timestamp_based_cursor import ZendeskChatTimestampCursor
-
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from source_zendesk_chat.components.timestamp_based_cursor import ZendeskChatTimestampCursor
 
 
 def _get_cursor(config, cursor_field, use_microseconds) -> ZendeskChatTimestampCursor:

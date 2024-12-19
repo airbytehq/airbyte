@@ -6,6 +6,5 @@
 
 import dagger
 
-
 REMOTE_REGISTRY = "docker.io"
 PLATFORMS_WE_PUBLISH_FOR = (dagger.Platform("linux/amd64"), dagger.Platform("linux/arm64"))

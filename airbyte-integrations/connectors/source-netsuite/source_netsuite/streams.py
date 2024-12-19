@@ -9,9 +9,8 @@ from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
-from requests_oauthlib import OAuth1
-
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests_oauthlib import OAuth1
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,

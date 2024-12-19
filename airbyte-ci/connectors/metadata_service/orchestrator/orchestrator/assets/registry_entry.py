@@ -31,7 +31,6 @@ from orchestrator.utils.object_helpers import CaseInsensitveKeys, deep_copy_para
 from pydantic import BaseModel, ValidationError
 from pydash.objects import get, set_with
 
-
 GROUP_NAME = "registry_entry"
 
 # TYPES

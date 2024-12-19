@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import SyncMode
@@ -12,7 +11,6 @@ from airbyte_protocol.models import SyncMode
 from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
 from .response_builder.contact_response_builder import AllContactsResponseBuilder, ContactBuilder, ContactsListMembershipBuilder
-
 
 _START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
 

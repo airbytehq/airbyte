@@ -4,7 +4,6 @@
 
 import pytest
 from click import UsageError
-
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles

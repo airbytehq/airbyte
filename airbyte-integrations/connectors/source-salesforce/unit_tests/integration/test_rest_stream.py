@@ -7,16 +7,14 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-from config_builder import ConfigBuilder
-from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
-from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
-from source_salesforce.streams import LOOKBACK_SECONDS
-
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
+from config_builder import ConfigBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
-
+from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
+from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
+from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
 _CLIENT_ID = "a_client_id"

@@ -5,10 +5,8 @@
 
 import sys
 
-from source_avni import SourceAvni
-
 from airbyte_cdk.entrypoint import launch
-
+from source_avni import SourceAvni
 
 if __name__ == "__main__":
     source = SourceAvni()

@@ -9,10 +9,8 @@ from typing import Any, Mapping
 
 import pendulum
 import pytest
-from source_marketo.source import Activities, MarketoAuthenticator, SourceMarketo
-
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-
+from source_marketo.source import Activities, MarketoAuthenticator, SourceMarketo
 
 START_DATE = pendulum.now().subtract(days=75)
 

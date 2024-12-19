@@ -7,6 +7,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
+from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -15,8 +16,6 @@ from source_microsoft_sharepoint.stream_reader import (
     SourceMicrosoftSharePointStreamReader,
 )
 from wcmatch.glob import GLOBSTAR, globmatch
-
-from airbyte_cdk import AirbyteTracedException
 
 
 def create_mock_drive_item(is_file, name, children=None):

@@ -5,10 +5,9 @@
 import unittest
 from unittest.mock import Mock
 
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_chroma.config import ChromaIndexingConfigModel
 from destination_chroma.indexer import ChromaIndexer
-
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 
 
 class TestChromaIndexer(unittest.TestCase):

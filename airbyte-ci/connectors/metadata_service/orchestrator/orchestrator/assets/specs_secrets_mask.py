@@ -11,7 +11,6 @@ from dagster import MetadataValue, OpExecutionContext, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from orchestrator.logging import sentry
 
-
 GROUP_NAME = "specs_secrets_mask"
 
 # HELPERS

@@ -13,7 +13,6 @@ import git
 import pytest
 import requests
 from connector_ops.utils import Connector
-
 from pipelines.helpers import utils
 from tests.utils import ALL_CONNECTORS
 

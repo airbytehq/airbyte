@@ -7,12 +7,10 @@ import json
 from typing import Any, Mapping
 
 import pytest
-from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption
-from source_amazon_seller_partner.source import SourceAmazonSellerPartner
-
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-
+from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption
+from source_amazon_seller_partner.source import SourceAmazonSellerPartner
 
 CMD = "check"
 SOURCE: Source = SourceAmazonSellerPartner()

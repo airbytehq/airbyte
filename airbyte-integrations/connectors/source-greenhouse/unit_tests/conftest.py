@@ -5,9 +5,8 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
-
 from airbyte_cdk.sources.streams import Stream
+from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 
 
 @pytest.fixture

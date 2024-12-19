@@ -5,9 +5,8 @@
 
 import sys
 
-from source_public_apis import SourcePublicApis
-
 from airbyte_cdk.entrypoint import launch
+from source_public_apis import SourcePublicApis
 
 
 def run():

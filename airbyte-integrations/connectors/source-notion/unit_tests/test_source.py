@@ -3,9 +3,8 @@
 #
 
 import pytest
-from source_notion.source import SourceNotion
-
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_notion.source import SourceNotion
 
 
 @pytest.mark.parametrize(

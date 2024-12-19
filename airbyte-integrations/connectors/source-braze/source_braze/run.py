@@ -5,9 +5,8 @@
 
 import sys
 
-from source_braze import SourceBraze
-
 from airbyte_cdk.entrypoint import launch
+from source_braze import SourceBraze
 
 
 def run():

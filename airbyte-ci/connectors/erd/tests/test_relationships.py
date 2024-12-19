@@ -17,13 +17,7 @@ class RelationshipsMergerTest(TestCase):
         self._merger = RelationshipsMerger()
 
     def test_given_no_confirmed_then_return_estimation(self) -> None:
-        estimated: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
+        estimated: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _A_TARGET).build()]}
         confirmed: Relationships = {"streams": []}
 
         merged = self._merger.merge(estimated, confirmed)
@@ -33,20 +27,8 @@ class RelationshipsMergerTest(TestCase):
     def test_given_confirmed_as_false_positive_then_remove_from_estimation(
         self,
     ) -> None:
-        estimated: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
-        confirmed: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_false_positive(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
+        estimated: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _A_TARGET).build()]}
+        confirmed: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_false_positive(_A_COLUMN, _A_TARGET).build()]}
 
         merged = self._merger.merge(estimated, confirmed)
 
@@ -56,33 +38,15 @@ class RelationshipsMergerTest(TestCase):
         self,
     ) -> None:
         estimated: Relationships = {"streams": []}
-        confirmed: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
+        confirmed: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _A_TARGET).build()]}
 
         merged = self._merger.merge(estimated, confirmed)
 
         assert merged == confirmed
 
     def test_given_different_columns_then_return_both(self) -> None:
-        estimated: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
-        confirmed: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_ANOTHER_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
+        estimated: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _A_TARGET).build()]}
+        confirmed: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_ANOTHER_COLUMN, _A_TARGET).build()]}
 
         merged = self._merger.merge(estimated, confirmed)
 
@@ -101,20 +65,8 @@ class RelationshipsMergerTest(TestCase):
     def test_given_same_column_but_different_value_then_prioritize_confirmed(
         self,
     ) -> None:
-        estimated: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _A_TARGET)
-                .build()
-            ]
-        }
-        confirmed: Relationships = {
-            "streams": [
-                RelationshipBuilder(_A_STREAM_NAME)
-                .with_relationship(_A_COLUMN, _ANOTHER_TARGET)
-                .build()
-            ]
-        }
+        estimated: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _A_TARGET).build()]}
+        confirmed: Relationships = {"streams": [RelationshipBuilder(_A_STREAM_NAME).with_relationship(_A_COLUMN, _ANOTHER_TARGET).build()]}
 
         merged = self._merger.merge(estimated, confirmed)
 

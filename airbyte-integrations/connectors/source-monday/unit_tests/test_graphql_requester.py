@@ -5,12 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_monday import MondayGraphqlRequester
-
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-
+from source_monday import MondayGraphqlRequester
 
 nested_object_schema = {
     "root": {

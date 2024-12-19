@@ -8,7 +8,6 @@ from typing import List
 
 import anyio
 import pytest
-
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.publish.context import RolloutMode
 from pipelines.models.steps import StepStatus

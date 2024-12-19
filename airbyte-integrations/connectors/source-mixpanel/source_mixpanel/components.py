@@ -6,7 +6,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import dpath.util
 import requests
-
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString

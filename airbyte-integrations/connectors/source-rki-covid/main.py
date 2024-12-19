@@ -4,6 +4,5 @@
 
 from source_rki_covid.run import run
 
-
 if __name__ == "__main__":
     run()

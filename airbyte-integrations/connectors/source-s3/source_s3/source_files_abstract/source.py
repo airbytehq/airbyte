@@ -7,10 +7,8 @@ from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
-from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
-
 from airbyte_cdk import AbstractSource, ConnectorSpecification, DestinationSyncMode, Stream, SyncMode
-
+from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 # ideas on extending this to handle multiple streams:
 # - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.

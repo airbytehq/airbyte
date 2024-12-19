@@ -5,7 +5,6 @@
 from typing import Any, Iterable, List, Mapping
 
 import requests
-
 from airbyte_cdk.models import SyncMode
 from source_amazon_ads.streams.common import AmazonAdsStream
 

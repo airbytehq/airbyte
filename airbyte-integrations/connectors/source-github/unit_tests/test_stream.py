@@ -10,6 +10,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
+from airbyte_protocol.models import FailureType
 from requests import HTTPError
 from responses import matchers
 from source_github import SourceGithub, constants
@@ -51,13 +55,7 @@ from source_github.streams import (
 )
 from source_github.utils import read_full_refresh
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
-from airbyte_protocol.models import FailureType
-
 from .utils import ProjectsResponsesAPI, read_incremental
-
 
 DEFAULT_BACKOFF_DELAYS = [1, 2, 4, 8, 16]
 

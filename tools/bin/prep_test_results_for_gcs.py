@@ -6,7 +6,6 @@ import argparse
 import json
 import os
 
-
 """
 
 This script is intended to be run in conjuction with https://github.com/EnricoMi/publish-unit-test-result-action to upload trimmed

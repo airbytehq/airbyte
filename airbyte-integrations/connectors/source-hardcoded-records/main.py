@@ -5,6 +5,5 @@
 
 from source_hardcoded_records.run import run
 
-
 if __name__ == "__main__":
     run()

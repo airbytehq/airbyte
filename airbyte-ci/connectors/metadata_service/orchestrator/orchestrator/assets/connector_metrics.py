@@ -11,7 +11,6 @@ from dagster import OpExecutionContext, asset
 from google.cloud import storage
 from orchestrator.logging import sentry
 
-
 GROUP_NAME = "connector_metrics"
 
 

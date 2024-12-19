@@ -9,7 +9,6 @@ import uuid
 from typing import List, Tuple
 
 import dagger
-
 from base_images import console, published_image
 
 

@@ -6,12 +6,10 @@
 import json
 from typing import Any, Mapping
 
-from source_shopify.config_migrations import MigrateConfig
-from source_shopify.source import SourceShopify
-
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-
+from source_shopify.config_migrations import MigrateConfig
+from source_shopify.source import SourceShopify
 
 # BASE ARGS
 CMD = "check"

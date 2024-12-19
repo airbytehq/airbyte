@@ -11,17 +11,6 @@ from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
-from connector_acceptance_test.config import (
-    Config,
-    EmptyStreamConfiguration,
-    FutureStateConfig,
-    FutureStateCursorFormatConfiguration,
-    IncrementalConfig,
-)
-from connector_acceptance_test.tests import test_incremental
-from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
-from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
-
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -38,7 +27,16 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    FutureStateConfig,
+    FutureStateCursorFormatConfiguration,
+    IncrementalConfig,
+)
+from connector_acceptance_test.tests import test_incremental
+from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
+from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
 
 pytestmark = [
     pytest.mark.anyio,

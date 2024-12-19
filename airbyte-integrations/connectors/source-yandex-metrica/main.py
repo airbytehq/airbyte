@@ -4,6 +4,5 @@
 
 from source_yandex_metrica.run import run
 
-
 if __name__ == "__main__":
     run()

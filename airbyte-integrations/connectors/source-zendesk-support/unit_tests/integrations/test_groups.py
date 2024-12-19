@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import pendulum
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -13,7 +12,6 @@ from .config import ConfigBuilder
 from .helpers import given_groups_with_later_records
 from .utils import datetime_to_string, read_stream, string_to_datetime
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
-
 
 _NOW = datetime.now(timezone.utc)
 

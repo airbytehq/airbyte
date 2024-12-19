@@ -7,10 +7,8 @@ from dataclasses import dataclass
 
 import backoff
 import requests
-
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-
 
 logger = logging.getLogger("airbyte")
 

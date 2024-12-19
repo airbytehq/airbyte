@@ -4,10 +4,9 @@
 
 import datetime
 
+from airbyte_cdk.models import SyncMode
 from conftest import get_stream_by_name
 from source_xero.components import ParseDates
-
-from airbyte_cdk.models import SyncMode
 
 
 def test_parsed_result(requests_mock, config_pass, mock_bank_transaction_response):

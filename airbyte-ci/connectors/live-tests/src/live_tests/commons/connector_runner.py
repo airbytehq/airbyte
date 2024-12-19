@@ -15,7 +15,6 @@ from pathlib import Path
 import anyio
 import asyncer
 import dagger
-
 from live_tests.commons import errors
 from live_tests.commons.models import Command, ExecutionInputs, ExecutionResult
 from live_tests.commons.proxy import Proxy

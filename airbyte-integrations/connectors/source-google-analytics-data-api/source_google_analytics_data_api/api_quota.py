@@ -8,9 +8,8 @@ from functools import wraps
 from typing import Any, Iterable, Mapping, Optional
 
 import requests
-from requests.exceptions import JSONDecodeError
-
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from requests.exceptions import JSONDecodeError
 
 from .utils import API_LIMIT_PER_HOUR
 

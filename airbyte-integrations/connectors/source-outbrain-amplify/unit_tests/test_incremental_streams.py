@@ -3,10 +3,9 @@
 #
 
 
+from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_outbrain_amplify.source import IncrementalOutbrainAmplifyStream
-
-from airbyte_cdk.models import SyncMode
 
 
 @fixture

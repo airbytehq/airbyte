@@ -2,9 +2,8 @@
 
 import pytest
 from connector_ops.utils import METADATA_FILE_NAME
-from semver import VersionInfo
-
 from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
+from semver import VersionInfo
 
 
 class TestVersionIncrementCheck:

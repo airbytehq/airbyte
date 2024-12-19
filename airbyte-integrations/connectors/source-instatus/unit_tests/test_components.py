@@ -5,11 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionRouter
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionRouter
 
 
 @pytest.mark.parametrize(

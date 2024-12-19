@@ -6,8 +6,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-from source_stripe import SourceStripe
-
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
@@ -30,7 +28,7 @@ from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
 from integration.test_bank_accounts import _a_customer, _customers_response
-
+from source_stripe import SourceStripe
 
 _EVENT_TYPES = ["payment_method.*"]
 

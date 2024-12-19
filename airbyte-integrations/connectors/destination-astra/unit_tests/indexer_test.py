@@ -5,10 +5,9 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
 import urllib3
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_astra.config import AstraIndexingModel
 from destination_astra.indexer import AstraIndexer
-
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 def create_astra_indexer():

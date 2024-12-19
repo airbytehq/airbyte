@@ -10,7 +10,6 @@ import paramiko
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
 
-
 logger = logging.Logger("")
 
 

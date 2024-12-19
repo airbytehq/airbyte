@@ -6,7 +6,6 @@ from pathlib import Path
 
 import asyncclick as click
 import pytest
-
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, python_connectors
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import BUILD_PLATFORMS

@@ -5,9 +5,8 @@
 
 import sys
 
-from source_paypal_transaction import SourcePaypalTransaction
-
 from airbyte_cdk.entrypoint import launch
+from source_paypal_transaction import SourcePaypalTransaction
 
 
 def run():

@@ -4,7 +4,6 @@
 
 
 import asyncclick as click
-
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_poetry.pipeline import run_connector_migration_to_poetry_pipeline_wrapper
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines

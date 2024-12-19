@@ -6,12 +6,10 @@
 import json
 from typing import Any, Mapping
 
-from source_google_ads.config_migrations import MigrateCustomQuery
-from source_google_ads.source import SourceGoogleAds
-
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-
+from source_google_ads.config_migrations import MigrateCustomQuery
+from source_google_ads.source import SourceGoogleAds
 
 # BASE ARGS
 CMD = "check"

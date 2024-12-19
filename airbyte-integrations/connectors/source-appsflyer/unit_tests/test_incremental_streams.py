@@ -4,6 +4,7 @@
 
 import pendulum
 import pytest
+from airbyte_cdk.models import SyncMode
 from pytest import fixture, raises
 from source_appsflyer.fields import *
 from source_appsflyer.source import (
@@ -20,8 +21,6 @@ from source_appsflyer.source import (
     RetargetingPartnersReport,
     UninstallEvents,
 )
-
-from airbyte_cdk.models import SyncMode
 
 
 @fixture

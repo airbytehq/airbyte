@@ -7,12 +7,10 @@ import json
 import os
 from typing import Any, Mapping
 
-from source_github.config_migrations import MigrateBranch, MigrateRepository
-from source_github.source import SourceGithub
-
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
-
+from source_github.config_migrations import MigrateBranch, MigrateRepository
+from source_github.source import SourceGithub
 
 # BASE ARGS
 CMD = "check"

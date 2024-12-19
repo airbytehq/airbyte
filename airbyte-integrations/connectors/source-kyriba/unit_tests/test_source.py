@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 from source_kyriba.source import KyribaClient, SourceKyriba
 
-
 config = {
     "username": "username",
     "password": "password",

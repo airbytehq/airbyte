@@ -6,11 +6,6 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
-from pytest import fixture, mark
-from source_firebolt.database import get_table_structure, parse_config
-from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
-from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -22,6 +17,10 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from pytest import fixture, mark
+from source_firebolt.database import get_table_structure, parse_config
+from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
+from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])

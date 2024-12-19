@@ -6,10 +6,9 @@ import json
 
 import pendulum
 import pytest
-from source_surveymonkey.source import SourceSurveymonkey
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
+from source_surveymonkey.source import SourceSurveymonkey
 
 
 @pytest.fixture(name="read_json")

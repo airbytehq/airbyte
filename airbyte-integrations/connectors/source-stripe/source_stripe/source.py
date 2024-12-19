@@ -8,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -36,7 +35,6 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
 )
-
 
 logger = logging.getLogger("airbyte")
 
@@ -584,10 +582,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self,
-                stream_slice,
-                *args,
-                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,

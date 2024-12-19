@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import anyio
 from connector_ops.utils import ConnectorLanguage  # type: ignore
-
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext

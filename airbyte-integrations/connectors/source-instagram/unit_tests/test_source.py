@@ -5,8 +5,6 @@
 
 import logging
 
-from source_instagram.source import SourceInstagram
-
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -16,7 +14,7 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     SyncMode,
 )
-
+from source_instagram.source import SourceInstagram
 
 logger = logging.getLogger("airbyte")
 

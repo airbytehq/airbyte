@@ -10,11 +10,10 @@ from unittest.mock import MagicMock, patch
 import freezegun
 import pytest
 import requests
-from pytest import fixture, mark
-from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from pytest import fixture, mark
+from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 
 
 @pytest.fixture

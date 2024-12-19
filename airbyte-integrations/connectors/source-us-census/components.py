@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler

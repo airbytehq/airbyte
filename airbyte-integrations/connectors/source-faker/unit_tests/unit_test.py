@@ -4,9 +4,8 @@
 
 import jsonschema
 import pytest
-from source_faker import SourceFaker
-
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from source_faker import SourceFaker
 
 
 class MockLogger:

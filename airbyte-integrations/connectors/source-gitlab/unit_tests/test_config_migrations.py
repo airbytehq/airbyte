@@ -5,7 +5,6 @@ import os
 from source_gitlab.config_migrations import MigrateGroups
 from source_gitlab.source import SourceGitlab
 
-
 TEST_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_config.json"
 
 

@@ -10,11 +10,10 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from freezegun import freeze_time
 from requests.models import Response
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, SourceGoogleAnalyticsDataApi
-
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 
 from .utils import read_incremental
 

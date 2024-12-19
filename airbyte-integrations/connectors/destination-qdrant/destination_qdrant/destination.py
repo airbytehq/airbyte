@@ -15,7 +15,6 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import ConfigModel
 from destination_qdrant.indexer import QdrantIndexer
 
-
 BATCH_SIZE = 256
 
 

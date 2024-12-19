@@ -7,10 +7,9 @@ from datetime import date
 from unittest.mock import MagicMock
 
 import requests
+from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kyriba.source import CashFlows
-
-from airbyte_cdk.models import SyncMode
 
 from .test_streams import config
 

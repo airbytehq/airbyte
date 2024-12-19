@@ -3,11 +3,9 @@
 #
 
 import pytest
+from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, AirbyteStream, Type
 from connector_acceptance_test.config import NoPrimaryKeyConfiguration
 from connector_acceptance_test.tests import test_core
-
-from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, AirbyteStream, Type
-
 
 pytestmark = pytest.mark.anyio
 

@@ -3,10 +3,8 @@
 #
 
 
-from source_yandex_metrica.streams import Sessions
-
 from airbyte_cdk.models import SyncMode
-
+from source_yandex_metrica.streams import Sessions
 
 EXPECTED_RECORDS = [
     {"watchID": "00000000", "dateTime": "2022-09-01T12:00:00+00:00"},

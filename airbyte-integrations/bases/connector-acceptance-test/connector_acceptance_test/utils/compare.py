@@ -11,7 +11,6 @@ import icdiff
 import py
 from pprintpp import pformat
 
-
 MAX_COLS = py.io.TerminalWriter().fullwidth
 MARGIN_LEFT = 20
 GUTTER = 3

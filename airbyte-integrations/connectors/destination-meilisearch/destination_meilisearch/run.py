@@ -4,9 +4,8 @@
 
 import sys
 
-from destination_meilisearch import DestinationMeilisearch
-
 from airbyte_cdk.entrypoint import launch
+from destination_meilisearch import DestinationMeilisearch
 
 
 def run():

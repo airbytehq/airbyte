@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pydantic import BaseModel, Field
-
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
+from pydantic import BaseModel, Field
 
 
 class PineconeIndexingModel(BaseModel):

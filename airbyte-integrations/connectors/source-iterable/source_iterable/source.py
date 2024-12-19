@@ -47,7 +47,6 @@ from .streams import (
     WebPushSendSkip,
 )
 
-
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.

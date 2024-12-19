@@ -12,7 +12,6 @@ from azure.storage.blob import BlobProperties, ContainerClient
 from source_azure_blob_storage.spec import SourceAzureBlobStorageSpec
 from source_azure_blob_storage.stream_reader import AzureOauth2Authenticator, SourceAzureBlobStorageStreamReader
 
-
 logger = logging.Logger("")
 
 

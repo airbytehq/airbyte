@@ -7,7 +7,6 @@ import os
 import re
 from typing import Any, Mapping, Union
 
-
 logger = logging.getLogger("airbyte")
 
 TMP_FOLDER = "/tmp/test_sftp_source"

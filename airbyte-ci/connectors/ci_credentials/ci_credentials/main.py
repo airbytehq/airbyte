@@ -11,7 +11,6 @@ from common_utils import Logger
 
 from . import SecretsManager
 
-
 logger = Logger()
 
 ENV_GCP_GSM_CREDENTIALS = "GCP_GSM_CREDENTIALS"

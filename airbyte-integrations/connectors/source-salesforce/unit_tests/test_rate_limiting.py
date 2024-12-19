@@ -6,12 +6,10 @@ from unittest import TestCase
 import pytest
 import requests
 import requests_mock
-from requests.exceptions import ChunkedEncodingError
-from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-
+from requests.exceptions import ChunkedEncodingError
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 _ANY = "any"
 _ANY_BASE_URL = "https://any-base-url.com"

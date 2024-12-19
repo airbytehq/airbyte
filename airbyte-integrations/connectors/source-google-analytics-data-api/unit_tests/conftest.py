@@ -9,7 +9,6 @@ from copy import deepcopy
 
 import pytest
 
-
 # json credentials with fake private key
 json_credentials = """
 {

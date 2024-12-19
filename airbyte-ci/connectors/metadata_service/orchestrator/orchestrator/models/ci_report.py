@@ -6,7 +6,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Extra
 
-
 # TODO (ben): When the pipeline project is brought into the airbyte-ci folder
 # we should update these models to import their twin models from the pipeline project
 

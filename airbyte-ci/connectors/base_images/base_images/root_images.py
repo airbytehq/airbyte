@@ -4,7 +4,6 @@
 
 from .published_image import PublishedImage
 
-
 PYTHON_3_9_18 = PublishedImage(
     registry="docker.io",
     repository="python",

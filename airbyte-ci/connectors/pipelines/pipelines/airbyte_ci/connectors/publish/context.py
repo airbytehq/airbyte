@@ -9,7 +9,6 @@ from typing import List, Optional
 
 import asyncclick as click
 from github import PullRequest
-
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLACK_CHANNEL, ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles

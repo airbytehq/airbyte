@@ -5,9 +5,8 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_pinterest.source import SourcePinterest
-
 from airbyte_cdk.utils import AirbyteTracedException
+from source_pinterest.source import SourcePinterest
 
 
 def test_check_connection(requests_mock, test_config):

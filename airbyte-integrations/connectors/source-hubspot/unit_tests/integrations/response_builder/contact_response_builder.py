@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
-
 _CONTACTS_FIELD = "contacts"
 _FORM_SUBMISSIONS_FIELD = "form-submissions"
 _LIST_MEMBERSHIPS_FIELD = "list-memberships"

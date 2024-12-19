@@ -5,16 +5,15 @@
 import pendulum
 import pytest
 import responses
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from conftest import find_stream
 from responses import matchers
 from source_jira.source import SourceJira
 from source_jira.streams import IssueFields, Issues, PullRequests
 from source_jira.utils import read_full_refresh, read_incremental
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @responses.activate

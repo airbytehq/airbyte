@@ -5,10 +5,9 @@
 
 from unittest.mock import MagicMock
 
+from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_convex.source import ConvexStream
-
-from airbyte_cdk.models import SyncMode
 
 
 @fixture

@@ -8,7 +8,6 @@ from unittest import mock
 import dagger
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
-
 from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils

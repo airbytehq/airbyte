@@ -7,10 +7,9 @@ import operator
 from pathlib import Path
 
 import pytest
-from source_amplitude.source import SourceAmplitude
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from source_amplitude.source import SourceAmplitude
 
 
 @pytest.fixture(scope="module")

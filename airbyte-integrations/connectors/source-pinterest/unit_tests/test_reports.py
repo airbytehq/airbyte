@@ -24,7 +24,6 @@ from source_pinterest.reports.reports import (
 )
 from source_pinterest.utils import get_analytics_columns
 
-
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
 

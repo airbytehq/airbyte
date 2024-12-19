@@ -6,9 +6,8 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
-from source_tiktok_marketing import SourceTiktokMarketing
-
 from airbyte_cdk.models import ConnectorSpecification
+from source_tiktok_marketing import SourceTiktokMarketing
 
 
 @pytest.mark.parametrize(

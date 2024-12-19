@@ -7,9 +7,6 @@ import logging
 from typing import Any, Dict, List, Mapping
 
 import pytest
-from destination_databend import DestinationDatabend
-from destination_databend.client import DatabendClient
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -22,6 +19,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from destination_databend import DestinationDatabend
+from destination_databend.client import DatabendClient
 
 
 @pytest.fixture(name="databendConfig")

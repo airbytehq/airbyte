@@ -6,7 +6,6 @@ import datetime
 import asyncclick as click
 import pytest
 import requests
-
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common

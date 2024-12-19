@@ -8,7 +8,6 @@ from typing import Any, Dict
 from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 
-
 NEXT_PAGE_TOKEN = "New_Next_Page_Token"
 
 

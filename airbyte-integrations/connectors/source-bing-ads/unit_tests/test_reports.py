@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import _csv
 import copy
 import json
 import xml.etree.ElementTree as ET
@@ -10,9 +9,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from urllib.parse import urlparse
 
+import _csv
 import pendulum
 import pytest
 import source_bing_ads
+from airbyte_cdk.models import SyncMode
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
@@ -51,9 +52,6 @@ from source_bing_ads.report_streams import (
 )
 from source_bing_ads.source import SourceBingAds
 from suds import WebFault
-
-from airbyte_cdk.models import SyncMode
-
 
 TEST_CONFIG = {
     "developer_token": "developer_token",

@@ -12,15 +12,13 @@ from unittest.mock import MagicMock
 import mock
 import pendulum
 import pytest
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-
 from .utils import read_full_refresh, read_incremental
-
 
 NUMBER_OF_PROPERTIES = 2000
 

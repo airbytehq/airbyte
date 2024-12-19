@@ -5,9 +5,8 @@
 import logging
 
 import pytest
-from source_hubspot.source import SourceHubspot
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
+from source_hubspot.source import SourceHubspot
 
 
 @pytest.fixture

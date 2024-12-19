@@ -9,7 +9,6 @@ from operator import attrgetter
 from typing import Set, Tuple
 
 import semver
-
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO
 
 

@@ -7,9 +7,8 @@ from unittest.mock import patch
 import pytest
 import requests
 import requests_mock
-from source_paypal_transaction.components import PayPalOauth2Authenticator
-
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from source_paypal_transaction.components import PayPalOauth2Authenticator
 
 
 @pytest.fixture

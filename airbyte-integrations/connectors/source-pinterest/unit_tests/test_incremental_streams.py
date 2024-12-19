@@ -7,11 +7,10 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from pytest import fixture
-from source_pinterest.streams import IncrementalPinterestSubStream
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from pytest import fixture
+from source_pinterest.streams import IncrementalPinterestSubStream
 
 from .conftest import get_stream_by_name
 from .utils import create_requests_response

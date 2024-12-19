@@ -8,14 +8,12 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import WebflowTokenAuthenticator
 from .webflow_to_airbyte_mapping import WebflowToAirbyteMapping
-
 
 """
 This module is used for pulling the contents of "collections" out of Webflow, which is a CMS for hosting websites.

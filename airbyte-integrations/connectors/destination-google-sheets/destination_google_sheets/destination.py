@@ -4,11 +4,10 @@
 
 from typing import Any, Iterable, Mapping
 
-from google.auth.exceptions import RefreshError
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from google.auth.exceptions import RefreshError
 
 from .client import GoogleSheetsClient
 from .helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog

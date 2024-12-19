@@ -3,10 +3,9 @@
 from pathlib import Path
 
 import pytest
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestConnectorDocumentation as _TestConnectorDocumentation
-
-from airbyte_protocol.models import ConnectorSpecification
 
 
 @pytest.mark.parametrize(

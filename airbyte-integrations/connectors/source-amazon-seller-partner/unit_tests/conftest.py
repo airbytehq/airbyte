@@ -8,7 +8,6 @@ from typing import Any, Dict
 
 import pytest
 
-
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
 

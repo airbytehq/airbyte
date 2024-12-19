@@ -5,7 +5,6 @@
 import pytest
 from connector_acceptance_test import config, plugin
 
-
 HIGH_TEST_STRICTNESS_LEVEL = config.Config.TestStrictnessLevel.high
 LOW_TEST_STRICTNESS_LEVEL = config.Config.TestStrictnessLevel.low
 

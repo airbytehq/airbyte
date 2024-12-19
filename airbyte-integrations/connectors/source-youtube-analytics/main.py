@@ -4,6 +4,5 @@
 
 from source_youtube_analytics.run import run
 
-
 if __name__ == "__main__":
     run()

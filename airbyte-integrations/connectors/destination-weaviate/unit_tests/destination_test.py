@@ -6,10 +6,9 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_weaviate.config import ConfigModel
 from destination_weaviate.destination import DestinationWeaviate
-
-from airbyte_cdk.models import ConnectorSpecification, Status
 
 
 class TestDestinationWeaviate(unittest.TestCase):

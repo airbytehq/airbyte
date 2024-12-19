@@ -7,9 +7,8 @@ from typing import Any, Callable, List, MutableMapping, Tuple
 
 import pendulum
 import pytest
-from source_instagram.source import SourceInstagram
-
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, ConfiguredAirbyteCatalog, Type
+from source_instagram.source import SourceInstagram
 
 
 @pytest.fixture(name="state")

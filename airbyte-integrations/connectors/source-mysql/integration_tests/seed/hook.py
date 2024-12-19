@@ -14,7 +14,6 @@ import mysql.connector
 import pytz
 from mysql.connector import Error
 
-
 support_file_path_prefix = "/connector/integration_tests"
 catalog_write_file = support_file_path_prefix + "/temp/configured_catalog_copy.json"
 catalog_source_file = support_file_path_prefix + "/configured_catalog_template.json"

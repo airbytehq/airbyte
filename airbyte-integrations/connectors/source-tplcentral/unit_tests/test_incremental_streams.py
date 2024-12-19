@@ -3,9 +3,8 @@
 #
 
 import pytest
-from source_tplcentral.streams import IncrementalTplcentralStream
-
 from airbyte_cdk.models import SyncMode
+from source_tplcentral.streams import IncrementalTplcentralStream
 
 
 @pytest.fixture

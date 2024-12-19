@@ -6,10 +6,9 @@
 from typing import Any
 
 import requests
-from requests import HTTPError
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
+from requests import HTTPError
 
 
 class HubspotError(AirbyteTracedException):

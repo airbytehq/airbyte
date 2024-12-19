@@ -5,7 +5,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from metadata_service.spec_cache import CachedSpec, Registries, SpecCache, get_docker_info_from_spec_cache_path
 
 

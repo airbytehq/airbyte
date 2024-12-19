@@ -8,8 +8,6 @@ import os
 from pathlib import Path
 
 import pytest
-from connector_acceptance_test.utils import connector_runner
-
 from airbyte_protocol.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
@@ -18,7 +16,7 @@ from airbyte_protocol.models import (
     OrchestratorType,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
-
+from connector_acceptance_test.utils import connector_runner
 
 pytestmark = pytest.mark.anyio
 

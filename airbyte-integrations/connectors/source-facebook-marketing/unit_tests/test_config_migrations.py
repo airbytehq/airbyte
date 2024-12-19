@@ -8,16 +8,14 @@ import pathlib
 from typing import Any, Mapping
 
 import pytest
+from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.sources import Source
 from source_facebook_marketing.config_migrations import (
     MigrateAccountIdToArray,
     MigrateIncludeDeletedToStatusFilters,
     MigrateSecretsPathInConnector,
 )
 from source_facebook_marketing.source import SourceFacebookMarketing
-
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
-
 
 # BASE ARGS
 CMD = "check"

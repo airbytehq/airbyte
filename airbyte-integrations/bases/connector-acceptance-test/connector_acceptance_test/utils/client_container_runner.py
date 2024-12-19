@@ -10,9 +10,7 @@ from pathlib import Path
 from typing import List
 
 import dagger
-
 from connector_acceptance_test.utils import SecretDict
-
 
 IN_CONTAINER_CONNECTOR_PATH = Path("/connector")
 IN_CONTAINER_CONFIG_PATH = Path("/tmp/config.json")

@@ -5,9 +5,8 @@
 
 import sys
 
-from source_amplitude import SourceAmplitude
-
 from airbyte_cdk.entrypoint import launch
+from source_amplitude import SourceAmplitude
 
 
 def run():

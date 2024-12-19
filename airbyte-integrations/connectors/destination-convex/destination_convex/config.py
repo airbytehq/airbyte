@@ -4,7 +4,6 @@
 
 from typing import TypedDict
 
-
 ConvexConfig = TypedDict(
     "ConvexConfig",
     {

@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import freezegun
 import pendulum
-
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models import AirbyteStateBlob
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -20,7 +20,6 @@ from .zs_requests import PostsCommentsRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import ErrorResponseBuilder, PostsCommentsResponseBuilder
 from .zs_responses.records import PostsCommentsRecordBuilder
-
 
 _NOW = datetime.now(timezone.utc)
 

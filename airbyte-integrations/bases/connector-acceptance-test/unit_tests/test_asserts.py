@@ -3,8 +3,6 @@
 #
 
 import pytest
-from connector_acceptance_test.utils.asserts import verify_records_schema
-
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
@@ -13,6 +11,7 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     SyncMode,
 )
+from connector_acceptance_test.utils.asserts import verify_records_schema
 
 
 @pytest.fixture(name="record_schema")

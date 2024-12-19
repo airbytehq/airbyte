@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pendulum
 import pytest
+from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -42,8 +43,6 @@ from source_hubspot.streams import (
     Tickets,
     Workflows,
 )
-
-from airbyte_cdk.models import SyncMode
 
 from .utils import read_full_refresh, read_incremental
 

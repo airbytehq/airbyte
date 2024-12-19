@@ -13,7 +13,6 @@ from github import Github
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-
 DAYS_TO_KEEP_ORPHANED_JOBS = 90
 SLACK_CHANNEL_FOR_NOTIFICATIONS = "infra-alerts"
 

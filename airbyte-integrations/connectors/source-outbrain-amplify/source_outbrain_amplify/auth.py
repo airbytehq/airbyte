@@ -5,9 +5,8 @@
 from typing import Any, Mapping
 
 import requests
-from requests.auth import HTTPBasicAuth
-
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from requests.auth import HTTPBasicAuth
 
 
 class OutbrainAmplifyAuthenticator(TokenAuthenticator):

@@ -8,12 +8,10 @@ import logging
 from typing import Any, Iterable, Mapping
 
 import pika
-from pika.adapters.blocking_connection import BlockingConnection
-from pika.spec import BasicProperties
-
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-
+from pika.adapters.blocking_connection import BlockingConnection
+from pika.spec import BasicProperties
 
 _DEFAULT_PORT = 5672
 

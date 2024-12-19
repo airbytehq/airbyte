@@ -7,13 +7,6 @@ import logging
 import os
 import time
 
-from destination_pinecone.destination import DestinationPinecone
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Pinecone
-from pinecone import Pinecone as PineconeREST
-from pinecone import PineconeException
-from pinecone.grpc import PineconeGRPC
-
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import (
@@ -28,6 +21,12 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from destination_pinecone.destination import DestinationPinecone
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Pinecone
+from pinecone import Pinecone as PineconeREST
+from pinecone import PineconeException
+from pinecone.grpc import PineconeGRPC
 
 
 class PineconeIntegrationTest(BaseIntegrationTest):

@@ -5,12 +5,10 @@
 import logging
 from typing import Any, Iterable, Mapping
 
-from xata.client import XataClient
-from xata.helpers import BulkProcessor
-
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-
+from xata.client import XataClient
+from xata.helpers import BulkProcessor
 
 __version__ = "0.0.1"
 

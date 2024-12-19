@@ -4,6 +4,5 @@
 
 from source_zendesk_chat.run import run
 
-
 if __name__ == "__main__":
     run()

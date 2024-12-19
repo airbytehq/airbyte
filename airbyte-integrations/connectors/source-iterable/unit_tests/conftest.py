@@ -7,7 +7,6 @@ import os
 
 import pytest
 import responses
-
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 

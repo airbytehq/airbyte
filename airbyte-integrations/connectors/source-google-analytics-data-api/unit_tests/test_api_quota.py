@@ -4,10 +4,8 @@
 
 import pytest
 import requests
-from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
-
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-
+from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuota
 
 TEST_QUOTA_INSTANCE: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 

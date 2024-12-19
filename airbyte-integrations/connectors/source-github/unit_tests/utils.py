@@ -6,7 +6,6 @@ from typing import Any, MutableMapping
 from unittest import mock
 
 import responses
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source

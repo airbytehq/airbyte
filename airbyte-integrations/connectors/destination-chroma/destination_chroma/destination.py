@@ -23,7 +23,6 @@ from destination_chroma.config import ConfigModel
 from destination_chroma.indexer import ChromaIndexer
 from destination_chroma.no_embedder import NoEmbedder
 
-
 BATCH_SIZE = 128
 
 

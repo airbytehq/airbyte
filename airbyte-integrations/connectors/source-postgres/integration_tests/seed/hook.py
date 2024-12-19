@@ -13,7 +13,6 @@ import psycopg2
 import pytz
 from psycopg2 import extensions, sql
 
-
 catalog_write_file = "/connector/integration_tests/temp/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
 catalog_incremental_write_file = "/connector/integration_tests/temp/incremental_configured_catalog_copy.json"

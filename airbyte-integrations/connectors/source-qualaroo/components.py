@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping
 
 import requests
-
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 

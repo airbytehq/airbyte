@@ -10,12 +10,10 @@ from typing import Any, Mapping
 from unittest.mock import ANY
 
 import pytest
-from source_sftp_bulk import SourceSFTPBulk
-
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
-
+from source_sftp_bulk import SourceSFTPBulk
 
 logger = logging.getLogger("airbyte")
 

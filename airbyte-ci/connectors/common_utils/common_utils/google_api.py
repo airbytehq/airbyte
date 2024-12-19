@@ -11,7 +11,6 @@ import requests
 
 from .logger import Logger
 
-
 TOKEN_TTL = 3600
 
 

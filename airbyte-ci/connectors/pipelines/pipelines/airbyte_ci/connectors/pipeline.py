@@ -14,7 +14,6 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Config
-
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext

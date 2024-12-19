@@ -16,6 +16,8 @@ import pendulum
 import pytest
 import pytz
 import requests
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
     DATETIME_FORMAT,
@@ -62,10 +64,6 @@ from source_zendesk_support.streams import (
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-
 
 TICKET_SUBSTREAMS = [StatefulTicketMetrics]
 

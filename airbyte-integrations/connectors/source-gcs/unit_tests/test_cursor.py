@@ -1,10 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 from datetime import datetime
 
-from source_gcs import Cursor
-
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from source_gcs import Cursor
 
 
 def test_add_file_successfully(cursor, remote_file, logger):

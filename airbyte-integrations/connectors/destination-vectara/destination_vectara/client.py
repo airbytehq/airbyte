@@ -10,9 +10,7 @@ from typing import Any, Mapping
 
 import backoff
 import requests
-
 from destination_vectara.config import VectaraConfig
-
 
 METADATA_STREAM_FIELD = "_ab_stream"
 

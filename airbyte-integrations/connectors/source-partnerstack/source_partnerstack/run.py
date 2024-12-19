@@ -5,9 +5,8 @@
 
 import sys
 
-from source_partnerstack import SourcePartnerstack
-
 from airbyte_cdk.entrypoint import launch
+from source_partnerstack import SourcePartnerstack
 
 
 def run():

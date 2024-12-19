@@ -23,7 +23,6 @@ from .request_builder import RequestBuilder, get_account_request
 from .response_builder import get_account_response
 from .utils import config, read_output
 
-
 _FIELDS = [
     "caption",
     "comments_count",

@@ -8,11 +8,10 @@ from unittest.mock import DEFAULT, MagicMock, Mock, call
 
 import pendulum
 import pytest
-from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import CampaignCriterion, ChangeStatus
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from source_google_ads.google_ads import GoogleAds
+from source_google_ads.streams import CampaignCriterion, ChangeStatus
 
 
 def mock_response_parent():

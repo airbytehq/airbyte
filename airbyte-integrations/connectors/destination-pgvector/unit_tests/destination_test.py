@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.models import ConnectorSpecification, Status
-
 from destination_pgvector.config import ConfigModel
 from destination_pgvector.destination import DestinationPGVector
 

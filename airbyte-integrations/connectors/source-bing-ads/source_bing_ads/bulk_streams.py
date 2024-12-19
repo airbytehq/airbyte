@@ -8,11 +8,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pandas as pd
 import pendulum
-from numpy import nan
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from numpy import nan
 from source_bing_ads.base_streams import Accounts, BingAdsBaseStream
 from source_bing_ads.utils import transform_bulk_datetime_format_to_rfc_3339
 

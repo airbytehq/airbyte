@@ -6,12 +6,11 @@ from datetime import timedelta
 from typing import Any, Iterator, Mapping
 
 import pendulum
+from airbyte_cdk import AirbyteTracedException, FailureType
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import ClientError
-
-from airbyte_cdk import AirbyteTracedException, FailureType
 from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File

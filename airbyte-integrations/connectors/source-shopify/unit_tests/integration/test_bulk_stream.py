@@ -5,20 +5,17 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import pytest
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
-
 _AN_ERROR_RESPONSE = HttpResponse(json.dumps({"errors": ["an error"]}))
 _SERVICE_UNAVAILABLE_ERROR_RESPONSE = HttpResponse(json.dumps({"errors": ["Service unavailable"]}), status_code=503)
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.test.state_builder import StateBuilder
 from freezegun import freeze_time
 from requests.exceptions import ConnectionError
 from source_shopify import SourceShopify
-
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
-from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
 from unit_tests.integration.api.bulk import (
     JobCreationResponseBuilder,
@@ -29,7 +26,6 @@ from unit_tests.integration.api.bulk import (
     create_job_creation_request,
     create_job_status_request,
 )
-
 
 _BULK_OPERATION_ID = "gid://shopify/BulkOperation/4472588009661"
 _BULK_STREAM = "metafield_orders"

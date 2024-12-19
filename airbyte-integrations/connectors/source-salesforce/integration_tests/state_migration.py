@@ -2612,7 +2612,6 @@ x = """[
 
 import json
 
-
 result = []
 for stream in json.loads(x):
     stream["stream_descriptor"] = stream.pop("streamDescriptor")

@@ -2,7 +2,6 @@
 
 import pytest
 from connector_ops.utils import ConnectorLanguage
-
 from connectors_qa.checks import testing
 from connectors_qa.models import CheckStatus
 

@@ -24,7 +24,6 @@ from google.cloud import storage
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import SSHException
 
-
 HERE = Path(__file__).parent.absolute()
 
 

@@ -4,12 +4,10 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import SyncMode
 from config_builder import ConfigBuilder
 from conftest import generate_stream, mock_stream_api
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
-
-from airbyte_cdk.models import SyncMode
-
 
 _NOW = datetime.fromisoformat("2020-01-01T00:00:00+00:00")
 _STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]

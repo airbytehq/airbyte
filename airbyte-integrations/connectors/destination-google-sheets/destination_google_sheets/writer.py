@@ -3,9 +3,8 @@
 #
 
 
-from pygsheets import Worksheet
-
 from airbyte_cdk.models import AirbyteStream
+from pygsheets import Worksheet
 
 from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets

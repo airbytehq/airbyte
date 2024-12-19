@@ -15,10 +15,10 @@ from types import TracebackType
 from typing import TYPE_CHECKING, Dict
 
 from asyncer import asyncify
-from dagger import Client, Directory, File, GitRepository, Service
+from dagger import Client, Directory, File, GitRepository
 from dagger import Secret as DaggerSecret
+from dagger import Service
 from github import PullRequest
-
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES, CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions

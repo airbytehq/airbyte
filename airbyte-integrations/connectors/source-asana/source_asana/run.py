@@ -8,11 +8,10 @@ import traceback
 from datetime import datetime
 from typing import List
 
-from orjson import orjson
-from source_asana import SourceAsana
-
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from orjson import orjson
+from source_asana import SourceAsana
 
 from .config_migration import AsanaConfigMigration
 

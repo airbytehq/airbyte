@@ -6,12 +6,10 @@
 import re
 from typing import List
 
-from pygsheets import Spreadsheet, Worksheet
-from pygsheets.exceptions import WorksheetNotFound
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-
+from pygsheets import Spreadsheet, Worksheet
+from pygsheets.exceptions import WorksheetNotFound
 
 STREAMS_COUNT_LIMIT = 200
 

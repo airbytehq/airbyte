@@ -5,14 +5,13 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
+from airbyte_cdk.sources.streams.http.http import HttpStatusErrorHandler
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuotaBase
 from source_google_analytics_data_api.source import GoogleAnalyticsDatApiErrorHandler, MetadataDescriptor
 from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_CUSTOM_REPORT_CONFIG, WRONG_JSON_SYNTAX
-
-from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
-from airbyte_cdk.sources.streams.http.http import HttpStatusErrorHandler
-from airbyte_cdk.utils import AirbyteTracedException
 
 
 @pytest.mark.parametrize(

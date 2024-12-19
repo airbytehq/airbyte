@@ -5,9 +5,8 @@
 
 import sys
 
-from source_rss import SourceRss
-
 from airbyte_cdk.entrypoint import launch
+from source_rss import SourceRss
 
 
 def run():

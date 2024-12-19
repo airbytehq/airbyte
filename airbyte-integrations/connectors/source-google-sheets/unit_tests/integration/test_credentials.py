@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import json
 
-
 # this key was generated with rsa library from cryptography
 test_private_key = """
 -----BEGIN PRIVATE KEY-----

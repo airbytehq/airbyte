@@ -6,12 +6,11 @@ import pathlib
 
 import pytest
 from click.testing import CliRunner
-from pydantic import BaseModel, ValidationError, error_wrappers
-from test_gcs_upload import stub_is_image_on_docker_hub
-
 from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
 from metadata_service.validators.metadata_validator import ValidatorOptions, validate_docker_image_tag_is_not_decremented
+from pydantic import BaseModel, ValidationError, error_wrappers
+from test_gcs_upload import stub_is_image_on_docker_hub
 
 NOT_TEST_VALIDATORS = [
     # Not testing validate_docker_image_tag_is_not_decremented as its tested independently in test_validators

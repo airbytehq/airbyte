@@ -17,7 +17,6 @@ from common_utils import GoogleApi, Logger
 
 from .models import DEFAULT_SECRET_FILE, RemoteSecret, Secret
 
-
 DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 
 GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)

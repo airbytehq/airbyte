@@ -2,7 +2,6 @@
 
 from test_report_stream import TestSuiteReportStream
 
-
 FIRST_STATE = {"180535609": {"TimePeriod": "2023-11-12T00:00:00+00:00"}}
 SECOND_STATE = {"180535609": {"TimePeriod": "2023-11-13T00:00:00+00:00"}}
 

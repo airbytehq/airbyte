@@ -5,9 +5,8 @@
 
 import sys
 
-from source_instatus import SourceInstatus
-
 from airbyte_cdk.entrypoint import launch
+from source_instatus import SourceInstatus
 
 
 def run():

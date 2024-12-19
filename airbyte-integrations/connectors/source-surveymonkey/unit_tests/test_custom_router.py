@@ -6,10 +6,8 @@
 from unittest.mock import Mock
 
 import pytest
-from source_surveymonkey.components import SurveyIdPartitionRouter
-
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-
+from source_surveymonkey.components import SurveyIdPartitionRouter
 
 # test cases as a list of tuples (survey_ids, parent_stream_configs, expected_slices)
 test_cases = [

@@ -6,10 +6,9 @@ from typing import Dict
 from unittest.mock import patch
 from urllib.parse import parse_qsl, unquote, urlencode, urlunparse
 
-from httplib2 import Response
-
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.request import HttpRequest
+from httplib2 import Response
 
 
 def parse_and_transform(parse_result_str: str):

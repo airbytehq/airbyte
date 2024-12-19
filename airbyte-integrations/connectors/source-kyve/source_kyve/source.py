@@ -6,7 +6,6 @@ from copy import deepcopy
 from typing import Any, List, Mapping, Tuple
 
 import requests
-
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 

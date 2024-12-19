@@ -9,7 +9,6 @@ from typing import Any, Mapping, Tuple
 
 import jwt
 import requests
-
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config

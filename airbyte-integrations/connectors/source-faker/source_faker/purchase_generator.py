@@ -6,9 +6,8 @@ import datetime
 from multiprocessing import current_process
 from typing import Dict, List
 
-from mimesis import Datetime, Numeric
-
 from airbyte_cdk.models import AirbyteRecordMessage, Type
+from mimesis import Datetime, Numeric
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis

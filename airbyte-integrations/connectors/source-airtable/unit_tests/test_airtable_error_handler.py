@@ -6,13 +6,12 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests import Response
 from source_airtable.airtable_error_handler import AirtableErrorHandler
 from source_airtable.airtable_error_mapping import AIRTABLE_ERROR_MAPPING
 from source_airtable.auth import AirtableOAuth
-
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 @pytest.mark.parametrize(

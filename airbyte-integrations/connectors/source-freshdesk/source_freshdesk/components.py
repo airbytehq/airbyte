@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
-
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement

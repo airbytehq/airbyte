@@ -8,15 +8,13 @@ from datetime import date
 
 import pendulum
 import pytest
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import chunk_date_range
 
-from airbyte_cdk.utils import AirbyteTracedException
-
 from .common import MockGoogleAdsClient, MockGoogleAdsService
-
 
 SAMPLE_SCHEMA = {
     "properties": {

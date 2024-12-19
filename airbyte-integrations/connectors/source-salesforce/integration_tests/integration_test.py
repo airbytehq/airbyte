@@ -12,12 +12,10 @@ from typing import Dict
 import pendulum
 import pytest
 import requests
-from source_salesforce.api import Salesforce
-from source_salesforce.source import SourceSalesforce
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-
+from source_salesforce.api import Salesforce
+from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
 

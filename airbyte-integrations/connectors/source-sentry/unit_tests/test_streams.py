@@ -5,10 +5,8 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_sentry import SourceSentry
-
 from airbyte_cdk.models import SyncMode
-
+from source_sentry import SourceSentry
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 

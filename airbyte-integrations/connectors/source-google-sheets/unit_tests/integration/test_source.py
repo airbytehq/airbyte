@@ -5,14 +5,10 @@ import json
 from copy import deepcopy
 from typing import Optional
 from unittest import TestCase
-from unittest.mock import (
-    Mock,
-    patch,  # patch("time.sleep")
-)
+from unittest.mock import patch  # patch("time.sleep")
+from unittest.mock import Mock
 
 import pytest
-from source_google_sheets import SourceGoogleSheets
-
 from airbyte_cdk.models import Status
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
@@ -20,11 +16,11 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.utils import AirbyteTracedException
+from source_google_sheets import SourceGoogleSheets
 
 from .custom_http_mocker import CustomHttpMocker as HttpMocker
 from .request_builder import AuthBuilder, RequestBuilder
 from .test_credentials import oauth_credentials, service_account_credentials, service_account_info
-
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
 

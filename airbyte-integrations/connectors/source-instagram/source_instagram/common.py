@@ -11,7 +11,6 @@ import backoff
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
 
-
 logger = logging.getLogger("airbyte")
 
 

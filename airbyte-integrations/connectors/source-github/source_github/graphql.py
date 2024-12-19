@@ -11,7 +11,6 @@ from sgqlc.operation import Selector
 
 from . import github_schema
 
-
 _schema = github_schema
 _schema_root = _schema.github_schema
 

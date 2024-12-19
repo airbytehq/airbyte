@@ -6,7 +6,6 @@ from typing import List
 
 import asyncclick as click
 import dagger
-
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext

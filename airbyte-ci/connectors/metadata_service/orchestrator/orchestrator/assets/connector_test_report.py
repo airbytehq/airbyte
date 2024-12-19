@@ -22,7 +22,6 @@ from orchestrator.templates.render import (
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
-
 T = TypeVar("T")
 
 GROUP_NAME = "connector_test_report"

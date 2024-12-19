@@ -7,15 +7,13 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
 from source_facebook_marketing.streams.common import traced_exception
-
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 

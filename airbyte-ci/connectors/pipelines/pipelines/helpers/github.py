@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 
 import github as github_sdk
 from connector_ops.utils import console  # type: ignore
-
 from pipelines import main_logger
 from pipelines.consts import CIContext
 from pipelines.models.secrets import Secret

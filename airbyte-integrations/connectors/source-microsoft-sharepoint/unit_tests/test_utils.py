@@ -6,9 +6,8 @@ from http import HTTPStatus
 from unittest.mock import Mock, patch
 
 import pytest
-from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
-
 from airbyte_cdk import AirbyteTracedException
+from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
 
 
 class MockResponse:

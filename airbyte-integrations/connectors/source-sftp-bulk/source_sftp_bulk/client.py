@@ -9,10 +9,8 @@ from typing import Optional
 
 import backoff
 import paramiko
-from paramiko.ssh_exception import AuthenticationException
-
 from airbyte_cdk import AirbyteTracedException, FailureType
-
+from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds
 REQUEST_TIMEOUT = 300

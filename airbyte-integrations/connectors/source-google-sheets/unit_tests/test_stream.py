@@ -6,14 +6,13 @@ import logging
 
 import pytest
 import requests
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus, ConfiguredAirbyteCatalog
+from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
 from source_google_sheets import SourceGoogleSheets
 from source_google_sheets.client import GoogleSheetsClient
 from source_google_sheets.helpers import SCOPES, Helpers
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
-
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus, ConfiguredAirbyteCatalog
-from airbyte_cdk.utils import AirbyteTracedException
 
 
 def set_http_error_for_google_sheets_client(mocker, resp):

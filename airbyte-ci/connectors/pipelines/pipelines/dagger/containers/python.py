@@ -4,7 +4,6 @@
 
 
 from dagger import CacheSharingMode, CacheVolume, Client, Container
-
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.consts import (
     CONNECTOR_TESTING_REQUIREMENTS,

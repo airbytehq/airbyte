@@ -14,7 +14,6 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import update_specific_key
 
-
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.

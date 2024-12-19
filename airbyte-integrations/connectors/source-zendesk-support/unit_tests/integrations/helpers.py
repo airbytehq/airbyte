@@ -1,10 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import pendulum
-from pendulum.datetime import DateTime
-
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
+from pendulum.datetime import DateTime
 
 from .utils import datetime_to_string
 from .zs_requests import (

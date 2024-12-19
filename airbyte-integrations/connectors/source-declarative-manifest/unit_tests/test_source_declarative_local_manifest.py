@@ -9,7 +9,6 @@ import pytest
 from jsonschema import ValidationError
 from source_declarative_manifest import run
 
-
 POKEAPI_JSON_SPEC_SUBSTRING = '"required":["pokemon_name"]'
 SUCCESS_CHECK_SUBSTRING = '"connectionStatus":{"status":"SUCCEEDED"}'
 FAILED_CHECK_SUBSTRING = '"connectionStatus":{"status":"FAILED"}'

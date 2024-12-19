@@ -9,7 +9,6 @@ from typing import Dict, List, Optional, Union
 from pydantic import BaseModel, Field, ValidationError, validator
 from pydantic.class_validators import root_validator
 
-
 ERROR_MSG_MISSING_SEGMENT_DIMENSION = "errors: `ga:segment` is required"
 
 

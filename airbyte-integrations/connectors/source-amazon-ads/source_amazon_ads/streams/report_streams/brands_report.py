@@ -6,7 +6,6 @@ from http import HTTPStatus
 
 from .products_report import SponsoredProductsReportStream
 
-
 METRICS_MAP_V3 = {
     "purchasedAsin": [
         "campaignBudgetCurrencyCode",

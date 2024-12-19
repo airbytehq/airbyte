@@ -8,7 +8,6 @@ from urllib.parse import unquote
 
 import requests
 
-
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
 with open("credentials.json", "r") as f:

@@ -7,12 +7,10 @@ import logging
 
 import pendulum
 import pytest
-from integration.config import KlaviyoConfigBuilder
-from source_klaviyo.source import SourceKlaviyo
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-
+from integration.config import KlaviyoConfigBuilder
+from source_klaviyo.source import SourceKlaviyo
 
 logger = logging.getLogger("airbyte")
 

@@ -6,12 +6,10 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_instagram.streams import DatetimeTransformerMixin, InstagramStream, UserInsights
 from utils import read_full_refresh, read_incremental
-
-from airbyte_cdk.models import SyncMode
-
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 

@@ -4,10 +4,8 @@
 
 
 import pytest
-from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
-
 from airbyte_cdk.models import SyncMode
-
+from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
 
 CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 

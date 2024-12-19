@@ -7,7 +7,6 @@ import json
 import typing
 
 import requests
-
 from pipelines import main_logger
 
 if typing.TYPE_CHECKING:

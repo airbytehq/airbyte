@@ -11,10 +11,9 @@ from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 import anyio
 import dagger
 from asyncclick import Context, get_current_context
-from pydantic import BaseModel, Field, PrivateAttr
-
 from pipelines import main_logger
 from pipelines.cli.click_decorators import LazyPassDecorator
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ..singleton import Singleton
 

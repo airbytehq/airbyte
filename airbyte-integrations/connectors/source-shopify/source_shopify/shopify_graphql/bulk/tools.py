@@ -11,7 +11,6 @@ import pendulum as pdm
 
 from .exceptions import ShopifyBulkExceptions
 
-
 # default end line tag
 END_OF_FILE: str = "<end_of_file>"
 BULK_PARENT_KEY: str = "__parentId"

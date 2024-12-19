@@ -4,8 +4,6 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-from source_stripe import SourceStripe
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -23,7 +21,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
-
+from source_stripe import SourceStripe
 
 _STREAM_NAME = "payout_balance_transactions"
 _A_PAYOUT_ID = "a_payout_id"

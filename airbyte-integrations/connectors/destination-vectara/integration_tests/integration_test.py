@@ -7,9 +7,6 @@ import logging
 import unittest
 from typing import Any, Dict
 
-from destination_vectara.client import VectaraClient
-from destination_vectara.destination import DestinationVectara
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -22,6 +19,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from destination_vectara.client import VectaraClient
+from destination_vectara.destination import DestinationVectara
 
 
 class VectaraIntegrationTest(unittest.TestCase):

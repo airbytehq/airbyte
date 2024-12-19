@@ -8,7 +8,6 @@ from functools import cached_property
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import smartsheet
-
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 

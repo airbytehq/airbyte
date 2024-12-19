@@ -5,7 +5,6 @@ import os
 import pytest
 import responses
 
-
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 

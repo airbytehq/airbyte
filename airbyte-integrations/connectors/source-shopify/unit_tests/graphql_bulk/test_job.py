@@ -7,6 +7,7 @@ from os import remove
 
 import pytest
 import requests
+from airbyte_cdk.models import SyncMode
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
@@ -23,9 +24,6 @@ from source_shopify.streams.streams import (
     ProductVariants,
     TransactionsGraphql,
 )
-
-from airbyte_cdk.models import SyncMode
-
 
 _ANY_SLICE = {}
 _ANY_FILTER_FIELD = "any_filter_field"

@@ -5,7 +5,6 @@ import os
 from source_asana.config_migration import AsanaConfigMigration
 from source_asana.source import SourceAsana
 
-
 TEST_CONFIG_PATH = f"{os.path.dirname(__file__)}/test_config.json"
 
 

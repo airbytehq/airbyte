@@ -8,11 +8,10 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
-from pydantic import ValidationError
-from pydash.objects import get
-
 from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import ValidationError
+from pydash.objects import get
 
 
 @dataclass(frozen=True)

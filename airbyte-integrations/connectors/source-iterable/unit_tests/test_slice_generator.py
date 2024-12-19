@@ -9,7 +9,6 @@ import pendulum
 import pytest
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator
 
-
 TEST_DATE = pendulum.parse("2020-01-01")
 
 

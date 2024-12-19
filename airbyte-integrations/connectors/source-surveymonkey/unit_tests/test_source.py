@@ -4,7 +4,6 @@
 
 from source_surveymonkey.source import SourceSurveymonkey
 
-
 source_config = {"start_date": "2021-01-01T00:00:00", "access_token": "something"}
 new_source_config = {
     "start_date": "2021-01-01T00:00:00",

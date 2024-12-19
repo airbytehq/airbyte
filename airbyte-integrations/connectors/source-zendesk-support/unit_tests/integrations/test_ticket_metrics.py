@@ -4,7 +4,6 @@ from unittest import TestCase
 
 import freezegun
 import pendulum
-
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -17,7 +16,6 @@ from .zs_requests import TicketMetricsRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import TicketMetricsResponseBuilder
 from .zs_responses.records import TicketMetricsRecordBuilder
-
 
 _NOW = pendulum.now(tz="UTC")
 _TWO_YEARS_AGO_DATETIME = _NOW.subtract(years=2)

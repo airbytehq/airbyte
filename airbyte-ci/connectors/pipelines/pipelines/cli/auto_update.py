@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 
 import asyncclick as click
 import requests
-
 from pipelines import main_logger
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH

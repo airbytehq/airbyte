@@ -16,7 +16,6 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_astra.config import ConfigModel
 from destination_astra.indexer import AstraIndexer
 
-
 BATCH_SIZE = 100
 
 

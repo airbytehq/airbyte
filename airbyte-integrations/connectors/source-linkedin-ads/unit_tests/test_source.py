@@ -6,15 +6,13 @@ from typing import Any, Dict, List
 
 import pytest
 import requests
-from conftest import find_stream
-from source_linkedin_ads.source import SourceLinkedinAds
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
-
+from conftest import find_stream
+from source_linkedin_ads.source import SourceLinkedinAds
 
 logger = logging.getLogger("airbyte")
 

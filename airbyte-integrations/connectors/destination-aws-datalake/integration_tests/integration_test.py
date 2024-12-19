@@ -9,10 +9,6 @@ from typing import Any, Dict, Mapping
 
 import awswrangler as wr
 import pytest
-from destination_aws_datalake import DestinationAwsDatalake
-from destination_aws_datalake.aws import AwsHandler
-from destination_aws_datalake.config_reader import ConnectorConfig
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -28,7 +24,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
+from destination_aws_datalake import DestinationAwsDatalake
+from destination_aws_datalake.aws import AwsHandler
+from destination_aws_datalake.config_reader import ConnectorConfig
 
 logger = logging.getLogger("airbyte")
 

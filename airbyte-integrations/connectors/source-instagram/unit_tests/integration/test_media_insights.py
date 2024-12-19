@@ -6,7 +6,6 @@ import unittest
 from unittest import TestCase
 
 import pytest
-
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -24,7 +23,6 @@ from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import get_account_response
 from .utils import config, read_output
-
 
 PARENT_FIELDS = [
     "caption",

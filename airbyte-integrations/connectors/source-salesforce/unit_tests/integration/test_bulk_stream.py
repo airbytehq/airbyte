@@ -8,17 +8,15 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-from config_builder import ConfigBuilder
-from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
-from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
-from source_salesforce.streams import BulkSalesforceStream
-
 from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from config_builder import ConfigBuilder
 from integration.test_rest_stream import create_http_request as create_standard_http_request
 from integration.test_rest_stream import create_http_response as create_standard_http_response
 from integration.utils import create_base_url, given_authentication, given_stream, read
-
+from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
+from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
+from source_salesforce.streams import BulkSalesforceStream
 
 _A_FIELD_NAME = "a_field"
 _ANOTHER_FIELD_NAME = "another_field"

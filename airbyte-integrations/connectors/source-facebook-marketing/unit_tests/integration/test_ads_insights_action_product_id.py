@@ -11,8 +11,6 @@ from unittest import TestCase
 
 import freezegun
 import pendulum
-from source_facebook_marketing.streams.async_job import Status
-
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -25,13 +23,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from source_facebook_marketing.streams.async_job import Status
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, encode_request_body, read_output
-
 
 _STREAM_NAME = "ads_insights_action_product_id"
 _CURSOR_FIELD = "date_start"

@@ -8,7 +8,6 @@ from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
 from source_instagram.api import InstagramAPI as API
 
-
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 

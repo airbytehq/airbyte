@@ -5,9 +5,8 @@
 from unittest.mock import Mock
 
 import pytest
-from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
-
 from airbyte_cdk.models import SyncMode
+from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
 
 
 @pytest.fixture

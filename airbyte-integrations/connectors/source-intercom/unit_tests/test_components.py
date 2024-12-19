@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
-
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 

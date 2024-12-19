@@ -9,7 +9,6 @@ from typing import Callable, List, Tuple
 
 import asyncclick as click
 import dagger
-
 from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter

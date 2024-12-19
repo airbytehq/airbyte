@@ -16,7 +16,6 @@ from destination_databend.client import DatabendClient
 
 from .writer import create_databend_wirter
 
-
 logger = getLogger("airbyte")
 
 

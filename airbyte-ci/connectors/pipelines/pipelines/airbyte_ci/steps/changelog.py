@@ -8,7 +8,6 @@ import datetime
 
 import semver
 from dagger import Directory
-
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.changelog import Changelog
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file

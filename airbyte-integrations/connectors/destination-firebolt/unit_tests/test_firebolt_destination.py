@@ -6,9 +6,6 @@ from datetime import datetime
 from typing import Any, Dict
 from unittest.mock import MagicMock, call, patch
 
-from destination_firebolt.destination import DestinationFirebolt, establish_connection, parse_config
-from pytest import fixture
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,6 +17,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from destination_firebolt.destination import DestinationFirebolt, establish_connection, parse_config
+from pytest import fixture
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])

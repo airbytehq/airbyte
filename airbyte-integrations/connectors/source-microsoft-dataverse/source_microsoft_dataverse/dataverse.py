@@ -6,7 +6,6 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
-
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 

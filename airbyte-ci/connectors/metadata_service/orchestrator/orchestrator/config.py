@@ -5,7 +5,6 @@
 import os
 from typing import Optional
 
-
 DEFAULT_ASSET_URL = "https://storage.googleapis.com"
 
 VALID_REGISTRIES = ["oss", "cloud"]

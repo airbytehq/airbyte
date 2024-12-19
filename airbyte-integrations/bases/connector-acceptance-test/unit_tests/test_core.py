@@ -6,18 +6,6 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from connector_acceptance_test.config import (
-    BasicReadTestConfig,
-    Config,
-    DiscoveryTestConfig,
-    ExpectedRecordsConfig,
-    FileTypesConfig,
-    IgnoredFieldsConfiguration,
-    UnsupportedFileTypeConfig,
-)
-from connector_acceptance_test.tests import test_core
-from jsonschema.exceptions import SchemaError
-
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
@@ -40,9 +28,19 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
+from connector_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    DiscoveryTestConfig,
+    ExpectedRecordsConfig,
+    FileTypesConfig,
+    IgnoredFieldsConfiguration,
+    UnsupportedFileTypeConfig,
+)
+from connector_acceptance_test.tests import test_core
+from jsonschema.exceptions import SchemaError
 
 from .conftest import does_not_raise
-
 
 pytestmark = pytest.mark.anyio
 

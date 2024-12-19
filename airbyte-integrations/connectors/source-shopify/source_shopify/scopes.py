@@ -7,13 +7,11 @@ import logging
 from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
-from requests.exceptions import InvalidURL, JSONDecodeError
-
 from airbyte_cdk.sources.streams.http import HttpClient
+from requests.exceptions import InvalidURL, JSONDecodeError
 
 from .http_request import ShopifyErrorHandler
 from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyWrongShopNameError
-
 
 SCOPES_MAPPING: Mapping[str, set[str]] = {
     # SCOPE: read_customers

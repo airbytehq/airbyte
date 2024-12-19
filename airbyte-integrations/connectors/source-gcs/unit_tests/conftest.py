@@ -6,10 +6,9 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from source_gcs import Cursor, SourceGCSStreamReader
 from source_gcs.helpers import GCSRemoteFile
-
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
 
 @pytest.fixture

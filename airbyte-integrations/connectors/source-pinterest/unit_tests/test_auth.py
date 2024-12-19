@@ -7,13 +7,11 @@ import logging
 import pendulum
 import pytest
 import requests
-from requests import Response
-from source_pinterest.python_stream_auth import PinterestOauthAuthenticator
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
+from requests import Response
+from source_pinterest.python_stream_auth import PinterestOauthAuthenticator
 
 LOGGER = logging.getLogger(__name__)
 

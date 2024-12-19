@@ -8,7 +8,6 @@ from urllib.parse import parse_qsl, urlparse
 
 import arrow
 import requests
-
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_tplcentral.util import deep_get, normalize
 

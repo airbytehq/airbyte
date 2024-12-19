@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
-
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 

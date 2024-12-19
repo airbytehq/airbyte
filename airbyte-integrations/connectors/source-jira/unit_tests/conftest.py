@@ -11,7 +11,6 @@ from pytest import fixture
 from responses import matchers
 from source_jira.source import SourceJira
 
-
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 

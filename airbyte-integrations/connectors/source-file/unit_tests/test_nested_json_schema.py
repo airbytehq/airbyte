@@ -10,7 +10,6 @@ from unittest.mock import Mock
 import pytest
 from source_file.source import SourceFile
 
-
 json_obj = {
     "id": "0001",
     "type": "donut",

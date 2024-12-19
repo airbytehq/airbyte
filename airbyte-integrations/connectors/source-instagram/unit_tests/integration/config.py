@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import Any, List, MutableMapping
 
-
 ACCESS_TOKEN = "test_access_token"
 ACCOUNT_ID = "111111111111111"
 

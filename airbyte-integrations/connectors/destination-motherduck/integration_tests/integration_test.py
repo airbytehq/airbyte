@@ -14,10 +14,6 @@ from unittest.mock import MagicMock
 
 import duckdb
 import pytest
-from destination_motherduck import DestinationMotherDuck
-from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY
-from faker import Faker
-
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -31,7 +27,9 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sql.secrets import SecretString
-
+from destination_motherduck import DestinationMotherDuck
+from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY
+from faker import Faker
 
 CONFIG_PATH = "integration_tests/config.json"
 SECRETS_CONFIG_PATH = "secrets/config.json"  # Should contain a valid MotherDuck API token

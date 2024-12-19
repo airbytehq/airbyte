@@ -3,9 +3,8 @@
 #
 
 import pytest
-from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet, SpreadsheetValues, ValueRange
-
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet, SpreadsheetValues, ValueRange
 
 
 @pytest.fixture

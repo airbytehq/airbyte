@@ -3,9 +3,8 @@
 #
 
 import pytest
-from conftest import find_stream
-
 from airbyte_cdk.models import SyncMode
+from conftest import find_stream
 
 
 @pytest.fixture(name="responses")

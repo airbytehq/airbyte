@@ -3,10 +3,9 @@
 #
 
 
-from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
 
 
 class TestGroupStreamsPartitionRouter:

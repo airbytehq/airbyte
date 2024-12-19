@@ -5,9 +5,8 @@
 
 import sys
 
-from source_xero import SourceXero
-
 from airbyte_cdk.entrypoint import launch
+from source_xero import SourceXero
 
 
 def run():

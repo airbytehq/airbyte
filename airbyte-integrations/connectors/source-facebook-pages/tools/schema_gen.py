@@ -107,7 +107,6 @@ FACEBOOK schema:                            VS                  AIRBYTE schema:
 import json
 import os
 
-
 spec_path = "facebook-business-sdk-codegen/api_specs/specs"
 fb_node_files = os.listdir(spec_path)
 fb_node_files.sort()

@@ -8,7 +8,6 @@ from typing import Union
 import pendulum
 from pendulum import Date, DateTime
 
-
 logger = logging.getLogger("airbyte")
 
 # Facebook store metrics maximum of 37 months old. Any time range that

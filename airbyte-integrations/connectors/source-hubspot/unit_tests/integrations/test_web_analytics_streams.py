@@ -8,7 +8,6 @@ import freezegun
 import mock
 import pytest
 import pytz
-
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
@@ -16,7 +15,6 @@ from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, Airby
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.streams import HubspotStreamResponseBuilder
-
 
 CRM_STREAMS = (
     ("tickets_web_analytics", "tickets", "ticket", ["contacts", "deals", "companies"]),
