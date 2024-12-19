@@ -54,6 +54,7 @@ You can now use the Airbyte Firebolt source.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 2.0.25 | 2024-12-14 | [48657](https://github.com/airbytehq/airbyte/pull/48657) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.0.24 | 2024-11-04 | [48154](https://github.com/airbytehq/airbyte/pull/48154) | Update dependencies |
 | 2.0.23 | 2024-10-28 | [47109](https://github.com/airbytehq/airbyte/pull/47109) | Update dependencies |
 | 2.0.22 | 2024-10-12 | [46826](https://github.com/airbytehq/airbyte/pull/46826) | Update dependencies |
