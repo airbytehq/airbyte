@@ -72,7 +72,10 @@ interface IcebergCatalogSpecifications {
         val catalogConfiguration =
             when (catalogType) {
                 is GlueCatalogSpecification ->
-                    GlueCatalogConfiguration((catalogType as GlueCatalogSpecification).glueId)
+                    GlueCatalogConfiguration(
+                        (catalogType as GlueCatalogSpecification).glueId,
+                        (catalogType as GlueCatalogSpecification).roleArn
+                    )
                 is NessieCatalogSpecification ->
                     NessieCatalogConfiguration(
                         (catalogType as NessieCatalogSpecification).serverUri,
@@ -184,6 +187,15 @@ class GlueCatalogSpecification(
     @JsonProperty("glue_id")
     @JsonSchemaInject(json = """{"order":1}""")
     val glueId: String,
+    @get:JsonSchemaTitle("AWS role ARN")
+    @get:JsonPropertyDescription(
+        "The AWS ARN of the role that should be assumed for AWS authentication."
+    )
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"], "always_show": true, "order":2}"""
+    )
+    val roleArn: String? = null
 ) : CatalogType(catalogType)
 
 /**
@@ -228,7 +240,16 @@ sealed interface CatalogConfiguration
 data class GlueCatalogConfiguration(
     @JsonSchemaTitle("AWS Account ID")
     @JsonPropertyDescription("The AWS Account ID associated with the Glue service.")
-    val glueId: String
+    val glueId: String,
+    @get:JsonSchemaTitle("AWS role ARN")
+    @get:JsonPropertyDescription(
+        "The AWS ARN of the role that should be assumed for AWS authentication."
+    )
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId"], "always_show": true, "order":2}"""
+    )
+    val roleArn: String? = null
 ) : CatalogConfiguration
 
 /**

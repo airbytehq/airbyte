@@ -26,7 +26,7 @@ class IcebergV2Specification :
     S3BucketSpecification,
     IcebergCatalogSpecifications {
 
-    @get:JsonSchemaTitle("AWS Access Key ID")
+    @get:JsonSchemaTitle("AWS Access Key")
     @get:JsonPropertyDescription(
         "The AWS Access Key ID with permissions for S3 and Glue operations."
     )
@@ -42,21 +42,21 @@ class IcebergV2Specification :
 
     @get:JsonSchemaTitle("S3 Bucket Name")
     @get:JsonPropertyDescription("The name of the S3 bucket that will host the Iceberg data.")
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":2}""")
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":3}""")
     override val s3BucketName: String = ""
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"examples":["us-east-1"], "order":3}""")
+    @get:JsonSchemaInject(json = """{"always_show": true,"examples":["us-east-1"], "order":4}""")
     override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
 
-    @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
-
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":5}""")
-    override val warehouseLocation: String = ""
+    @get:JsonSchemaInject(json = """{"order":5}""") override val s3Endpoint: String? = null
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":6}""")
-    override val mainBranchName: String = ""
+    override val warehouseLocation: String = ""
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
+    override val mainBranchName: String = ""
+
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "")
 }
 

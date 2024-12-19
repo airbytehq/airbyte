@@ -23,12 +23,20 @@
         "always_show" : true,
         "order" : 1
       },
+      "role_arn" : {
+        "type" : "string",
+        "description" : "The AWS ARN of the role that should be assumed for AWS authentication.",
+        "title" : "AWS role ARN",
+        "examples" : [ "arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId" ],
+        "always_show" : true,
+        "order" : 2
+      },
       "s3_bucket_name" : {
         "type" : "string",
         "description" : "The name of the S3 bucket that will host the Iceberg data.",
         "title" : "S3 Bucket Name",
         "always_show" : true,
-        "order" : 2
+        "order" : 3
       },
       "s3_bucket_region" : {
         "type" : "string",
@@ -37,27 +45,27 @@
         "title" : "S3 Bucket Region",
         "always_show" : true,
         "examples" : [ "us-east-1" ],
-        "order" : 3
+        "order" : 4
       },
       "s3_endpoint" : {
         "type" : "string",
         "description" : "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
         "title" : "S3 Endpoint",
-        "order" : 4
+        "order" : 5
       },
       "warehouse_location" : {
         "type" : "string",
         "description" : "The root location of the data warehouse used by the Iceberg catalog.",
         "title" : "Warehouse Location",
         "always_show" : true,
-        "order" : 5
+        "order" : 6
       },
       "main_branch_name" : {
         "type" : "string",
         "description" : "The primary or default branch name in the catalog repository.",
         "title" : "Main Branch Name",
         "always_show" : true,
-        "order" : 6
+        "order" : 7
       },
       "catalog_type" : {
         "oneOf" : [ {
@@ -110,7 +118,7 @@
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE or GLUE) and its associated configuration.",
         "title" : "Catalog Type",
         "always_show" : true,
-        "order" : 7,
+        "order" : 8,
         "type" : "object"
       }
     },
