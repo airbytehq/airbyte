@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data.sql
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -20,7 +19,6 @@ import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.mockk.mockk
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.Date
@@ -33,7 +31,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 internal class AirbyteValueToSqlValueTest {
 
@@ -51,7 +48,12 @@ internal class AirbyteValueToSqlValueTest {
     @Test
     fun testConvertArrayValue() {
         val arrayValue = ArrayValue(listOf(StringValue("John Doe"), IntegerValue(42L)))
-        assertThrows<IllegalArgumentException> { converter.convert(arrayValue) }
+        val result = converter.convert(arrayValue)
+        assertEquals(ByteArray::class.java, result?.javaClass)
+        assertArrayEquals(
+            Jsons.writeValueAsBytes(arrayValue.values.map { converter.convert(it) }),
+            result as ByteArray
+        )
     }
 
     @Test
@@ -117,8 +119,11 @@ internal class AirbyteValueToSqlValueTest {
 
     @Test
     fun testConvertUnknownValue() {
-        val unknownValue = UnknownValue(mockk<JsonNode>())
-        assertThrows<IllegalArgumentException> { converter.convert(unknownValue) }
+        val jsonNode = Jsons.createObjectNode().put("id", "unknownValue")
+        val unknownValue = UnknownValue(jsonNode)
+        val result = converter.convert(unknownValue)
+        assertEquals(ByteArray::class.java, result?.javaClass)
+        assertArrayEquals(Jsons.writeValueAsBytes(unknownValue.value), result as ByteArray)
     }
 
     @Test

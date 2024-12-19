@@ -31,7 +31,7 @@ import org.junit.jupiter.api.assertThrows
 
 class AirbyteTypeToSqlTypeTest {
 
-    private val converter =  AirbyteTypeToSqlType()
+    private val converter = AirbyteTypeToSqlType()
 
     @Test
     fun testConvertObjectType() {
@@ -49,13 +49,15 @@ class AirbyteTypeToSqlTypeTest {
     @Test
     fun testConvertArrayType() {
         val arrayType = ArrayType(FieldType(IntegerType, false))
-        assertThrows<IllegalArgumentException> { converter.convert(arrayType) }
+        val result = converter.convert(arrayType)
+        assertEquals(Types.BLOB, result)
     }
 
     @Test
     fun testConvertArrayTypeWithoutSchema() {
         val arrayType = ArrayTypeWithoutSchema
-        assertThrows<IllegalArgumentException> { converter.convert(arrayType) }
+        val result = converter.convert(arrayType)
+        assertEquals(Types.BLOB, result)
     }
 
     @Test
@@ -144,7 +146,8 @@ class AirbyteTypeToSqlTypeTest {
     @Test
     fun testConvertUnknownType() {
         val unknownType = UnknownType(mockk<JsonNode>())
-        assertThrows<IllegalArgumentException> { converter.convert(unknownType) }
+        val result = converter.convert(unknownType)
+        assertEquals(Types.BLOB, result)
     }
 
     @Test

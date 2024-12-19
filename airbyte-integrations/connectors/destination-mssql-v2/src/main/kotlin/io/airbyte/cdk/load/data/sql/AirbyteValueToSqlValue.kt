@@ -43,7 +43,7 @@ class AirbyteValueToSqlValue {
                     }
                 convertedValues
             }
-            is ArrayValue -> throw IllegalArgumentException("Array type is not supported")
+            is ArrayValue -> airbyteValue.values.map { convert(it) }.serializeToJsonBytes()
             is BooleanValue -> airbyteValue.value
             is DateValue -> Date.valueOf(toLocalDate(airbyteValue.value))
             is IntegerValue -> airbyteValue.value
@@ -52,7 +52,7 @@ class AirbyteValueToSqlValue {
             is StringValue -> airbyteValue.value
             is TimeValue -> Time.valueOf(toOffset(airbyteValue.value))
             is TimestampValue -> Timestamp.valueOf(toLocalDateTime(airbyteValue.value))
-            is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
+            is UnknownValue -> airbyteValue.value.serializeToJsonBytes()
         }
     }
 }

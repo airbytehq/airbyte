@@ -36,12 +36,8 @@ class AirbyteTypeToSqlType {
     fun convert(airbyteSchema: AirbyteType): Int {
         return when (airbyteSchema) {
             is ObjectType -> Types.BLOB
-            is ArrayType -> {
-                throw IllegalArgumentException("Array type is not supported")
-            }
-            is ArrayTypeWithoutSchema -> {
-                throw IllegalArgumentException("Array type without schema is not supported")
-            }
+            is ArrayType -> Types.BLOB
+            is ArrayTypeWithoutSchema -> Types.BLOB
             is BooleanType -> Types.BOOLEAN
             is DateType -> Types.DATE
             is IntegerType -> Types.BIGINT
@@ -56,9 +52,7 @@ class AirbyteTypeToSqlType {
             is UnionType -> {
                 throw IllegalArgumentException("Union type is not supported")
             }
-            is UnknownType -> {
-                throw IllegalArgumentException("Unknown type is not supported")
-            }
+            is UnknownType -> Types.BLOB
         }
     }
 }
