@@ -39,7 +39,8 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
     implementation("com.github.spotbugs:spotbugs-annotations:4.8.6")
-    implementation("io.micronaut:micronaut-inject:4.6.1")
+    implementation("io.micronaut:micronaut-inject:4.7.9")
+    implementation("com.zaxxer:HikariCP:6.2.1")
 
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
