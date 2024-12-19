@@ -62,7 +62,7 @@ global:
     registry: ghcr.io/NAMESPACE
 ```
 
-If you're using private images, you can authenticate with Kubernetes secrets.
+If your registry requires authentication, you can create a Kubernetes secret and reference it in the Airbyte config:
 
 1. Create a Kubernetes secret. In this example, you create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
 
