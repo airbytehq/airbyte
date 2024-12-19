@@ -88,7 +88,7 @@ class DeepsetCloudApi:
                 return
 
         error = "User does not have access to the selected workspace!"
-        raise APIError(error)
+        raise ConfigurationError(error)
 
     def upload(self, file: DeepsetCloudFile, write_mode: str = "KEEP") -> UUID:
         """Upload file to deepset Cloud.
