@@ -1,4 +1,4 @@
-version: 5.7.0
+version: 6.11.1
 
 type: DeclarativeSource
 
@@ -624,7 +624,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /conversations/{{ stream_slice.conversation_id }}
+          path: /conversations/{{ stream_slice.id }}
           http_method: GET
           request_headers:
             Accept: application/json
@@ -651,14 +651,6 @@ definitions:
               {{ record['updated_at'] >= stream_state.get('prior_state',
               {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
               86400)}}
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: conversation_id
-              stream:
-                $ref: "#/definitions/streams/conversations"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: >-
@@ -667,7 +659,8 @@ definitions:
         parent_complete_fetch: true
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/streams/conversations"
+            stream:
+              $ref: "#/definitions/streams/conversations"
             parent_key: id
             partition_field: id
       transformations:
@@ -689,7 +682,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /companies/{{ stream_slice.companies_id }}/segments
+          path: /companies/{{ stream_slice.id }}/segments
           http_method: GET
           request_headers:
             Accept: application/json
@@ -718,14 +711,6 @@ definitions:
               {{ record['updated_at'] >= stream_state.get('prior_state',
               {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
               86400)}}
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: companies_id
-              stream:
-                $ref: "#/definitions/streams/companies"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: >-
@@ -734,8 +719,9 @@ definitions:
         parent_complete_fetch: true
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/streams/companies"
-            parent_key: id  
+            stream:
+              $ref: "#/definitions/streams/companies"
+            parent_key: id
             partition_field: id
       schema_loader:
         type: InlineSchemaLoader
