@@ -243,34 +243,45 @@ class MySqlSourceDebeziumOperations(
         val file = Field("File", StringFieldType)
         val pos = Field("Position", LongFieldType)
         val gtids = Field("Executed_Gtid_Set", StringFieldType)
+        
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val sql = "SHOW MASTER STATUS"
-                stmt.executeQuery(sql).use { rs: ResultSet ->
-                    if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
-                    val mySqlSourceCdcPosition =
-                        MySqlSourceCdcPosition(
-                            fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${file.id} in: $sql",
-                                    ),
-                            position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
-                                    ?: throw ConfigErrorException(
-                                        "No value for ${pos.id} in: $sql",
-                                    ),
-                        )
-                    if (rs.metaData.columnCount <= 4) {
-                        // This value exists only in MySQL 5.6.5 or later.
-                        return mySqlSourceCdcPosition to null
+                val queries = listOf("SHOW MASTER STATUS", "SHOW BINARY LOG STATUS")
+                for (sql in queries) {
+                    try {
+                        stmt.executeQuery(sql).use { rs: ResultSet ->
+                            if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
+                            val mySqlSourceCdcPosition =
+                                MySqlSourceCdcPosition(
+                                    fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
+                                            ?: throw ConfigErrorException(
+                                                "No value for ${file.id} in: $sql",
+                                            ),
+                                    position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
+                                            ?: throw ConfigErrorException(
+                                                "No value for ${pos.id} in: $sql",
+                                            ),
+                                )
+                            if (rs.metaData.columnCount <= 4) {
+                                // This value exists only in MySQL 5.6.5 or later.
+                                return mySqlSourceCdcPosition to null
+                            }
+                            val gtidSet: String? =
+                                rs.getString(gtids.id)
+                                    ?.takeUnless { rs.wasNull() || it.isBlank() }
+                                    ?.trim()
+                                    ?.replace("\n", "")
+                                    ?.replace("\r", "")
+                            return mySqlSourceCdcPosition to gtidSet
+                        }
+                    } catch (e: SQLException) {
+                        println("Failed to execute query '$sql': ${e.message}")
                     }
-                    val gtidSet: String? =
-                        rs.getString(gtids.id)
-                            ?.takeUnless { rs.wasNull() || it.isBlank() }
-                            ?.trim()
-                            ?.replace("\n", "")
-                            ?.replace("\r", "")
-                    return mySqlSourceCdcPosition to gtidSet
                 }
+                
+                throw ConfigErrorException(
+                    "Failed to get CDC position"
+                )
             }
         }
     }
