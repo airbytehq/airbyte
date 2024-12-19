@@ -73,29 +73,29 @@ class SetConnectorVersion(StepModifyingFiles):
         current_metadata = yaml.safe_load(raw_metadata)
 
         # We use regex sub here instead of mutating the deserialized yaml to avoid messing up with the comments in the metadata file.
-        if releases := current_metadata.get("releases") is not None:
+        if releases := current_metadata.get("data", {}).get("releases") is not None:
             if rollout_configuration := releases.get("rolloutConfiguration") is not None:
                 if progressive_rollout_enabled := rollout_configuration.get("enableProgressiveRollout") is not None:
                     if progressive_rollout_enabled:
                         return connector_directory
                     else:
-                        new_raw_metadata = re.sub(r"(enableProgressiveRollout:\s*)false", r"\1true", raw_metadata)
+                        new_raw_metadata = re.sub(r"(enableProgressiveRollout:\s*)false", r"\1true\n", raw_metadata)
                 else:
                     new_raw_metadata = re.sub(
                         r"(rolloutConfiguration:)",
-                        r"\1\nenableProgressiveRollout: true",
+                        r"\1\nenableProgressiveRollout: true\n",
                         raw_metadata
                     )
             else:
                 new_raw_metadata = re.sub(
                     r"(releases:)",
-                    r"\1\nrolloutConfiguration:\nenableProgressiveRollout: true",
+                    r"\1\nrolloutConfiguration:\nenableProgressiveRollout: true\n",
                     raw_metadata
                 )
         else:
             new_raw_metadata = re.sub(
                 r"(name:)",
-                r"\1\nreleases:\nrolloutConfiguration:\nenableProgressiveRollout: true",
+                r"\1\nreleases:\nrolloutConfiguration:\nenableProgressiveRollout: true\n",
                 raw_metadata
             )
 
