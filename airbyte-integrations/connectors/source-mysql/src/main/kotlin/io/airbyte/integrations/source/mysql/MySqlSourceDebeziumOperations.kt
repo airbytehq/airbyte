@@ -280,7 +280,7 @@ class MySqlSourceDebeziumOperations(
                 }
                 
                 throw ConfigErrorException(
-                    "Failed to get CDC position"
+                    "Failed to retrieve CDC position: Unable to execute 'SHOW BINARY LOG STATUS' or 'SHOW MASTER STATUS' queries."
                 )
             }
         }
