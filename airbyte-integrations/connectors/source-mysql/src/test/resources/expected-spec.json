@@ -70,15 +70,11 @@
             "properties": {
               "method": {
                 "default": "STANDARD",
-                "enum": [
-                  "STANDARD"
-                ],
+                "enum": ["STANDARD"],
                 "type": "string"
               }
             },
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "title": "Scan Changes with User Defined Cursor",
             "type": "object"
           },
@@ -110,19 +106,14 @@
                 "always_show": true,
                 "default": "Fail sync",
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
-                "enum": [
-                  "Fail sync",
-                  "Re-sync data"
-                ],
+                "enum": ["Fail sync", "Re-sync data"],
                 "order": 3,
                 "title": "Configured server timezone for the MySQL source (Advanced)",
                 "type": "string"
               },
               "method": {
                 "default": "CDC",
-                "enum": [
-                  "CDC"
-                ],
+                "enum": ["CDC"],
                 "type": "string"
               },
               "server_timezone": {
@@ -133,9 +124,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "title": "Read Changes using Change Data Capture (CDC)",
             "type": "object"
           }
@@ -153,15 +142,11 @@
             "properties": {
               "mode": {
                 "default": "preferred",
-                "enum": [
-                  "preferred"
-                ],
+                "enum": ["preferred"],
                 "type": "string"
               }
             },
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "title": "preferred",
             "type": "object"
           },
@@ -171,15 +156,11 @@
             "properties": {
               "mode": {
                 "default": "required",
-                "enum": [
-                  "required"
-                ],
+                "enum": ["required"],
                 "type": "string"
               }
             },
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "title": "required",
             "type": "object"
           },
@@ -217,16 +198,11 @@
               },
               "mode": {
                 "default": "verify_ca",
-                "enum": [
-                  "verify_ca"
-                ],
+                "enum": ["verify_ca"],
                 "type": "string"
               }
             },
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "title": "verify_ca",
             "type": "object"
           },
@@ -264,16 +240,11 @@
               },
               "mode": {
                 "default": "verify_identity",
-                "enum": [
-                  "verify_identity"
-                ],
+                "enum": ["verify_identity"],
                 "type": "string"
               }
             },
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "title": "verify_identity",
             "type": "object"
           }
@@ -291,15 +262,11 @@
             "properties": {
               "tunnel_method": {
                 "default": "NO_TUNNEL",
-                "enum": [
-                  "NO_TUNNEL"
-                ],
+                "enum": ["NO_TUNNEL"],
                 "type": "string"
               }
             },
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "title": "No Tunnel",
             "type": "object"
           },
@@ -323,9 +290,7 @@
               },
               "tunnel_method": {
                 "default": "SSH_KEY_AUTH",
-                "enum": [
-                  "SSH_KEY_AUTH"
-                ],
+                "enum": ["SSH_KEY_AUTH"],
                 "type": "string"
               },
               "tunnel_port": {
@@ -366,9 +331,7 @@
               },
               "tunnel_method": {
                 "default": "SSH_PASSWORD_AUTH",
-                "enum": [
-                  "SSH_PASSWORD_AUTH"
-                ],
+                "enum": ["SSH_PASSWORD_AUTH"],
                 "type": "string"
               },
               "tunnel_port": {
@@ -416,13 +379,7 @@
         "type": "string"
       }
     },
-    "required": [
-      "host",
-      "port",
-      "database",
-      "username",
-      "replication_method"
-    ],
+    "required": ["host", "port", "database", "username", "replication_method"],
     "title": "MySQL Source Spec",
     "type": "object"
   },

@@ -326,7 +326,7 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.INTEGER,
                     isGlobal = false,
                 ),
-            MySqlSourceDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BIT(8)",
                     longBitCdcValues,
                     LeafAirbyteSchemaType.INTEGER,
@@ -338,7 +338,7 @@ object MySqlSourceDatatypeTestOperations :
                     LeafAirbyteSchemaType.STRING,
                     isGlobal = false,
                 ),
-            MySqlSourceDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonCdcValues,
                     LeafAirbyteSchemaType.STRING,
