@@ -39,10 +39,10 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     data class LocalBatch(val records: List<DestinationRecord>) : MockBatch() {
-        override val state = Batch.State.LOCAL
+        override val state = Batch.State.STAGED
     }
     data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
-        override val state = Batch.State.LOCAL
+        override val state = Batch.State.STAGED
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {

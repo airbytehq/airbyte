@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -28,6 +29,7 @@ from .streams import (
     Tickets,
     UserSettingsStream,
 )
+
 
 logger = logging.getLogger("airbyte")
 

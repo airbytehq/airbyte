@@ -6,6 +6,7 @@ import shutil
 
 import pytest
 from asyncclick.testing import CliRunner
+
 from pipelines.airbyte_ci.format import commands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
 
