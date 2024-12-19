@@ -8,14 +8,16 @@ from typing import Any, List, Mapping
 
 import backoff
 import pendulum
-from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.entrypoint import logger
 from source_instagram.common import InstagramAPIException, retry_pattern
+
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5, max_time=600)
 

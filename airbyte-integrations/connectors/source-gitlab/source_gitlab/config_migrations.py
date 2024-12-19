@@ -12,6 +12,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 
 from .source import SourceGitlab
 
+
 logger = logging.getLogger("airbyte_logger")
 
 
@@ -30,13 +31,11 @@ class MigrateStringToArray(ABC):
 
     @property
     @abc.abstractmethod
-    def migrate_from_key(self) -> str:
-        ...
+    def migrate_from_key(self) -> str: ...
 
     @property
     @abc.abstractmethod
-    def migrate_to_key(self) -> str:
-        ...
+    def migrate_to_key(self) -> str: ...
 
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:

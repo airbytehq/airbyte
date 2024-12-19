@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Callable, Final
 
 import dagger
+
 from base_images import bases, published_image
 from base_images import sanity_checks as base_sanity_checks
 from base_images.python import sanity_checks as python_sanity_checks
@@ -22,9 +23,9 @@ class AirbyteJavaConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
     DD_AGENT_JAR_URL: Final[str] = "https://dtdg.co/latest-java-tracer"
     BASE_SCRIPT_URL = "https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base/base.sh"
-    JAVA_BASE_SCRIPT_URL: Final[
-        str
-    ] = "https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base-java/javabase.sh"
+    JAVA_BASE_SCRIPT_URL: Final[str] = (
+        "https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f10164447a90fdce5c9ad6f9/airbyte-integrations/bases/base-java/javabase.sh"
+    )
 
     def get_container(self, platform: dagger.Platform) -> dagger.Container:
         """Returns the container used to build the base image for java connectors
