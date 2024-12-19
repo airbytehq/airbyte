@@ -7,11 +7,9 @@ from enum import Enum, unique
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
-
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
-
+from pydantic import BaseModel, Field
 
 __all__ = [
     "DeepsetCloudConfig",

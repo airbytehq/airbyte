@@ -5,10 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
 from destination_deepset import util
 from pydantic import BaseModel
-
-from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
 
 
 class Simple(BaseModel):
