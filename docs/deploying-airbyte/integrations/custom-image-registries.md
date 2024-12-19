@@ -86,18 +86,10 @@ If your registry requires authentication, you can create a Kubernetes secret and
 
 ## Step 2: Tag and push Airbyte images
 
-1. Authenticate with your custom image registry so you can push Airbyte images. In this example, you use a personal access token for GitHub, but the exact process depends on the image registry you're using.
+Tag and push Airbyte's images to your custom image registry. In this example, you tag all Airbyte images and push them all to GitHub.
 
-    ```bash
-    $ export CR_PAT=YOUR_TOKEN
-    $ echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
-    Login Succeeded
-    ```
-
-2. Tag and push Airbyte's images to your custom image registry. In this example, you tag all Airbyte images and push them all to GitHub.
-
-    ```bash
-    abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
-    ```
+```bash
+abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
+```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.
