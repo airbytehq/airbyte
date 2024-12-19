@@ -26,6 +26,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2024-12-14 | [47915](https://github.com/airbytehq/airbyte/pull/47915) | Update dependencies |
 | 0.0.1 | 2024-10-06 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
