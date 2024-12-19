@@ -36,6 +36,8 @@ import java.util.stream.Stream
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicInteger
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -284,10 +286,17 @@ class S3ConsumerFactory {
         val storageOps: S3StorageOperations,
         val featureFlags: FeatureFlags
     ) : DestinationFlushFunction {
+        val count = AtomicInteger(0)
         override fun flush(
             streamDescriptor: StreamDescriptor,
             stream: Stream<PartialAirbyteMessage>
         ) {
+            LOGGER.info{"SGX value before increment count=$count"}
+            if (count.getAndIncrement() == 0) {
+                LOGGER.info{"SGX pausing for 1h..."}
+                Thread.sleep(Duration.ofHours(1))
+            }
+            LOGGER.info{"SGX value after increment count=$count"}
             val records = stream.toList()
             val writeConfig = streamDescriptorToWriteConfig.getValue(streamDescriptor)
             if (records.isEmpty()) {
