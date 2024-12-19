@@ -63,7 +63,7 @@ def head_commit_does_not_fail_any_required_checks(
     return True, None
 
 
-# A standard PR is considered auto-mergeable if:
+# A PR is considered auto-mergeable if:
 #     - it has the AUTO_MERGE_LABEL
 #     - it targets the BASE_BRANCH
 #     - it touches only files in CONNECTOR_PATH_PREFIXES
