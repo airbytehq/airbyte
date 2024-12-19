@@ -2,13 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import os
-from typing import Any, Mapping
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from conftest import find_stream
+from conftest import find_stream, load_json_file
 from freezegun import freeze_time
 
 # Test input arguments for the `make_analytics_slices`
@@ -29,12 +25,6 @@ TEST_CONFIG: dict = {
         "authenticator": TokenAuthenticator(token="123"),
     },
 }
-
-
-# HELPERS
-def load_json_file(file_name: str) -> Mapping[str, Any]:
-    with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
-        return json.load(data)
 
 
 @freeze_time("2021-03-01")

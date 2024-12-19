@@ -36,3 +36,8 @@ def find_stream(stream_name, config):
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
+
+
+def load_json_file(file_name: str) -> Mapping[str, Any]:
+    with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
+        return json.load(data)
