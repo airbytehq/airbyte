@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.ValueSource
 
 class MysqlJdbcPartitionFactoryTest {
     companion object {
@@ -235,8 +234,10 @@ class MysqlJdbcPartitionFactoryTest {
         "'2025-09-03T05:23:35 Z', '2025-09-03T05:23:35.000000Z'",
         "'2025-09-03T05:23:35.12345 +12:34', '2025-09-03T05:23:35.123450+12:34'",
     )
-        //"", "", "", "", "", "2025-09-03T05:23:35.12345 +12:34"])
-    fun testResumeFromCompletedCursorBasedReadTimestamp(cursorVal: String, expectedLowerBound: String) {
+    fun testResumeFromCompletedCursorBasedReadTimestamp(
+        cursorVal: String,
+        expectedLowerBound: String
+    ) {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
