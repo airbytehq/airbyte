@@ -6,6 +6,9 @@ package io.airbyte.integrations.destination.mssql.v2.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -67,6 +70,73 @@ class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"default":"airbyte_internal","order":5}""")
     val rawDataSchema: String = "airbyte_internal"
+
+    @get:JsonSchemaTitle("SSL Method")
+    @get:JsonPropertyDescription(
+        "The encryption method which is used to communicate with the database."
+    )
+    @get:JsonProperty("ssl_method")
+    @get:JsonSchemaInject(json = """{"order":8}""")
+    val sslMethod: EncryptionMethod = EncryptedVerify()
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "ssl_method")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = Unencrypted::class, name = Unencrypted.NAME),
+    JsonSubTypes.Type(value = EncryptedTrust::class, name = EncryptedTrust.NAME),
+    JsonSubTypes.Type(value = EncryptedVerify::class, name = EncryptedVerify.NAME),
+)
+sealed interface EncryptionMethod {
+    @get:JsonProperty("ssl_method") val sslMethod: String
+}
+
+@JsonSchemaTitle("Unencrypted")
+@JsonSchemaDescription("The data transfer will not be encrypted.")
+class Unencrypted : EncryptionMethod {
+    companion object {
+        const val NAME = "unencrypted"
+    }
+    override val sslMethod: String = NAME
+}
+
+@JsonSchemaTitle("Encrypted (trust server certificate)")
+@JsonSchemaDescription(
+    "Use the certificate provided by the server without verification. (For testing purposes only!)"
+)
+class EncryptedTrust : EncryptionMethod {
+    companion object {
+        const val NAME = "encrypted_trust_server_certificate"
+    }
+    override val sslMethod: String = NAME
+}
+
+@JsonSchemaTitle("Encrypted (verify certificate)")
+@JsonSchemaDescription("Verify and use the certificate provided by the server.")
+class EncryptedVerify : EncryptionMethod {
+    companion object {
+        const val NAME = "encrypted_verify_certificate"
+    }
+    override val sslMethod: String = NAME
+
+    @get:JsonSchemaTitle("Trust Store Name")
+    @get:JsonPropertyDescription("Specifies the name of the trust store.")
+    @get:JsonProperty("trustStoreName")
+    @get:JsonSchemaInject(json = """{"order":1}""")
+    val trustStoreName: String? = null
+
+    @get:JsonSchemaTitle("Trust Store Password")
+    @get:JsonPropertyDescription("Specifies the password of the trust store.")
+    @get:JsonProperty("trustStorePassword")
+    @get:JsonSchemaInject(json = """{"airbyte_secret":true,"order":2}""")
+    val trustStorePassword: String? = null
+
+    @get:JsonSchemaTitle("Host Name In Certificate")
+    @get:JsonPropertyDescription(
+        "Specifies the host name of the server. The value of this property must match the subject property of the certificate."
+    )
+    @get:JsonProperty("hostNameInCertificate")
+    @get:JsonSchemaInject(json = """{"order":3}""")
+    val hostNameInCertificate: String? = null
 }
 
 @Singleton
