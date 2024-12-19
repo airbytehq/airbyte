@@ -27,7 +27,7 @@ import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class MysqlSourceSelectQueryGeneratorTest {
+class MySqlSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectLimit0() {
         SelectQuerySpec(
@@ -139,7 +139,7 @@ class MysqlSourceSelectQueryGeneratorTest {
                 select.columns,
                 bindings.map { SelectQuery.Binding(it.first, it.second) },
             )
-        val actual: SelectQuery = MysqlSourceOperations().generate(this.optimize())
+        val actual: SelectQuery = MySqlSourceOperations().generate(this.optimize())
         Assertions.assertEquals(expected, actual)
     }
 }

@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql.cdc
+package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -32,12 +32,6 @@ import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
-import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
-import io.airbyte.integrations.source.mysql.MysqlCdcMetaFields
-import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
-import io.airbyte.integrations.source.mysql.cdc.converters.MySqlBooleanConverter
-import io.airbyte.integrations.source.mysql.cdc.converters.MySqlTemporalConverter
 import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
@@ -63,11 +57,11 @@ import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
 
 @Singleton
-class MySqlDebeziumOperations(
+class MySqlSourceDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
-    val configuration: MysqlSourceConfiguration,
+    val configuration: MySqlSourceConfiguration,
     random: Random = Random.Default,
-) : DebeziumOperations<MySqlPosition> {
+) : DebeziumOperations<MySqlSourceCdcPosition> {
     private val log = KotlinLogging.logger {}
 
     override fun deserialize(
@@ -112,11 +106,20 @@ class MySqlDebeziumOperations(
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
-        val position = MySqlPosition(source["file"].asText(), source["pos"].asLong())
-        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_FILE.id, TextCodec.encode(position.fileName))
-        data.set<JsonNode>(MysqlCdcMetaFields.CDC_LOG_POS.id, LongCodec.encode(position.position))
+        val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
+        data.set<JsonNode>(
+            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
+            TextCodec.encode(position.fileName)
+        )
+        data.set<JsonNode>(
+            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
+            LongCodec.encode(position.position)
+        )
         // Set the _ab_cdc_cursor meta-field value.
-        data.set<JsonNode>(MysqlCdcMetaFields.CDC_CURSOR.id, LongCodec.encode(position.cursorValue))
+        data.set<JsonNode>(
+            MySqlSourceCdcMetaFields.CDC_CURSOR.id,
+            LongCodec.encode(position.cursorValue)
+        )
         // Return a DeserializedRecord instance.
         return DeserializedRecord(data, changes = emptyMap())
     }
@@ -135,7 +138,7 @@ class MySqlDebeziumOperations(
      */
     private fun validate(debeziumState: DebeziumState): CdcStateValidateResult {
         val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
-        val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
+        val (_: MySqlSourceCdcPosition, gtidSet: String?) = queryPositionAndGtids()
         if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
             log.info {
                 "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
@@ -201,12 +204,12 @@ class MySqlDebeziumOperations(
     }
 
     private fun parseSavedOffset(debeziumState: DebeziumState): SavedOffset {
-        val position: MySqlPosition = position(debeziumState.offset)
+        val position: MySqlSourceCdcPosition = position(debeziumState.offset)
         val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
         return SavedOffset(position, gtidSet)
     }
 
-    data class SavedOffset(val position: MySqlPosition, val gtidSet: String?)
+    data class SavedOffset(val position: MySqlSourceCdcPosition, val gtidSet: String?)
 
     enum class CdcStateValidateResult {
         VALID,
@@ -214,23 +217,25 @@ class MySqlDebeziumOperations(
         INVALID_RESET
     }
 
-    override fun position(offset: DebeziumOffset): MySqlPosition = Companion.position(offset)
+    override fun position(offset: DebeziumOffset): MySqlSourceCdcPosition =
+        Companion.position(offset)
 
-    override fun position(recordValue: DebeziumRecordValue): MySqlPosition? {
+    override fun position(recordValue: DebeziumRecordValue): MySqlSourceCdcPosition? {
         val file: JsonNode = recordValue.source["file"]?.takeIf { it.isTextual } ?: return null
         val pos: JsonNode = recordValue.source["pos"]?.takeIf { it.isIntegralNumber } ?: return null
-        return MySqlPosition(file.asText(), pos.asLong())
+        return MySqlSourceCdcPosition(file.asText(), pos.asLong())
     }
 
-    override fun position(sourceRecord: SourceRecord): MySqlPosition? {
+    override fun position(sourceRecord: SourceRecord): MySqlSourceCdcPosition? {
         val offset: Map<String, *> = sourceRecord.sourceOffset()
         val file: Any = offset["file"] ?: return null
         val pos: Long = offset["pos"] as? Long ?: return null
-        return MySqlPosition(file.toString(), pos)
+        return MySqlSourceCdcPosition(file.toString(), pos)
     }
 
     override fun synthesize(): DebeziumInput {
-        val (mySqlPosition: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
+        val (mySqlSourceCdcPosition: MySqlSourceCdcPosition, gtidSet: String?) =
+            queryPositionAndGtids()
         val topicPrefixName: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
         val timestamp: Instant = Instant.now()
         val key: ArrayNode =
@@ -241,8 +246,8 @@ class MySqlDebeziumOperations(
         val value: ObjectNode =
             Jsons.objectNode().apply {
                 put("ts_sec", timestamp.epochSecond)
-                put("file", mySqlPosition.fileName)
-                put("pos", mySqlPosition.position)
+                put("file", mySqlSourceCdcPosition.fileName)
+                put("pos", mySqlSourceCdcPosition.position)
                 if (gtidSet != null) {
                     put("gtids", gtidSet)
                 }
@@ -253,7 +258,7 @@ class MySqlDebeziumOperations(
         return DebeziumInput(syntheticProperties, state, isSynthetic = true)
     }
 
-    private fun queryPositionAndGtids(): Pair<MySqlPosition, String?> {
+    private fun queryPositionAndGtids(): Pair<MySqlSourceCdcPosition, String?> {
         val file = Field("File", StringFieldType)
         val pos = Field("Position", LongFieldType)
         val gtids = Field("Executed_Gtid_Set", StringFieldType)
@@ -262,8 +267,8 @@ class MySqlDebeziumOperations(
                 val sql = "SHOW MASTER STATUS"
                 stmt.executeQuery(sql).use { rs: ResultSet ->
                     if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
-                    val mySqlPosition =
-                        MySqlPosition(
+                    val mySqlSourceCdcPosition =
+                        MySqlSourceCdcPosition(
                             fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
                                     ?: throw ConfigErrorException(
                                         "No value for ${file.id} in: $sql",
@@ -275,7 +280,7 @@ class MySqlDebeziumOperations(
                         )
                     if (rs.metaData.columnCount <= 4) {
                         // This value exists only in MySQL 5.6.5 or later.
-                        return mySqlPosition to null
+                        return mySqlSourceCdcPosition to null
                     }
                     val gtidSet: String? =
                         rs.getString(gtids.id)
@@ -283,7 +288,7 @@ class MySqlDebeziumOperations(
                             ?.trim()
                             ?.replace("\n", "")
                             ?.replace("\r", "")
-                    return mySqlPosition to gtidSet
+                    return mySqlSourceCdcPosition to gtidSet
                 }
             }
         }
@@ -417,7 +422,10 @@ class MySqlDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(MySqlBooleanConverter::class, MySqlTemporalConverter::class)
+                .withConverters(
+                    MySqlSourceCdcBooleanConverter::class,
+                    MySqlSourceCdcTemporalConverter::class
+                )
 
         val serverTimezone: String? =
             (configuration.incrementalConfiguration as CdcIncrementalConfiguration).serverTimezone
@@ -499,12 +507,12 @@ class MySqlDebeziumOperations(
             return DebeziumState(offset, DebeziumSchemaHistory(schemaHistoryList))
         }
 
-        internal fun position(offset: DebeziumOffset): MySqlPosition {
+        internal fun position(offset: DebeziumOffset): MySqlSourceCdcPosition {
             if (offset.wrapped.size != 1) {
                 throw ConfigErrorException("Expected exactly 1 key in $offset")
             }
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-            return MySqlPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+            return MySqlSourceCdcPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
         }
     }
 }

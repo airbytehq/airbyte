@@ -2,13 +2,14 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql.cdc
+package io.airbyte.integrations.source.mysql
 
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 
 /** WAL position datum for MySQL. */
-data class MySqlPosition(val fileName: String, val position: Long) : Comparable<MySqlPosition> {
+data class MySqlSourceCdcPosition(val fileName: String, val position: Long) :
+    Comparable<MySqlSourceCdcPosition> {
 
     /**
      * Numerical value encoded in the extension of the binlog file name.
@@ -31,5 +32,6 @@ data class MySqlPosition(val fileName: String, val position: Long) : Comparable<
     val cursorValue: Long
         get() = (fileExtension.toLong() shl Int.SIZE_BITS) or position
 
-    override fun compareTo(other: MySqlPosition): Int = cursorValue.compareTo(other.cursorValue)
+    override fun compareTo(other: MySqlSourceCdcPosition): Int =
+        cursorValue.compareTo(other.cursorValue)
 }
