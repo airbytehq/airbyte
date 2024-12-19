@@ -12,6 +12,7 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 internal class TimeStringUtilityTest {
@@ -24,6 +25,14 @@ internal class TimeStringUtilityTest {
             LocalDate.parse(localDateString, TimeStringToInteger.DATE_TIME_FORMATTER),
             localDate
         )
+    }
+
+    @Test
+    fun testToLocalDateInvalidDateString() {
+        val invalidDateStr = "invalid-date"
+        assertThrows(java.time.format.DateTimeParseException::class.java) {
+            TimeStringUtility.toLocalDate(invalidDateStr)
+        }
     }
 
     @Test
@@ -80,5 +89,13 @@ internal class TimeStringUtilityTest {
                 .atOffset(ZoneOffset.UTC),
             offsetWithoutTimezone
         )
+    }
+
+    @Test
+    fun testToOffsetDateTimeInvalidFormat() {
+        val invalidDateTime = "invalid-datetime"
+        assertThrows(java.time.format.DateTimeParseException::class.java) {
+            TimeStringUtility.toOffsetDateTime(invalidDateTime)
+        }
     }
 }
