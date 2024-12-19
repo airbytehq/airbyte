@@ -13,12 +13,12 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeStringUtility.toLocalDate
-import io.airbyte.cdk.load.data.TimeStringUtility.toLocalDateTime
-import io.airbyte.cdk.load.data.TimeStringUtility.toOffset
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDate
+import io.airbyte.cdk.load.util.TimeStringUtility.toLocalDateTime
+import io.airbyte.cdk.load.util.TimeStringUtility.toOffset
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
 import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRow
