@@ -65,7 +65,6 @@ class FilePartAccumulator(
         streamDescriptor: DestinationStream.Descriptor,
         index: Long,
     ) {
-
         val wrapped = BatchEnvelope(batch, Range.singleton(index), streamDescriptor)
         outputQueue.publish(wrapped)
     }

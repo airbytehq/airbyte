@@ -71,10 +71,6 @@ class IcebergStreamLoader(
         return SimpleBatch(Batch.State.COMPLETE)
     }
 
-    override suspend fun processFile(file: DestinationFile): Batch {
-        throw NotImplementedError("Destination Iceberg does not support universal file transfer.")
-    }
-
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
         if (streamFailure == null) {
             // Doing it first to make sure that data coming in the current batch is written to the
