@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.DestinationFile
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
