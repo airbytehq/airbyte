@@ -6,7 +6,7 @@ Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyt
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
 - [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
-- ~Java base image code declaration~ *TODO* 
+- [Java base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/java/bases.py)
 
 
 ## Where are the Dockerfiles?
@@ -39,6 +39,20 @@ RUN mkdir -p 755 /usr/share/nltk_data
 
 
 
+### Example for `airbyte/java-connector-base`:
+```dockerfile
+FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33
+RUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all
+ENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec
+ENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check
+ENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover
+ENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read
+ENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write
+ENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh
+```
+
+
+
 ## Base images
 
 
@@ -57,6 +71,17 @@ RUN mkdir -p 755 /usr/share/nltk_data
 |  1.2.0-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.0-rc.1@sha256:f6467768b75fb09125f6e6b892b6b48c98d9fe085125f3ff4adc722afb1e5b30 |  |
 |  1.1.0 | ✅| docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c | Install socat |
 |  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
+
+
+### `airbyte/java-connector-base`
+
+| Version | Published | Docker Image Address | Changelog | 
+|---------|-----------|--------------|-----------|
+|  1.0.0 | ✅| docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a | Create a base image for our java connectors based on Amazon Corretto. |
+|  1.0.0-rc.4 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.4@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a | Bundle yum calls in a single RUN |
+|  1.0.0-rc.3 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.3@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a |  |
+|  1.0.0-rc.2 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.2@sha256:fca66e81b4d2e4869a03b57b1b34beb048e74f5d08deb2046c3bb9919e7e2273 | Set entrypoint to base.sh |
+|  1.0.0-rc.1 | ✅| docker.io/airbyte/java-connector-base:1.0.0-rc.1@sha256:886a7ce7eccfe3c8fb303511d0e46b83b7edb4f28e3705818c090185ba511fe7 | Create a base image for our java connectors. |
 
 
 ## How to release a new base image version (example for Python)
@@ -101,6 +126,9 @@ poetry run mypy base_images --check-untyped-defs
 ```
 
 ## CHANGELOG
+
+### 1.4.0
+- Declare a base image for our java connectors.
 
 ### 1.3.1
 - Update the crane image address. The previous address was deleted by the maintainer.

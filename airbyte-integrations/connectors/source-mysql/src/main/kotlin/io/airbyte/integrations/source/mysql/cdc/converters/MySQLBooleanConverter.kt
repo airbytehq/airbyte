@@ -40,7 +40,7 @@ class MySQLBooleanConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
                 } else if (field.hasDefaultValue()) {
                     field.defaultValue()
                 } else {
-                    null
+                    false
                 }
             }
             when (x) {

@@ -2,14 +2,15 @@
 from typing import Any, Dict, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
 from base_test import BaseTest
 from source_bing_ads.source import SourceBingAds
 from suds.transport.https import HttpAuthenticated
 from suds_response_mock import mock_http_authenticated_send
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 class TestAccountsStream(BaseTest):

@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.data.UnknownValue
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types.TimestampType
 
 class AirbyteValueToIcebergRecord {
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
@@ -58,16 +59,36 @@ class AirbyteValueToIcebergRecord {
                 return array
             }
             is BooleanValue -> return airbyteValue.value
-            is DateValue ->
-                throw IllegalArgumentException("String-based date types are not supported")
+            is DateValue -> return TimeStringUtility.toLocalDate(airbyteValue.value)
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
             is NumberValue -> return airbyteValue.value.toDouble()
             is StringValue -> return airbyteValue.value
             is TimeValue ->
-                throw IllegalArgumentException("String-based time types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIME -> TimeStringUtility.toOffset(airbyteValue.value)
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimeValue"
+                        )
+                }
             is TimestampValue ->
-                throw IllegalArgumentException("String-based timestamp types are not supported")
+                return when (type.typeId()) {
+                    Type.TypeID.TIMESTAMP -> {
+                        val timestampType = type as TimestampType
+                        val offsetDateTime = TimeStringUtility.toOffsetDateTime(airbyteValue.value)
+
+                        if (timestampType.shouldAdjustToUTC()) {
+                            offsetDateTime
+                        } else {
+                            offsetDateTime.toLocalDateTime()
+                        }
+                    }
+                    else ->
+                        throw IllegalArgumentException(
+                            "${type.typeId()} type is not allowed for TimestampValue"
+                        )
+                }
             is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }

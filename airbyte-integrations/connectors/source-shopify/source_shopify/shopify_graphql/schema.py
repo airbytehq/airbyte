@@ -7,6 +7,7 @@ import sgqlc.types
 import sgqlc.types.datetime
 import sgqlc.types.relay
 
+
 shopify_schema = sgqlc.types.Schema()
 
 

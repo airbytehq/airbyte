@@ -31,7 +31,7 @@ class DefaultProcessFileTask(
 
         val batch = streamLoader.processFile(file)
 
-        val wrapped = BatchEnvelope(batch, Range.singleton(index))
+        val wrapped = BatchEnvelope(batch, Range.singleton(index), streamDescriptor)
         taskLauncher.handleNewBatch(streamDescriptor, wrapped)
     }
 }

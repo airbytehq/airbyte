@@ -6,9 +6,10 @@ import random
 from typing import Any, MutableMapping
 
 import pytest
+from conftest import find_stream
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from conftest import find_stream
 
 
 def _read_full_refresh(stream_instance: Stream):

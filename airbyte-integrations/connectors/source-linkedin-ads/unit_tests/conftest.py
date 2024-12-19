@@ -10,6 +10,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from source_linkedin_ads.source import SourceLinkedinAds
 
+
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 

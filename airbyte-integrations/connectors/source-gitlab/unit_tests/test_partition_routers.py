@@ -3,9 +3,10 @@
 #
 
 
+from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from conftest import BASE_CONFIG, GROUPS_LIST_URL, get_stream_by_name
 
 
 class TestGroupStreamsPartitionRouter:
@@ -56,9 +57,7 @@ class TestProjectStreamsPartitionRouter:
                 url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50",
                 json=[{"id": group_id, "projects": [{"id": project_id, "path_with_namespace": project_id}]}],
             )
-            expected_stream_slices.append(
-                StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
-            )
+            expected_stream_slices.append(StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={}))
 
         requests_mock.get(url=GROUPS_LIST_URL, json=groups_list_response)
 

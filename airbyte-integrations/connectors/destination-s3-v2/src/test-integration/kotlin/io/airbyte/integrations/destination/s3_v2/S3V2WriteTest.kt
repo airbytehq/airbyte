@@ -67,6 +67,11 @@ class S3V2WriteTestJsonUncompressed :
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
     }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
 }
 
 class S3V2WriteTestJsonRootLevelFlattening :
