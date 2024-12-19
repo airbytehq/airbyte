@@ -11,6 +11,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.Properties
 import java.util.regex.Pattern
+import kotlin.reflect.KClass
 import org.apache.kafka.connect.connector.Connector
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
@@ -124,6 +125,25 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         return apply {
             with("table.include.list", joinIncludeList(tableIncludeList))
             with("column.include.list", joinIncludeList(columnIncludeList))
+        }
+    }
+
+    fun withConverters(
+        vararg converters: KClass<out RelationalColumnCustomConverter>
+    ): DebeziumPropertiesBuilder = withConverters(*converters.map { it.java }.toTypedArray())
+
+    fun withConverters(
+        vararg converters: Class<out RelationalColumnCustomConverter>
+    ): DebeziumPropertiesBuilder {
+        val classByKey: Map<String, Class<out RelationalColumnCustomConverter>> =
+            converters.associateBy {
+                it.getDeclaredConstructor().newInstance().debeziumPropertiesKey
+            }
+        return apply {
+            with("converters", classByKey.keys.joinToString(separator = ","))
+            for ((key, converterClass) in classByKey) {
+                with("${key}.type", converterClass.canonicalName)
+            }
         }
     }
 
