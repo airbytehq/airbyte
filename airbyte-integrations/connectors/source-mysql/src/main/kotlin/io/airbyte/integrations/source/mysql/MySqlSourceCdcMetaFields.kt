@@ -9,7 +9,7 @@ import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetaField
 
-enum class MysqlCdcMetaFields(
+enum class MySqlSourceCdcMetaFields(
     override val type: FieldType,
 ) : MetaField {
     CDC_CURSOR(CdcIntegerMetaFieldType),

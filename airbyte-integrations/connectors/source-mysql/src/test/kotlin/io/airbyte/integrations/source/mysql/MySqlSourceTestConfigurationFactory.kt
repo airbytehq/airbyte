@@ -12,12 +12,12 @@ import java.time.Duration
 @Singleton
 @Requires(env = [Environment.TEST])
 @Primary
-class MysqlSourceTestConfigurationFactory(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
+class MySqlSourceTestConfigurationFactory(val featureFlags: Set<FeatureFlag>) :
+    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationSpecification,
-    ): MysqlSourceConfiguration =
-        MysqlSourceConfigurationFactory(featureFlags)
+        pojo: MySqlSourceConfigurationSpecification,
+    ): MySqlSourceConfiguration =
+        MySqlSourceConfigurationFactory(featureFlags)
             .makeWithoutExceptionHandling(pojo)
             .copy(
                 maxConcurrency = 1,

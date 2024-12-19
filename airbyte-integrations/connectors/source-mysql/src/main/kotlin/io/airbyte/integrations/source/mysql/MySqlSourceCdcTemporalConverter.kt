@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql.cdc.converters
+package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.jdbc.converters.DateTimeConverter
 import io.debezium.spi.converter.CustomConverter
@@ -24,7 +24,7 @@ import org.apache.kafka.connect.data.SchemaBuilder
  * MySqlCdcProperties#commonProperties(JdbcDatabase)} (If you don't rename, a test would still fail
  * but it might be tricky to figure out where to change the property name)
  */
-class MySQLDateTimeConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
+class MySqlSourceCdcTemporalConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
 
     private val DATE_TYPES = arrayOf("DATE", "DATETIME", "TIME", "TIMESTAMP")
     override fun configure(props: Properties?) {}

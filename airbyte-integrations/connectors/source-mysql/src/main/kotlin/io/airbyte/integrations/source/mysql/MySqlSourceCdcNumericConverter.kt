@@ -2,14 +2,14 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql.cdc.converters
+package io.airbyte.integrations.source.mysql
 
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import java.util.*
 import org.apache.kafka.connect.data.SchemaBuilder
 
-class MySQLNumericConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
+class MySqlSourceCdcNumericConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
     override fun configure(props: Properties?) {}
 
     private val NUMERIC_TYPES = arrayOf("FLOAT", "DOUBLE", "DECIMAL")

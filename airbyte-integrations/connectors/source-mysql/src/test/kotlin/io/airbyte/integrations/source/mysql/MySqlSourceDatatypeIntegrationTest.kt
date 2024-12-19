@@ -19,12 +19,12 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
 
-class MySqlDatatypeIntegrationTest {
+class MySqlSourceDatatypeIntegrationTest {
 
     @TestFactory
     @Timeout(300)
     fun syncTests(): Iterable<DynamicNode> =
-        DynamicDatatypeTestFactory(MySqlDatatypeTestOperations).build(dbContainer)
+        DynamicDatatypeTestFactory(MySqlSourceDatatypeTestOperations).build(dbContainer)
 
     companion object {
 
@@ -34,38 +34,38 @@ class MySqlDatatypeIntegrationTest {
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            dbContainer = MysqlContainerFactory.shared("mysql:8.0", MysqlContainerFactory.WithCdc)
+            dbContainer = MySqlContainerFactory.shared("mysql:8.0", MySqlContainerFactory.WithCdc)
         }
     }
 }
 
-object MySqlDatatypeTestOperations :
+object MySqlSourceDatatypeTestOperations :
     DatatypeTestOperations<
         MySQLContainer<*>,
-        MysqlSourceConfigurationSpecification,
-        MysqlSourceConfiguration,
-        MysqlSourceConfigurationFactory,
-        MySqlDatatypeTestCase
+        MySqlSourceConfigurationSpecification,
+        MySqlSourceConfiguration,
+        MySqlSourceConfigurationFactory,
+        MySqlSourceDatatypeTestCase
     > {
 
     private val log = KotlinLogging.logger {}
 
     override val withGlobal: Boolean = true
-    override val globalCursorMetaField: MetaField = MysqlCdcMetaFields.CDC_CURSOR
+    override val globalCursorMetaField: MetaField = MySqlSourceCdcMetaFields.CDC_CURSOR
 
     override fun streamConfigSpec(
         container: MySQLContainer<*>
-    ): MysqlSourceConfigurationSpecification =
-        MysqlContainerFactory.config(container).also { it.setMethodValue(UserDefinedCursor) }
+    ): MySqlSourceConfigurationSpecification =
+        MySqlContainerFactory.config(container).also { it.setMethodValue(UserDefinedCursor) }
 
     override fun globalConfigSpec(
         container: MySQLContainer<*>
-    ): MysqlSourceConfigurationSpecification =
-        MysqlContainerFactory.config(container).also { it.setMethodValue(CdcCursor()) }
+    ): MySqlSourceConfigurationSpecification =
+        MySqlContainerFactory.config(container).also { it.setMethodValue(CdcCursor()) }
 
-    override val configFactory: MysqlSourceConfigurationFactory = MysqlSourceConfigurationFactory()
+    override val configFactory: MySqlSourceConfigurationFactory = MySqlSourceConfigurationFactory()
 
-    override fun createStreams(config: MysqlSourceConfiguration) {
+    override fun createStreams(config: MySqlSourceConfiguration) {
         JdbcConnectionFactory(config).get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { it.execute("CREATE DATABASE IF NOT EXISTS test") }
@@ -79,7 +79,7 @@ object MySqlDatatypeTestOperations :
         }
     }
 
-    override fun populateStreams(config: MysqlSourceConfiguration) {
+    override fun populateStreams(config: MySqlSourceConfiguration) {
         JdbcConnectionFactory(config).get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { it.execute("USE test") }
@@ -202,144 +202,149 @@ object MySqlDatatypeTestOperations :
             "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUg=="""",
         )
 
-    override val testCases: Map<String, MySqlDatatypeTestCase> =
+    override val testCases: Map<String, MySqlSourceDatatypeTestCase> =
         listOf(
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BOOLEAN",
                     booleanValues,
                     LeafAirbyteSchemaType.BOOLEAN,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "VARCHAR(10)",
                     stringValues,
                     LeafAirbyteSchemaType.STRING,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "DECIMAL(10,2)",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "DECIMAL(10,2) UNSIGNED",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "DECIMAL UNSIGNED",
                     zeroPrecisionDecimalValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase("FLOAT", floatValues, LeafAirbyteSchemaType.NUMBER),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("FLOAT", floatValues, LeafAirbyteSchemaType.NUMBER),
+                MySqlSourceDatatypeTestCase(
+                    "FLOAT(34)",
+                    floatValues,
+                    LeafAirbyteSchemaType.NUMBER,
+                ),
+                MySqlSourceDatatypeTestCase(
                     "FLOAT(7,4)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "FLOAT(53,8)",
                     floatValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
-                MySqlDatatypeTestCase("DOUBLE", decimalValues, LeafAirbyteSchemaType.NUMBER),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("DOUBLE", decimalValues, LeafAirbyteSchemaType.NUMBER),
+                MySqlSourceDatatypeTestCase(
                     "DOUBLE UNSIGNED",
                     decimalValues,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "TINYINT",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "TINYINT UNSIGNED",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "SMALLINT",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "MEDIUMINT",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase("BIGINT", intValues, LeafAirbyteSchemaType.INTEGER),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("BIGINT", intValues, LeafAirbyteSchemaType.INTEGER),
+                MySqlSourceDatatypeTestCase(
                     "SMALLINT UNSIGNED",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "MEDIUMINT UNSIGNED",
                     tinyintValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BIGINT UNSIGNED",
                     intValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase("INT", intValues, LeafAirbyteSchemaType.INTEGER),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("INT", intValues, LeafAirbyteSchemaType.INTEGER),
+                MySqlSourceDatatypeTestCase(
                     "INT UNSIGNED",
                     intValues,
                     LeafAirbyteSchemaType.INTEGER,
                 ),
-                MySqlDatatypeTestCase("DATE", dateValues, LeafAirbyteSchemaType.DATE),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("DATE", dateValues, LeafAirbyteSchemaType.DATE),
+                MySqlSourceDatatypeTestCase(
                     "TIMESTAMP",
                     timestampValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "DATETIME",
                     dateTimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "TIME",
                     timeValues,
                     LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
-                MySqlDatatypeTestCase("YEAR", yearValues, LeafAirbyteSchemaType.INTEGER),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase("YEAR", yearValues, LeafAirbyteSchemaType.INTEGER),
+                MySqlSourceDatatypeTestCase(
                     "VARBINARY(255)",
                     binaryValues,
                     LeafAirbyteSchemaType.BINARY,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BIT",
                     bitValues,
                     LeafAirbyteSchemaType.BOOLEAN,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BIT(8)",
                     longBitValues,
                     LeafAirbyteSchemaType.INTEGER,
                     isGlobal = false,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "BIT(8)",
                     longBitCdcValues,
                     LeafAirbyteSchemaType.INTEGER,
                     isStream = false,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonValues,
                     LeafAirbyteSchemaType.STRING,
                     isGlobal = false,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonCdcValues,
                     LeafAirbyteSchemaType.STRING,
                     isStream = false,
                 ),
-                MySqlDatatypeTestCase(
+                MySqlSourceDatatypeTestCase(
                     "ENUM('a', 'b', 'c')",
                     enumValues,
                     LeafAirbyteSchemaType.STRING,
@@ -348,7 +353,7 @@ object MySqlDatatypeTestOperations :
             .associateBy { it.id }
 }
 
-data class MySqlDatatypeTestCase(
+data class MySqlSourceDatatypeTestCase(
     val sqlType: String,
     val sqlToAirbyte: Map<String, String>,
     override val expectedAirbyteSchemaType: AirbyteSchemaType,

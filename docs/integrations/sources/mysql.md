@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.9.4    | 2024-12-18 | [49939](https://github.com/airbytehq/airbyte/pull/49939)   | Pin Bulk CDK version to 226, rename classes.                                                                                                  |
 | 3.9.3    | 2024-12-18 | [49932](https://github.com/airbytehq/airbyte/pull/49932)   | Backward compatibility for saved states with timestamp that include timezone offset.                                                            |
 | 3.9.2    | 2024-12-16 | [49830](https://github.com/airbytehq/airbyte/pull/49830)   | Fixes an issue with auto generated tinyint columns                                                                                              |
 | 3.9.1    | 2024-12-12 | [49456](https://github.com/airbytehq/airbyte/pull/49456)   | Bump version to re-relase                                                                                                                       |
