@@ -144,7 +144,6 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
-
         return MySqlSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
