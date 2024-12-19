@@ -26,18 +26,12 @@ import io.mockk.mockk
 import java.sql.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class AirbyteTypeToSqlTypeTest {
 
-    private lateinit var converter: AirbyteTypeToSqlType
-
-    @BeforeEach
-    fun setUp() {
-        converter = AirbyteTypeToSqlType()
-    }
+    private val converter =  AirbyteTypeToSqlType()
 
     @Test
     fun testConvertObjectType() {

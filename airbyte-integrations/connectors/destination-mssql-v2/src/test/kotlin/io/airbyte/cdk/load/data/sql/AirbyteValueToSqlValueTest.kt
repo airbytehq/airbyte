@@ -32,18 +32,12 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class AirbyteValueToSqlValueTest {
 
-    private lateinit var converter: AirbyteValueToSqlValue
-
-    @BeforeEach
-    fun setUp() {
-        converter = AirbyteValueToSqlValue()
-    }
+    private val converter = AirbyteValueToSqlValue()
 
     @Test
     fun testConvertObjectValue() {
