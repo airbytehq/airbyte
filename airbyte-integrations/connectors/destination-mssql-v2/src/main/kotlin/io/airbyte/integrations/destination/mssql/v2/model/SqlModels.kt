@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.sql
+package io.airbyte.integrations.destination.mssql.v2.model
 
 import java.sql.Types
 

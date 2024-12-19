@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.sql
+package io.airbyte.integrations.destination.mssql.v2.convert
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.integrations.destination.mssql.v2.model.SqlColumn
+import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
 import java.sql.Types
 
 /** CDK pipeline [AirbyteType] to SQL [Types] converter. */

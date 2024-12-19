@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.sql
+package io.airbyte.integrations.destination.mssql.v2.convert
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.ArrayType
