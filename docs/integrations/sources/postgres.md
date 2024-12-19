@@ -329,6 +329,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.26 | 2024-12-18 | [49917](https://github.com/airbytehq/airbyte/pull/49917) | Use a non root base image |
 | 3.6.25 | 2024-12-17 | [49838](https://github.com/airbytehq/airbyte/pull/49838) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.6.24 | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469) | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration |
 | 3.6.23  | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482)  | Convert large integer typed using NUMERIC(X, 0) into a BigInteger.  l    

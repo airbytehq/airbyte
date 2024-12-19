@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.6.25
+  dockerImageTag: 3.6.26
   dockerRepository: airbyte/source-postgres
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgres
@@ -27,7 +27,7 @@ data:
   tags:
     - language:java
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0-rc.2@sha256:e5543b3de4c38e9ef45dba886bad5ee319b0d7bfe921f310c788f1d4466e25eb
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
