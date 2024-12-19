@@ -22,7 +22,6 @@ import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.Feed
-import io.airbyte.cdk.read.NoOpGlobalLockResource
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
@@ -131,7 +130,6 @@ class MysqlJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
-                NoOpGlobalLockResource()
             )
         }
 
