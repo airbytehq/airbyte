@@ -3,18 +3,19 @@
 #
 
 
+import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-import logging
+
 import requests
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
+from box_sdk_gen import BoxAPIError, BoxClient, File, Folder, Items
 
-from box_sdk_gen import BoxAPIError,BoxClient,File,Folder,Items
-from .box_api import get_box_ccg_client,box_folder_items_get_by_id
+from .box_api import box_folder_items_get_by_id, get_box_ccg_client
 
 logger = logging.getLogger("airbyte")
 
@@ -67,8 +68,6 @@ class BoxFileTextStream(Stream, ABC):
 
     # TODO: Fill in the url base. Required.
     # url_base = "https://api.box.com/"
-
-
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -191,12 +190,14 @@ class Employees(IncrementalBoxFileTextStream):
         """
         raise NotImplementedError("Implement stream slices or delete this method!")
 
+
 class BoxFile(BoxFileTextStream):
-    """
-    """
-    client :BoxClient = None
-    file_id:str = None
-    file:File = None
+    """ """
+
+    client: BoxClient = None
+    file_id: str = None
+    file: File = None
+
     def __init__(self, client: BoxClient, file_id: str):
         self.client = client
         self.file_id = file_id
@@ -209,7 +210,7 @@ class BoxFile(BoxFileTextStream):
         """
         return "id"
 
-    def read_records(self)-> File:
+    def read_records(self) -> File:
         logger.info(f"Reading records for file {self.file_id}")
         try:
             self.file = self.client.files.get_file_by_id(self.file_id)
@@ -218,19 +219,21 @@ class BoxFile(BoxFileTextStream):
 
         return self.file
 
+
 class BoxFolder(Stream):
     """
     Represents a Box FOLDER stream.
     """
-    client:BoxClient = None
-    folder_id:str = None
-    is_recursive:bool = False
-    folder:Folder
+
+    client: BoxClient = None
+    folder_id: str = None
+    is_recursive: bool = False
+    folder: Folder
 
     # file_id:str = None
     # file:File = None
 
-    def __init__(self, client: BoxClient, folder_id: str,is_recursive:bool = False):
+    def __init__(self, client: BoxClient, folder_id: str, is_recursive: bool = False):
         self.client = client
         self.folder_id = folder_id
         self.is_recursive = is_recursive
@@ -243,7 +246,7 @@ class BoxFolder(Stream):
         """
         # in theory it represents the id of the item
         return "id"
-    
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -251,14 +254,11 @@ class BoxFolder(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        items = box_folder_items_get_by_id(self.client, self.folder_id,is_recursive=self.is_recursive)
+        items = box_folder_items_get_by_id(self.client, self.folder_id, is_recursive=self.is_recursive)
         for item in items:
-            airbyte_item:StreamData = item.file.to_dict()
+            airbyte_item: StreamData = item.file.to_dict()
             airbyte_item["text_representation"] = item.text_representation
             yield airbyte_item
-
-        
-        
 
 
 # Source
@@ -291,7 +291,6 @@ class SourceBoxFileText(AbstractSource):
         box_client = get_box_ccg_client(config)
 
         # box_file_stream = BoxFile(box_client, config["file_id"])
-        box_folder_stream = BoxFolder(box_client, config["box_folder_id"],is_recursive=config.get("is_recursive",False))
+        box_folder_stream = BoxFolder(box_client, config["box_folder_id"], is_recursive=config.get("is_recursive", False))
 
         return [box_folder_stream]
-
