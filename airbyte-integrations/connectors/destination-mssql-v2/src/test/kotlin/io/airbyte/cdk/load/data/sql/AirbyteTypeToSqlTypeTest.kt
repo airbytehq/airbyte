@@ -140,7 +140,8 @@ class AirbyteTypeToSqlTypeTest {
     @Test
     fun testConvertUnionType() {
         val unionType = UnionType(setOf(StringType, NumberType))
-        assertThrows<IllegalArgumentException> { converter.convert(unionType) }
+        val result = converter.convert(unionType)
+        assertEquals(Types.BLOB, result)
     }
 
     @Test

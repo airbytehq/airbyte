@@ -49,9 +49,7 @@ class AirbyteTypeToSqlType {
             is TimeTypeWithoutTimezone -> Types.TIME
             is TimestampTypeWithTimezone -> Types.TIMESTAMP_WITH_TIMEZONE
             is TimestampTypeWithoutTimezone -> Types.TIMESTAMP
-            is UnionType -> {
-                throw IllegalArgumentException("Union type is not supported")
-            }
+            is UnionType -> Types.BLOB
             is UnknownType -> Types.BLOB
         }
     }
