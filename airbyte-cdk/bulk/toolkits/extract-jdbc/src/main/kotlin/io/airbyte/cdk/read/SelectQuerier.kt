@@ -23,16 +23,15 @@ interface SelectQuerier {
 
     data class Parameters(
         /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
-        val reuseResultObject: Boolean = false,
+        val reuseResultObject: Boolean,
         /** JDBC [PreparedStatement] fetchSize value. */
-        val statementFetchSize: Int? = null,
+        val statementFetchSize: Int?,
         /** JDBC [ResultSet] fetchSize value. */
-        val resultSetFetchSize: Int? = null,
+        val resultSetFetchSize: Int?,
     ) {
-        constructor() : this(false, null, null)
         constructor(
-            reuseResultObject: Boolean,
-            fetchSize: Int?
+            reuseResultObject: Boolean = false,
+            fetchSize: Int? = null
         ) : this(reuseResultObject, fetchSize, fetchSize)
     }
 
