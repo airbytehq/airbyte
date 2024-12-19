@@ -15,7 +15,7 @@ import jakarta.inject.Singleton
 /** Mysql implementation of [JdbcSelectQuerier], which sets fetch size differently */
 @Singleton
 @Primary
-class MysqlSelectQuerier(
+class MySqlSourceSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
     private val log = KotlinLogging.logger {}

@@ -29,7 +29,7 @@ import jakarta.inject.Singleton
 /**
  * The object which is mapped to the Mysql source configuration JSON.
  *
- * Use [MysqlSourceConfiguration] instead wherever possible. This object also allows injecting
+ * Use [MySqlSourceConfiguration] instead wherever possible. This object also allows injecting
  * values through Micronaut properties, this is made possible by the classes named
  * `MicronautPropertiesFriendly.*`.
  */
@@ -40,7 +40,7 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
+class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")

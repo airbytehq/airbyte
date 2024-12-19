@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
-class MysqlSourceConfigurationSpecificationTestTest {
+class MySqlSourceConfigurationSpecificationTest {
     @Inject
-    lateinit var supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
+    lateinit var supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>
 
     @Test
     fun testSchemaViolation() {
@@ -25,7 +25,7 @@ class MysqlSourceConfigurationSpecificationTestTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON)
     fun testJson() {
-        val pojo: MysqlSourceConfigurationSpecification = supplier.get()
+        val pojo: MySqlSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("localhost", pojo.host)
         Assertions.assertEquals(12345, pojo.port)
         Assertions.assertEquals("FOO", pojo.username)
@@ -41,10 +41,11 @@ class MysqlSourceConfigurationSpecificationTestTest {
         Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
         Assertions.assertEquals(2, pojo.concurrency)
     }
-}
 
-const val CONFIG_JSON: String =
-    """
+    companion object {
+
+        const val CONFIG_JSON: String =
+            """
 {
   "host": "localhost",
   "port": 12345,
@@ -69,3 +70,5 @@ const val CONFIG_JSON: String =
   "concurrency": 2
 }
 """
+    }
+}

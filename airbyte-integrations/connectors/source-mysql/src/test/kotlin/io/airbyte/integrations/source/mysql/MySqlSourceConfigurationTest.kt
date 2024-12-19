@@ -15,14 +15,14 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST, AIRBYTE_CLOUD_ENV], rebuildContext = true)
-class MysqlSourceConfigurationTest {
+class MySqlSourceConfigurationTest {
     @Inject
     lateinit var pojoSupplier:
-        ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
+        ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>
 
     @Inject
     lateinit var factory:
-        SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>
+        SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration>
 
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -36,7 +36,7 @@ class MysqlSourceConfigurationTest {
         value = "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&"
     )
     fun testParseJdbcParameters() {
-        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 
@@ -63,7 +63,7 @@ class MysqlSourceConfigurationTest {
     @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
     fun testAirbyteCloudDeployment() {
-        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
         Assertions.assertThrows(ConfigErrorException::class.java) {
             factory.makeWithoutExceptionHandling(pojo)
         }
@@ -72,7 +72,7 @@ class MysqlSourceConfigurationTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_V1)
     fun testParseConfigFromV1() {
-        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 
@@ -96,37 +96,11 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
-}
 
-const val CONFIG: String =
-    """
-{
-  "host": "localhost",
-  "port": 12345,
-  "username": "FOO",
-  "password": "BAR",
-  "database": "SYSTEM",
-  "ssl_mode": {
-    "mode": "preferred"
-  },
-  "tunnel_method": {
-    "tunnel_method": "SSH_PASSWORD_AUTH",
-    "tunnel_host": "localhost",
-    "tunnel_port": 2222,
-    "tunnel_user": "sshuser",
-    "tunnel_user_password": "***"
-  },
-  "replication_method": {
-    "method": "STANDARD"
-  },
-  "checkpoint_target_interval_seconds": 60,
-  "jdbc_url_params": "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
-  "concurrency": 2
-}
-"""
+    companion object {
 
-const val CONFIG_V1: String =
-    """
+        const val CONFIG_V1: String =
+            """
 {
   "host": "localhost",
   "port": 12345,
@@ -147,3 +121,5 @@ const val CONFIG_V1: String =
   }
 }
 """
+    }
+}

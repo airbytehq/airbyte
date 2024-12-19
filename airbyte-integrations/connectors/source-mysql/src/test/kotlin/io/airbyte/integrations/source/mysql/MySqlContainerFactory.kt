@@ -8,7 +8,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
-object MysqlContainerFactory {
+object MySqlContainerFactory {
     const val COMPATIBLE_NAME = "mysql:8.0"
     private val log = KotlinLogging.logger {}
 
@@ -69,8 +69,8 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
-        MysqlSourceConfigurationSpecification().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MySqlSourceConfigurationSpecification =
+        MySqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username
@@ -81,10 +81,6 @@ object MysqlContainerFactory {
             concurrency = 1
             setMethodValue(UserDefinedCursor)
         }
-
-    @JvmStatic
-    fun cdcConfig(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
-        config(mySQLContainer).also { it.setMethodValue(CdcCursor()) }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {
         val cleanSql: String = sql.trim().removeSuffix(";") + ";"

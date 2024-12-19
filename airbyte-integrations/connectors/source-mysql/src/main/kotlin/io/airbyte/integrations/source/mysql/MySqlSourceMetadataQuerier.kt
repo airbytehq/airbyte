@@ -24,7 +24,7 @@ import java.sql.Statement
 private val log = KotlinLogging.logger {}
 
 /** Delegates to [JdbcMetadataQuerier] except for [fields]. */
-class MysqlSourceMetadataQuerier(
+class MySqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
 
@@ -208,9 +208,9 @@ class MysqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
-    ) : MetadataQuerier.Factory<MysqlSourceConfiguration> {
+    ) : MetadataQuerier.Factory<MySqlSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
-        override fun session(config: MysqlSourceConfiguration): MetadataQuerier {
+        override fun session(config: MySqlSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(
@@ -221,7 +221,7 @@ class MysqlSourceMetadataQuerier(
                     checkQueries,
                     jdbcConnectionFactory,
                 )
-            return MysqlSourceMetadataQuerier(base)
+            return MySqlSourceMetadataQuerier(base)
         }
     }
 }

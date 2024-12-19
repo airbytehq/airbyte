@@ -12,7 +12,7 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
+import io.airbyte.integrations.source.mysql.MySqlContainerFactory.execAsRoot
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
 
-class MysqlCdcIntegrationTest {
+class MySqlSourceCdcIntegrationTest {
 
     @Test
     fun testCheck() {
@@ -43,19 +43,19 @@ class MysqlCdcIntegrationTest {
             AirbyteConnectionStatus.Status.SUCCEEDED
         )
 
-        MysqlContainerFactory.exclusive(
+        MySqlContainerFactory.exclusive(
                 imageName = "mysql:8.0",
-                MysqlContainerFactory.WithCdcOff,
+                MySqlContainerFactory.WithCdcOff,
             )
             .use { nonCdcDbContainer ->
                 {
-                    val invalidConfig: MysqlSourceConfigurationSpecification =
-                        MysqlContainerFactory.config(nonCdcDbContainer).apply {
+                    val invalidConfig: MySqlSourceConfigurationSpecification =
+                        MySqlContainerFactory.config(nonCdcDbContainer).apply {
                             setMethodValue(CdcCursor())
                         }
 
                     val nonCdcConnectionFactory =
-                        JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(invalidConfig))
+                        JdbcConnectionFactory(MySqlSourceConfigurationFactory().make(invalidConfig))
 
                     provisionTestContainer(nonCdcDbContainer, nonCdcConnectionFactory)
 
@@ -108,11 +108,11 @@ class MysqlCdcIntegrationTest {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>
 
-        fun config(): MysqlSourceConfigurationSpecification =
-            MysqlContainerFactory.config(dbContainer).apply { setMethodValue(CdcCursor()) }
+        fun config(): MySqlSourceConfigurationSpecification =
+            MySqlContainerFactory.config(dbContainer).apply { setMethodValue(CdcCursor()) }
 
         val connectionFactory: JdbcConnectionFactory by lazy {
-            JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))
+            JdbcConnectionFactory(MySqlSourceConfigurationFactory().make(config()))
         }
 
         val configuredCatalog: ConfiguredAirbyteCatalog = run {
@@ -123,12 +123,12 @@ class MysqlCdcIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MysqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream = MySqlSourceOperations().createGlobal(discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withPrimaryKey(discoveredStream.primaryKeyColumnIDs)
-                    .withCursorField(listOf(MysqlCdcMetaFields.CDC_CURSOR.id))
+                    .withCursorField(listOf(MySqlSourceCdcMetaFields.CDC_CURSOR.id))
             ConfiguredAirbyteCatalog().withStreams(listOf(configuredStream))
         }
 
@@ -137,9 +137,9 @@ class MysqlCdcIntegrationTest {
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
             dbContainer =
-                MysqlContainerFactory.exclusive(
+                MySqlContainerFactory.exclusive(
                     imageName = "mysql:8.0",
-                    MysqlContainerFactory.WithNetwork,
+                    MySqlContainerFactory.WithNetwork,
                 )
             provisionTestContainer(dbContainer, connectionFactory)
         }
