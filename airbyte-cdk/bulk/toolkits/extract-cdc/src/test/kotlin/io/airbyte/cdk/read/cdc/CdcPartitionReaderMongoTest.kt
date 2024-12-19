@@ -44,26 +44,27 @@ class CdcPartitionReaderMongoTest :
         withMongoCollection { it.insertOne(Document("_id", 0)) }
     }
 
-    override fun MongoDbReplicaSet.insert12345() {
+    override fun MongoDbReplicaSet.insert(vararg id: Int) {
         withMongoCollection {
-            for (i in 1..5) {
+            for (i in id) {
                 it.insertOne(Document("_id", i).append("v", i))
             }
         }
     }
 
-    override fun MongoDbReplicaSet.update135() {
+    override fun MongoDbReplicaSet.update(vararg id: Int) {
         withMongoCollection {
-            it.updateOne(Document("_id", 1), Updates.set("v", 6))
-            it.updateOne(Document("_id", 3), Updates.set("v", 7))
-            it.updateOne(Document("_id", 5), Updates.set("v", 8))
+            for (i in id) {
+                it.updateOne(Document("_id", i), Updates.set("v", i+1))
+            }
         }
     }
 
-    override fun MongoDbReplicaSet.delete24() {
+    override fun MongoDbReplicaSet.delete(vararg id: Int) {
         withMongoCollection {
-            it.deleteOne(Document("_id", 2))
-            it.deleteOne(Document("_id", 4))
+            for (i in id) {
+                it.deleteOne(Document("_id", i))
+            }
         }
     }
 
@@ -85,12 +86,10 @@ class CdcPartitionReaderMongoTest :
 
     inner class MongoTestDebeziumOperations : AbstractDebeziumOperationsForTest<BsonTimestamp>() {
 
-            override fun deserialize(
-                opaqueStateValue: OpaqueStateValue,
-                streams: List<Stream>
-            ): DebeziumInput {
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
                 return super.deserialize(opaqueStateValue, streams).let {
                     DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+
                 }
             }
 
@@ -103,11 +102,46 @@ class CdcPartitionReaderMongoTest :
                 }
             }
 
-        override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
-            val resumeToken: String =
-                recordValue.source["resume_token"]?.takeIf { it.isTextual }?.asText() ?: return null
-            return ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeToken))
-        }
+            override fun deserialize(
+                opaqueStateValue: OpaqueStateValue,
+                streams: List<Stream>
+            ): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+                }
+            }
+
+            override fun deserialize(
+                key: DebeziumRecordKey,
+                value: DebeziumRecordValue,
+                stream: Stream,
+            ): DeserializedRecord {
+                val id: Int = key.element("id").asInt()
+                val record: Record =
+                    if (value.operation == "d") {
+                        Delete(id)
+                    } else {
+                        val v: Int? =
+                            value.after
+                                .takeIf { it.isTextual }
+                                ?.asText()
+                                ?.let { Jsons.readTree(it)["v"] }
+                                ?.asInt()
+                        if (v == null) {
+                            // In case a mongodb document was updated and then deleted, the update
+                            // change
+                            // event will not have any information ({after: null})
+                            // We are going to treat it as a Delete.
+                            Delete(id)
+                        } else {
+                            InsertOrUpdate(id, v)
+                        }
+                    }
+                return DeserializedRecord(
+                    data = Jsons.valueToTree(record),
+                    changes = emptyMap(),
+                )
+            }
 
         override fun position(sourceRecord: SourceRecord): BsonTimestamp? {
             val offset: Map<String, *> = sourceRecord.sourceOffset()

@@ -32,7 +32,6 @@ class MsSqlServerCdcIntegrationTest {
                run1.messages().first().connectionStatus.status,
                AirbyteConnectionStatus.Status.SUCCEEDED
            )
-
        }
     @Test
     @Disabled("This should failed because CDC is disabled on the container. The missing code is equivalent to MySqlSourceMetadataQuerier.extraChecks")

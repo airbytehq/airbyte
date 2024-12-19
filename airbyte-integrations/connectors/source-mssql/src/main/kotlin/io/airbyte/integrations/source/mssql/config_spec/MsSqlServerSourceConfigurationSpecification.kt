@@ -39,7 +39,6 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
     @JsonSchemaInject(json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"]}""")
-    @JsonSchemaDefault("3306")
     @JsonPropertyDescription(
         "The port of the database.",
     )

@@ -228,6 +228,9 @@ open class CdcPartitionReader<T : Comparable<T>>(
                 // in interrupting it until the snapshot is done.
                 return null
             }
+            if (!coroutineContext.isActive) {
+                return CloseReason.TIMEOUT
+            }
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
             log.info{"SGX currentPosition=$currentPosition, upperBound=$upperBound."}
             if (currentPosition == null || currentPosition < upperBound) {

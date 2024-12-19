@@ -33,6 +33,7 @@ class MsSqlServerSelectQueryGenerator : SelectQueryGenerator {
         return "SELECT $topClause" +
             when (selectNode) {
                 is SelectColumns -> selectNode.columns.joinToString(", ") { it.sql() }
+
                 is SelectColumnMaxValue -> "MAX(${selectNode.column.sql()})"
             }
     }
