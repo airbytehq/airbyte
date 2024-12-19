@@ -37,6 +37,8 @@ import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class MysqlJdbcPartitionFactoryTest {
     companion object {
@@ -219,13 +221,28 @@ class MysqlJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
     }
 
-    @Test
-    fun testResumeFromCompletedCursorBasedReadTimestamp() {
+    @ParameterizedTest
+    @CsvSource(
+        "'2025-09-03T05:23:35', '2025-09-03T05:23:35.000000Z'",
+        "'2025-09-03T05:23:35.0', '2025-09-03T05:23:35.000000Z'",
+        "'2025-09-03T05:23:35.1', '2025-09-03T05:23:35.100000Z'",
+        "'2025-09-03T05:23:35.123', '2025-09-03T05:23:35.123000Z'",
+        "'2025-09-03T05:23:35.123456789', '2025-09-03T05:23:35.123456Z'",
+        "'2025-09-03T05:23:35.123+00:00', '2025-09-03T05:23:35.123000Z'",
+        "'2025-09-03T05:23:35.123+00:00', '2025-09-03T05:23:35.123000Z'",
+        "'2025-09-03T05:23:35Z', '2025-09-03T05:23:35.000000Z'",
+        "'2025-09-03T05:23:35 Z', '2025-09-03T05:23:35.000000Z'",
+        "'2025-09-03T05:23:35.12345 +12:34', '2025-09-03T05:23:35.123450+12:34'",
+    )
+    fun testResumeFromCompletedCursorBasedReadTimestamp(
+        cursorVal: String,
+        expectedLowerBound: String
+    ) {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
                 """
               {
-                  "cursor": "2025-09-03T05:23:35",
+                  "cursor": "$cursorVal",
                   "version": 2,
                   "state_type": "cursor_based",
                   "stream_name": "stream2",
@@ -245,7 +262,7 @@ class MysqlJdbcPartitionFactoryTest {
         assertTrue(jdbcPartition is MysqlJdbcCursorIncrementalPartition)
 
         assertEquals(
-            Jsons.valueToTree("2025-09-02T05:23:35.000000Z"),
+            Jsons.valueToTree("$expectedLowerBound"),
             (jdbcPartition as MysqlJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
