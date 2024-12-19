@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
 from destination_deepset import util
 from pydantic import BaseModel
+
+from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
 
 
 class Simple(BaseModel):
@@ -88,3 +89,26 @@ def test_get_log_message() -> None:
 )
 def test_get_file_write_mode(destination_sync_mode: DestinationSyncMode, write_mode: str) -> None:
     assert util.get_file_write_mode(destination_sync_mode) == write_mode
+
+
+@pytest.mark.parametrize(
+    ("document_key", "stream", "namespace", "expected"),
+    [
+        ("testdoc_pdf.pdf", "unstructured", None, "unstructured_testdoc_pdf.pdf"),
+        ("testdoc_pdf.pdf", "unstructured", "docs", "unstructured_docs_testdoc_pdf.pdf"),
+        (
+            "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf",
+            "unstructured",
+            "docs",
+            "unstructured_docs_Shared-Documents_Test_folder_Test_foler_2_1_simple_pdf_file.pdf",
+        ),
+        (
+            "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf",
+            "unstructured",
+            "",
+            "unstructured_Shared-Documents_Test_folder_Test_foler_2_1_simple_pdf_file.pdf",
+        ),
+    ],
+)
+def test_generate_name(document_key: str, stream: str | None, namespace: str | None, expected: str) -> None:
+    assert util.generate_name(document_key, stream, namespace) == expected

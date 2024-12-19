@@ -5,6 +5,7 @@ from __future__ import annotations
 from time import time
 from traceback import format_exc
 from typing import TYPE_CHECKING, Any
+from urllib.parse import unquote, urlparse
 
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
@@ -17,6 +18,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
+
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -100,3 +102,26 @@ def get_file_write_mode(destination_sync_mode: DestinationSyncMode) -> str:
         DestinationSyncMode.overwrite: "OVERWRITE",
     }
     return write_modes.get(destination_sync_mode) or fallback_keep
+
+
+def generate_name(document_key: str, stream: str, namespace: str | None = None) -> str:
+    """Generate a unique name for the record using the document key.
+
+    Args:
+        document_key (str): The document key for the record.
+        stream (str): The name of the stream that the record belongs to.
+        namespace (str | None, optional): The namespace of the record. Defaults to None.
+
+    Returns:
+        str: The unique name of the record.
+    """
+    prefix = [p for p in [stream, namespace] if p]
+    # Parse URL and get path segments
+    parsed = urlparse(document_key)
+    path_segments = [*prefix, *parsed.path.strip("/").split("/")]
+
+    # Join segments with underscores to create filename
+    filename = "_".join(path_segments)
+
+    # URL decode the filename to handle special characters
+    return unquote(filename).replace(" ", "-")

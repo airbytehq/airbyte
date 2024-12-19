@@ -6,10 +6,12 @@ import json
 from enum import Enum, unique
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+
+from pydantic import BaseModel, Field
 
 from airbyte_cdk.models import AirbyteRecordMessage
-from pydantic import BaseModel, Field
+from destination_deepset import util
+
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -83,32 +85,6 @@ class FileData(BaseModel):
         description="Error encountered while parsing the file.",
     )
 
-    @property
-    def name(self) -> str:
-        """Generate a name from the document key.
-
-        Returns:
-            str: The unique name of the document.
-        """
-        # Parse URL and get path segments
-        parsed = urlparse(self.document_key)
-        path_segments = parsed.path.strip("/").split("/")
-
-        # Join segments with underscores to create filename
-        filename = "_".join(path_segments)
-
-        # URL decode the filename to handle special characters
-        return unquote(filename)
-
-    @property
-    def filename(self) -> str:
-        """The name of the file with Markdown extension.
-
-        Returns:
-            str: The unique file name with Markdown extension.
-        """
-        return Path(self.name).stem + ".md"
-
 
 class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
@@ -127,8 +103,10 @@ class DeepsetCloudFile(BaseModel):
     @classmethod
     def from_record(cls, record: AirbyteRecordMessage) -> DeepsetCloudFile:
         data = FileData.parse_obj(record.data)
+        name = Path(util.generate_name(data.document_key, record.stream, namespace=record.namespace))
+
         return cls(
-            name=data.filename,
+            name=f"{name.stem}.md",
             content=data.content,
             meta={
                 "airbyte": {
@@ -137,7 +115,7 @@ class DeepsetCloudFile(BaseModel):
                     **({"namespace": record.namespace} if record.namespace else {}),
                     **({"file_parse_error": data.file_parse_error} if data.file_parse_error else {}),
                 },
-                "source_file_extension": Path(data.name).suffix,
+                **({"source_file_extension": name.suffix} if name.suffix else {}),
                 **data.dict(exclude={"content", "file_parse_error"}, exclude_none=True),
             },
         )
