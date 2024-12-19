@@ -20,6 +20,9 @@ import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
+import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRow
+import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRowValue
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
