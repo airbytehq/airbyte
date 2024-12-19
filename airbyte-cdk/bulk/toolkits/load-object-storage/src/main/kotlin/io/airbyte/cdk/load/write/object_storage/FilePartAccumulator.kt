@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import com.google.common.collect.Range
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
@@ -18,6 +19,10 @@ import io.airbyte.cdk.load.write.BatchAccumulator
 import java.io.File
 import java.nio.file.Path
 
+@SuppressFBWarnings(
+    "NP_NONNULL_PARAM_VIOLATION",
+    justification = "state is guaranteed to be non-null by Kotlin's type system"
+)
 class FilePartAccumulator(
     private val pathFactory: ObjectStoragePathFactory,
     private val stream: DestinationStream,
