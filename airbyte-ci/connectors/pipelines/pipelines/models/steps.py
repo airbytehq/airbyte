@@ -16,6 +16,7 @@ import anyio
 import asyncer
 import click
 from dagger import Client, Container, DaggerError
+
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
@@ -23,8 +24,10 @@ from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
+    from typing import Any, ClassVar, Optional, Set, Union
+
     import dagger
-    from typing import Any, ClassVar, Optional, Union, Set
+
     from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
@@ -120,7 +123,6 @@ class CommandResult(Result):
 
 @dataclass(kw_only=True, frozen=True)
 class PoeTaskResult(Result):
-
     task_name: str
 
     def __repr__(self) -> str:  # noqa D105
@@ -418,7 +420,6 @@ class Step(ABC):
 
 
 class StepModifyingFiles(Step):
-
     modified_files: List[str]
     modified_directory: dagger.Directory
 

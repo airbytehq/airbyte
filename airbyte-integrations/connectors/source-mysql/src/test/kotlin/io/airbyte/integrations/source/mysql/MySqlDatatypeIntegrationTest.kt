@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mysql
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.MetaField
@@ -12,7 +11,6 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.DatatypeTestCase
 import io.airbyte.cdk.read.DatatypeTestOperations
 import io.airbyte.cdk.read.DynamicDatatypeTestFactory
-import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import org.junit.jupiter.api.BeforeAll
@@ -145,7 +143,7 @@ object MySqlDatatypeTestOperations :
 
     val zeroPrecisionDecimalCdcValues =
         mapOf(
-            "2" to """2.0""",
+            "2" to """2""",
         )
 
     val tinyintValues =
@@ -230,13 +228,6 @@ object MySqlDatatypeTestOperations :
                     "DECIMAL UNSIGNED",
                     zeroPrecisionDecimalValues,
                     LeafAirbyteSchemaType.INTEGER,
-                    isGlobal = false,
-                ),
-                MySqlDatatypeTestCase(
-                    "DECIMAL UNSIGNED",
-                    zeroPrecisionDecimalCdcValues,
-                    LeafAirbyteSchemaType.INTEGER,
-                    isStream = false,
                 ),
                 MySqlDatatypeTestCase("FLOAT", floatValues, LeafAirbyteSchemaType.NUMBER),
                 MySqlDatatypeTestCase(
@@ -379,9 +370,8 @@ data class MySqlDatatypeTestCase(
     override val fieldName: String
         get() = "col_$typeName"
 
-    override val expectedData: List<JsonNode>
-        get() =
-            sqlToAirbyte.values.map { Jsons.readTree("""{"${fieldName}":$it}""").get(fieldName) }
+    override val expectedData: List<String>
+        get() = sqlToAirbyte.values.map { """{"${fieldName}":$it}""" }
 
     val ddl: List<String>
         get() =
