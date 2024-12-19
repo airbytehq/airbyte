@@ -1,8 +1,3 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-
-
 import sys
 import traceback
 from datetime import datetime
@@ -10,7 +5,8 @@ from typing import List
 
 from orjson import orjson
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
+from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch, logger
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from source_stripe import SourceStripe
 
@@ -43,10 +39,11 @@ def _get_source(args: List[str]):
                 )
             ).decode()
         )
-        return None
+        raise
 
 
-def run():
+def run() -> None:
+    init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
