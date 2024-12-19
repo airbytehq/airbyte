@@ -33,7 +33,10 @@ import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A factory for instantiating [StateManager] based on the inputs of a READ. These inputs are
@@ -179,7 +182,10 @@ class StateManagerFactory(
         }
         val streamFields: List<Field> =
             expectedSchema.keys.toList().filterNot(MetaField::isMetaFieldID).map {
-                dataColumnOrNull(it) ?: return@toStream null
+                dataColumnOrNull(it) ?: run {
+                    logger.info{"SGX returning null for $stream because column $it is null"}
+                    return@toStream null
+                }
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(streamID))
@@ -231,6 +237,7 @@ class StateManagerFactory(
                     }
                 else -> ConfiguredSyncMode.FULL_REFRESH
             }
+        logger.info{"SGX returning ${streamFields.toSet()} for stream $stream"}
         return Stream(
             streamID,
             streamFields.toSet(),

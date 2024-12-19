@@ -160,7 +160,6 @@ class MsSqlServerJdbcPartitionFactory(
      */
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
         val retVal = createInternal(streamFeedBootstrap)
-        log.info { "SGX returning $retVal" }
         return retVal
     }
 
@@ -325,12 +324,10 @@ class MsSqlServerJdbcPartitionFactory(
 
                             val parsedDate =  LocalDateTime.parse(stateValue, inputDateFormatter)
                             val dateAsString = parsedDate.format(outputDateFormatter)
-                            log.info{"SGX stateValue=$stateValue, parsedDate=$parsedDate, dateAsString=$dateAsString"}
                             Jsons.textNode(
                                 dateAsString
                             )
                         } catch (e: DateTimeParseException) {
-                            log.info{"SGX cought exception $e"}
                             // Resolve to use the new format.
                             Jsons.valueToTree(stateValue)
                         }

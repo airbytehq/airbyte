@@ -45,26 +45,27 @@ class CdcPartitionReaderMongoTest :
         withMongoCollection { it.insertOne(Document("_id", 0)) }
     }
 
-    override fun MongoDbReplicaSet.insert12345() {
+    override fun MongoDbReplicaSet.insert(vararg id: Int) {
         withMongoCollection {
-            for (i in 1..5) {
+            for (i in id) {
                 it.insertOne(Document("_id", i).append("v", i))
             }
         }
     }
 
-    override fun MongoDbReplicaSet.update135() {
+    override fun MongoDbReplicaSet.update(vararg id: Int) {
         withMongoCollection {
-            it.updateOne(Document("_id", 1), Updates.set("v", 6))
-            it.updateOne(Document("_id", 3), Updates.set("v", 7))
-            it.updateOne(Document("_id", 5), Updates.set("v", 8))
+            for (i in id) {
+                it.updateOne(Document("_id", i), Updates.set("v", i+1))
+            }
         }
     }
 
-    override fun MongoDbReplicaSet.delete24() {
+    override fun MongoDbReplicaSet.delete(vararg id: Int) {
         withMongoCollection {
-            it.deleteOne(Document("_id", 2))
-            it.deleteOne(Document("_id", 4))
+            for (i in id) {
+                it.deleteOne(Document("_id", i))
+            }
         }
     }
 
@@ -94,6 +95,13 @@ class CdcPartitionReaderMongoTest :
                 val offset: Map<String, *> = sourceRecord.sourceOffset()
                 val resumeTokenBase64: String = offset["resume_token"] as? String ?: return null
                 return ResumeTokens.getTimestamp(ResumeTokens.fromBase64(resumeTokenBase64))
+            }
+
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+
+                }
             }
 
             override fun deserialize(
@@ -136,10 +144,8 @@ class CdcPartitionReaderMongoTest :
                             // event will not have any information ({after: null})
                             // We are going to treat it as a Delete.
                             Delete(id)
-                        } else if (value.operation == "u") {
-                            Update(id, v)
                         } else {
-                            Insert(id, v)
+                            InsertOrUpdate(id, v)
                         }
                     }
                 return DeserializedRecord(

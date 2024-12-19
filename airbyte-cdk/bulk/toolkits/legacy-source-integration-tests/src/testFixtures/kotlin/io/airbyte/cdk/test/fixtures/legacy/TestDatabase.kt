@@ -55,17 +55,30 @@ protected constructor(protected val container: JdbcDatabaseContainer<*>) : AutoC
         return retVal
     }
 
+    @Suppress("UNCHECKED_CAST")
+    protected fun self(): T {
+        return this as T
+    }
+
     /** Adds a key-value pair to the JDBC URL's query parameters. */
-    fun addConnectionProperty(key: String, value: String){
-        /*if (this.isInitialized) {
+    fun withConnectionProperty(key: String, value: String): T {
+        if (this.isInitialized) {
             throw RuntimeException("TestDatabase instance is already initialized")
-        }*/
+        }
         connectionProperties[key] = value
+        return self()
     }
 
     /** Enqueues a SQL statement to be executed when this object is closed. */
-    fun addCloseSql(fmtSql: String, vararg fmtArgs: Any?){
+    fun onClose(fmtSql: String, vararg fmtArgs: Any?): T {
         cleanupSQL.add(String.format(fmtSql, *fmtArgs))
+        return self()
+    }
+
+    /** Executes a SQL statement after calling String.format on the arguments. */
+    fun with(fmtSql: String, vararg fmtArgs: Any?): T {
+        execSQL(Stream.of(String.format(fmtSql, *fmtArgs)))
+        return self()
     }
 
     /**

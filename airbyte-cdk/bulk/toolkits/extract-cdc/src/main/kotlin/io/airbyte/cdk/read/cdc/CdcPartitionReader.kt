@@ -22,6 +22,7 @@ import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
@@ -32,7 +33,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
     val input: DebeziumInput,
-) : UnlimitedTimePartitionReader {
+) : PartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
@@ -224,6 +225,9 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // schema in order to collect the database schema history and there's no point
                 // in interrupting it until the snapshot is done.
                 return null
+            }
+            if (!coroutineContext.isActive) {
+                return CloseReason.TIMEOUT
             }
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
             log.info{"SGX currentPosition=$currentPosition, upperBound=$upperBound."}

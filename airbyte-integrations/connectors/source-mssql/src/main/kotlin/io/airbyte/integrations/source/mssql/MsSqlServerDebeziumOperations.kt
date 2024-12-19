@@ -24,12 +24,15 @@ import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.sqlserver.Lsn
 import io.debezium.connector.sqlserver.SqlServerConnector
 import io.debezium.connector.sqlserver.TxLogPosition
+import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
 import io.debezium.relational.history.HistoryRecord
+import io.debezium.relational.history.SchemaHistory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.sql.Connection
@@ -41,6 +44,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 private val log = KotlinLogging.logger {}
@@ -55,9 +59,13 @@ class MsSqlServerDebeziumOperations(
             throw ConfigErrorException("Expected exactly 1 key in $offset")
         }
         val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-        val commitLsn: String = offsetValue["commit_lsn"].toString()
-        val changeLsn: String = offsetValue["change_lsn"].toString()
-        return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
+        val commitLsn: String = offsetValue["commit_lsn"].asText()
+        val changeLsn: String = offsetValue["change_lsn"].asText()
+        val commitLsn2: String = offsetValue["commit_lsn"].asText()
+        val changeLsn2: String = offsetValue["change_lsn"].asText()
+        val retVal = TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
+        log.info { "SGX offsetValue = $offsetValue, commitLsn=$commitLsn, changeLsn=$changeLsn, commitLsn2=$commitLsn2, changeLsn2=$changeLsn2, retVal=$retVal" }
+        return retVal
     }
 
     override fun position(recordValue: DebeziumRecordValue): TxLogPosition? {
@@ -65,12 +73,14 @@ class MsSqlServerDebeziumOperations(
             recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
         val changeLsn: String? =
             recordValue.source["change_lsn"]?.takeIf { it.isTextual }?.asText()
+        log.info { "SGX recordValue.source = ${recordValue.source}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
     override fun position(sourceRecord: SourceRecord): TxLogPosition? {
         val commitLsn: String = sourceRecord.sourceOffset()[("commit_lsn")]?.toString() ?: return null
         val changeLsn: String? = sourceRecord.sourceOffset()[("change_lsn")]?.toString()
+        log.info { "SGX sourceRecord.sourceOffset() = ${sourceRecord.sourceOffset()}" }
         return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
     }
 
@@ -96,26 +106,57 @@ class MsSqlServerDebeziumOperations(
         val state = DebeziumState(offset, schemaHistory = DebeziumSchemaHistory(emptyList()))
 
         log.info { "SGX returning real state: $state" }
-        return DebeziumInput(DebeziumPropertiesBuilder()
-            .with(commonProperties(jdbcConnectionFactory.ensureTunnelSession(),
-                databaseName,
-                configuration))
-            // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
-            // is rotated out. This will also end up read streaming changes from the transaction_log.
-            .with("snapshot.mode", "recovery")
-            .withStreams(listOf())
-            .buildMap(), state, isSynthetic = true)
+        return DebeziumInput(
+            commonProperties() + ("snapshot.mode" to "recovery"),
+            state,
+            isSynthetic = true
+        )
     }
 
     override fun deserialize(
         opaqueStateValue: OpaqueStateValue,
         streams: List<Stream>
     ): DebeziumInput {
-        log.info {"SGX returning dummy"}
+        val stateNode = opaqueStateValue[MSSQL_STATE]
+        val offsetNode = stateNode[MSSQL_CDC_OFFSET] as JsonNode
+        val offsetMap: Map<JsonNode, JsonNode> =
+            offsetNode
+                .fields()
+                .asSequence()
+                .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
+                .toMap()
+        if (offsetMap.size != 1) {
+            throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
+        }
+        val offset = DebeziumOffset(offsetMap)
+
+        val historyNode = stateNode[MSSQL_DB_HISTORY]
+        val schemaHistory: DebeziumSchemaHistory? = historyNode?.let {
+            val isCompressed: Boolean = stateNode[MSSQL_IS_COMPRESSED]?.asBoolean() ?: false
+            val uncompressedString: String =
+                if (isCompressed) {
+                    val textValue: String = it.textValue()
+                    val compressedBytes: ByteArray =
+                        textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
+                    val decoded = Base64.decodeBase64(compressedBytes)
+
+                    GZIPInputStream(ByteArrayInputStream(decoded)).reader(Charsets.UTF_8).readText()
+                } else {
+                    it.textValue()
+                }
+            val schemaHistoryList: List<HistoryRecord> =
+                uncompressedString
+                    .lines()
+                    .filter { it.isNotBlank() }
+                    .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
+            DebeziumSchemaHistory(schemaHistoryList)
+        }
+
         return DebeziumInput(
-            isSynthetic = true,
-            state = DebeziumState(DebeziumOffset(emptyMap()), DebeziumSchemaHistory(emptyList())),
-            properties = emptyMap()
+            isSynthetic = false,
+            state = DebeziumState(offset, schemaHistory),
+            // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
+            properties = commonProperties() + ("snapshot.mode" to "when_needed")
         )
     }
 
@@ -124,6 +165,7 @@ class MsSqlServerDebeziumOperations(
         value: DebeziumRecordValue,
         stream: Stream,
     ): DeserializedRecord? {
+        log.info{"SGX deserializing debezium record $value for key $key"}
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
@@ -184,6 +226,7 @@ class MsSqlServerDebeziumOperations(
                 }
             if (uncompressedString.length <= MSSQL_MAX_UNCOMPRESSED_LENGTH) {
                 stateNode.put(MSSQL_DB_HISTORY, uncompressedString)
+                stateNode.put(MSSQL_IS_COMPRESSED, false)
             } else {
                 stateNode.put(MSSQL_IS_COMPRESSED, true)
                 val baos = ByteArrayOutputStream()
@@ -226,12 +269,33 @@ class MsSqlServerDebeziumOperations(
             get() = MetaField.META_PREFIX + name.lowercase()
     }
 
+    private fun commonProperties(): Map<String, String> {
+        val tunnelSession = jdbcConnectionFactory.ensureTunnelSession()
+        return DebeziumPropertiesBuilder()
+            .with(staticProperties)
+
+            .withDebeziumName(databaseName)
+            .withHeartbeats(Duration.ofSeconds(1))
+            //TODO: should be a join of all the schemas across streams.
+            .with("schema.include.list", configuration.namespaces.joinToString(","))
+            .with("database.names", databaseName)
+
+            .withDatabase(configuration.jdbcProperties)
+            .withDatabase("hostname", tunnelSession.address.hostName)
+            .withDatabase("port", tunnelSession.address.port.toString())
+            .withDatabase("dbname", databaseName)
+            .buildMap()
+    }
+
     companion object {
         const val MSSQL_MAX_UNCOMPRESSED_LENGTH = 1024 * 1024
         const val MSSQL_STATE = "state"
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
         const val MSSQL_DB_HISTORY = "mssql_db_history"
         const val MSSQL_IS_COMPRESSED = "is_compressed"
+        init {
+            File("/tmp/sgx_schema_history").mkdirs()
+        }
 
         val staticProperties: Map<String, String> =
                 DebeziumPropertiesBuilder()
@@ -244,8 +308,6 @@ class MsSqlServerDebeziumOperations(
                     // This to make sure that binary data represented as a base64-encoded String.
                     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
                     .with("binary.handling.mode", "base64")
-                    // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-                    .with("snapshot.mode", "when_needed")
                     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
                     // This is to make sure other database clients are allowed to write to a table while
                     // Airbyte is taking a snapshot. There is a risk involved that if any database
@@ -256,32 +318,14 @@ class MsSqlServerDebeziumOperations(
                     .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.getName())
                     .with("converters", "mssql_converter")
                     .with("snapshot.isolation.mode", "read_committed")
-                    //TODO: should be a join of all the schemas across streams.
 
-                    // 10 sec in ms. Should be 1s in test...
+                    // 10 sec in prod. Should be 1s in test...
                     .withHeartbeats(Duration.ofSeconds(10))
                     .withOffset()
                     .withSchemaHistory()
                     .buildMap()
 
-        fun commonProperties(tunnelSession: TunnelSession,
-                             databaseName: String,
-                             configuration: MsSqlServerSourceConfiguration): Map<String, String> {
-            return DebeziumPropertiesBuilder()
-                    .with(staticProperties)
 
-                    .withDebeziumName(databaseName)
-                    .withHeartbeats(configuration.debeziumHeartbeatInterval)
-                    //TODO: should be a join of all the schemas across streams.
-                    .with("schema.include.list", configuration.namespaces.joinToString(","))
-                    .with("database.names", databaseName)
-
-                    .withDatabase(configuration.jdbcProperties)
-                    .withDatabase("hostname", tunnelSession.address.hostName)
-                    .withDatabase("port", tunnelSession.address.port.toString())
-                    .withDatabase("dbname", databaseName)
-                    .buildMap()
-        }
     }
 }
 

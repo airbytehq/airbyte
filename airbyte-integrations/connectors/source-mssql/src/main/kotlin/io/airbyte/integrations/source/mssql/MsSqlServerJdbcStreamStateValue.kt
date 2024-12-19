@@ -26,9 +26,6 @@ data class MsSqlServerJdbcStreamStateValue(
     @JsonProperty("pk_val") val pkValue: String? = null,
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
 ) {
-    init {
-        log.info { "SGX MsSqlServerJdbcStreamStateValue=$this" }
-    }
     companion object {
         /** Value representing the completion of a FULL_REFRESH snapshot. */
         val snapshotCompleted: OpaqueStateValue

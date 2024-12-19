@@ -52,21 +52,22 @@ class CdcPartitionReaderPostgresTest :
         withStatement { it.execute("CREATE PUBLICATION $PUBLICATION_NAME FOR TABLE tbl") }
     }
 
-    override fun PostgreSQLContainer<*>.insert12345() {
-        for (i in 1..5) {
+    override fun PostgreSQLContainer<*>.insert(vararg id: Int) {
+        for (i in id) {
             withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
         }
     }
 
-    override fun PostgreSQLContainer<*>.update135() {
-        withStatement { it.execute("UPDATE tbl SET v = 6 WHERE id = 1") }
-        withStatement { it.execute("UPDATE tbl SET v = 7 WHERE id = 3") }
-        withStatement { it.execute("UPDATE tbl SET v = 8 WHERE id = 5") }
+    override fun PostgreSQLContainer<*>.update(vararg id: Int) {
+        for (i in id) {
+            withStatement { it.execute("UPDATE tbl SET v = ${i + 1} WHERE id = $i") }
+        }
     }
 
-    override fun PostgreSQLContainer<*>.delete24() {
-        withStatement { it.execute("DELETE FROM tbl WHERE id = 2") }
-        withStatement { it.execute("DELETE FROM tbl WHERE id = 4") }
+    override fun PostgreSQLContainer<*>.delete(vararg id: Int) {
+        for (i in id) {
+            withStatement { it.execute("DELETE FROM tbl WHERE id = $i") }
+        }
     }
 
     private fun <X> PostgreSQLContainer<*>.withStatement(fn: (Statement) -> X): X =

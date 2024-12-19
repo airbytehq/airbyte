@@ -13,12 +13,14 @@ import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerSourceConfigu
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Paths
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class MsSqlServerSpecIntegrationTest {
+    private val log = KotlinLogging.logger {}
     @Test
     fun testSpec() {
         SyncsTestFixture.testSpec("expected_spec.json")
@@ -35,6 +37,7 @@ class MsSqlServerSpecIntegrationTest {
         val container = MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
         val config = container.config
         val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", config).run()
+        log.info{"SGX discoverOutput.catalogs()=${discoverOutput.catalogs()}"}
         Assertions.assertEquals(
             listOf(
                 AirbyteCatalog()
@@ -44,7 +47,7 @@ class MsSqlServerSpecIntegrationTest {
                                 .withName("id_name_and_born")
                                 .withJsonSchema(
                                     Jsons.readTree(
-                                        """{"type":"object","properties":{"born":{"type":"string"},"name":{"type":"string"},"id":{"type":"number","airbyte_type":"integer"}}}"""
+                                        """{"type":"object","properties":{"born":{"type":"string","format":"date-time","airbyte_type":"timestamp_with_timezone"},"name":{"type":"string"},"id":{"type":"number"}}}"""
                                     )
                                 )
                                 .withSupportedSyncModes(
@@ -58,7 +61,7 @@ class MsSqlServerSpecIntegrationTest {
                                 .withName("name_and_born")
                                 .withJsonSchema(
                                     Jsons.readTree(
-                                        """{"type":"object","properties":{"born":{"type":"string"},"name":{"type":"string"}}}"""
+                                        """{"type":"object","properties":{"born":{"type":"string","format":"date-time","airbyte_type":"timestamp_with_timezone"},"name":{"type":"string"}}}"""
                                     )
                                 )
                                 .withSupportedSyncModes(

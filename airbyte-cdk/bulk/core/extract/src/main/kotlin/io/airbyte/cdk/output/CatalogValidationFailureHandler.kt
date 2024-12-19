@@ -16,7 +16,9 @@ import java.util.function.Consumer
  * buffer for later inspection.
  */
 @DefaultImplementation(LoggingCatalogValidationFailureHandler::class)
-interface CatalogValidationFailureHandler : Consumer<CatalogValidationFailure>
+fun interface CatalogValidationFailureHandler {
+    fun accept(f: CatalogValidationFailure)
+}
 
 /** Union type for all validation failures. */
 sealed interface CatalogValidationFailure {
@@ -70,6 +72,7 @@ private val log = KotlinLogging.logger {}
 @Singleton
 private class LoggingCatalogValidationFailureHandler : CatalogValidationFailureHandler {
     override fun accept(f: CatalogValidationFailure) {
+        log.info{"SGX stack=${Thread.currentThread().stackTrace.toList()}"}
         when (f) {
             is FieldNotFound ->
                 log.warn { "In stream ${f.prettyName()}: field '${f.fieldName}' not found." }

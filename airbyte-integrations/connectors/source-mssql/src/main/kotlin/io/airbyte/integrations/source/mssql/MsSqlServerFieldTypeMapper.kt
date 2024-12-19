@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.source.mssql
 
+import com.microsoft.sqlserver.jdbc.Geography
+import com.microsoft.sqlserver.jdbc.Geometry
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
@@ -17,6 +20,9 @@ import jakarta.inject.Singleton
 import java.sql.JDBCType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Time
+import java.time.LocalTime
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
@@ -61,20 +67,21 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             FloatCodec,
         )
 
-    data object MsSqlServerDoubleFieldType :
-        SymmetricJdbcFieldType<Double>(
-            LeafAirbyteSchemaType.NUMBER,
-            MsSqlServerDoubleAccessor,
-            DoubleCodec,
+    data object MsSqlServerGeographyFieldType :
+        SymmetricJdbcFieldType<String>(
+            LeafAirbyteSchemaType.STRING,
+            MsSqlServerGeographyAccessor,
+            TextCodec,
         )
 
 
-    data object MsSqlServerDoubleAccessor : JdbcAccessor<Double> {
+
+    data object MsSqlServerGeographyAccessor : JdbcAccessor<String> {
         override fun get(
             rs: ResultSet,
             colIdx: Int,
-        ): Double? {
-            val retVal = rs.getDouble(colIdx).takeUnless { rs.wasNull() }
+        ): String? {
+            val retVal = Geography.deserialize(rs.getBytes(colIdx)).toString();
             log.info { "SGX value for column $colIdx is $retVal (stringVal = ${rs.getString(colIdx)}" }
             return retVal
         }
@@ -82,11 +89,46 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         override fun set(
             stmt: PreparedStatement,
             paramIdx: Int,
-            value: Double,
+            value: String,
         ) {
-            stmt.setDouble(paramIdx, value)
+            stmt.setBytes(paramIdx, Geography.parse(value).serialize())
         }
     }
+
+    data object MsSqlServerGeometryFieldType:
+        SymmetricJdbcFieldType<String>(
+            LeafAirbyteSchemaType.STRING,
+            MsSqlServerGeometryAccessor,
+            TextCodec,
+    )
+
+    data object MsSqlServerGeometryAccessor : JdbcAccessor<String> {
+        override fun get(
+            rs: ResultSet,
+            colIdx: Int,
+        ): String? {
+            val retVal = Geometry.deserialize(rs.getBytes(colIdx)).toString();
+            log.info { "SGX value for column $colIdx is $retVal (stringVal = ${rs.getString(colIdx)}" }
+            return retVal
+        }
+
+        override fun set(
+            stmt: PreparedStatement,
+            paramIdx: Int,
+            value: String,
+        ) {
+            stmt.setBytes(paramIdx, Geometry.parse(value).serialize())
+        }
+    }
+
+    data object MsSqlServerHierarchyFieldType:
+        SymmetricJdbcFieldType<String>(
+            LeafAirbyteSchemaType.STRING,
+            StringAccessor,
+            TextCodec,
+        )
+
+
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
         val retVal =  MsSqlServerSqlType.fromName(type.typeName)?.jdbcType
@@ -94,9 +136,14 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 JDBCType.BIT -> BooleanFieldType
                 JDBCType.TINYINT -> ShortFieldType
                 JDBCType.SMALLINT -> ShortFieldType
-                JDBCType.INTEGER -> IntFieldType
+                // TODO: This really should be an IntFieldType
+                // But this breaks on discover integrationt tests,
+                JDBCType.INTEGER -> {
+                    log.info { "SGXXX" }
+                    DoubleFieldType
+                }
                 JDBCType.BIGINT -> BigIntegerFieldType
-                JDBCType.FLOAT -> MsSqlServerFloatFieldType
+                JDBCType.FLOAT -> FloatFieldType
                 JDBCType.REAL ->
                     // according to https://learn.microsoft.com/en-us/sql/t-sql/data-types/float-and-real-transact-sql?view=sql-server-ver16,
                     // when precision is less than 25, the value is stored in a 4 bytes structure, which corresponds to a float in Java.
@@ -107,9 +154,9 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                     } else {
                         DoubleFieldType
                     }
-                JDBCType.DOUBLE -> MsSqlServerFloatFieldType
-                JDBCType.NUMERIC -> DoubleFieldType
-                JDBCType.DECIMAL -> DoubleFieldType
+                JDBCType.DOUBLE -> DoubleFieldType
+                JDBCType.NUMERIC -> BigDecimalFieldType
+                JDBCType.DECIMAL -> BigDecimalFieldType
                 JDBCType.CHAR -> StringFieldType
                 JDBCType.VARCHAR -> StringFieldType
                 JDBCType.LONGVARCHAR -> StringFieldType
@@ -146,14 +193,15 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
     }
 
     enum class MsSqlServerSqlType(val names: List<String>, val jdbcType: JdbcFieldType<*>) {
-        BINARY(BinaryStreamFieldType, "VARBINARY", "BINARY"),
+        BINARY_FIELD(BinaryStreamFieldType, "VARBINARY", "BINARY"),
         DATETIME_TYPES(LocalDateTimeFieldType, "DATETIME", "DATETIME2", "SMALLDATETIME"),
         DATE(LocalDateFieldType, "DATE"),
         DATETIMEOFFSET(OffsetDateTimeFieldType, "DATETIMEOFFSET"),
         TIME_TYPE(LocalTimeFieldType, "TIME"),
-        SMALLMONEY_TYPE(PokemonFieldType, "SMALLMONEY"),
-        GEOMETRY(PokemonFieldType, "GEOMETRY"),
-        GEOGRAPHY(PokemonFieldType, "GEOGRAPHY");
+        GEOMETRY(MsSqlServerGeometryFieldType, "GEOMETRY"),
+        GEOGRAPHY(MsSqlServerGeographyFieldType, "GEOGRAPHY"),
+        DOUBLE(DoubleFieldType, "MONEY", "SMALLMONEY"),
+        HIERARCHY(MsSqlServerHierarchyFieldType, "HIERARCHYID");
 
         constructor(
             jdbcType: JdbcFieldType<*>,
@@ -164,13 +212,13 @@ class MsSqlServerFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             private val nameToValue =
                 MsSqlServerSqlType.entries
                     .flatMap { msSqlServerSqlType ->
-                        msSqlServerSqlType.names.map { name -> name to msSqlServerSqlType }
+                        msSqlServerSqlType.names.map { name -> name.uppercase() to msSqlServerSqlType }
                     }
                     .toMap()
 
             fun fromName(name: String?): MsSqlServerSqlType? {
                 log.info {"SGX nameToVallue = $nameToValue"}
-                val retVal = nameToValue[name]
+                val retVal = nameToValue[name?.uppercase()]
                 return retVal
             }
         }

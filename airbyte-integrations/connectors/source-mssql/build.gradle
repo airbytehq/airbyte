@@ -8,7 +8,7 @@ application {
 
 airbyteBulkConnector {
     core = 'extract'
-    toolkits = ['extract-jdbc', 'extract-cdc']
+    toolkits = ['extract-jdbc', 'extract-cdc', 'legacy-source-integration-tests']
     cdk = 'local'
 }
 
@@ -23,11 +23,12 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    testImplementation 'com.zaxxer:HikariCP:5.1.0'
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
+    testImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
     testImplementation("io.mockk:mockk:1.12.0")
     api 'com.google.guava:guava:33.4.0-jre'
 }
 
-compileKotlin {
-
-}
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false

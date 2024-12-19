@@ -44,27 +44,9 @@ class JdbcConnectionFactory(
                 tunnelSession.address.hostName,
                 tunnelSession.address.port,
             )
-        log.info { "Creating new connection for '$jdbcUrl', properties=${config.jdbcProperties}" }
+        log.info { "Creating new connection for '$jdbcUrl'" }
         val props = Properties().apply { putAll(config.jdbcProperties) }
-        return LoggingConnection(DriverManager.getConnection(jdbcUrl, props).also { it.isReadOnly = true })
-    }
-
-    class LoggingStatement(val s: Statement) : Statement by s {
-        override fun executeQuery(sql: String): ResultSet {
-            log.info { "Executing query: $sql" }
-            return s.executeQuery(sql)
-        }
-
-        override fun execute(sql: String?): Boolean {
-            log.info { "Executing statement: $sql" }
-            return s.execute(sql)
-        }
-    }
-
-    class LoggingConnection(val connection: Connection) : Connection by connection {
-        override fun createStatement(): Statement {
-            return LoggingStatement(connection.createStatement())
-        }
+        return DriverManager.getConnection(jdbcUrl, props).also { it.isReadOnly = true }
     }
 
     companion object {

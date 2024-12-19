@@ -31,6 +31,7 @@ sealed interface MsSqlServerReplicationMethodConfigurationSpecification
         "change data capture feature</a>. This must be enabled on your database."
 )
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+@JsonIgnoreProperties(ignoreUnknown = true)
 class MsSqlServerCdcReplicationConfigurationSpecification :
     MsSqlServerReplicationMethodConfigurationSpecification {
     @JsonProperty("initial_waiting_seconds")
@@ -85,6 +86,7 @@ class MsSqlServerCursorBasedReplicationConfigurationSpecification :
     MsSqlServerReplicationMethodConfigurationSpecification {}
 
 class MsSqlServerMicronautPropertiesFriendlyMsSqlServerReplicationMethodConfiguration {
+    @JsonIgnore
     val method: String = "CDC"
     @JsonValue
     fun asReplicationMethod(): MsSqlServerReplicationMethodConfigurationSpecification =

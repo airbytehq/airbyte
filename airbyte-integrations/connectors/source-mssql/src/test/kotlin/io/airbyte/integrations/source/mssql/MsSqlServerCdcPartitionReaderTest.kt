@@ -20,6 +20,7 @@ import io.debezium.connector.sqlserver.SqlServerConnector
 import io.debezium.connector.sqlserver.TxLogPosition
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
+import org.testcontainers.shaded.com.google.common.collect.Maps
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -49,24 +50,25 @@ class MsSqlServerCdcPartitionReaderTest :
 
         }
 
-        override fun MsSqlServercontainerWithCdc.insert12345() {
-            for (i in 1..5) {
+        override fun MsSqlServercontainerWithCdc.insert(vararg id: Int) {
+            for (i in id) {
                 withStatement { it.execute("INSERT INTO test.tbl (v) VALUES ($i)") }
             }
-            waitForCdcNewRecords(5)
+            waitForCdcNewRecords(id.size)
         }
 
-        override fun MsSqlServercontainerWithCdc.update135() {
-            withStatement { it.execute("UPDATE test.tbl SET v = 6 WHERE id = 1") }
-            withStatement { it.execute("UPDATE test.tbl SET v = 7 WHERE id = 3") }
-            withStatement { it.execute("UPDATE test.tbl SET v = 8 WHERE id = 5") }
-            waitForCdcNewRecords(3)
+        override fun MsSqlServercontainerWithCdc.update(vararg id: Int) {
+            for (i in id) {
+                withStatement { it.execute("UPDATE test.tbl SET v = ${i + 1} WHERE id = $i") }
+            }
+            waitForCdcNewRecords(id.size)
         }
 
-        override fun MsSqlServercontainerWithCdc.delete24() {
-            withStatement { it.execute("DELETE FROM test.tbl WHERE id = 2") }
-            withStatement { it.execute("DELETE FROM test.tbl WHERE id = 4") }
-            waitForCdcNewRecords(2)
+        override fun MsSqlServercontainerWithCdc.delete(vararg id: Int) {
+            for (i in id) {
+                withStatement { it.execute("DELETE FROM test.tbl WHERE id = $i") }
+            }
+            waitForCdcNewRecords(id.size)
         }
 
         private fun <X> MsSqlServercontainerWithCdc.withStatement(fn: (Statement) -> X): X {
@@ -104,39 +106,9 @@ class MsSqlServerCdcPartitionReaderTest :
             }
         }
 
-    override fun getCdcOperations(): DebeziumOperations<TxLogPosition> {
-        return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<TxLogPosition>(stream) {
-            override fun position(offset: DebeziumOffset): TxLogPosition {
-                return TxLogPosition.valueOf(Lsn.valueOf(offset.wrapped.values.first()["commit_lsn"].asText()), Lsn.valueOf(offset.wrapped.values.first()["change_lsn"].asText()))
-            }
-
-            override fun position(recordValue: DebeziumRecordValue): TxLogPosition? {
-                val commitLsn: String =
-                    recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
-                val changeLsn: String? =
-                    recordValue.source["change_lsn"]?.takeIf { it.isTextual }?.asText()
-                return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
-            }
-
-            override fun position(sourceRecord: SourceRecord): TxLogPosition? {
-                val commitLsn: String = sourceRecord.sourceOffset()[("commit_lsn")]?.toString() ?: return null
-                val changeLsn: String? = sourceRecord.sourceOffset()[("change_lsn")]?.toString()
-                return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
-            }
-
-            override fun synthesize(streams: List<Stream>): DebeziumInput {
-                val config = MsSqlServerSourceConfigurationFactory().make(container.config)
-                val retVal = MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config).synthesize(streams)
-                log.info {"SGX synthesize $retVal"}
-                return retVal
-            }
-
-            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
-                return super.deserialize(opaqueStateValue, streams).let {
-                    DebeziumInput(synthesize(streams).properties + ("snapshot.mode" to "when_needed"), it.state, it.isSynthetic)
-                }
-            }
+        override fun getCdcOperations(): DebeziumOperations<TxLogPosition> {
+            val config = MsSqlServerSourceConfigurationFactory().make(container.config)
+            return MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
         }
-    }
     }
 

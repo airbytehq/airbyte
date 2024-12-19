@@ -1,9 +1,12 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.time.Duration
+
+private val logger = KotlinLogging.logger {}
 
 /** Subtype of [Configuration] for sources. */
 interface SourceConfiguration : Configuration, SshTunnelConfiguration {
@@ -30,6 +33,9 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
         fun <I : ConfigurationSpecification> sourceConfig(
             pojoSupplier: ConfigurationSpecificationSupplier<I>,
             factory: SourceConfigurationFactory<I, out SourceConfiguration>,
-        ): SourceConfiguration = factory.make(pojoSupplier.get())
+        ): SourceConfiguration {
+            logger.info{"SGX pojoSupplier=$pojoSupplier"}
+          return factory.make(pojoSupplier.get())
+        }
     }
 }

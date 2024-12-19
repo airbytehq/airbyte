@@ -46,21 +46,22 @@ class MysqlCdcPartitionReaderTest :
             withStatement { it.execute("CREATE TABLE tbl (id INT AUTO_INCREMENT PRIMARY KEY, v INT)") }
         }
 
-        override fun MySQLContainer<*>.insert12345() {
-            for (i in 1..5) {
+        override fun MySQLContainer<*>.insert(vararg id: Int) {
+            for (i in id) {
                 withStatement { it.execute("INSERT INTO tbl (v) VALUES ($i)") }
             }
         }
 
-        override fun MySQLContainer<*>.update135() {
-            withStatement { it.execute("UPDATE tbl SET v = 6 WHERE id = 1") }
-            withStatement { it.execute("UPDATE tbl SET v = 7 WHERE id = 3") }
-            withStatement { it.execute("UPDATE tbl SET v = 8 WHERE id = 5") }
+        override fun MySQLContainer<*>.update(vararg id: Int) {
+            for (i in id) {
+                withStatement { it.execute("UPDATE tbl SET v = ${i+1} WHERE id = $i") }
+            }
         }
 
-        override fun MySQLContainer<*>.delete24() {
-            withStatement { it.execute("DELETE FROM tbl WHERE id = 2") }
-            withStatement { it.execute("DELETE FROM tbl WHERE id = 4") }
+        override fun MySQLContainer<*>.delete(vararg id: Int) {
+            for (i in id) {
+                withStatement { it.execute("DELETE FROM tbl WHERE id = $i") }
+            }
         }
 
         private fun <X> MySQLContainer<*>.withStatement(fn: (Statement) -> X): X =
@@ -94,7 +95,7 @@ class MysqlCdcPartitionReaderTest :
                 return Position(file, pos)
             }
 
-            override fun synthesize(streams: List<Stream>): DebeziumInput {
+            override fun synthesize(): DebeziumInput {
                 val position: Position = currentPosition()
                 val timestamp: Instant = Instant.now()
                 val key: ArrayNode =
@@ -157,5 +158,5 @@ class MysqlCdcPartitionReaderTest :
                     .buildMap()
         }
     }
-    }
+        }
 

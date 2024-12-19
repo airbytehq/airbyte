@@ -17,7 +17,10 @@ dependencies {
     testFixturesApi 'me.andrz.jackson:jackson-json-reference-core:0.3.2'
     testFixturesApi 'commons-io:commons-io:2.17.0'
     testFixturesApi 'org.jooq:jooq:3.19.11'
+    testFixturesApi 'com.zaxxer:HikariCP:5.1.0'
     api 'com.google.guava:guava:33.4.0-jre'
+    testFixturesApi 'commons-cli:commons-cli:1.9.0'
+
 }
 
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false

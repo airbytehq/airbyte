@@ -67,7 +67,6 @@ constructor(val featureFlags: Set<FeatureFlag>) :
                     )
                 is MsSqlServerCursorBasedReplicationConfigurationSpecification ->
                     MsSqlServerCursorBasedIncrementalReplicationConfiguration
-                null -> TODO()
             }
 
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()

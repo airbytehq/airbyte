@@ -55,7 +55,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mssql:dev";
+    return "airbyte/source-mssql-v1:dev";
   }
 
   @Override

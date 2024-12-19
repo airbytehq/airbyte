@@ -1,12 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mssql.config_spec
 
-import com.fasterxml.jackson.annotation.JsonGetter
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.*
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
@@ -33,6 +28,7 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+@JsonIgnoreProperties(ignoreUnknown = false)
 class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
@@ -43,7 +39,6 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
     @JsonSchemaInject(json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"]}""")
-    @JsonSchemaDefault("3306")
     @JsonPropertyDescription(
         "The port of the database.",
     )
@@ -106,7 +101,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     var replicationMethod =
         MsSqlServerMicronautPropertiesFriendlyMsSqlServerReplicationMethodConfiguration()
     @JsonIgnore
-    var replicationMethodJson: MsSqlServerReplicationMethodConfigurationSpecification? = null
+    var replicationMethodJson: MsSqlServerReplicationMethodConfigurationSpecification = MsSqlServerCursorBasedReplicationConfigurationSpecification()
     @JsonSetter("replication_method")
     fun setReplicationMethodValue(value: MsSqlServerReplicationMethodConfigurationSpecification) {
         replicationMethodJson = value
@@ -117,8 +112,11 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         "Configures how data is extracted from the database.",
     )
     @JsonSchemaInject(json = """{"order":8, "default":"CDC", "display_type": "radio"}""")
+    // This is a weird one. We want the json field to be optional (for backward compatibility, I believe),
+    // but we know it's never null, because the default is cursor-based
+    // If we make this field non-null, then we make the field necessary
     fun getReplicationMethodValue(): MsSqlServerReplicationMethodConfigurationSpecification? =
-        replicationMethodJson ?: replicationMethod.asReplicationMethod()
+        replicationMethodJson
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
@@ -140,4 +138,16 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaInject(json = """{"order":9}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
+
+    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+
+    @JsonAnySetter
+    fun setAdditionalProperty(
+        name: String,
+        value: Any,
+    ) {
+        additionalPropertiesMap[name] = value
+    }
 }
