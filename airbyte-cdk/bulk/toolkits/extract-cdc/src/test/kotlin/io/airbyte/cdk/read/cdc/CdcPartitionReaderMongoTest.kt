@@ -85,10 +85,21 @@ class CdcPartitionReaderMongoTest :
 
     inner class MongoTestDebeziumOperations : AbstractDebeziumOperationsForTest<BsonTimestamp>() {
 
-        override fun position(offset: DebeziumOffset): BsonTimestamp {
-            val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-            return BsonTimestamp(offsetValue["sec"].asInt(), offsetValue["ord"].asInt())
-        }
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+
+                }
+            }
+
+            override fun deserialize(
+                opaqueStateValue: OpaqueStateValue,
+                streams: List<Stream>
+            ): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
+                }
+            }
 
         override fun position(recordValue: DebeziumRecordValue): BsonTimestamp? {
             val resumeToken: String =

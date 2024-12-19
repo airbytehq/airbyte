@@ -339,7 +339,7 @@ class MySqlSourceDebeziumOperations(
             if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
                 throw OffsetInvalidNeedsResyncIllegalStateException()
             }
-            return synthesize()
+            return synthesize(streams)
         }
 
         val properties: Map<String, String> =

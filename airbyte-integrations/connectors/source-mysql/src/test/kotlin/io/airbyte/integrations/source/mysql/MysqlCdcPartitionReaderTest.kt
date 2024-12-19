@@ -2,6 +2,8 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.*
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
@@ -66,8 +68,15 @@ class MysqlCdcPartitionReaderTest :
                 connection.createStatement().use { fn(it) }
             }
 
-    override fun createCdcOperations(): DebeziumOperations<Position> {
+    override fun getCdcOperations(): DebeziumOperations<Position> {
         return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<Position>(stream) {
+            override fun position(offset: DebeziumOffset): Position {
+                val offsetAsJson = offset.wrapped.values.first()
+                val retVal = Position(offsetAsJson["file"].asText(), offsetAsJson["pos"].asLong())
+                log.info { "SGX returning retval=$retVal, offset=$offset" }
+                return retVal
+            }
+
             override fun position(recordValue: DebeziumRecordValue): Position? {
                 log.info{"SGX MySqlCdcPartitionReaderTest.position. recordValue=$recordValue"}
                 val file: String =
@@ -85,8 +94,8 @@ class MysqlCdcPartitionReaderTest :
                 return Position(file, pos)
             }
 
-            override fun synthesize(): DebeziumInput {
-                val position: Position = container.currentPosition()
+            override fun synthesize(streams: List<Stream>): DebeziumInput {
+                val position: Position = currentPosition()
                 val timestamp: Instant = Instant.now()
                 val key: ArrayNode =
                     Jsons.arrayNode().apply {
@@ -103,43 +112,50 @@ class MysqlCdcPartitionReaderTest :
                 val state = DebeziumState(offset, schemaHistory = null)
                 val syntheticProperties: Map<String, String> =
                     DebeziumPropertiesBuilder()
-                        .with(container.debeziumProperties())
+                        .with(debeziumProperties())
                         .with("snapshot.mode", "recovery")
                         .withStreams(listOf())
                         .buildMap()
                 return DebeziumInput(syntheticProperties, state, isSynthetic = true)
             }
-        }
-    }
 
 
-        override fun MySQLContainer<*>.currentPosition(): Position =
-            withStatement { statement: Statement ->
-                statement.executeQuery("SHOW MASTER STATUS").use {
-                    it.next()
-                    Position(it.getString("File"), it.getLong("Position"))
+
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(debeziumProperties(), it.state, it.isSynthetic)
                 }
             }
 
-        override fun MySQLContainer<*>.debeziumProperties(): Map<String, String> =
-            DebeziumPropertiesBuilder()
-                .withDefault()
-                .withConnector(MySqlConnector::class.java)
-                .withDebeziumName(databaseName)
-                .withHeartbeats(heartbeat)
-                .with("include.schema.changes", "false")
-                .with("connect.keep.alive.interval.ms", "1000")
-                .withDatabase("hostname", host)
-                .withDatabase("port", firstMappedPort.toString())
-                .withDatabase("user", username)
-                .withDatabase("password", password)
-                .withDatabase("dbname", databaseName)
-                .withDatabase("server.id", Random.Default.nextInt(5400..6400).toString())
-                .withDatabase("include.list", databaseName)
-                .withOffset()
-                .withSchemaHistory()
-                .with("snapshot.mode", "when_needed")
-                .withStreams(listOf(stream))
-                .buildMap()
+            fun currentPosition(): Position =
+                container.withStatement { statement: Statement ->
+                    statement.executeQuery("SHOW MASTER STATUS").use {
+                        it.next()
+                        Position(it.getString("File"), it.getLong("Position"))
+                    }
+                }
+
+            fun debeziumProperties(): Map<String, String> =
+                DebeziumPropertiesBuilder()
+                    .withDefault()
+                    .withConnector(MySqlConnector::class.java)
+                    .withDebeziumName(container.databaseName)
+                    .withHeartbeats(heartbeat)
+                    .with("include.schema.changes", "false")
+                    .with("connect.keep.alive.interval.ms", "1000")
+                    .withDatabase("hostname", container.host)
+                    .withDatabase("port", container.firstMappedPort.toString())
+                    .withDatabase("user", container.username)
+                    .withDatabase("password", container.password)
+                    .withDatabase("dbname", container.databaseName)
+                    .withDatabase("server.id", Random.Default.nextInt(5400..6400).toString())
+                    .withDatabase("include.list", container.databaseName)
+                    .withOffset()
+                    .withSchemaHistory()
+                    .with("snapshot.mode", "when_needed")
+                    .withStreams(listOf(stream))
+                    .buildMap()
+        }
+    }
     }
 

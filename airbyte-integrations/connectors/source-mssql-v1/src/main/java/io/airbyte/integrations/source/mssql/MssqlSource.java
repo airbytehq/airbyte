@@ -135,6 +135,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return super.getFeatureFlags();
   }
 
+  public MssqlSource(FeatureFlags featureFlag) {
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    hasFeatuerFlagOverride = true;
+    featureFlagOverride = featureFlag;
+  }
+
+  private boolean hasFeatuerFlagOverride = false;
+  private FeatureFlags featureFlagOverride = null;
+
+  public FeatureFlags getFeatureFlags() {
+    if (hasFeatuerFlagOverride) {
+      return featureFlagOverride;
+    }
+    return super.getFeatureFlags();
+  }
+
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
     return MssqlCdcHelper.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
