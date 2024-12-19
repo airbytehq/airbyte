@@ -253,27 +253,35 @@ class MySqlSourceDebeziumOperations(
                         if (!rs.next()) {
                             throw ConfigErrorException("No results for query: $sql")
                         }
-    
-                        val fileName = rs.getString(fileField)?.takeUnless { rs.wasNull() }
-                            ?: throw ConfigErrorException("No value for $fileField in: $sql")
-                        val position = rs.getLong(posField).takeUnless { rs.wasNull() || it <= 0 }
-                            ?: throw ConfigErrorException("No value for $posField in: $sql")
-    
+
+                        val fileName =
+                            rs.getString(fileField)?.takeUnless { rs.wasNull() }
+                                ?: throw ConfigErrorException("No value for $fileField in: $sql")
+                        val position =
+                            rs.getLong(posField).takeUnless { rs.wasNull() || it <= 0 }
+                                ?: throw ConfigErrorException("No value for $posField in: $sql")
+
                         val cdcPosition = MySqlSourceCdcPosition(fileName, position)
-    
-                        val gtidSet = if (rs.metaData.columnCount > 4) {
-                            rs.getString(gtidsField)?.takeUnless { rs.wasNull() || it.isBlank() }
-                                ?.trim()?.replace("\n", "")?.replace("\r", "")
-                        } else null
-    
+
+                        val gtidSet =
+                            if (rs.metaData.columnCount > 4) {
+                                rs.getString(gtidsField)
+                                    ?.takeUnless { rs.wasNull() || it.isBlank() }
+                                    ?.trim()
+                                    ?.replace("\n", "")
+                                    ?.replace("\r", "")
+                            // This value exists only in MySQL 5.6.5 or later.
+                            } else null
+
                         cdcPosition to gtidSet
                     } catch (e: SQLException) {
                         log.info(e) { "Failed to execute query: $sql" }
                         null
                     }
-                } ?: throw ConfigErrorException(
-                    "Failed to retrieve CDC position: Unable to execute queries: ${queries.joinToString(", ")}."
-                )
+                }
+                    ?: throw ConfigErrorException(
+                        "Failed to retrieve CDC position: Unable to execute queries: ${queries.joinToString(", ")}."
+                    )
             }
         }
     }
