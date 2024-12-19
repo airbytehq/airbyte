@@ -105,7 +105,7 @@ class StateManager(
         initialState: OpaqueStateValue?,
     ) : StateManagerScopedToFeed {
         private var currentStateValue: OpaqueStateValue? = initialState
-        private var pendingStateValue: OpaqueStateValue? = initialState
+        private var pendingStateValue: OpaqueStateValue? = null
         private var pendingNumRecords: Long = 0L
 
         @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
