@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
+import io.airbyte.cdk.load.util.TimeStringUtility
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type

@@ -28,8 +28,11 @@ import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -350,15 +353,29 @@ class MysqlJdbcPartitionFactory(
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
                         val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                        val formatter =
+                            DateTimeFormatterBuilder()
+                                .appendPattern(timestampInStatePattern)
+                                .optionalStart()
+                                .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+                                .optionalEnd()
+                                .optionalStart()
+                                .optionalStart()
+                                .appendLiteral(' ')
+                                .optionalEnd()
+                                .appendOffset("+HH:mm", "Z")
+                                .optionalEnd()
+                                .toFormatter()
+
                         try {
-                            val formatter: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern(timestampInStatePattern)
-                            Jsons.valueToTree(
-                                LocalDateTime.parse(stateValue, formatter)
-                                    .minusDays(1)
-                                    .atOffset(java.time.ZoneOffset.UTC)
-                                    .format(OffsetDateTimeCodec.formatter)
-                            )
+                            val offsetDateTime =
+                                try {
+                                    OffsetDateTime.parse(stateValue, formatter)
+                                } catch (_: DateTimeParseException) {
+                                    // if no offset exists, we assume it's UTC
+                                    LocalDateTime.parse(stateValue, formatter).atOffset(UTC)
+                                }
+                            Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                         } catch (_: RuntimeException) {
                             // Resolve to use the new format.
                             Jsons.valueToTree<JsonNode>(stateValue)

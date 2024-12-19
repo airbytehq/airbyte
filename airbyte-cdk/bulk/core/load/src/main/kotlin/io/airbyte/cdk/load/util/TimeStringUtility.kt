@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.data.iceberg.parquet
+package io.airbyte.cdk.load.util
 
 import io.airbyte.cdk.load.data.TimeStringToInteger
 import java.time.LocalDate
@@ -13,10 +13,15 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
+/** Collection of time/date string to time/date object conversion utilities. */
 object TimeStringUtility {
 
     fun toLocalDate(dateString: String): LocalDate {
         return LocalDate.parse(dateString, TimeStringToInteger.DATE_TIME_FORMATTER)
+    }
+
+    fun toLocalDateTime(dateString: String): LocalDateTime {
+        return LocalDateTime.parse(dateString, TimeStringToInteger.DATE_TIME_FORMATTER)
     }
 
     fun toOffset(timeString: String): LocalTime {
