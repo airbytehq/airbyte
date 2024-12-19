@@ -12,7 +12,7 @@ class RootHttpResponseBuilder(HttpResponseBuilder):
         self,
         template: List[Any],
         records_path: Optional[Union[FieldPath, NestedPath]] = None,
-        pagination_strategy: Optional[PaginationStrategy] = None
+        pagination_strategy: Optional[PaginationStrategy] = None,
     ):
         self._response = template
         self._records: List[RecordBuilder] = []

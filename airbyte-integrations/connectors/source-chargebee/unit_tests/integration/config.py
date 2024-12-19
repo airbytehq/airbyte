@@ -10,7 +10,7 @@ class ConfigBuilder:
             "site": "ConfigBuilder default site",
             "site_api_key": "ConfigBuilder default site api key",
             "start_date": "2023-01-01T06:57:44Z",
-            "product_catalog": "2.0"
+            "product_catalog": "2.0",
         }
 
     def with_site(self, site: str) -> "ConfigBuilder":

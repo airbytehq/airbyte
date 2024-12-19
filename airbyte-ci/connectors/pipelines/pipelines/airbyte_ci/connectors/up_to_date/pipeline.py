@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -25,6 +26,7 @@ if TYPE_CHECKING:
 
     from anyio import Semaphore
     from github import PullRequest
+
     from pipelines.models.steps import StepResult
 
 UP_TO_DATE_PR_LABEL = "up-to-date"

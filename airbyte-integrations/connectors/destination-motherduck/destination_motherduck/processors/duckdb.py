@@ -10,16 +10,18 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
 from urllib.parse import parse_qsl, urlparse
 
 import pyarrow as pa
-from airbyte_cdk import DestinationSyncMode
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
+from airbyte_cdk import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
+
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine

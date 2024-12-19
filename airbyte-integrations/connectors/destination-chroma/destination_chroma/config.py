@@ -4,6 +4,8 @@
 
 from typing import Literal, Optional, Union
 
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
@@ -13,7 +15,6 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     VectorDBConfigModel,
 )
-from pydantic import BaseModel, Field
 
 
 class HttpMode(BaseModel):
@@ -41,7 +42,6 @@ class PersistentMode(BaseModel):
 
 
 class ChromaIndexingConfigModel(BaseModel):
-
     auth_method: Union[PersistentMode, HttpMode] = Field(
         ..., title="Connection Mode", description="Mode how to connect to Chroma", discriminator="mode", type="object", order=0
     )
