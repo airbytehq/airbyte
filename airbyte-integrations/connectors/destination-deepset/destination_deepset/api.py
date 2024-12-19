@@ -5,6 +5,7 @@ from __future__ import annotations
 from uuid import UUID
 
 import httpx
+from destination_deepset import util
 from destination_deepset.models import SUPPORTED_FILE_EXTENSIONS, DeepsetCloudConfig, DeepsetCloudFile
 from httpx import HTTPError, HTTPStatusError
 from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_random_exponential
@@ -16,9 +17,6 @@ class APIError(RuntimeError):
 
 class ConfigurationError(ValueError, APIError):
     """Raised when the configuration is missing or incorrect."""
-
-    def __str__(self) -> str:
-        return "Configuration is missing, cannot create an HTTP client."
 
 
 class FileTypeError(APIError):
@@ -79,7 +77,7 @@ class DeepsetCloudApi:
                     response = self.client.get("/api/v1/me")
                     response.raise_for_status()
 
-            workspaces = response.json().get("workspaces", [])
+            workspaces = util.get(response.json(), "organization.workspaces", [])
             access = next((True for workspace in workspaces if workspace["name"] == self.config.workspace), False)
         except Exception as ex:
             raise APIError from ex
