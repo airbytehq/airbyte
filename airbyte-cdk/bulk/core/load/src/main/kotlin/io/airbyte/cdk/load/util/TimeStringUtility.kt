@@ -13,9 +13,7 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-/**
- * Collection of time/date string to time/date object conversion utilities.
- */
+/** Collection of time/date string to time/date object conversion utilities. */
 object TimeStringUtility {
 
     fun toLocalDate(dateString: String): LocalDate {
