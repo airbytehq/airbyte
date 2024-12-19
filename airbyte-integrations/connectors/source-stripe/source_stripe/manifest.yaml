@@ -36,7 +36,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 10
+            page_size: 100
+            stop_condition: "{{ response.get('has_more', False) is false }}"
             cursor_value: "{{ last_record.pagination_id }}"
       incremental_sync:
         type: DatetimeBasedCursor
@@ -44,7 +45,7 @@ definitions:
         cursor_datetime_formats:
           - "%s"
         datetime_format: "%s"
-        step: "P25D"
+        step: "P100D"
         cursor_granularity: "PT1S"
         start_datetime:
           type: MinMaxDatetime

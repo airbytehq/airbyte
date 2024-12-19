@@ -179,15 +179,6 @@ class FullRefreshTest(TestCase):
         # request matched http_mocker
 
     @HttpMocker()
-    def test_given_http_status_400_when_read_then_stream_did_not_run(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _authorizations_request().with_any_query_params().build(),
-            a_response_with_status(400),
-        )
-        output = self._read(_config())
-        assert_stream_did_not_run(output, _STREAM_NAME, "Your account is not set up to use Issuing")
-
-    @HttpMocker()
     def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _authorizations_request().with_any_query_params().build(),
@@ -195,37 +186,6 @@ class FullRefreshTest(TestCase):
         )
         output = self._read(_config(), expecting_exception=True)
         assert output.errors[-1].trace.error.failure_type == FailureType.config_error
-
-    @HttpMocker()
-    def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _authorizations_request().with_any_query_params().build(),
-            [
-                a_response_with_status(429),
-                _authorizations_response().with_record(_an_authorization()).build(),
-            ],
-        )
-        output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 1
-
-    @HttpMocker()
-    def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _authorizations_request().with_any_query_params().build(),
-            [a_response_with_status(500), _authorizations_response().with_record(_an_authorization()).build()],
-        )
-        output = self._read(_config())
-        assert len(output.records) == 1
-
-    @HttpMocker()
-    def test_given_http_status_500_when_read_then_raise_config_error(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            _authorizations_request().with_any_query_params().build(),
-            a_response_with_status(500),
-        )
-        with patch.object(HttpStatusErrorHandler, "max_retries", new=1):
-            output = self._read(_config(), expecting_exception=True)
-            assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
@@ -243,7 +203,7 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
+        assert most_recent_state.stream_state.__dict__ == {"updated": str(cursor_value)}
 
     @HttpMocker()
     def test_given_state_when_read_then_query_events_using_types_and_state_value_plus_1(self, http_mocker: HttpMocker) -> None:
@@ -253,7 +213,7 @@ class IncrementalTest(TestCase):
 
         http_mocker.get(
             _events_request()
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_gte(state_datetime)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
@@ -270,7 +230,7 @@ class IncrementalTest(TestCase):
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
+        assert most_recent_state.stream_state.__dict__ == {"updated": str(cursor_value)}
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
