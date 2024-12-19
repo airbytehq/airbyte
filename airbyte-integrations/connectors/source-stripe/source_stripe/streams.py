@@ -561,7 +561,11 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
         )
         if incremental_slices:
             parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-            yield from (StreamSlice(partition=parent_record, cursor_slice=_slice) for parent_record in parent_records for _slice in incremental_slices)
+            yield from (
+                StreamSlice(partition=parent_record, cursor_slice=_slice)
+                for parent_record in parent_records
+                for _slice in incremental_slices
+            )
         else:
             yield from []
 
@@ -797,6 +801,9 @@ class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStre
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if not stream_state:
-            yield from map(lambda stream_slice: StreamSlice(partition=stream_slice, cursor_slice={}), HttpSubStream.stream_slices(self, sync_mode, cursor_field, stream_state))
+            yield from map(
+                lambda stream_slice: StreamSlice(partition=stream_slice, cursor_slice={}),
+                HttpSubStream.stream_slices(self, sync_mode, cursor_field, stream_state),
+            )
         else:
             yield from UpdatedCursorIncrementalStripeStream.stream_slices(self, sync_mode, cursor_field, stream_state)

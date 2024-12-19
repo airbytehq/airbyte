@@ -96,9 +96,8 @@ def _a_setup_attempt() -> RecordBuilder:
 
 
 def _setup_attempts_response() -> HttpResponseBuilder:
-    return create_response_builder(
-        find_template(_STREAM_NAME, __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy()
-    )
+    return create_response_builder(find_template(_STREAM_NAME, __file__), FieldPath("data"), pagination_strategy=StripePaginationStrategy())
+
 
 def _a_setup_intent() -> RecordBuilder:
     return create_record_builder(
@@ -129,7 +128,10 @@ class FullRefreshTest(TestCase):
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _setup_intents_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _setup_intents_response().with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_1)).with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_2)).build(),
+            _setup_intents_response()
+            .with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_1))
+            .with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_2))
+            .build(),
         )
         http_mocker.get(
             _setup_attempts_request(_SETUP_INTENT_ID_1).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
@@ -154,7 +156,10 @@ class IncrementalTest(TestCase):
     def test_given_no_state_when_read_then_use_cards_endpoint(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _setup_intents_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _setup_intents_response().with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_1)).with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_2)).build(),
+            _setup_intents_response()
+            .with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_1))
+            .with_record(_a_setup_intent().with_id(_SETUP_INTENT_ID_2))
+            .build(),
         )
         http_mocker.get(
             _setup_attempts_request(_SETUP_INTENT_ID_1).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
@@ -186,7 +191,11 @@ class IncrementalTest(TestCase):
             _events_response().with_record(self._a_setup_intent_event(cursor_value, _SETUP_INTENT_ID_1)).build(),
         )
         http_mocker.get(
-            _setup_attempts_request(_SETUP_INTENT_ID_1).with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).build(),
+            _setup_attempts_request(_SETUP_INTENT_ID_1)
+            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .build(),
             _setup_attempts_response().with_record(_a_setup_attempt().with_cursor(creation_datetime_of_setup_attempt)).build(),
         )
 
