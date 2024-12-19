@@ -1,0 +1,101 @@
+version: 6.11.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - charges
+
+definitions:
+  streams:
+    authorizations:
+      type: DeclarativeStream
+      name: authorizations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ 'events' if timestamp(stream_slice['start_time']) > timestamp(day_delta(-30, format='%s')) else 'issuing/authorizations' }}"
+          http_method: GET
+          request_headers:
+            Stripe-Account: "{{config['account_id']}}"
+          request_parameters:
+            limit: "100"
+            types[]: "{{ ['issuing_authorization.created', 'issuing_authorization.request', 'issuing_authorization.updated'] if timestamp(stream_slice['start_time']) > timestamp(day_delta(-30, format='%s')) else None }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_stripe.components.StripeDualStreamRecordExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10
+            cursor_value: "{{ last_record.pagination_id }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        step: "P25D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: created[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: "./source_stripe/schemas/authorizations.json"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.stripe.com/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"client_secret\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/authorizations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_secret
+      - start_date
+    properties:
+      client_secret:
+        type: string
+        title: Client Secret
+        order: 0
+      account_id:
+        type: string
+        title: Account ID
+        order: 1
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+    additionalProperties: true

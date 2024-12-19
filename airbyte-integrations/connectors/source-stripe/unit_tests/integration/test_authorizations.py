@@ -277,7 +277,7 @@ class IncrementalTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
             _events_request()
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_gte(state_datetime)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
@@ -290,7 +290,7 @@ class IncrementalTest(TestCase):
         http_mocker.get(
             _events_request()
             .with_starting_after("last_record_id_from_first_page")
-            .with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_gte(state_datetime)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
