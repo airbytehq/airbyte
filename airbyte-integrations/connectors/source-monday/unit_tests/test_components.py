@@ -7,12 +7,13 @@ from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.streams import Stream
 from requests import Response
 from source_monday.components import IncrementalSingleSlice, IncrementalSubstreamSlicer
 from source_monday.extractor import MondayIncrementalItemsExtractor
+
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
+from airbyte_cdk.sources.streams import Stream
 
 
 def _create_response(content: Any) -> Response:
@@ -144,7 +145,6 @@ def mock_parent_stream():
     ids=["no stream state", "successfully read parent record", "skip non_record AirbyteMessage"],
 )
 def test_read_parent_stream(mock_parent_stream, stream_state, parent_records, expected_slices):
-
     slicer = IncrementalSubstreamSlicer(
         config={},
         parameters={},
@@ -162,7 +162,6 @@ def test_read_parent_stream(mock_parent_stream, stream_state, parent_records, ex
 
 
 def test_set_initial_state():
-
     slicer = IncrementalSubstreamSlicer(
         config={},
         parameters={},

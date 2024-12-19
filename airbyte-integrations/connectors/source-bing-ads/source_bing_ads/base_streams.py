@@ -7,12 +7,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.error import URLError
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
-from source_bing_ads.client import Client
 from suds import sudsobject
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from source_bing_ads.client import Client
 
 
 class BingAdsBaseStream(Stream, ABC):

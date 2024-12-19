@@ -47,6 +47,7 @@ internal class BaseDeltaTaskWriterTest {
             every { write(any()) } returns Unit
         }
         val record = RecordWrapper(delegate = mockk(), operation = operation)
+        every { record.delegate.getField(any()) } returns mockk()
         val writer: BaseDeltaTaskWriter =
             TestDeltaWriter(
                 spec = spec,
@@ -62,13 +63,13 @@ internal class BaseDeltaTaskWriterTest {
         writer.write(record)
         when (operation) {
             Operation.DELETE -> {
-                verify(exactly = 1) { deltaWriter.deleteKey(record) }
+                verify(exactly = 1) { deltaWriter.deleteKey(any()) }
             }
             Operation.INSERT -> {
                 verify(exactly = 1) { deltaWriter.write(record) }
             }
             Operation.UPDATE -> {
-                verify(exactly = 1) { deltaWriter.deleteKey(record) }
+                verify(exactly = 1) { deltaWriter.deleteKey(any()) }
                 verify(exactly = 1) { deltaWriter.write(record) }
             }
         }

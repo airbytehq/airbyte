@@ -212,7 +212,6 @@ class MysqlJdbcCdcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MysqlJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
-
     override val completeState: OpaqueStateValue
         get() =
             MysqlCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -263,7 +262,7 @@ sealed class MysqlJdbcCursorPartition(
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())

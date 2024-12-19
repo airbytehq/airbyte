@@ -45,6 +45,8 @@ interface DestinationProcess {
 
     /** Terminate the destination as immediately as possible. */
     fun kill()
+
+    fun verifyFileDeleted()
 }
 
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
@@ -60,6 +62,7 @@ abstract class DestinationProcessFactory {
         command: String,
         configContents: String? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        useFileTransfer: Boolean = false,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess
 

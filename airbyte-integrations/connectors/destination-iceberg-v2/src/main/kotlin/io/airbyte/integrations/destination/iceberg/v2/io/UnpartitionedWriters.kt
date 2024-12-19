@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.iceberg.v2.io
 
 import org.apache.iceberg.FileFormat
-import org.apache.iceberg.PartitionKey
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.Record
@@ -39,7 +38,7 @@ class UnpartitionedDeltaWriter(
         identifierFieldIds
     ) {
 
-    private val writer = RowDataDeltaWriter(PartitionKey(spec, schema))
+    private val writer = RowDataDeltaWriter(null)
 
     override fun route(row: Record): RowDataDeltaWriter {
         return writer

@@ -23,6 +23,7 @@ object MockDestinationBackend {
         getFile(filename).addAll(records)
     }
 
+    @Synchronized
     fun upsert(
         filename: String,
         primaryKey: List<List<String>>,
@@ -120,5 +121,13 @@ object MockDestinationDataDumper : DestinationDataDumper {
         return MockDestinationBackend.readFile(
             MockStreamLoader.getFilename(stream.descriptor.namespace, stream.descriptor.name)
         )
+    }
+
+    override fun dumpFile(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): List<String> {
+        // Not needed since the test is disabled for file transfer
+        throw NotImplementedError()
     }
 }

@@ -94,6 +94,7 @@ which will be translated for compatibility with the Glue Data Catalog:
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.39 | 2024-12-14 | [48945](https://github.com/airbytehq/airbyte/pull/48945) | Update dependencies |
 | 0.1.38 | 2024-11-25 | [48671](https://github.com/airbytehq/airbyte/pull/48671) | Update dependencies |
 | 0.1.37 | 2024-11-04 | [48243](https://github.com/airbytehq/airbyte/pull/48243) | Update dependencies |
 | 0.1.36 | 2024-10-29 | [47878](https://github.com/airbytehq/airbyte/pull/47878) | Update dependencies |
