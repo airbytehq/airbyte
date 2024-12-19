@@ -84,6 +84,7 @@ class JdbcSelectQuerier(
         var isReady = false
         var hasNext = false
         var hasLoggedResultsReceived = false
+        var hasLoggedException = false
 
         /** Initializes a connection and readies the resultset. */
         fun initQueryExecution() {
@@ -137,8 +138,11 @@ class JdbcSelectQuerier(
                     resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
                 } catch (e: Exception) {
                     resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
-                    log.info {
-                        "Failed to serialize column: ${column.id}, of type ${column.type}, with error ${e.message}"
+                    if (!hasLoggedException) {
+                        log.warn(e) { "Error deserializing value in column $column." }
+                        hasLoggedException = true
+                    } else {
+                        log.debug(e) { "Error deserializing value in column $column." }
                     }
                     resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
                 }
