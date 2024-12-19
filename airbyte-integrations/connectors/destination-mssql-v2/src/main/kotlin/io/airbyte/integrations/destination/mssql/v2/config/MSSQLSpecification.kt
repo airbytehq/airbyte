@@ -108,6 +108,15 @@ class EncryptedTrust : EncryptionMethod {
         const val NAME = "encrypted_trust_server_certificate"
     }
     override val sslMethod: String = NAME
+}
+
+@JsonSchemaTitle("Encrypted (verify certificate)")
+@JsonSchemaDescription("Verify and use the certificate provided by the server.")
+class EncryptedVerify : EncryptionMethod {
+    companion object {
+        const val NAME = "encrypted_verify_certificate"
+    }
+    override val sslMethod: String = NAME
 
     @get:JsonSchemaTitle("Trust Store Name")
     @get:JsonPropertyDescription("Specifies the name of the trust store.")
@@ -128,15 +137,6 @@ class EncryptedTrust : EncryptionMethod {
     @get:JsonProperty("hostNameInCertificate")
     @get:JsonSchemaInject(json = """{"order":3}""")
     val hostNameInCertificate: String? = null
-}
-
-@JsonSchemaTitle("Encrypted (verify certificate)")
-@JsonSchemaDescription("Verify and use the certificate provided by the server.")
-class EncryptedVerify : EncryptionMethod {
-    companion object {
-        const val NAME = "encrypted_verify_certificate"
-    }
-    override val sslMethod: String = NAME
 }
 
 @Singleton
