@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.10.0"
+version = "6.11.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.10.0-py3-none-any.whl", hash = "sha256:0f953711332dae67f294751044bc4abfcd988c40a176a32e2d02d2a679377acf"},
-    {file = "airbyte_cdk-6.10.0.tar.gz", hash = "sha256:90aeb0a87e89e9fc43f27ebccabb64ac96966ce2f398805c93a52cd4580a4641"},
+    {file = "airbyte_cdk-6.11.1-py3-none-any.whl", hash = "sha256:e48cfae5d3fb12e3fa32b0aabb0f59f75417e185f9fbeb421f73088b3f6e2120"},
+    {file = "airbyte_cdk-6.11.1.tar.gz", hash = "sha256:8a19e8e96a165610e6d6d52846ef41dac88a8afdd55f6ada894f71e33d4782e5"},
 ]
 
 [package.dependencies]
@@ -194,13 +194,13 @@ ujson = ["ujson (>=5.7.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.8.30"
+version = "2024.12.14"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.8.30-py3-none-any.whl", hash = "sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8"},
-    {file = "certifi-2024.8.30.tar.gz", hash = "sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9"},
+    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
+    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
 ]
 
 [[package]]

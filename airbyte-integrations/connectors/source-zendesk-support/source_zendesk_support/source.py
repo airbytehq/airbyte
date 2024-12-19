@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -28,6 +29,7 @@ from .streams import (
     Tickets,
     UserSettingsStream,
 )
+
 
 logger = logging.getLogger("airbyte")
 
@@ -83,8 +85,8 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         """
         auth = self.get_authenticator(config)
         try:
-            datetime.strptime(config["start_date"], DATETIME_FORMAT)
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
+            start_date = datetime.strptime(config["start_date"], DATETIME_FORMAT) if config["start_date"] else None
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=start_date).get_settings()
         except Exception as e:
             return False, e
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]

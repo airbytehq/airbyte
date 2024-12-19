@@ -1,0 +1,22 @@
+[
+  {
+    "version": "1.0.0",
+    "changelog_entry": "Create a base image for our java connectors based on Amazon Corretto.",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.4",
+    "changelog_entry": "Bundle yum calls in a single RUN",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN sh -c set -o xtrace && yum update -y --security && yum install -y tar openssl findutils && yum clean all\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.2",
+    "changelog_entry": "Set entrypoint to base.sh",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN yum update -y --security\nRUN yum install -y tar openssl findutils\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  },
+  {
+    "version": "1.0.0-rc.1",
+    "changelog_entry": "Create a base image for our java connectors.",
+    "dockerfile_example": "FROM docker.io/amazoncorretto:21-al2023@sha256:5454cb606e803fce56861fdbc9eab365eaa2ab4f357ceb8c1d56f4f8c8a7bc33\nRUN yum update -y --security\nRUN yum install -y tar openssl findutils\nENV AIRBYTE_SPEC_CMD=/airbyte/javabase.sh --spec\nENV AIRBYTE_CHECK_CMD=/airbyte/javabase.sh --check\nENV AIRBYTE_DISCOVER_CMD=/airbyte/javabase.sh --discover\nENV AIRBYTE_READ_CMD=/airbyte/javabase.sh --read\nENV AIRBYTE_WRITE_CMD=/airbyte/javabase.sh --write\nENV AIRBYTE_ENTRYPOINT=/airbyte/base.sh"
+  }
+]

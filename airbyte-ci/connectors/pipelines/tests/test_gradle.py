@@ -5,8 +5,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pipelines.helpers.connectors.modifed
 import pytest
+
+import pipelines.helpers.connectors.modifed
 from pipelines.airbyte_ci.steps import gradle
 from pipelines.models import steps
 

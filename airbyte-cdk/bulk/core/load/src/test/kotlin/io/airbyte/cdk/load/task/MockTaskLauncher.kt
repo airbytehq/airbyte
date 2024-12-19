@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -16,7 +15,6 @@ import jakarta.inject.Singleton
 @Primary
 @Requires(env = ["MockTaskLauncher"])
 class MockTaskLauncher : DestinationTaskLauncher {
-    val spilledFiles = mutableListOf<SpilledRawMessagesLocalFile>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
     override suspend fun handleSetupComplete() {
@@ -25,13 +23,6 @@ class MockTaskLauncher : DestinationTaskLauncher {
 
     override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         throw NotImplementedError()
-    }
-
-    override suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        file: SpilledRawMessagesLocalFile
-    ) {
-        spilledFiles.add(file)
     }
 
     override suspend fun handleNewBatch(

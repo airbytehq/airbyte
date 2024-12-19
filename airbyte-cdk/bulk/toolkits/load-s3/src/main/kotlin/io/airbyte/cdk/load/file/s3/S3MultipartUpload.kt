@@ -19,13 +19,12 @@ import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Semaphore
+import org.apache.mina.util.ConcurrentHashSet
 
 /**
  * An S3MultipartUpload that provides an [OutputStream] abstraction for writing data. This should
@@ -47,7 +46,7 @@ class S3MultipartUpload<T : OutputStream>(
 ) {
     private val log = KotlinLogging.logger {}
     private val partSize =
-        uploadConfig?.streamingUploadPartSize
+        uploadConfig?.uploadPartSizeBytes
             ?: throw IllegalStateException("Streaming upload part size is not configured")
     private val wrappingBuffer = streamProcessor.wrapper(underlyingBuffer)
     private val partQueue = Channel<ByteArray>(Channel.UNLIMITED)
@@ -156,42 +155,71 @@ class S3StreamingUpload(
     private val client: aws.sdk.kotlin.services.s3.S3Client,
     private val bucketConfig: S3BucketConfiguration,
     private val response: CreateMultipartUploadResponse,
-    private val uploadPermits: Semaphore?,
 ) : StreamingUpload<S3Object> {
     private val log = KotlinLogging.logger {}
-    private val uploadedParts = ConcurrentLinkedQueue<CompletedPart>()
+    private val uploadedParts = ConcurrentHashSet<CompletedPart>()
+    private val isComplete = AtomicBoolean(false)
 
-    override suspend fun uploadPart(part: ByteArray) {
-        val partNumber = uploadedParts.size + 1
-        val request = UploadPartRequest {
-            uploadId = response.uploadId
-            bucket = response.bucket
-            key = response.key
-            body = ByteStream.fromBytes(part)
-            this.partNumber = partNumber
-        }
-        val uploadResponse = client.uploadPart(request)
-        uploadedParts.add(
-            CompletedPart {
-                this.partNumber = partNumber
-                this.eTag = uploadResponse.eTag
+    override suspend fun uploadPart(part: ByteArray, index: Int) {
+        log.info { "Uploading part $index to ${response.key} (uploadId=${response.uploadId}" }
+
+        try {
+            val request = UploadPartRequest {
+                uploadId = response.uploadId
+                bucket = response.bucket
+                key = response.key
+                body = ByteStream.fromBytes(part)
+                this.partNumber = index
             }
-        )
+            val uploadResponse = client.uploadPart(request)
+            uploadedParts.add(
+                CompletedPart {
+                    this.partNumber = index
+                    this.eTag = uploadResponse.eTag
+                }
+            )
+        } catch (e: Exception) {
+            log.error(e) {
+                "Failed to upload part $index to ${response.key} (uploadId=${response.uploadId}"
+            }
+            throw e
+        }
     }
 
     override suspend fun complete(): S3Object {
-        log.info { "Completing multipart upload to ${response.key} (uploadId=${response.uploadId}" }
+        try {
+            if (isComplete.setOnce()) {
+                log.info {
+                    "Completing multipart upload to ${response.key} (uploadId=${response.uploadId}"
+                }
+                val partsSorted = uploadedParts.toList().sortedBy { it.partNumber }
+                if (partsSorted.isEmpty()) {
+                    log.warn {
+                        "Skipping empty upload to ${response.key} (uploadId=${response.uploadId}"
+                    }
+                    return S3Object(response.key!!, bucketConfig)
+                }
 
-        val request = CompleteMultipartUploadRequest {
-            uploadId = response.uploadId
-            bucket = response.bucket
-            key = response.key
-            this.multipartUpload = CompletedMultipartUpload { parts = uploadedParts.toList() }
+                val request = CompleteMultipartUploadRequest {
+                    uploadId = response.uploadId
+                    bucket = response.bucket
+                    key = response.key
+                    this.multipartUpload = CompletedMultipartUpload { parts = partsSorted }
+                }
+                // S3 will handle enforcing no gaps in the part numbers
+                client.completeMultipartUpload(request)
+            } else {
+                log.warn {
+                    "Complete called multiple times for ${response.key} (uploadId=${response.uploadId}"
+                }
+            }
+        } catch (e: Exception) {
+            log.error(e) {
+                "Failed to complete upload to ${response.key} (uploadId=${response.uploadId}; parts=${uploadedParts.map {it.partNumber}.sortedBy { it }}"
+            }
+            throw e
         }
-        client.completeMultipartUpload(request)
-        // TODO: Remove permit handling once concurrency is managed by controlling # of concurrent
-        // uploads
-        uploadPermits?.release()
+
         return S3Object(response.key!!, bucketConfig)
     }
 }

@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -36,6 +37,7 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeSubStream,
 )
 
+
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 20
@@ -46,7 +48,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -274,6 +275,20 @@ class SourceStripe(ConcurrentSourceAdapter):
             **args,
         )
 
+        payouts = IncrementalStripeStream(
+            name="payouts",
+            path="payouts",
+            event_types=[
+                "payout.canceled",
+                "payout.created",
+                "payout.failed",
+                "payout.paid",
+                "payout.reconciliation_completed",
+                "payout.updated",
+            ],
+            **args,
+        )
+
         streams = [
             checkout_sessions,
             Events(**incremental_args),
@@ -400,17 +415,18 @@ class SourceStripe(ConcurrentSourceAdapter):
                 ],
                 **args,
             ),
-            IncrementalStripeStream(
-                name="payouts",
-                path="payouts",
-                event_types=[
-                    "payout.canceled",
-                    "payout.created",
-                    "payout.failed",
-                    "payout.paid",
-                    "payout.reconciliation_completed",
-                    "payout.updated",
-                ],
+            payouts,
+            ParentIncrementalStripeSubStream(
+                name="payout_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: "balance_transactions",
+                parent=payouts,
+                cursor_field="updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "payout": stream_slice["parent"]["id"],
+                    "updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
+                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout": f"{stream_slice['parent']['id']}"},
                 **args,
             ),
             IncrementalStripeStream(
@@ -489,12 +505,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
-            UpdatedCursorIncrementalStripeSubStream(
+            ParentIncrementalStripeSubStream(
                 name="customer_balance_transactions",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
                 parent=self.customers(**args),
-                legacy_cursor_field="created",
-                event_types=["customer_cash_balance_transaction.*"],
+                cursor_field="created",
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
@@ -569,7 +584,10 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                path=lambda self,
+                stream_slice,
+                *args,
+                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
