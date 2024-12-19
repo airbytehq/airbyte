@@ -117,8 +117,10 @@ class CdcPartitionReader<T : Comparable<T>>(
 
     override fun checkpoint(): PartitionReadCheckpoint {
         val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(input.state.offset)
+        val expectsSchemaHistoryFile = DebeziumPropertiesBuilder().with(properties).expectsSchemaHistoryFile
+        log.info{"SGX checkpoint, offset=$offset, expectsSchemaHistoryFile =$expectsSchemaHistoryFile, stateFilesAccessor=$stateFilesAccessor"}
         val schemaHistory: DebeziumSchemaHistory? =
-            if (DebeziumPropertiesBuilder().with(properties).expectsSchemaHistoryFile) {
+            if (expectsSchemaHistoryFile) {
                 stateFilesAccessor.readSchema()
             } else {
                 null

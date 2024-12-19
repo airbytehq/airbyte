@@ -160,7 +160,7 @@ open class MsSqlServercontainer(val realContainer: MSSQLServerContainer<*>): Aut
             connection.createStatement().use { stmt: Statement ->
                 stmt.execute("CREATE SCHEMA $schemaName")
             }
-            /*connection.createStatement().use { stmt: Statement ->
+            connection.createStatement().use { stmt: Statement ->
                 stmt.execute(
                     "CREATE TABLE $schemaName.name_and_born(name VARCHAR(200), born DATETIMEOFFSET(7));"
                 )
@@ -175,7 +175,7 @@ open class MsSqlServercontainer(val realContainer: MSSQLServerContainer<*>): Aut
                 stmt.execute(
                     "INSERT INTO $schemaName.id_name_and_born (id, name, born) VALUES (1, 'foo', '2022-03-21 15:43:15.45'), (2, 'bar', '2022-10-22 01:02:03.04')"
                 )
-            }*/
+            }
         }
         return config
     }
@@ -208,6 +208,12 @@ object MsSqlServerContainerFactory {
     }
 
     data object WithCdcAgent : MsSqlServerContainerModifier {
+        override fun modify(container: MSSQLServerContainer<*>) {
+            container.addEnv("MSSQL_AGENT_ENABLED", "True");
+        }
+    }
+
+    data object WithSslCertificates : MsSqlServerContainerModifier {
         override fun modify(container: MSSQLServerContainer<*>) {
             container.addEnv("MSSQL_AGENT_ENABLED", "True");
         }

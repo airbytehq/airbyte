@@ -30,7 +30,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.*;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -42,6 +41,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -109,6 +109,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public MssqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+  }
+
+  public MssqlSource(FeatureFlags featureFlag) {
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
+    hasFeatuerFlagOverride = true;
+    featureFlagOverride = featureFlag;
+  }
+
+  private boolean hasFeatuerFlagOverride = false;
+  private FeatureFlags featureFlagOverride = null;
+
+  public FeatureFlags getFeatureFlags() {
+    if (hasFeatuerFlagOverride) {
+      return featureFlagOverride;
+    }
+    return super.getFeatureFlags();
   }
 
   @Override
@@ -517,7 +533,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
         if (config.has("certificate")) {
           String certificate = config.get("certificate").asText();
-          String password = RandomStringUtils.randomAlphanumeric(100);
+          String password = RandomStringUtils.insecure().next(100);
           final URI keyStoreUri;
           try {
             keyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(certificate, password, null, null);

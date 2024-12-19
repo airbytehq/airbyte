@@ -83,7 +83,7 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
-        // Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
+        Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
         Assertions.assertTrue(
             config.incrementalReplicationConfiguration
                 is MsSqlServerCdcIncrementalReplicationConfiguration

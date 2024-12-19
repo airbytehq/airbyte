@@ -66,11 +66,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun getTestContainerLogMdcBuilder(
         imageName: DockerImageName,
-        containerModifiers: List<NamedContainerModifier<C>>
+        containerModifiers: List<Pair<Consumer<C>, String>>
     ): MdcScope.Builder {
         return MdcScope.Builder()
             .setLogPrefix(
-                "testcontainer ${containerId.incrementAndGet()} ($imageName[${containerModifiers.joinToString(",") { it.name() }}]):"
+                "testcontainer ${containerId.incrementAndGet()} ($imageName[${containerModifiers.joinToString(",") { it.second }}]):"
             )
             .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND)
     }
@@ -89,24 +89,26 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun shared(imageName: String, vararg methods: String): C {
         return shared(
             imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
+            methods.map { resolveModifierByName(it) to it }
         )
     }
 
-    fun shared(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
-        return shared(imageName, listOf(*namedContainerModifiers))
+    fun<N> shared(imageName: String, vararg namedContainerModifiers: N): C
+            where N: NamedContainerModifier<C>,
+                  N: Enum<N>{
+        return shared(imageName, listOf(*namedContainerModifiers).map{it.modifier to it.name})
     }
 
     @JvmOverloads
     fun shared(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
-    ): C {
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>> = ArrayList()
+    ): C{
         val containerKey =
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }
+                containerModifiersWithNames.map { it.second }
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -116,7 +118,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         val containerOrError =
             SHARED_CONTAINERS.computeIfAbsent(containerKey) { key: ContainerKey<*> ->
                 ContainerOrException {
-                    createAndStartContainer(key.imageName, namedContainerModifiers)
+                    createAndStartContainer(key.imageName, containerModifiersWithNames)
                 }
             }
         // Instead, the container creation (if applicable) is deferred to here.
@@ -129,41 +131,41 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * @Deprecated use exclusive(String, NamedContainerModifier) instead
      */
     fun exclusive(imageName: String, vararg methods: String): C {
-        return exclusive(
+        return exclusiveInternal(
             imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
+            methods.map { resolveModifierByName(it) to it }
         )
     }
 
-    fun exclusive(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
+    fun<N> exclusive(imageName: String, vararg namedContainerModifiers: N): C
+    where N: NamedContainerModifier<C>,
+        N: Enum<N>{
         return exclusive(imageName, listOf(*namedContainerModifiers))
     }
 
     @JvmOverloads
-    fun exclusive(
+    fun<N> exclusive(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
-    ): C {
-        return createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers)
+        namedContainerModifiers: List<N> = ArrayList()
+    ): C
+    where N: NamedContainerModifier<C>,
+        N:Enum<N>{
+            return exclusiveInternal(imageName, namedContainerModifiers.map { it.modifier to it.name })
+    }
+
+    //Yeah, this is a bad name. We need something different because of type erasure :(
+    fun exclusiveInternal(imageName: String, containerModifiersWithNames: List<Pair<Consumer<C>, String>>): C {
+        return createAndStartContainer(DockerImageName.parse(imageName), containerModifiersWithNames)
     }
 
     interface NamedContainerModifier<C : GenericContainer<*>> {
-        fun name(): String
-
-        fun modifier(): Consumer<C>
+        val modifier:Consumer<C>
     }
 
     class NamedContainerModifierImpl<C : GenericContainer<*>>(
-        val name: String,
-        val method: Consumer<C>
+        val name:String,
+        override val modifier: Consumer<C>
     ) : NamedContainerModifier<C> {
-        override fun name(): String {
-            return name
-        }
-
-        override fun modifier(): Consumer<C> {
-            return method
-        }
     }
 
     private fun resolveModifierByName(methodName: String): Consumer<C> {
@@ -186,12 +188,12 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun createAndStartContainer(
         imageName: DockerImageName,
-        namedContainerModifiers: List<NamedContainerModifier<C>>
+        containerModifiersWithNames: List<Pair<Consumer<C>, String>>
     ): C {
         LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() }
+            containerModifiersWithNames.map{it.second}
         )
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
@@ -203,20 +205,20 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                     }
                 }
             }
-        getTestContainerLogMdcBuilder(imageName, namedContainerModifiers).produceMappings {
+        getTestContainerLogMdcBuilder(imageName, containerModifiersWithNames).produceMappings {
             key: String?,
             value: String ->
             logConsumer.withMdc(key, value)
         }
         container.withLogConsumer(logConsumer)
-        for (resolvedNamedContainerModifier in namedContainerModifiers) {
+        for (resolvedNamedContainerModifier in containerModifiersWithNames) {
             LOGGER.info(
                 "Calling {} in {} on new container based on {}.",
-                resolvedNamedContainerModifier.name(),
+                resolvedNamedContainerModifier.second,
                 javaClass.name,
                 imageName
             )
-            resolvedNamedContainerModifier.modifier().accept(container)
+            resolvedNamedContainerModifier.first.accept(container)
         }
         container.start()
         return container

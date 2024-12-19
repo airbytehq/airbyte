@@ -5,7 +5,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.45.1'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 java {
@@ -16,6 +16,7 @@ java {
     compileTestFixturesJava {
         options.compilerArgs += "-Xlint:-this-escape"
     }
+    compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 }
 
 application {

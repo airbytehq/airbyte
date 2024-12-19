@@ -59,6 +59,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val global: Global
         get() = Global(listOf(stream))
 
+    val container: C = createContainer()
+    val debeziumOperations = getCdcOperations()
+
     abstract fun createContainer(): C
     abstract fun C.createStream()
     abstract fun C.insert12345()
@@ -97,12 +100,49 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
                 Insert(4, 4),
                 Insert(5, 5),
             )
-        container.update135()
-        val update =
-            listOf<Record>(
-                Update(1, 6),
-                Update(3, 7),
-                Update(5, 8),
+
+            container.insert12345()
+            val insert =
+                listOf<Record>(
+                    Insert(1, 1),
+                    Insert(2, 2),
+                    Insert(3, 3),
+                    Insert(4, 4),
+                    Insert(5, 5),
+                )
+            container.update135()
+            val update =
+                listOf<Record>(
+                    Update(1, 6),
+                    Update(3, 7),
+                    Update(5, 8),
+                )
+            log.info{"SGXX 5"}
+            val p1: T = debeziumOperations.position(debeziumOperations.synthesize(listOf(stream)).state.offset)
+            log.info{"SGXX 6"}
+            container.delete24()
+            val delete =
+                listOf<Record>(
+                    Delete(2),
+                    Delete(4),
+                )
+            log.info{"SGXX 7"}
+            val p2: T = debeziumOperations.position(debeziumOperations.synthesize(listOf(stream)).state.offset)
+            log.info{"SGXX 8"}
+
+            val input = debeziumOperations.deserialize(debeziumOperations.serialize(r0.state), listOf(stream))
+            log.info{"SGXX 9"}
+
+            val r1: ReadResult = read(input, p1)
+            log.info{"SGXX 10"}
+            Assertions.assertEquals(insert + update, r1.records.take(insert.size + update.size))
+            Assertions.assertNotNull(r1.closeReason)
+            log.info{"SGXX 11"}
+            val r2: ReadResult = read(input, p2)
+            log.info{"SGXX 12"}
+            Assertions.assertEquals(
+                insert + update + delete,
+                r2.records.take(insert.size + update.size + delete.size),
             )
         val p1: T = debeziumOperations.position(debeziumOperations.synthesize().state.offset)
         container.delete24()
@@ -251,8 +291,9 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
             stream.id.name
 
-        override fun serialize(debeziumState: DebeziumState): OpaqueStateValue =
-            Jsons.valueToTree(
+        override fun serialize(debeziumState: DebeziumState): OpaqueStateValue {
+            log.info{"SGX debeziumState=$debeziumState, thread=${Thread.currentThread().stackTrace.toList()}"}
+            return Jsons.valueToTree(
                 mapOf(
                     "offset" to
                         debeziumState.offset.wrapped

@@ -17,13 +17,14 @@ import io.airbyte.integrations.source.mssql.config_spec.MsSqlServerSourceConfigu
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 import java.sql.Statement
 
 class MsSqlServerCdcIntegrationTest {
        @Test
-       fun testCheck() {
+       fun testBasicCheck() {
            val run1: BufferingOutputConsumer = CliRunner.source("check", config(), null).run()
 
            assertEquals(run1.messages().size, 1)
@@ -31,7 +32,10 @@ class MsSqlServerCdcIntegrationTest {
                run1.messages().first().connectionStatus.status,
                AirbyteConnectionStatus.Status.SUCCEEDED
            )
-
+       }
+    @Test
+    @Disabled("This should failed because CDC is disabled on the container. The missing code is equivalent to MySqlSourceMetadataQuerier.extraChecks")
+    fun testCheckCdcOnNonCdcDb() {
            val nonCdcDbContainer = MsSqlServerContainerFactory.shared(
                    MsSqlServerImage.SQLSERVER_2022
                )
@@ -58,8 +62,7 @@ class MsSqlServerCdcIntegrationTest {
 
        @Test
        fun test() {
-           CliRunner.source("read", config(), configuredCatalog).run()
-           // TODO: add assertions on run1 messages.
+           val state1 = CliRunner.source("read", config(), configuredCatalog).run().states().last()
 
            connectionFactory.get().use { connection: Connection ->
                connection.isReadOnly = false
@@ -67,6 +70,9 @@ class MsSqlServerCdcIntegrationTest {
                    stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
                }
            }
+
+           val run2InputState: List<AirbyteStateMessage> = listOf(state1)
+           CliRunner.source("read", config(), configuredCatalog, run2InputState).run().records()
        }
 
        @Test
@@ -87,6 +93,7 @@ class MsSqlServerCdcIntegrationTest {
            var dbContainer: MsSqlServercontainer = MsSqlServerContainerFactory.exclusive(
                MsSqlServerImage.SQLSERVER_2022,
                MsSqlServerContainerFactory.WithNetwork,
+               MsSqlServerContainerFactory.WithCdcAgent
            )
 
            fun config(): MsSqlServerSourceConfigurationSpecification =

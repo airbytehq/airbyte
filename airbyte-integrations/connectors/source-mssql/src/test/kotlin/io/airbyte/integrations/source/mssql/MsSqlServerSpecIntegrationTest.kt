@@ -142,15 +142,10 @@ class MsSqlServerSpecIntegrationTest {
 
     @Test
     fun testSync2() {
-        // val container =
-        // MsSqlServerContainerFactory.shared(MsSqlServerContainerFactory.SQLSERVER_2022)
-        val configString = Files.readString(Paths.get("secrets/config-cdc.json"))
+        val container =
+        MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
         val config =
-            Jsons.readValue(
-                configString,
-                MsSqlServerSourceConfigurationSpecification::class.java,
-            )
-        println("SGX config=$configString")
+            container.config
 
         val catalog =
             SyncsTestFixture.configuredCatalogFromResource("catalog-cdc-single-stream.json")
@@ -187,15 +182,10 @@ class MsSqlServerSpecIntegrationTest {
 
     @Test
     fun testSyncWithAlwaysNullCursor() {
-        // val container =
-        // MsSqlServerContainerFactory.shared(MsSqlServerContainerFactory.SQLSERVER_2022)
-        val configString = Files.readString(Paths.get("secrets/config-cdc.json"))
+        val container =
+            MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
         val config =
-            Jsons.readValue(
-                configString,
-                MsSqlServerSourceConfigurationSpecification::class.java,
-            )
-        println("SGX config=$configString")
+            container.config
 
         val catalog = SyncsTestFixture.configuredCatalogFromResource("catalog-cdc-dbo-users.json")
         CliRunner.source("discover", config).run()
@@ -231,12 +221,10 @@ class MsSqlServerSpecIntegrationTest {
 
     @Test
     fun testSyncEmptyTable() {
-        val configString = Files.readString(Paths.get("secrets/config-cdc.json"))
+        val container =
+            MsSqlServerContainerFactory.shared(MsSqlServerImage.SQLSERVER_2022)
         val config =
-            Jsons.readValue(
-                configString,
-                MsSqlServerSourceConfigurationSpecification::class.java,
-            )
+            container.config
         val configuredCatalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(

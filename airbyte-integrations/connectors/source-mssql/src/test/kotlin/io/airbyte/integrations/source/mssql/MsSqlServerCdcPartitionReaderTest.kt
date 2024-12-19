@@ -2,7 +2,9 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.*
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.cdk.util.Jsons
@@ -28,7 +30,7 @@ class MsSqlServerCdcPartitionReaderTest :
 
         override fun createContainer(): MsSqlServercontainerWithCdc {
             val retVal = MsSqlServerContainerFactory.exclusive(MsSqlServerImage.SQLSERVER_2022, MsSqlServerContainerFactory.WithCdcAgent) as MsSqlServercontainerWithCdc
-            retVal.config
+            retVal.config.schemas = arrayOf("test")
             return retVal
         }
 
@@ -102,10 +104,12 @@ class MsSqlServerCdcPartitionReaderTest :
             }
         }
 
-    override fun createCdcOperations(): DebeziumOperations<TxLogPosition> {
-        val config = MsSqlServerSourceConfigurationFactory().make(container.config)
-        val delegate = MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
-        return object: DebeziumOperations<TxLogPosition> by delegate {
+    override fun getCdcOperations(): DebeziumOperations<TxLogPosition> {
+        return object: AbstractCdcPartitionReaderDebeziumOperationsForTest<TxLogPosition>(stream) {
+            override fun position(offset: DebeziumOffset): TxLogPosition {
+                return TxLogPosition.valueOf(Lsn.valueOf(offset.wrapped.values.first()["commit_lsn"].asText()), Lsn.valueOf(offset.wrapped.values.first()["change_lsn"].asText()))
+            }
+
             override fun position(recordValue: DebeziumRecordValue): TxLogPosition? {
                 val commitLsn: String =
                     recordValue.source["commit_lsn"]?.takeIf { it.isTextual }?.asText() ?: return null
@@ -120,42 +124,19 @@ class MsSqlServerCdcPartitionReaderTest :
                 return TxLogPosition.valueOf(Lsn.valueOf(commitLsn), Lsn.valueOf(changeLsn))
             }
 
-            override fun synthesize(): DebeziumInput {
-                val syntheticInput = delegate.synthesize()
+            override fun synthesize(streams: List<Stream>): DebeziumInput {
+                val config = MsSqlServerSourceConfigurationFactory().make(container.config)
+                val retVal = MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config).synthesize(streams)
+                log.info {"SGX synthesize $retVal"}
+                return retVal
+            }
 
-                return DebeziumInput(
-                    DebeziumPropertiesBuilder().with(syntheticInput.properties).withStreams(listOf(stream)).with("schema.include.list", "test").buildMap(),
-                    syntheticInput.state,
-                    isSynthetic = true)
+            override fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput {
+                return super.deserialize(opaqueStateValue, streams).let {
+                    DebeziumInput(synthesize(streams).properties + ("snapshot.mode" to "when_needed"), it.state, it.isSynthetic)
+                }
             }
         }
     }
-
-
-
-        override fun MsSqlServercontainerWithCdc.currentPosition(): TxLogPosition {
-            val dbName = withStatement { statement: Statement ->
-                statement.executeQuery("SELECT DB_NAME()").use {
-                    it.next()
-                    it.getString(1)
-                }
-            }
-            log.info{"SGX dbNAme=$dbName"}
-            return withStatement { statement: Statement ->
-                statement.executeQuery("select sys.fn_cdc_get_max_lsn() as max_lsn").use {
-                    it.next()
-                    val lsn = Lsn.valueOf(it.getBytes("max_lsn"))
-                    log.info{"SGX returning currentPosition=$lsn"}
-                    TxLogPosition.valueOf(lsn, lsn)
-                }
-            }
-        }
-
-        override fun MsSqlServercontainerWithCdc.debeziumProperties(): Map<String, String> {
-            val config = MsSqlServerSourceConfigurationFactory().make(config)
-            val commonProperties = MsSqlServerDebeziumOperations.commonProperties(JdbcConnectionFactory(config).ensureTunnelSession(), databaseName, config)
-            return DebeziumPropertiesBuilder().with(commonProperties).withStreams(listOf(stream)).with("schema.include.list", "test").with("incremental.snapshot.chunk.size", "1").with("max.batch.size", "1").buildMap()
-        }
-
     }
 

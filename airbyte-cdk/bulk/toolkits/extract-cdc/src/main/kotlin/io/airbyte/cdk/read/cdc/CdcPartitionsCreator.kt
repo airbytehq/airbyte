@@ -49,7 +49,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.stateQuerier.current(it) != null }
         }
-        val syntheticInput: DebeziumInput by lazy { creatorOps.synthesize() }
+        val syntheticInput: DebeziumInput by lazy { creatorOps.synthesize(feedBootstrap.feed.streams) }
         // Ensure that the WAL position upper bound has been computed for this sync.
         val upperBound: T =
             upperBoundReference.updateAndGet {

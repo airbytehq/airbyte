@@ -57,3 +57,7 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
  * Strictly speaking, its subclasses are not really POJOs anymore, but who cares.
  */
 abstract class ConfigurationSpecification
+
+abstract class DbConfigurationSpecification(): ConfigurationSpecification() {
+    abstract var databaseName: String
+}

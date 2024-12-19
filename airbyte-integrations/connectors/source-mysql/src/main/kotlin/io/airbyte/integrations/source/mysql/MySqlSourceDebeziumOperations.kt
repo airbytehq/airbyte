@@ -339,11 +339,11 @@ class MySqlSourceDebeziumOperations(
             if (cdcValidationResult == CdcStateValidateResult.INVALID_RESET) {
                 throw OffsetInvalidNeedsResyncIllegalStateException()
             }
-            return synthesize()
+            return synthesize(streams)
         }
 
         val properties: Map<String, String> =
-            DebeziumPropertiesBuilder().with(commonProperties).withStreams(streams).buildMap()
+            DebeziumPropertiesBuilder().with(commonProperties).buildMap()
         return DebeziumInput(properties, debeziumState, isSynthetic = false)
     }
 
@@ -401,7 +401,7 @@ class MySqlSourceDebeziumOperations(
                 // This is to make sure that temporal data is represented without loss of precision.
                 .with("time.precision.mode", "adaptive_time_microseconds")
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-                .with("snapshot.mode", "when_needed")
+                .with("snapshot.mode", "initial_only")
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-locking-mode
                 // This is to make sure other database clients are allowed to write to a table while
                 // Airbyte is taking a snapshot. There is a risk involved that if any database

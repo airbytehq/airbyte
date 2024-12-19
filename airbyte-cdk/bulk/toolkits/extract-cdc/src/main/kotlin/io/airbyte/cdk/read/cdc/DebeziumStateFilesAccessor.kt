@@ -81,6 +81,7 @@ class DebeziumStateFilesAccessor : AutoCloseable {
             schema = buildList { recoverRecords(fileSchemaHistory, Consumer(this::add)) }
         }
 
+        log.info { "SGX readSchema, schemaFilePath=$schemaFilePath, schema=$schema, schemaFilePath.toFile().exists()=${schemaFilePath.toFile().exists()}, fileContent=${schemaFilePath.toFile().readText()}" }
         return DebeziumSchemaHistory(schema)
     }
 
