@@ -302,7 +302,7 @@ class RecordDiffer(
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
             if (v1 is UnknownValue) {
                 return compare(
-                    JsonToAirbyteValue().fromJson(v1.value),
+                    JsonToAirbyteValue().convert(v1.value),
                     v2,
                     nullEqualsUnset,
                 )
@@ -310,7 +310,7 @@ class RecordDiffer(
             if (v2 is UnknownValue) {
                 return compare(
                     v1,
-                    JsonToAirbyteValue().fromJson(v2.value),
+                    JsonToAirbyteValue().convert(v2.value),
                     nullEqualsUnset,
                 )
             }

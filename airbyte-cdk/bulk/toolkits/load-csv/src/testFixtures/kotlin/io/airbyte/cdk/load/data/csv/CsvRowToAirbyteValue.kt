@@ -65,12 +65,11 @@ class CsvRowToAirbyteValue {
                         .deserializeToNode()
                         .elements()
                         .asSequence()
-                        .map { it.toAirbyteValue(field.items.type) }
+                        .map { it.toAirbyteValue() }
                         .toList()
                         .let(::ArrayValue)
                 }
-                is ArrayTypeWithoutSchema ->
-                    value.deserializeToNode().toAirbyteValue(ArrayTypeWithoutSchema)
+                is ArrayTypeWithoutSchema -> value.deserializeToNode().toAirbyteValue()
                 is BooleanType -> BooleanValue(value.toBooleanStrict())
                 is IntegerType -> IntegerValue(value.toBigInteger())
                 is NumberType -> NumberValue(value.toBigDecimal())
@@ -81,18 +80,15 @@ class CsvRowToAirbyteValue {
                         .fields()
                         .asSequence()
                         .map { entry ->
-                            val type =
-                                field.properties[entry.key]?.type
-                                    ?: UnknownType(value.deserializeToNode())
-                            entry.key to entry.value.toAirbyteValue(type)
+                            field.properties[entry.key]?.type
+                                ?: UnknownType(value.deserializeToNode())
+                            entry.key to entry.value.toAirbyteValue()
                         }
                         .toMap(properties)
                     ObjectValue(properties)
                 }
-                is ObjectTypeWithEmptySchema ->
-                    value.deserializeToNode().toAirbyteValue(ObjectTypeWithEmptySchema)
-                is ObjectTypeWithoutSchema ->
-                    value.deserializeToNode().toAirbyteValue(ObjectTypeWithoutSchema)
+                is ObjectTypeWithEmptySchema -> value.deserializeToNode().toAirbyteValue()
+                is ObjectTypeWithoutSchema -> value.deserializeToNode().toAirbyteValue()
                 is StringType -> StringValue(value)
                 is UnionType -> {
                     // Use the options sorted with string last since it always works
