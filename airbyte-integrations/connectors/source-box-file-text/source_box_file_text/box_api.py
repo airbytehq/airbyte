@@ -1,16 +1,19 @@
-import requests
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, Union, MutableMapping, Optional, Tuple
-from box_sdk_gen import BoxSDKError,CCGConfig, BoxCCGAuth, BoxClient,File,FileMini,FolderMini,WebLink, Items
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+
+import requests
+from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, FileMini, FolderMini, Items, WebLink
+
 
 @dataclass
 class BoxFileExtended:
-    file:File
-    text_representation:str
+    file: File
+    text_representation: str
 
 
-
-def get_box_ccg_client(config: Mapping[str, Any])->BoxClient:
+def get_box_ccg_client(config: Mapping[str, Any]) -> BoxClient:
     client_id = config["client_id"]
     client_secret = config["client_secret"]
     box_subject_type = config["box_subject_type"]
@@ -21,14 +24,10 @@ def get_box_ccg_client(config: Mapping[str, Any])->BoxClient:
     else:
         enterprise_id = None
         user_id = box_subject_id
-    ccg_config = CCGConfig(
-        client_id = client_id, 
-        client_secret = client_secret, 
-        enterprise_id = enterprise_id, 
-        user_id = user_id
-        )
-    ccg_auth =  BoxCCGAuth(ccg_config)
+    ccg_config = CCGConfig(client_id=client_id, client_secret=client_secret, enterprise_id=enterprise_id, user_id=user_id)
+    ccg_auth = BoxCCGAuth(ccg_config)
     return add_extra_header_to_box_client(BoxClient(ccg_auth))
+
 
 def add_extra_header_to_box_client(box_client: BoxClient) -> BoxClient:
     """
@@ -43,6 +42,7 @@ def add_extra_header_to_box_client(box_client: BoxClient) -> BoxClient:
     """
     header = {"x-box-ai-library": "airbyte"}
     return box_client.with_extra_headers(extra_headers=header)
+
 
 def _do_request(box_client: BoxClient, url: str):
     """
@@ -72,10 +72,12 @@ def _do_request(box_client: BoxClient, url: str):
     resp.raise_for_status()
     return resp.content
 
-def box_file_get_by_id(client:BoxClient,file_id:str)->File:
+
+def box_file_get_by_id(client: BoxClient, file_id: str) -> File:
     return client.files.get_file_by_id(file_id=file_id)
 
-def box_file_text_extract(client:BoxClient,file_id:str)->str:
+
+def box_file_text_extract(client: BoxClient, file_id: str) -> str:
     # Request the file with the "extracted_text" representation hint
     file_text_representation = client.files.get_file_by_id(
         file_id,
@@ -89,11 +91,7 @@ def box_file_text_extract(client:BoxClient,file_id:str)->str:
 
     # Find the "extracted_text" representation
     extracted_text_entry = next(
-        (
-            entry
-            for entry in file_text_representation.representations.entries
-            if entry.representation == "extracted_text"
-        ),
+        (entry for entry in file_text_representation.representations.entries if entry.representation == "extracted_text"),
         None,
     )
     if not extracted_text_entry:
@@ -111,15 +109,19 @@ def box_file_text_extract(client:BoxClient,file_id:str)->str:
     return raw_content if raw_content else ""
 
 
-def box_folder_items_get_by_id(client:BoxClient, folder_id:str,is_recursive:bool = False, by_pass_text_extraction:bool = False)-> Iterable[BoxFileExtended]:
+def box_folder_items_get_by_id(
+    client: BoxClient, folder_id: str, is_recursive: bool = False, by_pass_text_extraction: bool = False
+) -> Iterable[BoxFileExtended]:
     # folder items iterator
     for item in client.folders.get_folder_items(folder_id).entries:
         if item.type == "file":
-            file = box_file_get_by_id(client=client,file_id=item.id)
+            file = box_file_get_by_id(client=client, file_id=item.id)
             if not by_pass_text_extraction:
-                text_representation = box_file_text_extract(client=client,file_id=item.id)
+                text_representation = box_file_text_extract(client=client, file_id=item.id)
             else:
                 text_representation = ""
-            yield BoxFileExtended(file=file,text_representation=text_representation)
+            yield BoxFileExtended(file=file, text_representation=text_representation)
         elif item.type == "folder" and is_recursive:
-            yield from box_folder_items_get_by_id(client=client,folder_id=item.id,is_recursive=is_recursive,by_pass_text_extraction=by_pass_text_extraction)
+            yield from box_folder_items_get_by_id(
+                client=client, folder_id=item.id, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
+            )

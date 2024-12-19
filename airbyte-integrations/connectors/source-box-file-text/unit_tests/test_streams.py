@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 import pytest
 from source_box_file_text.source import BoxFileTextStream
 
-
 # @pytest.fixture
 # def patch_base_class(mocker):
 #     # Mock abstract methods to enable instantiating abstract class
