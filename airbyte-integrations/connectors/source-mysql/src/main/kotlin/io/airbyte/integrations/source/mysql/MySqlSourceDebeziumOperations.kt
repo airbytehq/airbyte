@@ -270,7 +270,7 @@ class MySqlSourceDebeziumOperations(
                                     ?.trim()
                                     ?.replace("\n", "")
                                     ?.replace("\r", "")
-                            // This value exists only in MySQL 5.6.5 or later.
+                                // This value exists only in MySQL 5.6.5 or later.
                             } else null
 
                         cdcPosition to gtidSet
