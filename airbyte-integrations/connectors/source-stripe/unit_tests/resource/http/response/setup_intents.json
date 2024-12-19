@@ -28,9 +28,7 @@
           "request_three_d_secure": "automatic"
         }
       },
-      "payment_method_types": [
-        "card"
-      ],
+      "payment_method_types": ["card"],
       "single_use_mandate": null,
       "status": "requires_payment_method",
       "usage": "off_session"
