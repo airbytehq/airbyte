@@ -7,10 +7,12 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, TraceType, Type
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
 from destination_deepset.writer import DeepsetCloudFileWriter
+
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, TraceType, Type
+
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -40,9 +42,7 @@ def test_factory(config_dict: Mapping[str, Any]) -> None:
     assert config.retries == config_dict["retries"]
 
 
-def test_write_happy_path(
-    monkeypatch: pytest.MonkeyPatch, config_dict: Mapping[str, Any], file: DeepsetCloudFile
-) -> None:
+def test_write_happy_path(monkeypatch: pytest.MonkeyPatch, config_dict: Mapping[str, Any], file: DeepsetCloudFile) -> None:
     writer = DeepsetCloudFileWriter.factory(config_dict)
 
     monkeypatch.setattr(writer.client, "upload", lambda *_, **__: uuid4())

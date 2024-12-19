@@ -40,9 +40,7 @@ def test_upload(httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetClo
     assert isinstance(file_id, UUID), "Upload did not return a valid file id."
 
 
-def test_upload_retries_requests_until_success(
-    httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile
-) -> None:
+def test_upload_retries_requests_until_success(httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile) -> None:
     for _ in range(client.config.retries - 1):
         httpx_mock.add_response(status_code=codes.BAD_GATEWAY)
 
@@ -52,9 +50,7 @@ def test_upload_retries_requests_until_success(
     assert isinstance(file_id, UUID), "Upload did not return a valid file id."
 
 
-def test_upload_fails_if_all_attempts_are_unsuccessful(
-    httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile
-) -> None:
+def test_upload_fails_if_all_attempts_are_unsuccessful(httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile) -> None:
     for _ in range(client.config.retries):
         httpx_mock.add_response(status_code=codes.BAD_GATEWAY)
 
@@ -62,9 +58,7 @@ def test_upload_fails_if_all_attempts_are_unsuccessful(
         client.upload(file)
 
 
-def test_upload_fails_on_missing_file_id(
-    httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile
-) -> None:
+def test_upload_fails_on_missing_file_id(httpx_mock: HTTPXMock, client: DeepsetCloudApi, file: DeepsetCloudFile) -> None:
     httpx_mock.add_response(json={})
 
     with pytest.raises(FileUploadError):

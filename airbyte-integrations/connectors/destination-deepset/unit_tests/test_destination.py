@@ -9,9 +9,11 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level, Status, Type
 from destination_deepset.destination import DestinationDeepset
 from destination_deepset.writer import DeepsetCloudFileWriter
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level, Status, Type
+
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -40,14 +42,10 @@ def logger() -> Logger:
 def _setup(monkeypatch: pytest.MonkeyPatch, client: DeepsetCloudApi) -> None:
     monkeypatch.setattr(client, "health_check", lambda *_, **__: None)
     monkeypatch.setattr(client, "upload", lambda *_, **__: uuid4())
-    monkeypatch.setattr(
-        "destination_deepset.destination.DeepsetCloudFileWriter.factory", lambda *_: DeepsetCloudFileWriter(client)
-    )
+    monkeypatch.setattr("destination_deepset.destination.DeepsetCloudFileWriter.factory", lambda *_: DeepsetCloudFileWriter(client))
 
 
-def test_write(
-    config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: list[AirbyteMessage]
-) -> None:
+def test_write(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: list[AirbyteMessage]) -> None:
     batch_size = len(input_messages)
     assert batch_size > 0, "Number of messages should match lines in ./sample_files/messages.jsonl"
 
