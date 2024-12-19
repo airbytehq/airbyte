@@ -9,7 +9,7 @@ from typing import Any
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 
 __all__ = [
     "DeepsetCloudConfig",
@@ -45,9 +45,9 @@ class Filetypes(str, Enum):
 
 
 class DeepsetCloudConfig(BaseModel):
-    api_key: str = Field(title="API Key", description="Your deepset cloud API key")
-    base_url: str = Field(
-        default="https://api.cloud.deepset.ai/",
+    api_key: str = Field(title="API Key", description="Your deepset cloud API key", min_length=8)
+    base_url: HttpUrl = Field(
+        default="https://api.cloud.deepset.ai",
         title="Base URL",
         description="Base url of your deepset cloud instance. Configure this if using an on-prem instance.",
     )

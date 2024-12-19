@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import secrets
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from destination_deepset.api import DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 @pytest.fixture()
@@ -20,13 +24,18 @@ def workspace() -> str:
 
 
 @pytest.fixture()
-def config(api_base_url: str, workspace: str) -> DeepsetCloudConfig:
-    return DeepsetCloudConfig(api_key=secrets.token_urlsafe(16), base_url=api_base_url, workspace=workspace, retries=3)
+def config() -> Mapping[str, Any]:
+    return {
+        "api_key": secrets.token_urlsafe(16),
+        "base_url": "https://api.dev.cloud.dpst.dev",
+        "workspace": "airbyte-test",
+        "retries": 5,
+    }
 
 
 @pytest.fixture()
-def client(config: DeepsetCloudConfig) -> DeepsetCloudApi:
-    return DeepsetCloudApi(config=config)
+def client(config: Mapping[str, Any]) -> DeepsetCloudApi:
+    return DeepsetCloudApi(config=DeepsetCloudConfig.parse_obj(config))
 
 
 @pytest.fixture()
