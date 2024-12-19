@@ -373,8 +373,7 @@ class MysqlJdbcPartitionFactory(
                                     OffsetDateTime.parse(stateValue, formatter)
                                 } catch (_: DateTimeParseException) {
                                     // if no offset exists, we assume it's UTC
-                                    LocalDateTime.parse(stateValue, formatter)
-                                        .atOffset(UTC)
+                                    LocalDateTime.parse(stateValue, formatter).atOffset(UTC)
                                 }
                             Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                         } catch (_: RuntimeException) {
