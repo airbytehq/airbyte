@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2.config
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource
@@ -10,9 +14,10 @@ import javax.sql.DataSource
 class DataSourceFactory {
 
     @Singleton
-    fun dataSource(): DataSource { //configuration: MSSQLConfiguration): DataSource {
+    fun dataSource(): DataSource { // configuration: MSSQLConfiguration): DataSource {
         val sqlServerDataSource = SQLServerDataSource()
-        sqlServerDataSource.url = "jdbc:sqlserver://localhost:1433;encrypt=true;trustServerCertificate=true;databaseName=test;applicationName=destination-mssql-v2"
+        sqlServerDataSource.url =
+            "jdbc:sqlserver://localhost:1433;encrypt=true;trustServerCertificate=true;databaseName=test;applicationName=destination-mssql-v2"
         sqlServerDataSource.user = "sa"
         sqlServerDataSource.setPassword("Averycomplicatedpassword1!")
         val dataSource = HikariDataSource()
