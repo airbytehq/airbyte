@@ -1,4 +1,4 @@
-version: 5.7.0
+version: 6.11.1
 
 type: DeclarativeSource
 
@@ -660,20 +660,10 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/conversations"
       incremental_sync:
-        type: DatetimeBasedCursor
+        type: CustomIncrementalSync
+        class_name: >-
+          source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
         cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%s"
-          - "%ms"
-        datetime_format: "%s"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
           fields:
@@ -731,20 +721,10 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/companies"
       incremental_sync:
-        type: DatetimeBasedCursor
+        type: CustomIncrementalSync
+        class_name: >-
+          source_declarative_manifest.components.IncrementalSubstreamSlicerCursor
         cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%s"
-          - "%ms"
-        datetime_format: "%s"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -875,8 +855,11 @@ metadata:
       conversations:
         - errorHandler
         - incrementalSync
+      conversation_parts:
+        - incrementalSync
       company_segments:
         - errorHandler
+        - incrementalSync
   testedStreams:
     activity_logs:
       hasRecords: true
