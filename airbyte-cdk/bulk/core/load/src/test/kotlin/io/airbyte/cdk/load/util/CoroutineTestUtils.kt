@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.test.util
+package io.airbyte.cdk.load.util
 
 import kotlin.reflect.KClass
 
