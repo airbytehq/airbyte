@@ -36,7 +36,7 @@ import java.io.Closeable
 import java.io.OutputStream
 import org.apache.avro.Schema
 
-abstract class ObjectStorageFormattingWriter : Closeable {
+interface ObjectStorageFormattingWriter : Closeable {
     abstract fun accept(record: DestinationRecord)
     abstract fun flush()
 }
@@ -80,7 +80,7 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter() {
+) : ObjectStorageFormattingWriter {
 
     override fun accept(record: DestinationRecord) {
         val data =
@@ -126,7 +126,7 @@ class AvroFormattingWriter(
     outputStream: OutputStream,
     formatConfig: AvroFormatConfiguration,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter() {
+) : ObjectStorageFormattingWriter {
     val log = KotlinLogging.logger {}
 
     private val pipeline = AvroMapperPipelineFactory().create(stream)
@@ -159,7 +159,7 @@ class ParquetFormattingWriter(
     outputStream: OutputStream,
     formatConfig: ParquetFormatConfiguration,
     private val rootLevelFlattening: Boolean,
-) : ObjectStorageFormattingWriter() {
+) : ObjectStorageFormattingWriter {
     private val log = KotlinLogging.logger {}
 
     private val pipeline = ParquetMapperPipelineFactory().create(stream)
@@ -208,7 +208,7 @@ class BufferedFormattingWriter<T : OutputStream>(
     private val buffer: ByteArrayOutputStream,
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
-) : ObjectStorageFormattingWriter() {
+) : ObjectStorageFormattingWriter {
     val bufferSize: Int
         get() = buffer.size()
 
