@@ -1685,17 +1685,18 @@ abstract class BasicFunctionalityIntegrationTest(
                 bigInt = BigInteger("99999999999999999999999999999999")
                 bigIntChanges = emptyList()
                 badValuesData =
+                    // note that the values have different types than what's declared in the schema
                     mapOf(
                         "id" to 5,
-                        "string" to StringValue("{}"),
+                        "string" to ObjectValue(linkedMapOf()),
                         "number" to "foo",
                         "integer" to "foo",
                         "boolean" to "foo",
-                        "timestamp_with_timezone" to StringValue("foo"),
-                        "timestamp_without_timezone" to StringValue("foo"),
-                        "time_with_timezone" to StringValue("foo"),
-                        "time_without_timezone" to StringValue("foo"),
-                        "date" to StringValue("foo"),
+                        "timestamp_with_timezone" to "foo",
+                        "timestamp_without_timezone" to "foo",
+                        "time_with_timezone" to "foo",
+                        "time_without_timezone" to "foo",
+                        "date" to "foo",
                     )
                 badValuesChanges = mutableListOf()
             }

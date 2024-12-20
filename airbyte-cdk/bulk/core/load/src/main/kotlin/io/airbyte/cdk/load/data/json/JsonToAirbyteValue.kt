@@ -16,7 +16,8 @@ import io.airbyte.cdk.load.data.*
 class JsonToAirbyteValue {
     fun convert(json: JsonNode): AirbyteValue {
         return when (json.nodeType!!) {
-            JsonNodeType.NULL -> NullValue
+            JsonNodeType.NULL,
+            JsonNodeType.MISSING -> NullValue
             JsonNodeType.BOOLEAN -> BooleanValue(json.booleanValue())
             JsonNodeType.NUMBER -> {
                 if (json.isIntegralNumber) {
@@ -34,7 +35,6 @@ class JsonToAirbyteValue {
                     }
                 )
             JsonNodeType.POJO,
-            JsonNodeType.MISSING,
             JsonNodeType.BINARY ->
                 throw NotImplementedError("Unsupported JsonNode type: ${json.nodeType}")
         }
