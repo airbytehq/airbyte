@@ -160,10 +160,12 @@ object TestFixtures {
             return object : SelectQuerier.Result {
                 val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
-                override fun next(): ObjectNode = wrapped.next()
+                override fun next(): SelectQuerier.ResultRow =
+                    object : SelectQuerier.ResultRow {
+                        override val data: ObjectNode = wrapped.next()
+                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                    }
                 override fun close() {}
-                override val changes: Map<Field, FieldValueChange>?
-                    get() = null
             }
         }
     }
