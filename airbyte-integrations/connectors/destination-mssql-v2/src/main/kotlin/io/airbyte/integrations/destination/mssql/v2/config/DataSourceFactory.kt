@@ -9,9 +9,10 @@ import com.zaxxer.hikari.HikariDataSource
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
-@Singleton
+@Factory
 class DataSourceFactory {
 
+    @Singleton
     fun dataSource(config: MSSQLConfiguration): DataSource {
         val sqlServerDataSource = config.toSQLServerDataSource()
         val dataSource = HikariDataSource()
