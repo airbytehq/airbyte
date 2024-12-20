@@ -8,14 +8,19 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, AUTO_MERGE_PROMOTED_RC_LABEL, BASE_BRANCH, MERGE_METHOD
+from .consts import AIRBYTE_REPO, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD, PROMOTED_RC_LABEL
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
-from .pr_validators import DEFAULT_ENABLED_VALIDATORS, PROMOTED_RC_PR_VALIDATORS
+from .pr_validators import DEFAULT_ENABLED_VALIDATORS, PASSING_CHECKS_VALIDATORS
+
+PR_VALIDATOR_MAPPING = {
+    (AUTO_MERGE_LABEL): PASSING_CHECKS_VALIDATORS,
+    (AUTO_MERGE_LABEL, PROMOTED_RC_LABEL): DEFAULT_ENABLED_VALIDATORS
+}
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -49,17 +54,30 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     Returns:
         bool: True if the PR is auto-mergeable, False otherwise
     """
-
-    validators = (
-        PROMOTED_RC_PR_VALIDATORS if any(label.name == AUTO_MERGE_PROMOTED_RC_LABEL for label in pr.labels) else DEFAULT_ENABLED_VALIDATORS
-    )
-    for validator in validators:
+    for validator in get_pr_validators(pr):
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
             if error:
                 logger.info(f"PR #{pr.number} - {error}")
             return False
     return True
+
+
+def get_pr_validators(pr: PullRequest) -> set[Callable]:
+    """Checks PR labels against PR_VALIDATOR_MAPPING and returns the mapped set of PR validator functions.
+
+    Args:
+        pr (PullRequest): The PR to check
+
+    Returns:
+        set[Callable]: Set of PR validator functions
+    """
+    pr_labels = {label.name for label in pr.labels}
+    sorted_mapping = sorted(PR_VALIDATOR_MAPPING.items(), key=lambda item: len(item[0]), reverse=True)
+    for mapped_labels, validators in sorted_mapping:
+        if set(mapped_labels).issubset(pr_labels):
+            return validators
+    return PASSING_CHECKS_VALIDATORS
 
 
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:

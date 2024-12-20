@@ -47,22 +47,6 @@ def head_commit_passes_all_required_checks(
         return False, "not all required checks passed"
     return True, None
 
-
-def head_commit_does_not_fail_any_required_checks(
-    head_commit: GithubCommit, pr: PullRequest, required_checks: set[str]
-) -> Tuple[bool, Optional[str]]:
-    failure_status_contexts = [commit_status.context for commit_status in head_commit.get_statuses() if commit_status.state == "failure"]
-    failure_check_runs = [
-        check_run.name
-        for check_run in head_commit.get_check_runs()
-        if check_run.conclusion == "failure"
-    ]
-    failure_contexts = set(failure_status_contexts + failure_check_runs)
-    if required_checks.issubset(failure_contexts):
-        return False, "at least one required check failed."
-    return True, None
-
-
 # A PR is considered auto-mergeable if:
 #     - it has the AUTO_MERGE_LABEL
 #     - it targets the BASE_BRANCH
@@ -71,5 +55,5 @@ def head_commit_does_not_fail_any_required_checks(
 
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
-DEFAULT_ENABLED_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_passes_all_required_checks]
-PROMOTED_RC_PR_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_does_not_fail_any_required_checks]
+DEFAULT_ENABLED_VALIDATORS = {has_auto_merge_label, targets_main_branch, only_modifies_connectors}
+PASSING_CHECKS_VALIDATORS = DEFAULT_ENABLED_VALIDATORS + { head_commit_passes_all_required_checks }
