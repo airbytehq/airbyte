@@ -26,10 +26,12 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import java.time.Instant
@@ -68,7 +70,6 @@ class AvroRecordToAirbyteValue {
                             ZoneOffset.UTC
                         )
                         .toLocalDate()
-                        .toString()
                 )
             is IntegerType -> return IntegerValue(avroValue as Long)
             is NumberType -> return NumberValue((avroValue as Double).toBigDecimal())
@@ -86,29 +87,28 @@ class AvroRecordToAirbyteValue {
                     }
                 )
             is TimeTypeWithoutTimezone ->
-                return TimeValue(
+                return TimeWithoutTimezoneValue(
                     Instant.ofEpochMilli((avroValue as Long) / 1000)
                         .atOffset(ZoneOffset.UTC)
                         .toLocalTime()
-                        .toString()
                 )
             is TimeTypeWithTimezone ->
-                return TimeValue(
+                return TimeWithTimezoneValue(
                     Instant.ofEpochMilli((avroValue as Long) / 1000)
                         .atOffset(ZoneOffset.UTC)
                         .toOffsetTime()
-                        .toString()
                 )
             is TimestampTypeWithoutTimezone ->
-                return TimestampValue(
+                return TimestampWithoutTimezoneValue(
                     LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli((avroValue as Long) / 1000),
-                            ZoneOffset.UTC
-                        )
-                        .toString()
+                        Instant.ofEpochMilli((avroValue as Long) / 1000),
+                        ZoneOffset.UTC
+                    )
                 )
             is TimestampTypeWithTimezone ->
-                return TimestampValue(Instant.ofEpochMilli((avroValue as Long) / 1000).toString())
+                return TimestampWithTimezoneValue(
+                    Instant.ofEpochMilli((avroValue as Long) / 1000).atOffset(ZoneOffset.UTC)
+                )
             is UnionType -> return tryConvertUnion(avroValue, schema)
             else -> throw IllegalArgumentException("Unsupported schema type: $schema")
         }
