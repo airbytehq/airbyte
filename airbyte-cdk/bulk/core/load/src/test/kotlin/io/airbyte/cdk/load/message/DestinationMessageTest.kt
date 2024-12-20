@@ -47,7 +47,7 @@ class DestinationMessageTest {
 
     private fun convert(
         factory: DestinationMessageFactory,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): DestinationMessage {
         val serialized = message.serializeToString()
         return factory.fromAirbyteMessage(

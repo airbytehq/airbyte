@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.iceberg.v2.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.iceberg.v2.GlueCredentialsProvider
 import io.airbyte.integrations.destination.iceberg.v2.IcebergV2Configuration
@@ -149,18 +149,19 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     /**
-     * Converts an Airbyte [DestinationRecord] into an Iceberg [Record]. The converted record will
-     * be wrapped to include [Operation] information, which is used by the writer to determine how
-     * to write the data to the underlying Iceberg files.
+     * Converts an Airbyte [DestinationRecordAirbyteValue] into an Iceberg [Record]. The converted
+     * record will be wrapped to include [Operation] information, which is used by the writer to
+     * determine how to write the data to the underlying Iceberg files.
      *
-     * @param record The Airbyte [DestinationRecord] record to be converted for writing by Iceberg.
+     * @param record The Airbyte [DestinationRecordAirbyteValue] record to be converted for writing
+     * by Iceberg.
      * @param stream The Airbyte [DestinationStream] that contains information about the stream.
      * @param tableSchema The Iceberg [Table] [Schema].
      * @param pipeline The [MapperPipeline] used to convert the Airbyte record to an Iceberg record.
-     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecord].
+     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecordAirbyteValue].
      */
     fun toRecord(
-        record: DestinationRecord,
+        record: DestinationRecordAirbyteValue,
         stream: DestinationStream,
         tableSchema: Schema,
         pipeline: MapperPipeline
@@ -275,7 +276,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     private fun getOperation(
-        record: DestinationRecord,
+        record: DestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =
         if (
