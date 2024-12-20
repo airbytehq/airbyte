@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.StronglyTyped
 import java.nio.file.Files
@@ -29,23 +28,17 @@ abstract class IcebergV2WriteTest(
         IcebergV2Specification::class.java,
         IcebergV2DataDumper,
         destinationCleaner,
-        NoopExpectedRecordMapper,
+        IcebergExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
-        supportsDedup = false,
+        supportsDedup = true,
         stringifySchemalessObjects = true,
         promoteUnionToObject = true,
         preserveUndeclaredFields = false,
         commitDataIncrementally = false,
         supportFileTransfer = false,
-        allTypesBehavior = StronglyTyped(),
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
     ) {
-    @Test
-    @Disabled("bad values handling for timestamps is currently broken")
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
     @Test
     @Disabled(
         "This is currently hanging forever and we should look into why https://github.com/airbytehq/airbyte-internal-issues/issues/11162"
@@ -71,6 +64,12 @@ abstract class IcebergV2WriteTest(
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
     }
+
+    @Test
+    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
+    override fun testDedupChangeCursor() {
+        super.testDedupChangeCursor()
+    }
 }
 
 class IcebergGlueWriteTest :
@@ -81,7 +80,12 @@ class IcebergGlueWriteTest :
                 IcebergV2TestUtil.parseConfig(IcebergV2TestUtil.GLUE_CONFIG_PATH)
             )
         ),
-    )
+    ) {
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+}
 
 @Disabled(
     "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
