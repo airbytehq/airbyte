@@ -56,4 +56,4 @@ def head_commit_passes_all_required_checks(
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
 # Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
 DEFAULT_ENABLED_VALIDATORS = {has_auto_merge_label, targets_main_branch, only_modifies_connectors}
-PASSING_CHECKS_VALIDATORS = DEFAULT_ENABLED_VALIDATORS + { head_commit_passes_all_required_checks }
+PASSING_CHECKS_VALIDATORS = DEFAULT_ENABLED_VALIDATORS | { head_commit_passes_all_required_checks }
