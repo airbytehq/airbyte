@@ -20,7 +20,8 @@ class IcebergParquetPipelineFactory : MapperPipelineFactory {
         MapperPipeline(
             stream.schema,
             listOf(
-                AirbyteSchemaNoopMapper() to SchemalessValuesToJsonString(),
+                // TODO not sure why base parquet was doing this as a noop
+                SchemalessTypesToStringType() to SchemalessValuesToJsonString(),
                 AirbyteSchemaNoopMapper() to NullOutOfRangeIntegers(),
                 MergeUnions() to AirbyteValueNoopMapper(),
                 UnionTypeToDisjointRecord() to UnionValueToDisjointRecord(),
