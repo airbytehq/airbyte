@@ -3,7 +3,7 @@
 
 import logging
 from io import IOBase
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Optional, Union, Mapping, Any, MutableMapping
 
 import pytz
 from azure.core.credentials import AccessToken
@@ -15,9 +15,49 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 from .spec import SourceAzureBlobStorageSpec
 
+class AzureClientCredentialsAuthenticator(Oauth2Authenticator):
+    def __init__(
+            self,
+            tenant_id: str,
+            client_id: str,
+            client_secret: str,
+            **kwargs
+        ):
+        super().__init__(
+            token_refresh_endpoint=f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            grant_type="client_credentials",
+            scopes=["https://storage.azure.com/.default"],
+            refresh_token=None,
+        )
+ 
+    def build_refresh_request_body(self) -> Mapping[str, Any]:
+        """
+        Returns the request body to set on the refresh request
+
+        Override to define additional parameters
+        """
+        payload: MutableMapping[str, Any] = {
+            "grant_type": self.get_grant_type(),
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
+        }
+
+        if self.get_scopes():
+            payload["scope"] = " ".join(self.get_scopes())
+
+        if self.get_refresh_request_body():
+            for key, val in self.get_refresh_request_body().items():
+                # We defer to existing oauth constructs over custom configured fields
+                if key not in payload:
+                    payload[key] = val
+
+        return payload
 
 class AzureOauth2Authenticator(Oauth2Authenticator):
     """
@@ -63,17 +103,24 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         return BlobServiceClient(self.account_url, credential=self._credentials)
 
     @property
-    def azure_credentials(self) -> Union[str, AzureOauth2Authenticator]:
+    def azure_credentials(self) -> Union[str, AzureOauth2Authenticator, AzureClientCredentialsAuthenticator]:
         if not self._credentials:
             if self.config.credentials.auth_type == "storage_account_key":
                 self._credentials = self.config.credentials.azure_blob_storage_account_key
-            else:
+            elif self.config.credentials.auth_type == "oauth2":
                 self._credentials = AzureOauth2Authenticator(
                     token_refresh_endpoint=f"https://login.microsoftonline.com/{self.config.credentials.tenant_id}/oauth2/v2.0/token",
                     client_id=self.config.credentials.client_id,
                     client_secret=self.config.credentials.client_secret,
                     refresh_token=self.config.credentials.refresh_token,
                 )
+            elif self.config.credentials.auth_type == "client_credentials":
+                self._credentials = AzureClientCredentialsAuthenticator(
+                    tenant_id=self.config.credentials.tenant_id,
+                    client_id=self.config.credentials.client_id,
+                    client_secret=self.config.credentials.client_secret,
+                ) 
+
         return self._credentials
 
     def get_matching_files(

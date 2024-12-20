@@ -424,6 +424,43 @@
               }
             },
             "required": ["azure_blob_storage_account_key", "auth_type"]
+          },
+          {
+            "title": "Authenticate via Client Credentials",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "client_credentials",
+                "const": "client_credentials",
+                "enum": ["client_credentials"],
+                "type": "string"
+              },
+              "tenant_id": {
+                "title": "Tenant ID",
+                "description": "Tenant ID of the Microsoft Azure Application user",
+                "airbyte_secret": false,
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Client ID of your Microsoft developer application",
+                "airbyte_secret": false,
+                "type": "string"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Client Secret of your Microsoft developer application",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "tenant_id",
+              "client_id",
+              "client_secret",
+              "auth_type"
+            ]
           }
         ]
       },
