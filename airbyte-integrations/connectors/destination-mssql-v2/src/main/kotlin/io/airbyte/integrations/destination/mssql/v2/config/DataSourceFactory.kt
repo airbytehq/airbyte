@@ -12,14 +12,9 @@ import javax.sql.DataSource
 
 @Factory
 class DataSourceFactory {
-
     @Singleton
-    fun dataSource(): DataSource { // configuration: MSSQLConfiguration): DataSource {
-        val sqlServerDataSource = SQLServerDataSource()
-        sqlServerDataSource.url =
-            "jdbc:sqlserver://localhost:1433;encrypt=true;trustServerCertificate=true;databaseName=test;applicationName=destination-mssql-v2"
-        sqlServerDataSource.user = "sa"
-        sqlServerDataSource.setPassword("Averycomplicatedpassword1!")
+    fun dataSource(config: MSSQLConfiguration): DataSource {
+        val sqlServerDataSource = config.toSQLServerDataSource()
         val dataSource = HikariDataSource()
         dataSource.dataSource = sqlServerDataSource
         dataSource.connectionTimeout = 30000
@@ -29,5 +24,39 @@ class DataSourceFactory {
         dataSource.idleTimeout = 60000
         dataSource.leakDetectionThreshold = dataSource.connectionTimeout + 10000
         return dataSource
+    }
+}
+
+fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
+    val connectionStringArray =
+        mutableListOf(
+            "jdbc:sqlserver://${host}:${port}",
+            "databaseName=${database}",
+        )
+
+    when (sslMethod) {
+        is EncryptedVerify -> {
+            connectionStringArray.add("encrypt=true")
+            sslMethod.trustStoreName?.let { connectionStringArray.add("trustStoreName=$it") }
+            sslMethod.trustStorePassword?.let {
+                connectionStringArray.add("trustStorePassword=$it")
+            }
+            sslMethod.hostNameInCertificate?.let {
+                connectionStringArray.add("hostNameInCertificate=$it")
+            }
+        }
+        is EncryptedTrust -> {
+            connectionStringArray.add("encrypt=true")
+            connectionStringArray.add("trustServerCertificate=true")
+        }
+        is Unencrypted -> {}
+    }
+
+    jdbcUrlParams?.let { connectionStringArray.add(it) }
+
+    return SQLServerDataSource().also {
+        it.url = connectionStringArray.joinToString(";")
+        it.user = user
+        password?.let(it::setPassword)
     }
 }
