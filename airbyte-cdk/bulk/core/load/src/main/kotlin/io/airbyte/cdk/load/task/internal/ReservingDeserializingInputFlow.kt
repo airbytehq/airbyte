@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.message.Deserializer
 import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,17 +16,18 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
-interface SizedInputFlow<T> : Flow<Pair<Long, T>>
-
-abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserved<T>> {
+@Singleton
+class ReservingDeserializingInputFlow(
+    val config: DestinationConfiguration,
+    val deserializer: ProtocolMessageDeserializer,
+    @Named("memoryManager") val memoryManager: ReservationManager,
+    val inputStream: InputStream,
+) : Flow<Pair<Long, Reserved<DestinationMessage>>> {
     val log = KotlinLogging.logger {}
 
-    abstract val config: DestinationConfiguration
-    abstract val deserializer: Deserializer<T>
-    abstract val memoryManager: ReservationManager
-    abstract val inputStream: InputStream
-
-    override suspend fun collect(collector: FlowCollector<Pair<Long, Reserved<T>>>) {
+    override suspend fun collect(
+        collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
+    ) {
         log.info {
             "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
         }
@@ -50,11 +51,3 @@ abstract class ReservingDeserializingInputFlow<T : Any> : SizedInputFlow<Reserve
         log.info { "Finished processing input" }
     }
 }
-
-@Singleton
-class DefaultInputFlow(
-    override val config: DestinationConfiguration,
-    override val deserializer: Deserializer<DestinationMessage>,
-    @Named("memoryManager") override val memoryManager: ReservationManager,
-    override val inputStream: InputStream
-) : ReservingDeserializingInputFlow<DestinationMessage>()

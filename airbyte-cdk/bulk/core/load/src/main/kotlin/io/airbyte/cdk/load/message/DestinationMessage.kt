@@ -79,13 +79,15 @@ data class Meta(
     }
 }
 
-data class DestinationRecord(
+sealed interface DestinationRecord : DestinationRecordDomainMessage
+
+data class DestinationRecordAirbyteValue(
     override val stream: DestinationStream.Descriptor,
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serialized: String,
-) : DestinationStreamAffinedMessage {
+) : DestinationRecord {
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -348,7 +350,10 @@ class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
     @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
 ) {
-    fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
+    fun fromAirbyteMessage(
+        message: AirbyteMessage,
+        serialized: String,
+    ): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
                 when (it) {
@@ -391,7 +396,7 @@ class DestinationMessageFactory(
                             )
                     )
                 } else {
-                    DestinationRecord(
+                    DestinationRecordAirbyteValue(
                         stream = stream.descriptor,
                         data =
                             message.record.data?.let {

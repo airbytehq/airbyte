@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.object_storage.*
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -40,8 +40,8 @@ class RecordToPartAccumulatorTest {
         coEvery { bufferedWriter.close() } returns Unit
     }
 
-    private fun makeRecord(): DestinationRecord =
-        DestinationRecord(
+    private fun makeRecord(): DestinationRecordAirbyteValue =
+        DestinationRecordAirbyteValue(
             DestinationStream.Descriptor("test", "stream"),
             ObjectValue(linkedMapOf()),
             0L,
@@ -49,7 +49,7 @@ class RecordToPartAccumulatorTest {
             ""
         )
 
-    private fun makeRecords(n: Int): Iterator<DestinationRecord> =
+    private fun makeRecords(n: Int): Iterator<DestinationRecordAirbyteValue> =
         (0 until n).map { makeRecord() }.listIterator()
 
     private fun makeBytes(n: Int): ByteArray? =

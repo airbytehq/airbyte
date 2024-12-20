@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
@@ -22,13 +22,13 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
  * Shared factory methods for making stub destination messages for testing.
  */
 object StubDestinationMessageFactory {
-    fun makeRecord(stream: DestinationStream, record: String): DestinationRecord {
-        return DestinationRecord(
+    fun makeRecord(stream: DestinationStream): DestinationRecordAirbyteValue {
+        return DestinationRecordAirbyteValue(
             stream = stream.descriptor,
             data = NullValue,
             emittedAtMs = 0,
             meta = null,
-            serialized = record
+            serialized = "test"
         )
     }
 
