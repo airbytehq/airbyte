@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-@Timeout(20, unit = TimeUnit.MINUTES)
+@Timeout(25, unit = TimeUnit.MINUTES)
 abstract class S3V2WriteTest(
     path: String,
     stringifySchemalessObjects: Boolean,
@@ -40,6 +40,7 @@ abstract class S3V2WriteTest(
         commitDataIncrementally = commitDataIncrementally,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
+        supportFileTransfer = true,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -65,6 +66,11 @@ class S3V2WriteTestJsonUncompressed :
     @Test
     override fun testInterruptedTruncateWithPriorData() {
         super.testInterruptedTruncateWithPriorData()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }
 

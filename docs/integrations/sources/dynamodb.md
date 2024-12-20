@@ -78,10 +78,11 @@ the underlying role executing the container workload in AWS.
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------------|
-| 0.3.6   | 2024-07-19 | [41936](https://github.com/airbytehq/airbyte/pull/41936)       | Fix incorrect type check for incremental read                        |
-| 0.3.5   | 2024-07-23 | [42433](https://github.com/airbytehq/airbyte/pull/42433) | add PR number |
-| 0.3.4   | 2024-07-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | fix primary key fetching |
-| 0.3.3   | 2024-07-22 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | fix primary key fetching |
+| 0.3.7 | 2024-12-18 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.3.6 | 2024-07-19 | [41936](https://github.com/airbytehq/airbyte/pull/41936) | Fix incorrect type check for incremental read |
+| 0.3.5 | 2024-07-23 | [42433](https://github.com/airbytehq/airbyte/pull/42433) | add PR number |
+| 0.3.4   | 2024-07-23 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | fix primary key fetching |
+| 0.3.3   | 2024-07-22 | [49881](https://github.com/airbytehq/airbyte/pull/49881) | fix primary key fetching |
 | 0.3.2   | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045) | Fix missing scan permissions |
 | 0.3.1   | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935) | Fix list more than 100 tables |
 | 0.3.0   | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access |

@@ -6,11 +6,12 @@
 import logging
 from typing import Any, List, Mapping, Tuple
 
+from requests.exceptions import ConnectionError, RequestException, SSLError
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from requests.exceptions import ConnectionError, RequestException, SSLError
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .scopes import ShopifyScopes

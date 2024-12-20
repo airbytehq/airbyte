@@ -10,6 +10,7 @@ from typing import Any, TextIO
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from cachetools import LRUCache, cached
+
 from live_tests.commons.backends.base_backend import BaseBackend
 from live_tests.commons.utils import sanitize_stream_name
 
@@ -123,7 +124,11 @@ class FileBackend(BaseBackend):
             stream_file_path_data_only = self.record_per_stream_directory / f"{sanitize_stream_name(stream_name)}_data_only.jsonl"
             self.record_per_stream_paths[stream_name] = stream_file_path
             self.record_per_stream_paths_data_only[stream_name] = stream_file_path_data_only
-            return (self.RELATIVE_RECORDS_PATH, str(stream_file_path), str(stream_file_path_data_only),), (
+            return (
+                self.RELATIVE_RECORDS_PATH,
+                str(stream_file_path),
+                str(stream_file_path_data_only),
+            ), (
                 message.json(sort_keys=True),
                 message.json(sort_keys=True),
                 json.dumps(message.record.data, sort_keys=True),

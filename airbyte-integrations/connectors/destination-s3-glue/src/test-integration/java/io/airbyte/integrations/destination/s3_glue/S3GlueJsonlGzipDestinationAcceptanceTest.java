@@ -12,7 +12,7 @@ public class S3GlueJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDes
   protected void tearDown(final TestDestinationEnv testEnv) {
     super.tearDown(testEnv);
 
-    final GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(getConfigJson());
+    final GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
     try (final var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
 
       glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());

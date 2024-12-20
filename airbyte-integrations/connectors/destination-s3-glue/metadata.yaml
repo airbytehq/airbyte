@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/destination-s3-glue
   githubIssueLabel: destination-s3-glue
   icon: s3-glue.svg

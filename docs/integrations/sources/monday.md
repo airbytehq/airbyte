@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 2.1.6 | 2024-12-19 | [49943](https://github.com/airbytehq/airbyte/pull/49943) | Pin CDK constraint to avoid breaking change in newer versions |
 | 2.1.5 | 2024-10-31 | [48054](https://github.com/airbytehq/airbyte/pull/48054) | Moved to `DeclarativeOAuthFlow` specification |
 | 2.1.4 | 2024-08-17 | [44201](https://github.com/airbytehq/airbyte/pull/44201) | Add boards name to the `items` stream |
 | 2.1.3 | 2024-06-04 | [38958](https://github.com/airbytehq/airbyte/pull/38958) | [autopull] Upgrade base image to v1.2.1 |

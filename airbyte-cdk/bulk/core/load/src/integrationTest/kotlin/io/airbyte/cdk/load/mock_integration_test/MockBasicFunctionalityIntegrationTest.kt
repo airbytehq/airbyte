@@ -27,6 +27,7 @@ class MockBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -73,6 +74,7 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
+    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()

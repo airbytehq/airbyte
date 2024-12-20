@@ -37,6 +37,8 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
 
     fun asProtocolObject(): ConfiguredAirbyteCatalog =
         ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() })
+
+    fun size(): Int = streams.size
 }
 
 interface DestinationCatalogFactory {

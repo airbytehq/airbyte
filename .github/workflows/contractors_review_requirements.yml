@@ -10,7 +10,7 @@ on:
 jobs:
   check-review-requirements:
     name: "Check if a review is required from Connector teams"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     if: ${{ github.event.pull_request.head.repo.fork == false }}
     # This workflow cannot run on forks, as the fork's github token does not have `read:org`
