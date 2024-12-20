@@ -8,15 +8,16 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from source_amazon_seller_partner.streams import (
     IncrementalReportsAmazonSPStream,
     ReportProcessingStatus,
     ReportsAmazonSPStream,
     VendorDirectFulfillmentShipping,
 )
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 class SomeReportStream(ReportsAmazonSPStream):
@@ -85,6 +86,7 @@ class TestReportsAmazonSPStream:
     def test_stream_slices(self, report_init_kwargs, start_date, end_date, expected_slices):
         report_init_kwargs["replication_start_date"] = start_date
         report_init_kwargs["replication_end_date"] = end_date
+        report_init_kwargs["period_in_days"] = 365
 
         stream = SomeReportStream(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2023-01-01T00:00:00Z")):
@@ -245,15 +247,7 @@ class TestReportsAmazonSPStream:
             "POST",
             "https://test.url/reports/2021-06-30/reports",
             status_code=429,
-            json={
-                "errors": [
-                    {
-                        "code": "QuotaExceeded",
-                        "message": "You exceeded your quota for the requested resource.",
-                        "details": ""
-                    }
-                ]
-            },
+            json={"errors": [{"code": "QuotaExceeded", "message": "You exceeded your quota for the requested resource.", "details": ""}]},
             reason="Forbidden",
         )
 
@@ -301,6 +295,7 @@ class TestVendorFulfillment:
     def test_stream_slices(self, init_kwargs, start_date, end_date, stream_state, expected_slices):
         init_kwargs["replication_start_date"] = start_date
         init_kwargs["replication_end_date"] = end_date
+        init_kwargs["period_in_days"] = 365
 
         stream = VendorDirectFulfillmentShipping(**init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):

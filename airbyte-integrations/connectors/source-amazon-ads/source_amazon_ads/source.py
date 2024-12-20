@@ -7,54 +7,26 @@ import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
-from airbyte_cdk.sources import AbstractSource
+
+from airbyte_cdk import TState
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .spec import SourceAmazonAdsSpec
-from .streams import (
-    AttributionReportPerformanceAdgroup,
-    AttributionReportPerformanceCampaign,
-    AttributionReportPerformanceCreative,
-    AttributionReportProducts,
-    Portfolios,
-    Profiles,
-    SponsoredBrandsAdGroups,
-    SponsoredBrandsCampaigns,
-    SponsoredBrandsKeywords,
-    SponsoredBrandsV3ReportStream,
-    SponsoredDisplayAdGroups,
-    SponsoredDisplayBudgetRules,
-    SponsoredDisplayCampaigns,
-    SponsoredDisplayCreatives,
-    SponsoredDisplayProductAds,
-    SponsoredDisplayReportStream,
-    SponsoredDisplayTargetings,
-    SponsoredProductAdGroupBidRecommendations,
-    SponsoredProductAdGroups,
-    SponsoredProductAdGroupSuggestedKeywords,
-    SponsoredProductAds,
-    SponsoredProductCampaignNegativeKeywords,
-    SponsoredProductCampaigns,
-    SponsoredProductKeywords,
-    SponsoredProductNegativeKeywords,
-    SponsoredProductsReportStream,
-    SponsoredProductTargetings,
-)
+from .streams import Profiles, SponsoredBrandsV3ReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
+
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
-CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
-class SourceAmazonAds(AbstractSource):
+class SourceAmazonAds(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
+
     def _validate_and_transform(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        start_date = config.get("start_date")
-        if start_date:
-            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
-        else:
-            config["start_date"] = None
         if not config.get("region"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
@@ -106,36 +78,11 @@ class SourceAmazonAds(AbstractSource):
         profiles_list = profiles_stream.get_all_profiles()
         stream_args["profiles"] = self._choose_profiles(config, profiles_list)
         non_profile_stream_classes = [
-            SponsoredDisplayCampaigns,
-            SponsoredDisplayAdGroups,
-            SponsoredDisplayCreatives,
-            SponsoredDisplayProductAds,
-            SponsoredDisplayTargetings,
             SponsoredDisplayReportStream,
-            SponsoredDisplayBudgetRules,
-            SponsoredProductCampaigns,
-            SponsoredProductAdGroups,
-            SponsoredProductAdGroupBidRecommendations,
-            SponsoredProductAdGroupSuggestedKeywords,
-            SponsoredProductKeywords,
-            SponsoredProductNegativeKeywords,
-            SponsoredProductCampaignNegativeKeywords,
-            SponsoredProductAds,
-            SponsoredProductTargetings,
-            SponsoredProductsReportStream,
-            SponsoredBrandsCampaigns,
-            SponsoredBrandsAdGroups,
-            SponsoredBrandsKeywords,
             SponsoredBrandsV3ReportStream,
-            AttributionReportPerformanceAdgroup,
-            AttributionReportPerformanceCampaign,
-            AttributionReportPerformanceCreative,
-            AttributionReportProducts,
+            SponsoredProductsReportStream,
         ]
-        portfolios_stream = Portfolios(**stream_args)
-        return [
-            profiles_stream,
-            portfolios_stream,
+        return super().streams(config=config) + [
             *[stream_class(**stream_args) for stream_class in non_profile_stream_classes],
         ]
 
@@ -161,7 +108,6 @@ class SourceAmazonAds(AbstractSource):
         return available_profiles
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-ads",
             connectionSpecification=SourceAmazonAdsSpec.schema(),

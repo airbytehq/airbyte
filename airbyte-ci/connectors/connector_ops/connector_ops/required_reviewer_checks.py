@@ -5,7 +5,9 @@
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 import yaml
+
 from connector_ops import utils
+
 
 # The breaking change reviewers is still in active use.
 BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}

@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import requests
 import yaml
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from live_tests import stash_keys
 from live_tests.consts import MAX_LINES_IN_REPORT
 
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
     import pytest
     from _pytest.config import Config
     from airbyte_protocol.models import SyncMode, Type  # type: ignore
+
     from live_tests.commons.models import Command, ExecutionResult
 
 
@@ -146,10 +148,11 @@ class Report:
             len(self.connection_objects.configured_catalog.streams) if self.connection_objects.configured_catalog else 0
         )
         catalog_stream_count = len(self.connection_objects.catalog.streams) if self.connection_objects.catalog else 0
+        coverage = configured_catalog_stream_count / catalog_stream_count if catalog_stream_count > 0 else 0
         return {
             "Available in catalog": str(catalog_stream_count),
             "In use (in configured catalog)": str(configured_catalog_stream_count),
-            "Coverage": f"{(configured_catalog_stream_count / catalog_stream_count) * 100:.2f}%",
+            "Coverage": f"{coverage:.2f}%",
         }
 
     def get_record_count_per_stream(

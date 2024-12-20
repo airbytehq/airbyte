@@ -11,7 +11,7 @@ on:
 
 jobs:
   terminate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: List and Terminate Instances Older Than 4 Hours
         env:
@@ -38,7 +38,7 @@ jobs:
           # See https://docs.aws.amazon.com/cli/latest/reference/ec2/terminate-instances.html for terminate command.
           echo $to_terminate |  jq '.[]  | .InstanceId' | xargs --no-run-if-empty --max-args=1 aws ec2 terminate-instances --instance-ids
   terminate-github-instances:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

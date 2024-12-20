@@ -1077,7 +1077,7 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: "updated"
     start_datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
     lookback_window: "PT{{ config.get('lookback_window_minutes', '0') }}M"
@@ -1111,7 +1111,7 @@ definitions:
         $ref: "#/definitions/requester_v1"
         request_parameters:
           fields: "['key', 'created', 'updated']"
-          jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
         error_handler:
           $ref: "#/definitions/error_handler"
           response_filters:
@@ -1153,7 +1153,7 @@ definitions:
         request_parameters:
           fields: "*all"
           jql: >
-            "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}' "
+            "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }} "
             "{{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id else '' }}"
             "ORDER BY updated asc"
           expand: "renderedFields,transitions,changelog"
@@ -1219,7 +1219,7 @@ definitions:
         $ref: "#/definitions/retriever_v1/requester"
         request_parameters:
           fields: "{{ stream_slice._partition.extra_fields['fields'] }}"
-          jql: "updated >= '{{ format_datetime(stream_slice.start_time, '%Y/%m/%d %H:%M') }}'"
+          jql: "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}"
     transformations:
       - type: AddFields
         fields:
@@ -1416,3 +1416,9 @@ check:
     - board_issues
     - issues
     - sprint_issues
+
+# Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 40

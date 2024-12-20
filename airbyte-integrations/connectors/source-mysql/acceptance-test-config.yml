@@ -1,6 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-mysql:dev
+connector_image: airbyte/source-mysql-v2:dev
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
@@ -12,11 +12,8 @@ acceptance_tests:
       - "final_teardown"
   spec:
     tests:
-      - spec_path: "src/test-integration/resources/expected_oss_spec.json"
+      - spec_path: "src/test/resources/expected-spec.json"
         config_path: "secrets/cat-config.json"
-      - spec_path: "src/test-integration/resources/expected_cloud_spec.json"
-        config_path: "secrets/cat-config.json"
-        deployment_mode: cloud
   connection:
     tests:
       - config_path: "secrets/cat-config.json"

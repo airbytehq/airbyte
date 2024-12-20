@@ -6,9 +6,11 @@ from http import HTTPStatus
 from typing import Any, List, Mapping
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_amazon_ads.streams.report_streams.report_stream_models import ReportInfo
 from source_amazon_ads.streams.report_streams.report_streams import ReportStream
+
 
 METRICS_MAP_V3 = {
     "campaigns": [
