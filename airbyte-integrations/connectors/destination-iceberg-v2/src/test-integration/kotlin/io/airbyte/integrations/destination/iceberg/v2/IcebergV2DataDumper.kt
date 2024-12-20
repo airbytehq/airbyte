@@ -11,17 +11,13 @@ import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.integrations.destination.iceberg.v2.io.IcebergUtil
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.LinkedHashMap
 import java.util.UUID
-import org.apache.hadoop.conf.Configuration
-import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.data.Record
-import org.apache.iceberg.nessie.NessieCatalog
 
 object IcebergV2DataDumper : DestinationDataDumper {
 
@@ -83,15 +79,13 @@ object IcebergV2DataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config =
-            IcebergV2ConfigurationFactory()
-                .makeWithoutExceptionHandling(spec as IcebergV2Specification)
+        val config = IcebergV2TestUtil.getConfig(spec)
         val pipeline = ParquetMapperPipelineFactory().create(stream)
         val schema = pipeline.finalSchema as ObjectType
-        val catalog = getNessieCatalog(config)
+        val catalog = IcebergV2TestUtil.getCatalog(config)
         val table =
             catalog.loadTable(
-                TableIdentifier.of(stream.descriptor.namespace, stream.descriptor.name)
+                TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)
             )
 
         val outputRecords = mutableListOf<OutputRecord>()
@@ -114,7 +108,10 @@ object IcebergV2DataDumper : DestinationDataDumper {
             }
         }
 
-        catalog.close()
+        // some catalogs (e.g. Nessie) have a close() method. Call it here.
+        if (catalog is AutoCloseable) {
+            catalog.close()
+        }
         return outputRecords
     }
 
@@ -123,14 +120,5 @@ object IcebergV2DataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
-    }
-
-    private fun getNessieCatalog(config: IcebergV2Configuration): NessieCatalog {
-        val catalogProperties = IcebergUtil().toCatalogProperties(config)
-
-        val catalog = NessieCatalog()
-        catalog.setConf(Configuration())
-        catalog.initialize("nessie", catalogProperties)
-        return catalog
     }
 }
