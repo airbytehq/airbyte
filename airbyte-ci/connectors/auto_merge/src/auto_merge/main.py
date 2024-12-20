@@ -88,6 +88,8 @@ def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 6
         max_retries (int, optional): The maximum number of retries. Defaults to 3.
         wait_time (int, optional): The time to wait between retries in seconds. Defaults to 60.
     """
+    logger.error("Successfully got to this point -- don't merge!")
+    return None
     for i in range(max_retries):
         try:
             pr.merge(merge_method=MERGE_METHOD)
