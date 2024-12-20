@@ -28,6 +28,9 @@ connectionSpecification:
       order: 1
     box_subject_type:
       type: string
+      enum:
+        - user
+        - enterprise
       title: Box Subject Type
       description: >-
         Represents the type of user to login as ("user" or "enterprise").
