@@ -87,6 +87,7 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.31 | 2024-12-14 | [49774](https://github.com/airbytehq/airbyte/pull/49774) | Update dependencies |
 | 0.3.30 | 2024-12-12 | [49399](https://github.com/airbytehq/airbyte/pull/49399) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.29 | 2024-11-04 | [48168](https://github.com/airbytehq/airbyte/pull/48168) | Update dependencies |
 | 0.3.28 | 2024-10-29 | [47754](https://github.com/airbytehq/airbyte/pull/47754) | Update dependencies |
