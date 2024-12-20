@@ -6,7 +6,9 @@ import requests
 from google.auth.transport.requests import Request
 from google.oauth2.service_account import Credentials
 from requests.auth import AuthBase
+
 from source_google_search_console.exceptions import UnauthorizedServiceAccountError
+
 
 DEFAULT_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
 

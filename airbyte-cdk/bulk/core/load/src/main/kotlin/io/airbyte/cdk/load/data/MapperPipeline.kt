@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.Meta.Change
 
 class MapperPipeline(
     inputSchema: AirbyteType,
@@ -23,18 +23,12 @@ class MapperPipeline(
         finalSchema = schemas.last()
     }
 
-    fun map(data: AirbyteValue, changes: List<Change>? = null): Pair<AirbyteValue, List<Change>> {
-        val results =
-            schemasWithMappers.runningFold(data) { value, (schema, mapper) ->
-                mapper.map(value, schema)
-            }
-        val changesFlattened =
-            schemasWithMappers
-                .flatMap { it.second.collectedChanges + (changes ?: emptyList()) }
-                .toSet()
-                .toList()
-        return results.last() to changesFlattened
-    }
+    fun map(data: AirbyteValue, changes: List<Change>? = null): Pair<AirbyteValue, List<Change>> =
+        schemasWithMappers.fold(data to (changes ?: emptyList())) {
+            (value, changes),
+            (schema, mapper) ->
+            mapper.map(value, schema, changes)
+        }
 }
 
 interface MapperPipelineFactory {

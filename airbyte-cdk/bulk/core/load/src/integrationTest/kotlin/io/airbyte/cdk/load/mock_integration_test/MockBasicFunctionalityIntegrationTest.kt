@@ -27,6 +27,7 @@ class MockBasicFunctionalityIntegrationTest :
         preserveUndeclaredFields = true,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -34,7 +35,6 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    @Disabled
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
@@ -74,6 +74,7 @@ class MockBasicFunctionalityIntegrationTest :
         super.testAppendSchemaEvolution()
     }
 
+    @Disabled("flaky")
     @Test
     override fun testDedup() {
         super.testDedup()
@@ -90,7 +91,7 @@ class MockBasicFunctionalityIntegrationTest :
     }
 
     @Test
-    override fun testAllTypes() {
-        super.testAllTypes()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 }

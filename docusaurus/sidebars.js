@@ -85,8 +85,7 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs,
-    ["readme"]
+    enterpriseConnectorDocs, ["readme"]
   );
 }
 
@@ -457,6 +456,14 @@ const deployAirbyte = {
       type: "doc",
       id: "deploying-airbyte/troubleshoot-deploy",
     },
+    {
+      type: "doc",
+      id: "deploying-airbyte/migrating-from-docker-compose",
+    },
+    {
+      type: "doc",
+      id: "deploying-airbyte/abctl-ec2",
+    },
   ],
 };
 
@@ -720,6 +727,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",

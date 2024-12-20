@@ -16,7 +16,6 @@ class AirbyteValueToJson {
             is BooleanValue -> JsonNodeFactory.instance.booleanNode(value.value)
             is DateValue -> JsonNodeFactory.instance.textNode(value.value)
             is IntegerValue -> JsonNodeFactory.instance.numberNode(value.value)
-            is IntValue -> JsonNodeFactory.instance.numberNode(value.value)
             is NullValue -> JsonNodeFactory.instance.nullNode()
             is NumberValue -> JsonNodeFactory.instance.numberNode(value.value)
             is ObjectValue -> {

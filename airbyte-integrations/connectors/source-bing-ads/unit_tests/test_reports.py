@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import _csv
 import copy
 import json
 import xml.etree.ElementTree as ET
@@ -9,11 +10,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from urllib.parse import urlparse
 
-import _csv
 import pendulum
 import pytest
 import source_bing_ads
-from airbyte_cdk.models import SyncMode
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
@@ -52,6 +51,9 @@ from source_bing_ads.report_streams import (
 )
 from source_bing_ads.source import SourceBingAds
 from suds import WebFault
+
+from airbyte_cdk.models import SyncMode
+
 
 TEST_CONFIG = {
     "developer_token": "developer_token",
@@ -259,7 +261,10 @@ def test_report_parse_response_csv_error(caplog):
     fake_response = MagicMock()
     fake_response.report_records.__iter__ = MagicMock(side_effect=_csv.Error)
     list(stream_report.parse_response(fake_response))
-    assert "CSV report file for stream `account_performance_report_hourly` is broken or cannot be read correctly: , skipping ..." in caplog.messages
+    assert (
+        "CSV report file for stream `account_performance_report_hourly` is broken or cannot be read correctly: , skipping ..."
+        in caplog.messages
+    )
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -404,10 +409,10 @@ def test_account_performance_report_monthly_stream_slices(mocked_client, config_
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
         stream_slice = list(account_performance_report_monthly.stream_slices(sync_mode=SyncMode.full_refresh))
         assert stream_slice == [
-            {'account_id': 180519267, 'customer_id': 100, 'time_period': 'LastYear'},
-            {'account_id': 180519267, 'customer_id': 100, 'time_period': 'ThisYear'},
-            {'account_id': 180278106, 'customer_id': 200, 'time_period': 'LastYear'},
-            {'account_id': 180278106, 'customer_id': 200, 'time_period': 'ThisYear'}
+            {"account_id": 180519267, "customer_id": 100, "time_period": "LastYear"},
+            {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
+            {"account_id": 180278106, "customer_id": 200, "time_period": "LastYear"},
+            {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},
         ]
 
 
@@ -417,10 +422,7 @@ def test_account_performance_report_monthly_stream_slices_no_time_period(mocked_
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
         stream_slice = list(account_performance_report_monthly.stream_slices(sync_mode=SyncMode.full_refresh))
-        assert stream_slice == [
-            {'account_id': 180519267, 'customer_id': 100},
-            {'account_id': 180278106, 'customer_id': 200}
-        ]
+        assert stream_slice == [{"account_id": 180519267, "customer_id": 100}, {"account_id": 180278106, "customer_id": 200}]
 
 
 @pytest.mark.parametrize(
@@ -451,14 +453,38 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
         (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
         (AdGroupPerformanceReportHourly, "hourly_reports/ad_group_performance.csv", "hourly_reports/ad_group_performance_records.json"),
         (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
-        (CampaignImpressionPerformanceReportHourly, "hourly_reports/campaign_impression_performance.csv", "hourly_reports/campaign_impression_performance_records.json"),
+        (
+            CampaignImpressionPerformanceReportHourly,
+            "hourly_reports/campaign_impression_performance.csv",
+            "hourly_reports/campaign_impression_performance_records.json",
+        ),
         (KeywordPerformanceReportHourly, "hourly_reports/keyword_performance.csv", "hourly_reports/keyword_performance_records.json"),
-        (GeographicPerformanceReportHourly, "hourly_reports/geographic_performance.csv", "hourly_reports/geographic_performance_records.json"),
+        (
+            GeographicPerformanceReportHourly,
+            "hourly_reports/geographic_performance.csv",
+            "hourly_reports/geographic_performance_records.json",
+        ),
         (AgeGenderAudienceReportHourly, "hourly_reports/age_gender_audience.csv", "hourly_reports/age_gender_audience_records.json"),
-        (SearchQueryPerformanceReportHourly, "hourly_reports/search_query_performance.csv", "hourly_reports/search_query_performance_records.json"),
-        (UserLocationPerformanceReportHourly, "hourly_reports/user_location_performance.csv", "hourly_reports/user_location_performance_records.json"),
-        (AccountImpressionPerformanceReportHourly, "hourly_reports/account_impression_performance.csv", "hourly_reports/account_impression_performance_records.json"),
-        (AdGroupImpressionPerformanceReportHourly, "hourly_reports/ad_group_impression_performance.csv", "hourly_reports/ad_group_impression_performance_records.json"),
+        (
+            SearchQueryPerformanceReportHourly,
+            "hourly_reports/search_query_performance.csv",
+            "hourly_reports/search_query_performance_records.json",
+        ),
+        (
+            UserLocationPerformanceReportHourly,
+            "hourly_reports/user_location_performance.csv",
+            "hourly_reports/user_location_performance_records.json",
+        ),
+        (
+            AccountImpressionPerformanceReportHourly,
+            "hourly_reports/account_impression_performance.csv",
+            "hourly_reports/account_impression_performance_records.json",
+        ),
+        (
+            AdGroupImpressionPerformanceReportHourly,
+            "hourly_reports/ad_group_impression_performance.csv",
+            "hourly_reports/ad_group_impression_performance_records.json",
+        ),
     ],
 )
 @patch.object(source_bing_ads.source, "Client")

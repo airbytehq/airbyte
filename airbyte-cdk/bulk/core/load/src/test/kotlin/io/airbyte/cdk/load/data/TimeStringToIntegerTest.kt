@@ -22,8 +22,8 @@ class TimeStringToIntegerTest {
             )
             .forEach {
                 Assertions.assertEquals(
-                    IntValue(it.second),
-                    mapper.mapDate(DateValue(it.first), emptyList()),
+                    IntegerValue(it.second.toLong()),
+                    mapper.mapDate(DateValue(it.first), AirbyteValueIdentityMapper.Context()).first,
                     "Failed for ${it.first} to ${it.second}"
                 )
             }
@@ -66,7 +66,12 @@ class TimeStringToIntegerTest {
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimestampWithTimezone(TimestampValue(it.first), emptyList()),
+                mapper
+                    .mapTimestampWithTimezone(
+                        TimestampValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -78,7 +83,12 @@ class TimeStringToIntegerTest {
         timestampPairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimestampWithoutTimezone(TimestampValue(it.first), emptyList()),
+                mapper
+                    .mapTimestampWithoutTimezone(
+                        TimestampValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -101,7 +111,9 @@ class TimeStringToIntegerTest {
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimeWithTimezone(TimeValue(it.first), emptyList()),
+                mapper
+                    .mapTimeWithTimezone(TimeValue(it.first), AirbyteValueIdentityMapper.Context())
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }
@@ -113,7 +125,12 @@ class TimeStringToIntegerTest {
         timePairs.forEach {
             Assertions.assertEquals(
                 IntegerValue(it.second),
-                mapper.mapTimeWithoutTimezone(TimeValue(it.first), emptyList()),
+                mapper
+                    .mapTimeWithoutTimezone(
+                        TimeValue(it.first),
+                        AirbyteValueIdentityMapper.Context()
+                    )
+                    .first,
                 "Failed for ${it.first} to ${it.second}"
             )
         }

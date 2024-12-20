@@ -36,8 +36,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    fun out(record: ObjectNode) {
-        streamRecordConsumer.accept(record, changes = null)
+    fun out(row: SelectQuerier.ResultRow) {
+        streamRecordConsumer.accept(row.data, row.changes)
     }
 
     override fun releaseResources() {
@@ -79,8 +79,8 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     ),
             )
             .use { result: SelectQuerier.Result ->
-                for (record in result) {
-                    out(record)
+                for (row in result) {
+                    out(row)
                     numRecords.incrementAndGet()
                 }
             }
@@ -126,9 +126,9 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     SelectQuerier.Parameters(reuseResultObject = true, fetchSize = fetchSize),
             )
             .use { result: SelectQuerier.Result ->
-                for (record in result) {
-                    out(record)
-                    lastRecord.set(record)
+                for (row in result) {
+                    out(row)
+                    lastRecord.set(row.data)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()

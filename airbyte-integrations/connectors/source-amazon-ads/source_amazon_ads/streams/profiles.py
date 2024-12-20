@@ -5,6 +5,7 @@
 from typing import Any, Iterable, List, Mapping
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from source_amazon_ads.streams.common import AmazonAdsStream
 
@@ -15,6 +16,7 @@ class Profiles(AmazonAdsStream):
     https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles
     """
 
+    is_resumable = False
     primary_key = "profileId"
 
     def path(self, **kwargs) -> str:

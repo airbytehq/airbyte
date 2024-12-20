@@ -8,10 +8,12 @@ from unittest import mock
 import pendulum
 import pytest
 import requests
+from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
+
 
 list_financial_event_groups_data = {
     "payload": {
@@ -211,15 +213,7 @@ def test_reports_read_records_raise_on_backoff(mocker, requests_mock, caplog):
     requests_mock.post(
         "https://test.url/reports/2021-06-30/reports",
         status_code=429,
-        json={
-            "errors": [
-                {
-                    "code": "QuotaExceeded",
-                    "message": "You exceeded your quota for the requested resource.",
-                    "details": ""
-                }
-            ]
-        },
+        json={"errors": [{"code": "QuotaExceeded", "message": "You exceeded your quota for the requested resource.", "details": ""}]},
     )
 
     stream = RestockInventoryReports(
