@@ -1,11 +1,11 @@
-name: Blotout Build and Push Shopify Source Docker Image
+name: Blotout Build and Push Woocommerce Source Docker Image
 
 on:
   push:
     branches:
       - master
     paths:
-        - 'airbyte-integrations/connectors/source-shopify/**'  # Trigger only on changes within this directory
+        - 'airbyte-integrations/connectors/source-woocommerce/**'  # Trigger only on changes within this directory
   workflow_dispatch:  # Manually triggerable from GitHub UI
   
 jobs:
@@ -28,11 +28,11 @@ jobs:
     #     sudo apt-get update 
     #     sudo apt-get install -y docker.io
 
-    - name: Build Shopify Source Docker Image
+    - name: Build Woocommerce Source Docker Image
       run: |
-        cd airbyte-integrations/connectors/source-shopify
+        cd airbyte-integrations/connectors/source-woocommerce
         pwd & ls -la
-        airbyte-ci connectors --name=source-shopify build
+        airbyte-ci connectors --name=source-woocommerce build
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -43,8 +43,8 @@ jobs:
     - name: Tag Docker image
       run: |
         docker images
-        docker tag airbyte/source-shopify:dev blotout/source-shopify:v1-latest
+        docker tag airbyte/source-woocommerce:dev blotout/source-woocommerce:v1-latest
 
     - name: Push Docker image to Docker Hub
       run: |
-        docker push blotout/source-shopify:v1-latest
+        docker push blotout/source-woocommerce:v1-latest
