@@ -52,6 +52,7 @@ Key](https://ngdocs.harness.io/article/tdoad7xrh9-add-and-manage-api-keys#harnes
 
 | Version | Date       | Pull Request                                                   | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.11 | 2024-12-14 | [43874](https://github.com/airbytehq/airbyte/pull/43874) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.1.10 | 2024-08-03 | [43172](https://github.com/airbytehq/airbyte/pull/43172) | Update dependencies |
 | 0.1.9 | 2024-07-27 | [42735](https://github.com/airbytehq/airbyte/pull/42735) | Update dependencies |
 | 0.1.8 | 2024-07-20 | [42221](https://github.com/airbytehq/airbyte/pull/42221) | Update dependencies |
