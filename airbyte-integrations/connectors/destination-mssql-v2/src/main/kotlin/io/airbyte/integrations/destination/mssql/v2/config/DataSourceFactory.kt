@@ -6,13 +6,12 @@ package io.airbyte.integrations.destination.mssql.v2.config
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource
 import com.zaxxer.hikari.HikariDataSource
-import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
-@Factory
+@Singleton
 class DataSourceFactory {
-    @Singleton
+
     fun dataSource(config: MSSQLConfiguration): DataSource {
         val sqlServerDataSource = config.toSQLServerDataSource()
         val dataSource = HikariDataSource()

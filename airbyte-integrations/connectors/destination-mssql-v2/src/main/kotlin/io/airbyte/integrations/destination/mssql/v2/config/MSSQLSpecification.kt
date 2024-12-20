@@ -67,7 +67,7 @@ class MSSQLSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Raw Table Schema Name")
     @get:JsonPropertyDescription("The schema to write raw tables into (default: airbyte_internal)")
-    @get:JsonProperty("password")
+    @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"default":"airbyte_internal","order":5}""")
     val rawDataSchema: String = "airbyte_internal"
 
