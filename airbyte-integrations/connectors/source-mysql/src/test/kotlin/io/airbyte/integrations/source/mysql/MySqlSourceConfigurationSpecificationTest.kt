@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
 class MySqlSourceConfigurationSpecificationTest {
+
     @Inject
     lateinit var supplier: ConfigurationSpecificationSupplier<MySqlSourceConfigurationSpecification>
 
