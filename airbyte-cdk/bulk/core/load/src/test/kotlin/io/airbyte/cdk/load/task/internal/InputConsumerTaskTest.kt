@@ -111,11 +111,12 @@ class InputConsumerTaskTest {
 
         val task =
             taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
+                catalog = mockCatalogFactory.make(),
+                inputFlow = mockInputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                destinationTaskLauncher = mockk(),
+                fileTransferQueue = mockk(relaxed = true),
             )
         launch { task.execute() }
 
@@ -188,11 +189,12 @@ class InputConsumerTaskTest {
         )
         val task =
             taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
+                catalog = mockCatalogFactory.make(),
+                inputFlow = mockInputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                destinationTaskLauncher = mockk(),
+                fileTransferQueue = mockk(relaxed = true),
             )
         val job = launch { task.execute() }
         mockInputFlow.stop()
@@ -246,11 +248,12 @@ class InputConsumerTaskTest {
 
         val task =
             taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
+                catalog = mockCatalogFactory.make(),
+                inputFlow = mockInputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                destinationTaskLauncher = mockk(),
+                fileTransferQueue = mockk(relaxed = true),
             )
         launch { task.execute() }
         batches.forEach { (stream, count, expectedCount) ->
@@ -302,11 +305,12 @@ class InputConsumerTaskTest {
 
         val task =
             taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(),
+                catalog = mockCatalogFactory.make(),
+                inputFlow = mockInputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                destinationTaskLauncher = mockk(),
+                fileTransferQueue = mockk(relaxed = true),
             )
         launch { task.execute() }
         batches.forEach { event ->
@@ -367,11 +371,12 @@ class InputConsumerTaskTest {
         )
         val task =
             taskFactory.make(
-                mockCatalogFactory.make(),
-                mockInputFlow,
-                recordQueueSupplier,
-                checkpointQueue,
-                mockk(relaxed = true),
+                catalog = mockCatalogFactory.make(),
+                inputFlow = mockInputFlow,
+                recordQueueSupplier = recordQueueSupplier,
+                checkpointQueue = checkpointQueue,
+                destinationTaskLauncher = mockk(),
+                fileTransferQueue = mockk(relaxed = true),
             )
         CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
         mockInputFlow.stop()

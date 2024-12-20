@@ -5,5 +5,5 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
 
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage")))
-    implementation("aws.sdk.kotlin:s3:1.0.0")
+    implementation("aws.sdk.kotlin:s3:1.3.94")
 }
