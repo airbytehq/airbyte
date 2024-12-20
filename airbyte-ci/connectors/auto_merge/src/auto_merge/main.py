@@ -75,7 +75,7 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     pr_labels = {label.name for label in pr.labels}
     sorted_mapping = sorted(PR_VALIDATOR_MAPPING.items(), key=lambda item: len(item[0]), reverse=True)
     for mapped_labels, validators in sorted_mapping:
-        logger.info(f"mapped_labels: ", mapped_labels, " And PR labels: ", pr_labels)
+        logger.info(str(f"mapped_labels: ", mapped_labels, " And PR labels: ", pr_labels))
         if set(mapped_labels).issubset(pr_labels):
             return validators
     return PASSING_CHECKS_VALIDATORS
