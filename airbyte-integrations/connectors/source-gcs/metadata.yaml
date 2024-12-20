@@ -11,7 +11,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.8.2
+  dockerImageTag: 0.8.3
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
