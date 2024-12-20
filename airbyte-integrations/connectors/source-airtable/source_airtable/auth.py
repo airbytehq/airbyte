@@ -9,9 +9,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
-from airbyte_cdk.sources.streams.http.requests_native_auth import (
-    BasicHttpAuthenticator,
-)
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 
 
