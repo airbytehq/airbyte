@@ -88,18 +88,8 @@
                 "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
                 "max": 24,
                 "min": 4,
-                "order": 4,
+                "order": 3,
                 "title": "Initial Load Timeout in Hours (Advanced)",
-                "type": "integer"
-              },
-              "initial_waiting_seconds": {
-                "always_show": true,
-                "default": 300,
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>.",
-                "max": 1200,
-                "min": 120,
-                "order": 1,
-                "title": "Initial Waiting Time in Seconds (Advanced)",
                 "type": "integer"
               },
               "invalid_cdc_cursor_position_behavior": {
@@ -107,7 +97,7 @@
                 "default": "Fail sync",
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
                 "enum": ["Fail sync", "Re-sync data"],
-                "order": 3,
+                "order": 2,
                 "title": "Configured server timezone for the MySQL source (Advanced)",
                 "type": "string"
               },
@@ -119,7 +109,7 @@
               "server_timezone": {
                 "always_show": true,
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
-                "order": 2,
+                "order": 1,
                 "title": "Configured server timezone for the MySQL source (Advanced)",
                 "type": "string"
               }
