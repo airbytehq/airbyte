@@ -8,9 +8,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationMessage
-import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
+import io.airbyte.cdk.load.message.InputMessage
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
@@ -125,7 +125,7 @@ abstract class IntegrationTest(
     fun runSync(
         configContents: String,
         stream: DestinationStream,
-        messages: List<DestinationMessage>,
+        messages: List<InputMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
         useFileTransfer: Boolean = false,
     ): List<AirbyteMessage> =
@@ -146,7 +146,7 @@ abstract class IntegrationTest(
     fun runSync(
         configContents: String,
         catalog: DestinationCatalog,
-        messages: List<DestinationMessage>,
+        messages: List<InputMessage>,
         /**
          * If you set this to anything other than `COMPLETE`, you may run into a race condition.
          * It's recommended that you send an explicit state message in [messages], and run the sync
@@ -207,7 +207,7 @@ abstract class IntegrationTest(
     fun runSyncUntilStateAck(
         configContents: String,
         stream: DestinationStream,
-        records: List<DestinationRecord>,
+        records: List<InputRecord>,
         inputStateMessage: StreamCheckpoint,
         allowGracefulShutdown: Boolean,
         useFileTransfer: Boolean = false,
