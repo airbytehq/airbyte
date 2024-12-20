@@ -7,13 +7,13 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+from source_airtable import SourceAirtable
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
-from source_airtable import SourceAirtable
 
 
 class TestAirtableStream:
-
     config = {"credentials": {"auth_method": "api_key", "api_key": "api key value"}}
 
     def test_read_records(self, tables_requests_mock, airtable_streams_requests_mock, expected_records):

@@ -11,7 +11,6 @@ from source_airtable import SourceAirtable
 
 
 class TestSourceAirtable:
-
     config = {"credentials": {"auth_method": "api_key", "api_key": "api key value"}}
 
     def test_streams(self, tables_requests_mock):
