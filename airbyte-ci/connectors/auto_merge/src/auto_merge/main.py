@@ -77,6 +77,7 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     for mapped_labels, validators in sorted_mapping:
         logger.info(f"mapped_labels: {mapped_labels} -- And PR labels: {pr_labels}")
         if set(mapped_labels).issubset(pr_labels):
+            logger.info(validators)
             return validators
     return PASSING_CHECKS_VALIDATORS
 
