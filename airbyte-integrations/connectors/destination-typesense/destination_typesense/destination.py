@@ -19,7 +19,7 @@ def get_client(config: Mapping[str, Any]) -> Client:
     path = config.get("path")
     nodes = []
     for host in hosts:
-        node = {"host": host, "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+        node = {"host": host, "port": config.get("port") or "443", "protocol": config.get("protocol") or "https"}
         if path:
             node["path"] = path
         nodes.append(node)
