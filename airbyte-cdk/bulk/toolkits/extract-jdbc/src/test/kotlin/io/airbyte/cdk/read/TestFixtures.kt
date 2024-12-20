@@ -93,7 +93,6 @@ object TestFixtures {
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
             ConcurrencyResource(configuration),
-            NoOpGlobalLockResource()
         )
     }
 
