@@ -124,13 +124,7 @@ class MySqlSourceOperations :
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
         return when (MysqlType.getByName(type.typeName)) {
-            MysqlType.BIT -> {
-                if (type.precision!! > 1) {
-                    ByteFieldType
-                } else {
-                    BooleanFieldType
-                }
-            }
+            MysqlType.BIT -> ByteFieldType
             MysqlType.BOOLEAN -> BooleanFieldType
             MysqlType.TINYINT,
             MysqlType.TINYINT_UNSIGNED,
